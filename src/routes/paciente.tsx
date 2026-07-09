@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Calendar, Salad, Activity, MessageSquare, User } from "lucide-react";
+import { LayoutDashboard, Calendar, Salad, Activity, MessageSquare, User, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import { DashboardShell, type NavItem } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,6 +8,7 @@ const items: NavItem[] = [
   { to: "/paciente/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/paciente/agendamentos", label: "Agendamentos", icon: Calendar },
   { to: "/paciente/plano-alimentar", label: "Plano Alimentar", icon: Salad },
+  { to: "/paciente/ia-nutricional", label: "IA Nutricional", icon: Sparkles },
   { to: "/paciente/evolucao", label: "Evolução", icon: Activity },
   { to: "/paciente/mensagens", label: "Mensagens", icon: MessageSquare },
   { to: "/paciente/perfil", label: "Perfil", icon: User },
@@ -17,6 +18,7 @@ const titles: Record<string, string> = {
   "/paciente/dashboard": "Dashboard",
   "/paciente/agendamentos": "Agendamentos",
   "/paciente/plano-alimentar": "Plano Alimentar",
+  "/paciente/ia-nutricional": "IA Nutricional",
   "/paciente/evolucao": "Evolução",
   "/paciente/mensagens": "Mensagens",
   "/paciente/perfil": "Perfil",

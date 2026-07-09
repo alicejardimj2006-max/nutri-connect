@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacientePlanoAlimentarRouteImport } from './routes/paciente.plano-alimentar'
 import { Route as PacientePerfilRouteImport } from './routes/paciente.perfil'
 import { Route as PacienteMensagensRouteImport } from './routes/paciente.mensagens'
+import { Route as PacienteIaNutricionalRouteImport } from './routes/paciente.ia-nutricional'
 import { Route as PacienteEvolucaoRouteImport } from './routes/paciente.evolucao'
 import { Route as PacienteDashboardRouteImport } from './routes/paciente.dashboard'
 import { Route as PacienteAgendamentosRouteImport } from './routes/paciente.agendamentos'
@@ -90,6 +91,11 @@ const PacientePerfilRoute = PacientePerfilRouteImport.update({
 const PacienteMensagensRoute = PacienteMensagensRouteImport.update({
   id: '/mensagens',
   path: '/mensagens',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteIaNutricionalRoute = PacienteIaNutricionalRouteImport.update({
+  id: '/ia-nutricional',
+  path: '/ia-nutricional',
   getParentRoute: () => PacienteRoute,
 } as any)
 const PacienteEvolucaoRoute = PacienteEvolucaoRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/paciente/agendamentos': typeof PacienteAgendamentosRoute
   '/paciente/dashboard': typeof PacienteDashboardRoute
   '/paciente/evolucao': typeof PacienteEvolucaoRoute
+  '/paciente/ia-nutricional': typeof PacienteIaNutricionalRoute
   '/paciente/mensagens': typeof PacienteMensagensRoute
   '/paciente/perfil': typeof PacientePerfilRoute
   '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/paciente/agendamentos': typeof PacienteAgendamentosRoute
   '/paciente/dashboard': typeof PacienteDashboardRoute
   '/paciente/evolucao': typeof PacienteEvolucaoRoute
+  '/paciente/ia-nutricional': typeof PacienteIaNutricionalRoute
   '/paciente/mensagens': typeof PacienteMensagensRoute
   '/paciente/perfil': typeof PacientePerfilRoute
   '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/paciente/agendamentos': typeof PacienteAgendamentosRoute
   '/paciente/dashboard': typeof PacienteDashboardRoute
   '/paciente/evolucao': typeof PacienteEvolucaoRoute
+  '/paciente/ia-nutricional': typeof PacienteIaNutricionalRoute
   '/paciente/mensagens': typeof PacienteMensagensRoute
   '/paciente/perfil': typeof PacientePerfilRoute
   '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/paciente/agendamentos'
     | '/paciente/dashboard'
     | '/paciente/evolucao'
+    | '/paciente/ia-nutricional'
     | '/paciente/mensagens'
     | '/paciente/perfil'
     | '/paciente/plano-alimentar'
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/paciente/agendamentos'
     | '/paciente/dashboard'
     | '/paciente/evolucao'
+    | '/paciente/ia-nutricional'
     | '/paciente/mensagens'
     | '/paciente/perfil'
     | '/paciente/plano-alimentar'
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/paciente/agendamentos'
     | '/paciente/dashboard'
     | '/paciente/evolucao'
+    | '/paciente/ia-nutricional'
     | '/paciente/mensagens'
     | '/paciente/perfil'
     | '/paciente/plano-alimentar'
@@ -390,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PacienteMensagensRouteImport
       parentRoute: typeof PacienteRoute
     }
+    '/paciente/ia-nutricional': {
+      id: '/paciente/ia-nutricional'
+      path: '/ia-nutricional'
+      fullPath: '/paciente/ia-nutricional'
+      preLoaderRoute: typeof PacienteIaNutricionalRouteImport
+      parentRoute: typeof PacienteRoute
+    }
     '/paciente/evolucao': {
       id: '/paciente/evolucao'
       path: '/evolucao'
@@ -491,6 +510,7 @@ interface PacienteRouteChildren {
   PacienteAgendamentosRoute: typeof PacienteAgendamentosRoute
   PacienteDashboardRoute: typeof PacienteDashboardRoute
   PacienteEvolucaoRoute: typeof PacienteEvolucaoRoute
+  PacienteIaNutricionalRoute: typeof PacienteIaNutricionalRoute
   PacienteMensagensRoute: typeof PacienteMensagensRoute
   PacientePerfilRoute: typeof PacientePerfilRoute
   PacientePlanoAlimentarRoute: typeof PacientePlanoAlimentarRoute
@@ -500,6 +520,7 @@ const PacienteRouteChildren: PacienteRouteChildren = {
   PacienteAgendamentosRoute: PacienteAgendamentosRoute,
   PacienteDashboardRoute: PacienteDashboardRoute,
   PacienteEvolucaoRoute: PacienteEvolucaoRoute,
+  PacienteIaNutricionalRoute: PacienteIaNutricionalRoute,
   PacienteMensagensRoute: PacienteMensagensRoute,
   PacientePerfilRoute: PacientePerfilRoute,
   PacientePlanoAlimentarRoute: PacientePlanoAlimentarRoute,
