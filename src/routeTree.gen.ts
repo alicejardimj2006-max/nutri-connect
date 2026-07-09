@@ -12,10 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as PacienteRouteImport } from './routes/paciente'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PacientePlanoAlimentarRouteImport } from './routes/paciente.plano-alimentar'
+import { Route as PacientePerfilRouteImport } from './routes/paciente.perfil'
+import { Route as PacienteMensagensRouteImport } from './routes/paciente.mensagens'
+import { Route as PacienteEvolucaoRouteImport } from './routes/paciente.evolucao'
+import { Route as PacienteDashboardRouteImport } from './routes/paciente.dashboard'
+import { Route as PacienteAgendamentosRouteImport } from './routes/paciente.agendamentos'
 
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
@@ -30,6 +37,11 @@ const ServicosRoute = ServicosRouteImport.update({
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
   id: '/recuperar-senha',
   path: '/recuperar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PacienteRoute = PacienteRouteImport.update({
+  id: '/paciente',
+  path: '/paciente',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -52,24 +64,68 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PacientePlanoAlimentarRoute = PacientePlanoAlimentarRouteImport.update({
+  id: '/plano-alimentar',
+  path: '/plano-alimentar',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacientePerfilRoute = PacientePerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteMensagensRoute = PacienteMensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteEvolucaoRoute = PacienteEvolucaoRouteImport.update({
+  id: '/evolucao',
+  path: '/evolucao',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteDashboardRoute = PacienteDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteAgendamentosRoute = PacienteAgendamentosRouteImport.update({
+  id: '/agendamentos',
+  path: '/agendamentos',
+  getParentRoute: () => PacienteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/login': typeof LoginRoute
+  '/paciente': typeof PacienteRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/paciente/agendamentos': typeof PacienteAgendamentosRoute
+  '/paciente/dashboard': typeof PacienteDashboardRoute
+  '/paciente/evolucao': typeof PacienteEvolucaoRoute
+  '/paciente/mensagens': typeof PacienteMensagensRoute
+  '/paciente/perfil': typeof PacientePerfilRoute
+  '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/login': typeof LoginRoute
+  '/paciente': typeof PacienteRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/paciente/agendamentos': typeof PacienteAgendamentosRoute
+  '/paciente/dashboard': typeof PacienteDashboardRoute
+  '/paciente/evolucao': typeof PacienteEvolucaoRoute
+  '/paciente/mensagens': typeof PacienteMensagensRoute
+  '/paciente/perfil': typeof PacientePerfilRoute
+  '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +133,16 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/login': typeof LoginRoute
+  '/paciente': typeof PacienteRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/paciente/agendamentos': typeof PacienteAgendamentosRoute
+  '/paciente/dashboard': typeof PacienteDashboardRoute
+  '/paciente/evolucao': typeof PacienteEvolucaoRoute
+  '/paciente/mensagens': typeof PacienteMensagensRoute
+  '/paciente/perfil': typeof PacientePerfilRoute
+  '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +151,48 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/contato'
     | '/login'
+    | '/paciente'
     | '/recuperar-senha'
     | '/servicos'
     | '/sobre'
+    | '/paciente/agendamentos'
+    | '/paciente/dashboard'
+    | '/paciente/evolucao'
+    | '/paciente/mensagens'
+    | '/paciente/perfil'
+    | '/paciente/plano-alimentar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/cadastro'
     | '/contato'
     | '/login'
+    | '/paciente'
     | '/recuperar-senha'
     | '/servicos'
     | '/sobre'
+    | '/paciente/agendamentos'
+    | '/paciente/dashboard'
+    | '/paciente/evolucao'
+    | '/paciente/mensagens'
+    | '/paciente/perfil'
+    | '/paciente/plano-alimentar'
   id:
     | '__root__'
     | '/'
     | '/cadastro'
     | '/contato'
     | '/login'
+    | '/paciente'
     | '/recuperar-senha'
     | '/servicos'
     | '/sobre'
+    | '/paciente/agendamentos'
+    | '/paciente/dashboard'
+    | '/paciente/evolucao'
+    | '/paciente/mensagens'
+    | '/paciente/perfil'
+    | '/paciente/plano-alimentar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,6 +200,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   ContatoRoute: typeof ContatoRoute
   LoginRoute: typeof LoginRoute
+  PacienteRoute: typeof PacienteRouteWithChildren
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   ServicosRoute: typeof ServicosRoute
   SobreRoute: typeof SobreRoute
@@ -142,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/recuperar-senha'
       fullPath: '/recuperar-senha'
       preLoaderRoute: typeof RecuperarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paciente': {
+      id: '/paciente'
+      path: '/paciente'
+      fullPath: '/paciente'
+      preLoaderRoute: typeof PacienteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -172,14 +264,79 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/paciente/plano-alimentar': {
+      id: '/paciente/plano-alimentar'
+      path: '/plano-alimentar'
+      fullPath: '/paciente/plano-alimentar'
+      preLoaderRoute: typeof PacientePlanoAlimentarRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/perfil': {
+      id: '/paciente/perfil'
+      path: '/perfil'
+      fullPath: '/paciente/perfil'
+      preLoaderRoute: typeof PacientePerfilRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/mensagens': {
+      id: '/paciente/mensagens'
+      path: '/mensagens'
+      fullPath: '/paciente/mensagens'
+      preLoaderRoute: typeof PacienteMensagensRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/evolucao': {
+      id: '/paciente/evolucao'
+      path: '/evolucao'
+      fullPath: '/paciente/evolucao'
+      preLoaderRoute: typeof PacienteEvolucaoRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/dashboard': {
+      id: '/paciente/dashboard'
+      path: '/dashboard'
+      fullPath: '/paciente/dashboard'
+      preLoaderRoute: typeof PacienteDashboardRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/agendamentos': {
+      id: '/paciente/agendamentos'
+      path: '/agendamentos'
+      fullPath: '/paciente/agendamentos'
+      preLoaderRoute: typeof PacienteAgendamentosRouteImport
+      parentRoute: typeof PacienteRoute
+    }
   }
 }
+
+interface PacienteRouteChildren {
+  PacienteAgendamentosRoute: typeof PacienteAgendamentosRoute
+  PacienteDashboardRoute: typeof PacienteDashboardRoute
+  PacienteEvolucaoRoute: typeof PacienteEvolucaoRoute
+  PacienteMensagensRoute: typeof PacienteMensagensRoute
+  PacientePerfilRoute: typeof PacientePerfilRoute
+  PacientePlanoAlimentarRoute: typeof PacientePlanoAlimentarRoute
+}
+
+const PacienteRouteChildren: PacienteRouteChildren = {
+  PacienteAgendamentosRoute: PacienteAgendamentosRoute,
+  PacienteDashboardRoute: PacienteDashboardRoute,
+  PacienteEvolucaoRoute: PacienteEvolucaoRoute,
+  PacienteMensagensRoute: PacienteMensagensRoute,
+  PacientePerfilRoute: PacientePerfilRoute,
+  PacientePlanoAlimentarRoute: PacientePlanoAlimentarRoute,
+}
+
+const PacienteRouteWithChildren = PacienteRoute._addFileChildren(
+  PacienteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CadastroRoute: CadastroRoute,
   ContatoRoute: ContatoRoute,
   LoginRoute: LoginRoute,
+  PacienteRoute: PacienteRouteWithChildren,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   ServicosRoute: ServicosRoute,
   SobreRoute: SobreRoute,
