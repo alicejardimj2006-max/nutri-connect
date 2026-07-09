@@ -42,8 +42,8 @@ function IaNutricional() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.condicoesMedicas.trim() && !form.estadoPsicologico.trim()) {
-      toast.error("Preencha ao menos uma das análises (médica ou psicológica).");
+    if (!form.cid.trim() && !form.condicoesMedicas.trim() && !form.estadoPsicologico.trim()) {
+      toast.error("Informe o CID ou preencha uma das análises (médica ou psicológica).");
       return;
     }
     setLoading(true);
