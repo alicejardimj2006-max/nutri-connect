@@ -5,6 +5,7 @@ import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const InputSchema = z.object({
   objetivo: z.string().min(1),
+  cid: z.string(),
   condicoesMedicas: z.string(),
   estadoPsicologico: z.string(),
   restricoes: z.string(),
