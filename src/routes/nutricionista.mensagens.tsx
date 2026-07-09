@@ -1,7 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-export { Route as _P } from "./paciente.mensagens";
-
-// Reutiliza layout de chat. Vamos criar um novo com "pacientes" como conversas.
 import { Send } from "lucide-react";
 import { useState } from "react";
 
