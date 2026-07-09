@@ -88,6 +88,7 @@ function IaNutricional() {
     write("NutriConnect — Recomendações Nutricionais IA", 18, "bold", [76, 175, 80]);
     y += 6;
     write(`Objetivo: ${form.objetivo}`, 11, "bold");
+    if (form.cid.trim()) write(`CID: ${form.cid}`, 11, "bold");
     y += 8;
     write("Análise Nutricional", 14, "bold", [76, 175, 80]);
     write(result.analise);
