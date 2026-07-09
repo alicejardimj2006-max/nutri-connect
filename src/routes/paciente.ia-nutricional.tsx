@@ -30,11 +30,6 @@ const initial: FormState = {
   preferencias: "",
   observacoes: "",
 };
-  estadoPsicologico: "",
-  restricoes: "",
-  preferencias: "",
-  observacoes: "",
-};
 
 function IaNutricional() {
   const [form, setForm] = useState<FormState>(initial);
