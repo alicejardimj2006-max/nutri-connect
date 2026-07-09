@@ -5,6 +5,7 @@ import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const InputSchema = z.object({
   objetivo: z.string().min(1),
+  cid: z.string(),
   condicoesMedicas: z.string(),
   estadoPsicologico: z.string(),
   restricoes: z.string(),
@@ -41,10 +42,11 @@ export const recomendarReceitas = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(key);
     const model = gateway("google/gemini-3-flash-preview");
 
-    const prompt = `Você é uma nutricionista clínica especializada em nutrição comportamental. Com base na análise médica e psicológica do paciente abaixo, elabore uma análise nutricional integrada e recomende 5 receitas específicas, saudáveis e adequadas ao caso.
+    const prompt = `Você é uma nutricionista clínica especializada em nutrição comportamental e conhecedora da Classificação Internacional de Doenças (CID-10/CID-11). Com base no(s) código(s) CID informado(s), na análise médica e no estado psicológico do paciente abaixo, elabore uma análise nutricional integrada e recomende 5 receitas específicas, saudáveis e adequadas ao caso.
 
 DADOS DO PACIENTE:
 - Objetivo: ${data.objetivo}
+- Código(s) CID: ${data.cid || "não informado"}
 - Condições médicas / análise clínica: ${data.condicoesMedicas || "não informado"}
 - Estado psicológico / emocional: ${data.estadoPsicologico || "não informado"}
 - Restrições alimentares e alergias: ${data.restricoes || "nenhuma"}
@@ -52,10 +54,11 @@ DADOS DO PACIENTE:
 - Observações adicionais: ${data.observacoes || "nenhuma"}
 
 Instruções:
-1. Faça uma análise breve (2-4 parágrafos) considerando o quadro clínico e emocional, e como a alimentação pode ajudar.
-2. Sugira 5 receitas específicas, distribuídas entre refeições (café da manhã, lanche, almoço, jantar, ceia).
-3. Para cada receita: nome, refeição, descrição curta, benefícios (relacionados ao quadro do paciente), lista de ingredientes com quantidades, modo de preparo passo a passo, tempo de preparo, porções e calorias aproximadas por porção.
-4. Ao final, dê 4-6 recomendações gerais.
+1. Interprete o(s) código(s) CID informado(s): explique brevemente o diagnóstico associado e as implicações nutricionais relevantes.
+2. Faça uma análise breve (2-4 parágrafos) considerando o quadro clínico (CID + análise médica) e emocional, e como a alimentação pode ajudar.
+3. Sugira 5 receitas específicas, distribuídas entre refeições (café da manhã, lanche, almoço, jantar, ceia), adequadas ao(s) CID(s) informado(s).
+4. Para cada receita: nome, refeição, descrição curta, benefícios (relacionados diretamente ao quadro/CID do paciente), lista de ingredientes com quantidades, modo de preparo passo a passo, tempo de preparo, porções e calorias aproximadas por porção.
+5. Ao final, dê 4-6 recomendações gerais alinhadas ao(s) CID(s).
 Responda em português do Brasil.`;
 
     try {

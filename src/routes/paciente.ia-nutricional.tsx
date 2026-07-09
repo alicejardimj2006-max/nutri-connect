@@ -13,6 +13,7 @@ export const Route = createFileRoute("/paciente/ia-nutricional")({
 
 type FormState = {
   objetivo: string;
+  cid: string;
   condicoesMedicas: string;
   estadoPsicologico: string;
   restricoes: string;
@@ -22,6 +23,7 @@ type FormState = {
 
 const initial: FormState = {
   objetivo: "Perda de peso",
+  cid: "",
   condicoesMedicas: "",
   estadoPsicologico: "",
   restricoes: "",
@@ -40,8 +42,8 @@ function IaNutricional() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.condicoesMedicas.trim() && !form.estadoPsicologico.trim()) {
-      toast.error("Preencha ao menos uma das análises (médica ou psicológica).");
+    if (!form.cid.trim() && !form.condicoesMedicas.trim() && !form.estadoPsicologico.trim()) {
+      toast.error("Informe o CID ou preencha uma das análises (médica ou psicológica).");
       return;
     }
     setLoading(true);
@@ -86,6 +88,7 @@ function IaNutricional() {
     write("NutriConnect — Recomendações Nutricionais IA", 18, "bold", [76, 175, 80]);
     y += 6;
     write(`Objetivo: ${form.objetivo}`, 11, "bold");
+    if (form.cid.trim()) write(`CID: ${form.cid}`, 11, "bold");
     y += 8;
     write("Análise Nutricional", 14, "bold", [76, 175, 80]);
     write(result.analise);
@@ -138,6 +141,9 @@ function IaNutricional() {
           </F>
           <F label="Restrições e alergias">
             <input className="input" placeholder="Ex: sem glúten, sem lactose" value={form.restricoes} onChange={upd("restricoes")} />
+          </F>
+          <F label="Código(s) CID" full>
+            <input className="input" placeholder="Ex: E11 (Diabetes tipo 2), F41.1 (Ansiedade generalizada), I10 (Hipertensão)" value={form.cid} onChange={upd("cid")} />
           </F>
           <F label="Análise médica / condições clínicas" full>
             <textarea rows={3} className="input" placeholder="Ex: hipertensão leve, pré-diabetes, colesterol LDL 160, gastrite…" value={form.condicoesMedicas} onChange={upd("condicoesMedicas")} />
