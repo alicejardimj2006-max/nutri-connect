@@ -141,6 +141,9 @@ function IaNutricional() {
           <F label="Restrições e alergias">
             <input className="input" placeholder="Ex: sem glúten, sem lactose" value={form.restricoes} onChange={upd("restricoes")} />
           </F>
+          <F label="Código(s) CID" full>
+            <input className="input" placeholder="Ex: E11 (Diabetes tipo 2), F41.1 (Ansiedade generalizada), I10 (Hipertensão)" value={form.cid} onChange={upd("cid")} />
+          </F>
           <F label="Análise médica / condições clínicas" full>
             <textarea rows={3} className="input" placeholder="Ex: hipertensão leve, pré-diabetes, colesterol LDL 160, gastrite…" value={form.condicoesMedicas} onChange={upd("condicoesMedicas")} />
           </F>
