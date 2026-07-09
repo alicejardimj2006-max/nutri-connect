@@ -13,6 +13,7 @@ export const Route = createFileRoute("/paciente/ia-nutricional")({
 
 type FormState = {
   objetivo: string;
+  cid: string;
   condicoesMedicas: string;
   estadoPsicologico: string;
   restricoes: string;
@@ -22,7 +23,13 @@ type FormState = {
 
 const initial: FormState = {
   objetivo: "Perda de peso",
+  cid: "",
   condicoesMedicas: "",
+  estadoPsicologico: "",
+  restricoes: "",
+  preferencias: "",
+  observacoes: "",
+};
   estadoPsicologico: "",
   restricoes: "",
   preferencias: "",
