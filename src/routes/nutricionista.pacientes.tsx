@@ -69,7 +69,7 @@ function Pacientes() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Escolha um paciente na lista ao lado para ver os detalhes.</p>
+            <p className="text-sm text-muted-foreground"><b>Escolha um paciente na lista ao lado para ver os detalhes.</b></p>
           )}
         </Section>
       </div>

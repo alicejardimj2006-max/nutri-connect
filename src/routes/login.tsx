@@ -38,7 +38,7 @@ function Login() {
         </button>
         <div className="flex items-center justify-between text-sm">
           <Link to="/recuperar-senha" className="text-primary hover:underline">Esqueceu a senha?</Link>
-          <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar conta</Link>
+          <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar uma conta</Link>
         </div>
       </form>
     </AuthLayout>
@@ -56,9 +56,9 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
           NutriConnect
         </Link>
         <div>
-          <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada, ao seu ritmo.</h2>
+          <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada conforme sua rotina.</h2>
           <p className="mt-4 max-w-md text-white/90">
-            Acompanhe sua evolução, converse com seu nutricionista e receba planos alimentares sob medida.
+            Acompanhe sua evolução, converse com seu nutricionista, receba planos alimentares sob medida e dicas de receitas.
           </p>
         </div>
         <p className="text-sm text-white/80">© {new Date().getFullYear()} NutriConnect</p>
