@@ -18,10 +18,12 @@ function Home() {
             <div>
             
               <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
-                Sua alimentação do seu jeito.
+                Sua alimentação
+                <br></br>do seu jeito
               </h1>
               <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-                Conectamos pacientes e nutricionistas para um acompanhamento completo e personalizado.
+                Conectamos pacientes e nutricionistas para
+                <br></br>um acompanhamento completo e personalizado
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -34,7 +36,7 @@ function Home() {
                   to="/servicos"
                   className="inline-flex items-center rounded-full border px-6 py-3 text-sm font-semibold hover:bg-muted"
                 >
-                  Ver opções
+                  Serviços
                 </Link>
               </div>
               <div className="mt-10 flex items-center gap-6 text-sm text-muted-foreground">
@@ -84,9 +86,9 @@ function Home() {
         <section className="mx-auto max-w-7xl px-4 py-16">
           <div className="grid gap-6 md:grid-cols-3">
             {[
-              { icon: CalendarCheck, title: "Agendamento online", desc: "Marque seu horário em instantes com o nutri que mais combina com você." },
-              { icon: UtensilsCrossed, title: "Plano alimentar personalizado", desc: "Um cardápio feito no seu ritmo, pensando para sua rotina e seus gostos." },
-              { icon: LineChart, title: "Acompanhamento da evolução", desc: "Acompanhe suas conquistas, expansão de cardápio e objetivos a cada reencontro." },
+              { icon: CalendarCheck, title: "Agendamento online", desc: "Marque seu horário em instantes com o nutricionista que mais combina com você" },
+              { icon: UtensilsCrossed, title: "Plano alimentar personalizado", desc: "Um cardápio feito no seu ritmo, pensado para sua rotina e seus gostos" },
+              { icon: LineChart, title: "Acompanhamento da evolução", desc: "Acompanhe suas conquistas, expansão de cardápio e objetivos a cada reencontro" },
             ].map((c) => (
               <div key={c.title} className="rounded-2xl border bg-card p-6 shadow-card transition hover:shadow-soft">
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -109,10 +111,10 @@ function Home() {
             <ol className="mt-10 grid gap-4 md:grid-cols-5">
               {[
                 { icon: UserPlus, t: "Cadastre-se" },
-                { icon: Search, t: "Escolher um nutricionista" },
-                { icon: CalendarDays, t: "Agendar minha consulta" },
-                { icon: Salad, t: "Receber meu plano alimentar" },
-                { icon: Activity, t: "Acompanhar minha evolução" },
+                { icon: Search, t: "Escolha um nutricionista" },
+                { icon: CalendarDays, t: "Agende sua consulta" },
+                { icon: Salad, t: "Receba seu plano alimentar" },
+                { icon: Activity, t: "Acompanhe sua evolução" },
               ].map((s, i) => (
                 <li key={s.t} className="rounded-2xl border bg-card p-5 text-center shadow-card">
                   <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground">

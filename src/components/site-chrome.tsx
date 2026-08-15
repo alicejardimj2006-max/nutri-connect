@@ -103,7 +103,7 @@ export function SiteFooter() {
             <span className="font-bold">NutriConnect</span>
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
-            Nutrição personalizada, ao alcance de todos.
+            Nutrição personalizada, ao alcance de todos
           </p>
         </div>
         <div>
