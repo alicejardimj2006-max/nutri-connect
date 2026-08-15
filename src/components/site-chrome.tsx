@@ -93,43 +93,43 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t bg-secondary/60">
+    <footer className="border-t border-primary/20 bg-primary text-primary-foreground">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-primary shadow-xs">
               <Leaf className="h-4 w-4" />
             </span>
-            <span className="font-bold">NutriConnect</span>
+            <span className="font-bold text-white">NutriConnect</span>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-white/80">
             Nutrição personalizada, ao alcance de todos
           </p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Contato</h4>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          <h4 className="text-sm font-semibold text-white">Contato</h4>
+          <ul className="mt-3 space-y-2 text-sm text-white/80">
             <li>contato@nutriconnect.com</li>
             <li>+55 (11) 4002-8922</li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Redes sociais</h4>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li><a href="#" className="hover:text-foreground">Instagram</a></li>
-            <li><a href="#" className="hover:text-foreground">Facebook</a></li>
-            <li><a href="#" className="hover:text-foreground">LinkedIn</a></li>
+          <h4 className="text-sm font-semibold text-white">Redes sociais</h4>
+          <ul className="mt-3 space-y-2 text-sm text-white/80">
+            <li><a href="#" className="transition hover:text-white hover:underline">Instagram</a></li>
+            <li><a href="#" className="transition hover:text-white hover:underline">Facebook</a></li>
+            <li><a href="#" className="transition hover:text-white hover:underline">LinkedIn</a></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold">Legal</h4>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li><a href="#" className="hover:text-foreground">Política de Privacidade</a></li>
-            <li><a href="#" className="hover:text-foreground">Termos de Uso</a></li>
+          <h4 className="text-sm font-semibold text-white">Legal</h4>
+          <ul className="mt-3 space-y-2 text-sm text-white/80">
+            <li><a href="#" className="transition hover:text-white hover:underline">Política de Privacidade</a></li>
+            <li><a href="#" className="transition hover:text-white hover:underline">Termos de Uso</a></li>
           </ul>
         </div>
       </div>
-      <div className="border-t py-4 text-center text-xs text-muted-foreground">
+      <div className="border-t border-white/20 py-4 text-center text-xs text-white/75">
         © {new Date().getFullYear()} NutriConnect. Todos os direitos reservados.
       </div>
     </footer>
