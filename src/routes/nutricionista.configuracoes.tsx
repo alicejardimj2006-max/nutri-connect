@@ -18,8 +18,8 @@ function Config() {
       </Section>
       <Section title="Conta">
         <div className="space-y-3 text-sm">
-          <button onClick={() => toast("Senha alterada")} className="w-full rounded-lg border px-4 py-2.5 text-left hover:bg-muted">Alterar senha</button>
-          <button onClick={() => toast("Dados exportados")} className="w-full rounded-lg border px-4 py-2.5 text-left hover:bg-muted">Exportar dados</button>
+          <button onClick={() => toast("Senha alterada")} className="w-full rounded-lg border px-4 py-2.5 text-left hover:bg-muted"><b>Alterar senha</b></button>
+          <button onClick={() => toast("Dados exportados")} className="w-full rounded-lg border px-4 py-2.5 text-left hover:bg-muted"><b>Exportar dados</b></button>
           <button onClick={() => toast.error("Ação irreversível — em breve")} className="w-full rounded-lg border border-destructive/30 px-4 py-2.5 text-left text-destructive hover:bg-destructive/10">Excluir conta</button>
         </div>
       </Section>

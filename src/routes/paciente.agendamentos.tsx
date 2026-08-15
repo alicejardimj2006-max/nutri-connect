@@ -49,7 +49,7 @@ function Agendamentos() {
             onClick={() => { if (!data) return toast.error("Selecione uma data."); toast.success(`Consulta com ${nutri} confirmada para ${data} às ${hora}.`); }}
             className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90"
           >
-            Confirmar agendamento
+           <b>Confirmar agendamento</b>
           </button>
         </Section>
 

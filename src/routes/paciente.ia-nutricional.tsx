@@ -126,7 +126,8 @@ function IaNutricional() {
         }
       >
         <p className="mb-4 text-sm text-muted-foreground">
-          Descreva sua análise médica e estado psicológico. A IA vai interpretar o contexto e recomendar receitas específicas para o seu caso.
+          <b>Descreva sua análise médica e estado psicológico. A IA vai interpretar o contexto e recomendar receitas específicas 
+          para o seu caso.</b>
         </p>
         <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
           <F label="Objetivo">
@@ -136,7 +137,9 @@ function IaNutricional() {
               <option>Manutenção</option>
               <option>Controle glicêmico</option>
               <option>Redução de colesterol</option>
-              <option>Melhora da imunidade</option>
+              <option>Auxilio em introdução alimentar</option>
+              <option>Ajuda em disturbios alimentares</option>
+              <option>Apoio para combater a seletividade alimentar</option>
             </select>
           </F>
           <F label="Restrições e alergias">
@@ -186,7 +189,7 @@ function IaNutricional() {
           </div>
 
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <ChefHat className="h-4 w-4 text-primary" /> Receitas recomendadas
+            <ChefHat className="h-4 w-4 text-primary" /> <b>Receitas recomendadas</b>
           </h3>
           <div className="grid gap-4 lg:grid-cols-2">
             {result.receitas.map((r, i) => (
@@ -205,13 +208,13 @@ function IaNutricional() {
                   <span className="rounded-full border px-2 py-0.5">🍽 {r.porcoes}</span>
                 </div>
                 <div className="mt-3">
-                  <p className="text-xs font-semibold">Ingredientes</p>
+                  <p className="text-xs font-semibold"> <b>Ingredientes</b></p>
                   <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                     {r.ingredientes.map((it, k) => <li key={k}>• {it}</li>)}
                   </ul>
                 </div>
                 <div className="mt-3">
-                  <p className="text-xs font-semibold">Modo de preparo</p>
+                  <p className="text-xs font-semibold"> <b>Modo de preparo</b></p>
                   <ol className="mt-1 space-y-1 text-xs text-muted-foreground">
                     {r.modoPreparo.map((s, k) => <li key={k}>{k + 1}. {s}</li>)}
                   </ol>
@@ -221,7 +224,7 @@ function IaNutricional() {
           </div>
 
           <div className="mt-6 rounded-2xl border p-4">
-            <h3 className="mb-2 text-sm font-semibold">Recomendações gerais</h3>
+            <h3 className="mb-2 text-sm font-semibold"> <b>Recomendações gerais</b></h3>
             <ul className="space-y-1 text-sm text-muted-foreground">
               {result.recomendacoesGerais.map((r, i) => <li key={i}>• {r}</li>)}
             </ul>
