@@ -46,7 +46,7 @@ function Pacientes() {
           </ul>
         </Section>
 
-        <Section title={sel ? sel.nome : "Selecione um paciente"} action={sel && <button className="rounded-full border px-3 py-1 text-xs font-semibold hover:bg-muted">Editar</button>}>
+        <Section title={sel ? sel.nome : "Selecione um paciente"} action={sel && <button className="rounded-full border px-4 py-2 text-xs font-semibold hover:bg-muted">Editar</button>}>
           {sel ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
@@ -63,9 +63,9 @@ function Pacientes() {
                 </ul>
               </div>
               <div className="flex gap-2">
-                <button className="rounded-full border px-4 py-2 text-xs font-semibold hover:bg-muted">Ver evolução</button>
-                <button className="rounded-full border px-4 py-2 text-xs font-semibold hover:bg-muted">Ver consultas</button>
-                <button className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90">Plano alimentar</button>
+                <button className="rounded-full border px-6 py-4 text-xs font-semibold hover:bg-muted">Ver evolução</button> 
+                <button className="rounded-full border px-6 py-4 text-xs font-semibold hover:bg-muted">Ver consultas</button>
+                <button className="rounded-full bg-primary px-6 py-4 text-xs font-semibold text-primary-foreground hover:bg-primary/90">Plano alimentar</button> 
               </div>
             </div>
           ) : (
@@ -78,5 +78,6 @@ function Pacientes() {
 }
 
 function Info({ l, v }: { l: string; v: string }) {
-  return <div className="rounded-xl border bg-secondary/40 p-3"><div className="text-xs text-muted-foreground">{l}</div><div className="mt-1 text-sm font-semibold">{v}</div></div>;
+  return <div className="rounded-xl border bg-secondary/40 p-4"><div className="text-xs text-muted-foreground">{l}</div>
+  <div className="mt-1 text-sm font-semibold">{v}</div></div>;
 }
