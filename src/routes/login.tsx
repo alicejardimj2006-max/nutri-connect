@@ -24,8 +24,8 @@ function Login() {
   };
 
   return (
-    <AuthLayout title="Entrar" subtitle="Acesse sua conta NutriConnect.">
-      <form onSubmit={submit} className="space-y-4">
+    <AuthLayout title="Login" subtitle="Entre na sua conta NutriConnect.">
+      <form onSubmit={submit} className="space-y-5">
         <RoleTabs role={role} onChange={setRole} />
         <Field label="E-mail">
           <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" />
@@ -47,10 +47,10 @@ function Login() {
 
 export function AuthLayout({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-secondary/40">
-      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-primary to-primary-soft p-12 text-primary-foreground lg:flex">
+    <div className="flex min-h-screen bg-secundary/40">
+      <div className="hidden w-1/2 flex-col justify-between bg-primary/90 p-12 text-primary-foreground lg:flex">
         <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/20 backdrop-blur">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Leaf className="h-5 w-5" />
           </span>
           NutriConnect
@@ -58,7 +58,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
         <div>
           <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada <br></br>ao alcance de todos</h2>
           <p className="mt-4 max-w-md text-white/90">
-            Acompanhe sua evolução, converse com seu nutricionista, receba planos alimentares sob medida e dicas de receitas
+            Acompanhe sua evolução, converse com os melhores profissionais, receba planos alimentares sob medida e dicas de receitas
           </p>
         </div>
         <p className="text-sm text-white/80">© {new Date().getFullYear()} NutriConnect</p>
