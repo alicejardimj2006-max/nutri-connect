@@ -20,11 +20,11 @@ export const horarios = [
   "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
   "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"
 ];
-export const nutris = ["Dra. Marina Alves", "Dr. Pedro Costa", "Dra. Camila Ribeiro"];
+export const nutris = ["Dra. Maria Lorena", "Dr. Pedro Costa", "Dra. Camila Ribeiro"];
 export const historico = [
-  { id: "1", d: "05 out 2026", hora: "14:00", nutri: "Dra. Marina Alves", especialidade: "Clínica", tipo: "Retorno", modalidade: "Online", status: "Concluída" },
-  { id: "2", d: "12 set 2026", hora: "10:00", nutri: "Dra. Marina Alves", especialidade: "Clínica", tipo: "Retorno", modalidade: "Presencial", status: "Concluída" },
-  { id: "3", d: "20 ago 2026", hora: "09:00", nutri: "Dra. Marina Alves", especialidade: "Clínica", tipo: "Avaliação inicial", modalidade: "Online", status: "Concluída" },
+  { id: "1", d: "05 out 2026", hora: "14:00", nutri: "Dra. Maria Lorena", especialidade: "Clínica", tipo: "Retorno", modalidade: "Online", status: "Concluída" },
+  { id: "2", d: "12 set 2026", hora: "10:00", nutri: "Dra. Maria Lorena", especialidade: "Clínica", tipo: "Retorno", modalidade: "Presencial", status: "Concluída" },
+  { id: "3", d: "20 ago 2026", hora: "09:00", nutri: "Dra. Maria Lorena", especialidade: "Clínica", tipo: "Avaliação inicial", modalidade: "Online", status: "Concluída" },
 ];
 
 export interface AgendamentoItem {
@@ -45,7 +45,7 @@ function Agendamentos() {
       id: "4",
       d: "25 out 2026",
       hora: "15:00",
-      nutri: "Dra. Marina Alves",
+      nutri: "Dra. Maria Lorena",
       especialidade: "Esportiva",
       tipo: "Acompanhamento",
       modalidade: "Online",

@@ -17,8 +17,8 @@ const weightData = [
 ];
 
 const proximas = [
-  { data: "Qui, 14 nov · 14:00", nutri: "Dra. Marina Alves", tipo: "Retorno" },
-  { data: "Qua, 28 nov · 10:30", nutri: "Dra. Marina Alves", tipo: "Avaliação" },
+  { data: "Qui, 14 nov · 14:00", nutri: "Dra. Maria Lorena", tipo: "Retorno" },
+  { data: "Qua, 28 nov · 10:30", nutri: "Dra. Maria Lorena", tipo: "Avaliação" },
 ];
 
 function Dashboard() {

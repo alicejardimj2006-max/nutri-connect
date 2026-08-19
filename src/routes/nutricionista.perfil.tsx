@@ -21,7 +21,7 @@ function Perfil() {
       </Section>
       <Section title="Dados profissionais">
         <div className="grid gap-4 sm:grid-cols-2">
-          <F label="Nome"><input className="input" defaultValue={user?.name ?? "Dra. Marina Alves"} /></F>
+          <F label="Nome"><input className="input" defaultValue={user?.name ?? "Dra. Maria Lorena"} /></F>
           <F label="CRN"><input className="input" defaultValue="CRN-3 12345" /></F>
           <F label="Especialidade"><select className="input"><option>Clínica</option><option>Esportiva</option><option>Materno-infantil</option></select></F>
           <F label="Telefone"><input className="input" defaultValue="(11) 98888-7777" /></F>

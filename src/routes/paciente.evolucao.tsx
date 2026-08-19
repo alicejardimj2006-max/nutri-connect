@@ -16,7 +16,7 @@ const imc = peso.map((p) => ({ m: p.m, v: +(p.v / (1.75 * 1.75)).toFixed(1) }));
 function Evolucao() {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-3">
         <StatCard label="Peso atual" value="75,4 kg" icon={Scale} />
         <StatCard label="Meta" value="72 kg" hint="3,4 kg restantes" icon={Target} />
         <StatCard label="IMC" value="24,6" hint="Peso saudável" icon={Activity} />

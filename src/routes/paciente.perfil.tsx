@@ -23,8 +23,8 @@ function Perfil() {
         <div className="grid gap-4 sm:grid-cols-2">
           <F label="Nome"><input className="input" defaultValue={user?.name ?? "Cainã Lopes de Andrade"} /></F>
           <F label="Telefone"><input className="input" defaultValue="(11) 99999-9999" /></F>
-          <F label="E-mail"><input className="input" defaultValue={user?.email ?? "joao@email.com"} /></F>
-          <F label="Objetivo"><select className="input"><option><b>Perda de peso</b></option><option><b>Ganho de massa</b></option><option>
+          <F label="E-mail"><input className="input" defaultValue={user?.email ?? "cainalopesdeandrade@gmail.com"} /></F>
+          <F label="Objetivo"><select className="input"><option><b>Perda de peso</b></option><option><b>Ganho de Massa</b></option><option>
             <b>Manutenção</b></option></select></F>
           <F label="Restrições alimentares"><input className="input" placeholder="Ex: sem glúten, sem lactose" /></F>
           <F label="Alergias"><input className="input" placeholder="Ex: amendoim" /></F>
