@@ -18,7 +18,7 @@ const refeicoes = [
 
 function Plano() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-16">
       <Section
         title="Meu plano alimentar"
         action={
@@ -29,19 +29,19 @@ function Plano() {
       >
         <div className="grid gap-4 lg:grid-cols-2">
           {refeicoes.map((r) => (
-            <div key={r.nome} className="rounded-2xl border bg-secondary/40 p-4">
-              <div className="flex items-center justify-between">
+            <div key={r.nome} className="rounded-2xl border bg-secondary/40 p-10">
+              <div className="flex gap-10 items-center justify-between">
                 <h3 className="text-sm font-semibold">{r.nome}</h3>
                 <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">{r.hora}</span>
               </div>
-              <ul className="mt-3 divide-y">
+              <ul className="mt-5 divide-y">
                 {r.itens.map((it) => (
-                  <li key={it.a} className="flex items-center justify-between py-2 text-sm">
+                  <li key={it.a} className="flex gap-10 items-center justify-between py-10 text-sm">
                     <span>{it.a}</span><span className="text-muted-foreground">{it.q}</span>
                   </li>
                 ))}
               </ul>
-              {r.obs && <p className="mt-3 rounded-lg bg-accent px-3 py-2 text-xs text-accent-foreground">{r.obs}</p>}
+              {r.obs && <p className="mt-6 rounded-lg bg-accent px-7 py-5 text-xs text-accent-foreground">{r.obs}</p>}
             </div>
           ))}
         </div>
