@@ -10,7 +10,7 @@ export const Route = createFileRoute("/nutricionista/pacientes")({
 const pacientes = [
   { id: 1, nome: "Ana Souza", obj: "Perda de peso", peso: "68 kg", altura: "1,65 m", ultima: "05 nov" },
   { id: 2, nome: "Bruno Lima", obj: "Ganho de massa", peso: "72 kg", altura: "1,78 m", ultima: "02 nov" },
-  { id: 3, nome: "João Silva", obj: "Perda de peso", peso: "75,4 kg", altura: "1,75 m", ultima: "09 nov" },
+  { id: 3, nome: "Cainã Lopes de Andrade", obj: "Perda de peso", peso: "75,4 kg", altura: "1,75 m", ultima: "09 nov" },
   { id: 4, nome: "Carla Mendes", obj: "Manutenção", peso: "60 kg", altura: "1,68 m", ultima: "28 out" },
 ];
 

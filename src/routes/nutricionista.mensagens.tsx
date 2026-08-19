@@ -8,7 +8,7 @@ export const Route = createFileRoute("/nutricionista/mensagens")({
 
 const conversas = [
   { id: 1, nome: "Ana Souza", ultima: "Obrigada!", hora: "10:12", unread: 0 },
-  { id: 2, nome: "João Silva", ultima: "Consegui seguir o cardápio.", hora: "14:31", unread: 1 },
+  { id: 2, nome: "Cainã Lopes de Andrade", ultima: "Consegui seguir o cardápio.", hora: "14:31", unread: 1 },
   { id: 3, nome: "Bruno Lima", ultima: "Posso trocar o lanche?", hora: "Ontem", unread: 3 },
 ];
 
