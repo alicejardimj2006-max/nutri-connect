@@ -30,7 +30,7 @@ function Perfil() {
           <F label="Alergias"><input className="input" placeholder="Ex: amendoim" /></F>
         </div>
         <button onClick={() => toast.success("Perfil atualizado!")} className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm 
-        font-semibold text-primary-foreground shadow-soft hover:bg-primary/90">
+        font-semibold text-primary-foreground shadow-lg hover:bg-primary/90">
           Editar perfil
         </button>
         <style>{`.input{width:100%;border:1px solid var(--border);background:var(--background);border-radius:0.65rem;

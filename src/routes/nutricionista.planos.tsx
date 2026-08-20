@@ -33,7 +33,7 @@ function Planos() {
         <label className="mb-2 block text-sm font-semibold">Observações</label>
         <textarea rows={3} value={obs} onChange={(e) => setObs(e.target.value)} className="w-full resize-none rounded-lg border bg-background p-3 text-sm outline-none focus:border-primary" placeholder="Recomendações adicionais…" />
       </div>
-      <button onClick={() => toast.success("Plano salvo com sucesso!")} className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90">
+      <button onClick={() => toast.success("Plano salvo com sucesso!")} className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90">
         Salvar plano
       </button>
     </Section>
