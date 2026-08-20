@@ -14,7 +14,7 @@ function Perfil() {
       <Section title="Foto">
         <div className="flex flex-col items-center">
           <div className="grid h-32 w-32 place-items-center rounded-full bg-primary-soft text-3xl font-bold text-primary">
-            {user?.name.split(" ").map((s) => s[0]).slice(0, 2).join("") ?? "JS"}
+            {user?.name.split(" ").map((s) => s[0]).slice(0, 2).join("") ?? "CA"}
           </div>
           <button className="mt-4 rounded-full border px-4 py-1.5 text-xs font-semibold hover:bg-muted">Alterar foto</button>
         </div>
