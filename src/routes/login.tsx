@@ -58,7 +58,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
         <div>
           <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada <br></br>ao alcance de todos</h2>
           <p className="mt-4 max-w-md text-white/90">
-            Acompanhe sua evolução, converse com os melhores profissionais, receba planos alimentares sob medida e dicas de receitas
+            Acompanhe sua evolução, converse com os melhores profissionais, receba planos alimentares sob medida e dicas de receitas.
           </p>
         </div>
         <p className="text-sm text-white/80">© {new Date().getFullYear()} NutriConnect</p>
