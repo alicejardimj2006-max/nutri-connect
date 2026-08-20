@@ -106,7 +106,7 @@
   --destructive: oklch(0.65 0.2 27);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --input: oklch(60.918% 0.24999 29.223 / 0.15);
   --ring: oklch(0.72 0.17 145);
   --chart-1: oklch(0.72 0.17 145);
   --chart-2: oklch(0.55 0.12 145);
@@ -179,15 +179,15 @@
 
 input[type="email"],
 input[type="password"] {
-    background: #1a1a1a;
-    color: white;
+    background: white;
+    color: black;
     border: none;
     border-radius: 12px;
     padding: 14px 16px;
 
     box-shadow:
-        inset 6px 6px 12px rgba(0, 0, 0, 0.8),
-        inset -4px -4px 10px rgba(255, 255, 255, 0.04);
+        inset 0px 1px 4px rgba(0, 0, 0, 0.5),
+        inset  0px 1px 4px rgba(255, 255, 255, 0.04);
 
     outline: none;
 }
@@ -195,6 +195,6 @@ input[type="password"] {
 input[type="email"]:focus,
 input[type="password"]:focus {
     box-shadow:
-        inset 6px 6px 12px rgba(0, 0, 0, 0.8),
-        inset -4px -4px 10px rgba(255, 255, 255, 0.04);
+        inset 1px 3px 6px rgba(0, 0, 0, 0.5),
+        inset 1px 3px 6px rgba(255, 255, 255, 0.04);
 }
