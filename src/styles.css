@@ -134,3 +134,67 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+.shadow{
+    box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+    -webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+}
+
+.shadow-md{
+    box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+    -webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+}
+
+.shadow-lg{
+    box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+    -webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+}
+.absolute{
+   position: absolute; 
+}
+
+.bottom{
+   bottom: 0; 
+}
+
+.top{
+   top: 0; 
+}
+
+.letf{
+   left: 0; 
+}
+
+.right{
+   left: 0; 
+}
+
+.fixed{
+    position: fixed;
+}
+
+.w-full{
+    width: 100%;
+}
+
+input[type="email"],
+input[type="password"] {
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 16px;
+
+    box-shadow:
+        inset 6px 6px 12px rgba(0, 0, 0, 0.8),
+        inset -4px -4px 10px rgba(255, 255, 255, 0.04);
+
+    outline: none;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    box-shadow:
+        inset 6px 6px 12px rgba(0, 0, 0, 0.8),
+        inset -4px -4px 10px rgba(255, 255, 255, 0.04);
+}
