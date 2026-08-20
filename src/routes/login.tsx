@@ -22,53 +22,17 @@ function Login() {
     toast.success("Bem-vindo(a) de volta!");
     navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/paciente/dashboard" });
   };
-return ( 
-  <AuthLayout title="Login" subtitle="Entre na sua conta NutriConnect."> 
-    <form onSubmit={submit} className="space-y-5"> 
-      <RoleTabs role={role} onChange={setRole} /> 
-      
-      <Field label="E-mail"> 
-        <input 
-          className="input" 
-          type="email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          placeholder="voce@email.com"
-          style={{
-            boxShadow: "inset 5px 5px 10px rgba(0, 0, 0, 0.15), inset -5px -5px 10px rgba(255, 255, 255, 0.9)"
-          }}
-        /> 
-      </Field> 
-
-      <Field label="Senha"> 
-        <input 
-          className="input" 
-          type="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          placeholder="••••••••"
-          style={{
-            boxShadow: "inset 5px 5px 10px rgba(0, 0, 0, 0.15), inset -5px -5px 10px rgba(255, 255, 255, 0.9)"
-          }}
-        /> 
-      </Field> 
-
-      <button className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90"> 
-        Entrar 
-      </button> 
-
-      <div className="flex items-center justify-between text-sm"> 
-        <Link to="/recuperar-senha" className="text-primary hover:underline">
-          Esqueceu a senha?
-        </Link> 
-        <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">
-          Criar uma conta
-        </Link> 
-      </div> 
-    </form> 
-  </AuthLayout> 
-);
-
+return ( <AuthLayout title="Login" subtitle="Entre na sua conta NutriConnect."> <form onSubmit={submit} className="space-y-5"> 
+<RoleTabs role={role} onChange={setRole} /> 
+<Field label="E-mail"> <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" /> </Field> 
+<Field label="Senha"> 
+  <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+   </Field> 
+<button className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90"> Entrar </button>
+ <div className="flex items-center justify-between text-sm"> 
+  <Link to="/recuperar-senha" className="text-primary hover:underline">Esqueceu a senha?</Link>
+   <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar uma conta</Link> 
+   </div> </form> </AuthLayout> ); }
 export function AuthLayout({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-secundary/40">
