@@ -13,7 +13,7 @@ const horarios = [
   { h: "09:00", p: "Ana Souza" },
   { h: "10:00", p: "Livre" },
   { h: "10:30", p: "Bruno Lima" },
-  { h: "14:00", p: "João Silva" },
+  { h: "14:00", p: "Cainã Lopes de Andrade" },
   { h: "15:30", p: "Carla Mendes" },
   { h: "16:30", p: "Livre" },
 ];
@@ -23,7 +23,7 @@ function Agenda() {
     <div className="space-y-6">
       <div className="flex justify-end">
         <button onClick={() => toast.success("Nova consulta criada!")} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90">
-          <Plus className="h-4 w-4" /> Nova consulta
+          <Plus className="h-4 w-4" /> <b>Novo agendamento</b>
         </button>
       </div>
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">

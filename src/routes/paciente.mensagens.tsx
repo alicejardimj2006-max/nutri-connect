@@ -7,7 +7,7 @@ export const Route = createFileRoute("/paciente/mensagens")({
 });
 
 const conversas = [
-  { id: 1, nome: "Dra. Marina Alves", ultima: "Como foi a semana?", hora: "14:32", unread: 2 },
+  { id: 1, nome: "Dra. Maria Lorena", ultima: "Como foi a semana?", hora: "14:32", unread: 2 },
   { id: 2, nome: "Suporte NutriConnect", ultima: "Sua conta foi verificada.", hora: "Ontem", unread: 0 },
 ];
 

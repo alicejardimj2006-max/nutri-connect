@@ -16,7 +16,7 @@ const atendimentos = [
 const proximas = [
   { h: "09:00", p: "Ana Souza", tipo: "Retorno" },
   { h: "10:30", p: "Bruno Lima", tipo: "Avaliação" },
-  { h: "14:00", p: "João Silva", tipo: "Retorno" },
+  { h: "14:00", p: "Cainã Lopes de Andrade", tipo: "Retorno" },
   { h: "15:30", p: "Carla Mendes", tipo: "Retorno" },
 ];
 

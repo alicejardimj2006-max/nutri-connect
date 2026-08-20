@@ -7,9 +7,9 @@ export const Route = createFileRoute("/contato")({
   head: () => ({
     meta: [
       { title: "Contato — NutriConnect" },
-      { name: "description", content: "Fale com a equipe NutriConnect." },
+      { name: "description", content: "Fale com a equipe NutriConnect" },
       { property: "og:title", content: "Contato — NutriConnect" },
-      { property: "og:description", content: "Estamos aqui para ajudar." },
+      { property: "og:description", content: "Estamos aqui para ajudar" },
     ],
   }),
   component: Contato,
@@ -21,7 +21,7 @@ function Contato() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-16">
         <h1 className="text-4xl font-extrabold tracking-tight">Fale com a gente</h1>
-        <p className="mt-3 text-muted-foreground">Dúvidas, sugestões ou parcerias? Envie sua mensagem.</p>
+        <p className="mt-3 text-muted-foreground">Dúvidas, sugestões ou parcerias? Envie sua mensagem!</p>
 
         <div className="mt-10 grid gap-8 md:grid-cols-[1fr_1.4fr]">
           <div className="space-y-4">
@@ -30,7 +30,7 @@ function Contato() {
               { i: Phone, t: "Telefone", v: "+55 (11) 4002-8922" },
               { i: MapPin, t: "Endereço", v: "Av. Paulista, 1000 — São Paulo" },
             ].map((c) => (
-              <div key={c.t} className="flex items-start gap-3 rounded-2xl border bg-card p-4 shadow-card">
+              <div key={c.t} className="shadow-lg flex items-start gap-3 rounded-2xl border bg-card p-4 shadow-card">
                 <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary-soft text-primary">
                   <c.i className="h-5 w-5" />
                 </div>
@@ -43,7 +43,7 @@ function Contato() {
           </div>
 
           <form
-            className="space-y-4 rounded-2xl border bg-card p-6 shadow-card"
+            className="space-y-4 shadow-xl rounded-2xl border bg-card p-6 shadow-card"
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Mensagem enviada! Retornaremos em breve.");

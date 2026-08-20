@@ -8,7 +8,7 @@ export const Route = createFileRoute("/nutricionista/mensagens")({
 
 const conversas = [
   { id: 1, nome: "Ana Souza", ultima: "Obrigada!", hora: "10:12", unread: 0 },
-  { id: 2, nome: "João Silva", ultima: "Consegui seguir o cardápio.", hora: "14:31", unread: 1 },
+  { id: 2, nome: "Cainã Lopes de Andrade", ultima: "Consegui seguir o cardápio.", hora: "14:31", unread: 1 },
   { id: 3, nome: "Bruno Lima", ultima: "Posso trocar o lanche?", hora: "Ontem", unread: 3 },
 ];
 
@@ -33,11 +33,14 @@ function Chat() {
         <ul>
           {conversas.map((c) => (
             <li key={c.id}>
-              <button onClick={() => setActive(c.id)} className={`w-full border-b p-4 text-left transition ${active === c.id ? "bg-accent" : "hover:bg-secondary"}`}>
-                <div className="flex items-center justify-between"><div className="text-sm font-semibold">{c.nome}</div><div className="text-xs text-muted-foreground">{c.hora}</div></div>
+              <button onClick={() => setActive(c.id)} className={`w-full border-b p-4 text-left transition ${active === c.id ? 
+                "bg-accent" : "hover:bg-secondary"}`}>
+                <div className="flex items-center justify-between"><div className="text-sm font-semibold">{c.nome}</div>
+                <div className="text-xs text-muted-foreground">{c.hora}</div></div>
                 <div className="mt-1 flex items-center justify-between gap-2">
                   <p className="truncate text-xs text-muted-foreground">{c.ultima}</p>
-                  {c.unread > 0 && <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">{c.unread}</span>}
+                  {c.unread > 0 && <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] 
+                  font-bold text-primary-foreground">{c.unread}</span>}
                 </div>
               </button>
             </li>
@@ -45,7 +48,8 @@ function Chat() {
         </ul>
       </aside>
       <section className="flex min-w-0 flex-col">
-        <div className="border-b p-4"><div className="font-semibold">{conversas.find((c) => c.id === active)?.nome}</div><div className="text-xs text-muted-foreground">Paciente</div></div>
+        <div className="border-b p-4"><div className="font-semibold">{conversas.find((c) => c.id === active)?.nome}</div>
+        <div className="text-xs text-muted-foreground">Paciente</div></div>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {list.map((m, i) => (
             <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>

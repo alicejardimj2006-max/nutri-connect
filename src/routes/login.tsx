@@ -22,43 +22,31 @@ function Login() {
     toast.success("Bem-vindo(a) de volta!");
     navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/paciente/dashboard" });
   };
-
-  return (
-    <AuthLayout title="Entrar" subtitle="Acesse sua conta NutriConnect.">
-      <form onSubmit={submit} className="space-y-4">
-        <RoleTabs role={role} onChange={setRole} />
-        <Field label="E-mail">
-          <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" />
-        </Field>
-        <Field label="Senha">
-          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-        </Field>
-        <button className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
-          Entrar
-        </button>
-        <div className="flex items-center justify-between text-sm">
-          <Link to="/recuperar-senha" className="text-primary hover:underline">Esqueceu a senha?</Link>
-          <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar conta</Link>
-        </div>
-      </form>
-    </AuthLayout>
-  );
-}
-
+return ( <AuthLayout title="Login" subtitle="Entre na sua conta NutriConnect."> <form onSubmit={submit} className="space-y-5"> 
+<RoleTabs role={role} onChange={setRole} /> 
+<Field label="E-mail"> <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" /> </Field> 
+<Field label="Senha"> 
+  <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+   </Field> 
+<button className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90"> Entrar </button>
+ <div className="flex items-center justify-between text-sm"> 
+  <Link to="/recuperar-senha" className="text-primary hover:underline">Esqueceu a senha?</Link>
+   <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar uma conta</Link> 
+   </div> </form> </AuthLayout> ); }
 export function AuthLayout({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-secondary/40">
-      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-primary to-primary-soft p-12 text-primary-foreground lg:flex">
+    <div className="flex min-h-screen bg-secundary/40">
+      <div className="hidden w-1/2 flex-col justify-between bg-primary/90 p-12 text-primary-foreground lg:flex">
         <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/20 backdrop-blur">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Leaf className="h-5 w-5" />
           </span>
           NutriConnect
         </Link>
         <div>
-          <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada, ao seu ritmo.</h2>
+          <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada <br></br>ao alcance de todos</h2>
           <p className="mt-4 max-w-md text-white/90">
-            Acompanhe sua evolução, converse com seu nutricionista e receba planos alimentares sob medida.
+            Acompanhe sua evolução, converse com os melhores profissionais, receba planos alimentares sob medida e dicas de receitas.
           </p>
         </div>
         <p className="text-sm text-white/80">© {new Date().getFullYear()} NutriConnect</p>
