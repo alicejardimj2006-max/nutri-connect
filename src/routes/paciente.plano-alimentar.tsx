@@ -34,7 +34,7 @@ function Plano() {
                 <h3 className="text-sm font-semibold">{r.nome}</h3>
                 <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">{r.hora}</span>
               </div>
-              <ul className="mt-5 divide-y">
+              <ul className="mt-3 divide-y">
                 {r.itens.map((it) => (
                   <li key={it.a} className="flex gap-10 items-center justify-between py-10 text-sm">
                     <span>{it.a}</span><span className="text-muted-foreground">{it.q}</span>
