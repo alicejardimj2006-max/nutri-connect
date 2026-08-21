@@ -106,7 +106,7 @@
   --destructive: oklch(0.65 0.2 27);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --input: oklch(60.918% 0.24999 29.223 / 0.15);
   --ring: oklch(0.72 0.17 145);
   --chart-1: oklch(0.72 0.17 145);
   --chart-2: oklch(0.55 0.12 145);
@@ -133,4 +133,68 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+.shadow{
+    box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+    -webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+}
+
+.shadow-md{
+    box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+    -webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+}
+
+.shadow-lg{
+    box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+    -webkit-box-shadow: 0 1px 3px rgba( 0, 0, 0.15);
+}
+.absolute{
+   position: absolute; 
+}
+
+.bottom{
+   bottom: 0; 
+}
+
+.top{
+   top: 0; 
+}
+
+.letf{
+   left: 0; 
+}
+
+.right{
+   left: 0; 
+}
+
+.fixed{
+    position: fixed;
+}
+
+.w-full{
+    width: 100%;
+}
+
+input[type="email"],
+input[type="password"] {
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 16px;
+
+    box-shadow:
+        inset 0px 1px 4px rgba(0, 0, 0, 0.5),
+        inset  0px 1px 4px rgba(255, 255, 255, 0.04);
+
+    outline: none;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    box-shadow:
+        inset 1px 3px 6px rgba(0, 0, 0, 0.5),
+        inset 1px 3px 6px rgba(255, 255, 255, 0.04);
 }

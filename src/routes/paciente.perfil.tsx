@@ -14,23 +14,23 @@ function Perfil() {
       <Section title="Foto">
         <div className="flex flex-col items-center">
           <div className="grid h-32 w-32 place-items-center rounded-full bg-primary-soft text-3xl font-bold text-primary">
-            {user?.name.split(" ").map((s) => s[0]).slice(0, 2).join("") ?? "JS"}
+            {user?.name.split(" ").map((s) => s[0]).slice(0, 2).join("") ?? "CA"}
           </div>
           <button className="mt-4 rounded-full border px-4 py-1.5 text-xs font-semibold hover:bg-muted">Alterar foto</button>
         </div>
       </Section>
       <Section title="Meus dados">
         <div className="grid gap-4 sm:grid-cols-2">
-          <F label="Nome"><input className="input" defaultValue={user?.name ?? "João Silva"} /></F>
+          <F label="Nome"><input className="input" defaultValue={user?.name ?? "Cainã Lopes de Andrade"} /></F>
           <F label="Telefone"><input className="input" defaultValue="(11) 99999-9999" /></F>
-          <F label="E-mail"><input className="input" defaultValue={user?.email ?? "joao@email.com"} /></F>
-          <F label="Objetivo"><select className="input"><option><b>Perda de peso</b></option><option><b>Ganho de massa</b></option><option>
+          <F label="E-mail"><input className="input" defaultValue={user?.email ?? "cainalopesdeandrade@gmail.com"} /></F>
+          <F label="Objetivo"><select className="input"><option><b>Perda de peso</b></option><option><b>Ganho de Massa</b></option><option>
             <b>Manutenção</b></option></select></F>
           <F label="Restrições alimentares"><input className="input" placeholder="Ex: sem glúten, sem lactose" /></F>
           <F label="Alergias"><input className="input" placeholder="Ex: amendoim" /></F>
         </div>
         <button onClick={() => toast.success("Perfil atualizado!")} className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm 
-        font-semibold text-primary-foreground shadow-soft hover:bg-primary/90">
+        font-semibold text-primary-foreground shadow-lg hover:bg-primary/90">
           Editar perfil
         </button>
         <style>{`.input{width:100%;border:1px solid var(--border);background:var(--background);border-radius:0.65rem;

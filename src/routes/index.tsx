@@ -28,13 +28,13 @@ function Home() {
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
                   to="/cadastro"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-soft transition hover:bg-white/90"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-white/90"
                 >
                   Começar minha jornada <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/servicos"
-                  className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-xs transition hover:bg-white/20"
+                  className="inline-flex items-center rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-xs transition hover:bg-white/20 shadow-lg"
                 >
                   Serviços
                 </Link>
@@ -90,7 +90,7 @@ function Home() {
               { icon: UtensilsCrossed, title: "Plano alimentar personalizado", desc: "Um cardápio feito no seu ritmo, pensado para sua rotina e seus gostos" },
               { icon: LineChart, title: "Acompanhamento da evolução", desc: "Acompanhe suas conquistas, expansão de cardápio e objetivos a cada reencontro" },
             ].map((c) => (
-              <div key={c.title} className="rounded-2xl border bg-card p-6 shadow-card transition hover:shadow-soft">
+              <div key={c.title} className=" shadow-lg rounded-2xl border bg-card p-6 shadow-card transition hover:shadow-soft">
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
                   <c.icon className="h-6 w-6" />
                 </div>
@@ -116,7 +116,7 @@ function Home() {
                 { icon: Salad, t: "Receba seu plano alimentar" },
                 { icon: Activity, t: "Acompanhe sua evolução" },
               ].map((s, i) => (
-                <li key={s.t} className="rounded-2xl border bg-card p-5 text-center shadow-card">
+                <li key={s.t} className="shadow-lg transition hover:shadow-soft rounded-2xl border bg-card p-5 text-center shadow-card">
                   <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground">
                     <s.icon className="h-5 w-5" />
                   </div>

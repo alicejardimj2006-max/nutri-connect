@@ -30,7 +30,7 @@ function Contato() {
               { i: Phone, t: "Telefone", v: "+55 (11) 4002-8922" },
               { i: MapPin, t: "Endereço", v: "Av. Paulista, 1000 — São Paulo" },
             ].map((c) => (
-              <div key={c.t} className="flex items-start gap-3 rounded-2xl border bg-card p-4 shadow-card">
+              <div key={c.t} className="shadow-lg flex items-start gap-3 rounded-2xl border bg-card p-4 shadow-card">
                 <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary-soft text-primary">
                   <c.i className="h-5 w-5" />
                 </div>
@@ -43,7 +43,7 @@ function Contato() {
           </div>
 
           <form
-            className="space-y-4 rounded-2xl border bg-card p-6 shadow-card"
+            className="space-y-4 shadow-xl rounded-2xl border bg-card p-6 shadow-card"
             onSubmit={(e) => {
               e.preventDefault();
               toast.success("Mensagem enviada! Retornaremos em breve.");

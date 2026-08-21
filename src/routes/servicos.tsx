@@ -32,7 +32,7 @@ function Servicos() {
         <p className="mt-3 max-w-2xl text-muted-foreground">Uma plataforma completa para pacientes e nutricionistas</p>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
-            <div key={s.t} className="rounded-2xl border bg-card p-6 shadow-card">
+            <div key={s.t} className="rounded-2xl border bg-card p-6 shadow-card shadow-lg transition hover:shadow-soft">
               <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
                 <s.icon className="h-6 w-6" />
               </div>

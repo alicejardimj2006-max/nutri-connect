@@ -35,7 +35,7 @@ export function signOut() {
 export function mockLogin(email: string, role: UserRole): AuthUser {
   const user: AuthUser = {
     id: crypto.randomUUID(),
-    name: role === "nutricionista" ? "Dra. Marina Alves" : "João Silva",
+    name: role === "nutricionista" ? "Dra. Maria Lorena" : "Cainã Lopes de Andrade",
     email,
     role,
   };

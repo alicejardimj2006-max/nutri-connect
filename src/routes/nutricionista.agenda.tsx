@@ -13,7 +13,7 @@ const horarios = [
   { h: "09:00", p: "Ana Souza" },
   { h: "10:00", p: "Livre" },
   { h: "10:30", p: "Bruno Lima" },
-  { h: "14:00", p: "João Silva" },
+  { h: "14:00", p: "Cainã Lopes de Andrade" },
   { h: "15:30", p: "Carla Mendes" },
   { h: "16:30", p: "Livre" },
 ];
