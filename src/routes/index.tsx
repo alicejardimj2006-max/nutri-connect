@@ -16,7 +16,7 @@ function Home() {
           <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary via-primary to-primary/90" />
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:py-24 md:items-center">
             <div>
-            
+
               <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">
                 Sua alimentação
                 <br></br>do seu jeito
@@ -90,7 +90,7 @@ function Home() {
               { icon: UtensilsCrossed, title: "Plano alimentar personalizado", desc: "Um cardápio feito no seu ritmo, pensado para sua rotina e seus gostos" },
               { icon: LineChart, title: "Acompanhamento da evolução", desc: "Acompanhe suas conquistas, expansão de cardápio e objetivos a cada reencontro" },
             ].map((c) => (
-              <div key={c.title} className=" shadow-lg rounded-2xl border bg-card p-6 shadow-card transition hover:shadow-soft">
+              <div key={c.title} className=" shadow-lg rounded-full border p-6 shadow-card transition hover:shadow-lg">
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
                   <c.icon className="h-6 w-6" />
                 </div>

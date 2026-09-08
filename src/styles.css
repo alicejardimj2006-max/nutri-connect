@@ -177,24 +177,37 @@
     width: 100%;
 }
 
-input[type="email"],
-input[type="password"] {
-    background: white;
-    color: black;
-    border: none;
-    border-radius: 12px;
-    padding: 14px 16px;
-
-    box-shadow:
-        inset 0px 1px 4px rgba(0, 0, 0, 0.5),
-        inset  0px 1px 4px rgba(255, 255, 255, 0.04);
-
-    outline: none;
+.input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.15s ease-in-out;
 }
 
-input[type="email"]:focus,
-input[type="password"]:focus {
-    box-shadow:
-        inset 1px 3px 6px rgba(0, 0, 0, 0.5),
-        inset 1px 3px 6px rgba(255, 255, 255, 0.04);
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent);
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.15s ease-in-out;
+  resize: none;
+}
+
+.textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent);
 }

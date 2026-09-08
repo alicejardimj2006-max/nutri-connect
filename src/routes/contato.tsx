@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/contato")({
   head: () => ({
@@ -50,9 +52,15 @@ function Contato() {
               (e.target as HTMLFormElement).reset();
             }}
           >
-            <Field label="Nome"><input required className="input" placeholder="Seu nome" /></Field>
-            <Field label="E-mail"><input required type="email" className="input" placeholder="voce@email.com" /></Field>
-            <Field label="Mensagem"><textarea required rows={5} className="input resize-none" placeholder="Como podemos ajudar?" /></Field>
+            <Field label="Nome">
+              <Input required placeholder="Seu nome" />
+            </Field>
+            <Field label="E-mail">
+              <Input required type="email" placeholder="voce@email.com" />
+            </Field>
+            <Field label="Mensagem">
+              <Textarea required rows={5} className="resize-none" placeholder="Como podemos ajudar?" />
+            </Field>
             <button className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
               Enviar mensagem
             </button>
@@ -60,7 +68,7 @@ function Contato() {
         </div>
       </main>
       <SiteFooter />
-      <style>{`.input{width:100%;border:1px solid var(--border);background:var(--background);border-radius:0.75rem;padding:0.65rem 0.9rem;font-size:0.875rem;outline:none;transition:all .15s} .input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent)}`}</style>
+      
     </div>
   );
 }
