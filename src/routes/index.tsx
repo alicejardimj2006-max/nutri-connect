@@ -90,7 +90,7 @@ function Home() {
               { icon: UtensilsCrossed, title: "Plano alimentar personalizado", desc: "Um cardápio feito no seu ritmo, pensado para sua rotina e seus gostos" },
               { icon: LineChart, title: "Acompanhamento da evolução", desc: "Acompanhe suas conquistas, expansão de cardápio e objetivos a cada reencontro" },
             ].map((c) => (
-              <div key={c.title} className=" shadow-lg rounded-full border p-6 shadow-card transition hover:shadow-lg">
+              <div key={c.title} className=" shadow-lg rounded-lg border p-6 shadow-card transition hover:shadow-lg">
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
                   <c.icon className="h-6 w-6" />
                 </div>
