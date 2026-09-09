@@ -9,63 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as CadastroRouteImport } from './routes/cadastro'
-import { Route as ContatoRouteImport } from './routes/contato'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as NutricionistaRouteImport } from './routes/nutricionista'
-import { Route as PacienteRouteImport } from './routes/paciente'
-import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
-import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SobreRouteImport } from './routes/sobre'
-import { Route as NutricionistaAgendaRouteImport } from './routes/nutricionista.agenda'
-import { Route as NutricionistaConfiguracoesRouteImport } from './routes/nutricionista.configuracoes'
-import { Route as NutricionistaDashboardRouteImport } from './routes/nutricionista.dashboard'
-import { Route as NutricionistaMensagensRouteImport } from './routes/nutricionista.mensagens'
-import { Route as NutricionistaPacientesRouteImport } from './routes/nutricionista.pacientes'
-import { Route as NutricionistaPerfilRouteImport } from './routes/nutricionista.perfil'
-import { Route as NutricionistaPlanosRouteImport } from './routes/nutricionista.planos'
-import { Route as PacienteAgendamentosRouteImport } from './routes/paciente.agendamentos'
-import { Route as PacienteDashboardRouteImport } from './routes/paciente.dashboard'
-import { Route as PacienteEvolucaoRouteImport } from './routes/paciente.evolucao'
-import { Route as PacienteIaNutricionalRouteImport } from './routes/paciente.ia-nutricional'
-import { Route as PacienteMensagensRouteImport } from './routes/paciente.mensagens'
-import { Route as PacientePerfilRouteImport } from './routes/paciente.perfil'
+import { Route as ServicosRouteImport } from './routes/servicos'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as PacienteRouteImport } from './routes/paciente'
+import { Route as NutricionistaRouteImport } from './routes/nutricionista'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ContatoRouteImport } from './routes/contato'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PacientePlanoAlimentarRouteImport } from './routes/paciente.plano-alimentar'
+import { Route as PacientePerfilRouteImport } from './routes/paciente.perfil'
+import { Route as PacienteMensagensRouteImport } from './routes/paciente.mensagens'
+import { Route as PacienteIaNutricionalRouteImport } from './routes/paciente.ia-nutricional'
+import { Route as PacienteEvolucaoRouteImport } from './routes/paciente.evolucao'
+import { Route as PacienteDashboardRouteImport } from './routes/paciente.dashboard'
+import { Route as PacienteAgendamentosRouteImport } from './routes/paciente.agendamentos'
+import { Route as NutricionistaPlanosRouteImport } from './routes/nutricionista.planos'
+import { Route as NutricionistaPerfilRouteImport } from './routes/nutricionista.perfil'
+import { Route as NutricionistaPacientesRouteImport } from './routes/nutricionista.pacientes'
+import { Route as NutricionistaMensagensRouteImport } from './routes/nutricionista.mensagens'
+import { Route as NutricionistaDashboardRouteImport } from './routes/nutricionista.dashboard'
+import { Route as NutricionistaConfiguracoesRouteImport } from './routes/nutricionista.configuracoes'
+import { Route as NutricionistaAgendaRouteImport } from './routes/nutricionista.agenda'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadastroRoute = CadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContatoRoute = ContatoRouteImport.update({
-  id: '/contato',
-  path: '/contato',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NutricionistaRoute = NutricionistaRouteImport.update({
-  id: '/nutricionista',
-  path: '/nutricionista',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PacienteRoute = PacienteRouteImport.update({
-  id: '/paciente',
-  path: '/paciente',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
-  id: '/recuperar-senha',
-  path: '/recuperar-senha',
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicosRoute = ServicosRouteImport.update({
@@ -73,14 +43,99 @@ const ServicosRoute = ServicosRouteImport.update({
   path: '/servicos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SobreRoute = SobreRouteImport.update({
-  id: '/sobre',
-  path: '/sobre',
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: '/recuperar-senha',
+  path: '/recuperar-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NutricionistaAgendaRoute = NutricionistaAgendaRouteImport.update({
-  id: '/agenda',
-  path: '/agenda',
+const PacienteRoute = PacienteRouteImport.update({
+  id: '/paciente',
+  path: '/paciente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NutricionistaRoute = NutricionistaRouteImport.update({
+  id: '/nutricionista',
+  path: '/nutricionista',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContatoRoute = ContatoRouteImport.update({
+  id: '/contato',
+  path: '/contato',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PacientePlanoAlimentarRoute = PacientePlanoAlimentarRouteImport.update({
+  id: '/plano-alimentar',
+  path: '/plano-alimentar',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacientePerfilRoute = PacientePerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteMensagensRoute = PacienteMensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteIaNutricionalRoute = PacienteIaNutricionalRouteImport.update({
+  id: '/ia-nutricional',
+  path: '/ia-nutricional',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteEvolucaoRoute = PacienteEvolucaoRouteImport.update({
+  id: '/evolucao',
+  path: '/evolucao',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteDashboardRoute = PacienteDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const PacienteAgendamentosRoute = PacienteAgendamentosRouteImport.update({
+  id: '/agendamentos',
+  path: '/agendamentos',
+  getParentRoute: () => PacienteRoute,
+} as any)
+const NutricionistaPlanosRoute = NutricionistaPlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => NutricionistaRoute,
+} as any)
+const NutricionistaPerfilRoute = NutricionistaPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => NutricionistaRoute,
+} as any)
+const NutricionistaPacientesRoute = NutricionistaPacientesRouteImport.update({
+  id: '/pacientes',
+  path: '/pacientes',
+  getParentRoute: () => NutricionistaRoute,
+} as any)
+const NutricionistaMensagensRoute = NutricionistaMensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
+  getParentRoute: () => NutricionistaRoute,
+} as any)
+const NutricionistaDashboardRoute = NutricionistaDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => NutricionistaRoute,
 } as any)
 const NutricionistaConfiguracoesRoute =
@@ -89,65 +144,10 @@ const NutricionistaConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => NutricionistaRoute,
   } as any)
-const NutricionistaDashboardRoute = NutricionistaDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const NutricionistaAgendaRoute = NutricionistaAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
   getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaMensagensRoute = NutricionistaMensagensRouteImport.update({
-  id: '/mensagens',
-  path: '/mensagens',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaPacientesRoute = NutricionistaPacientesRouteImport.update({
-  id: '/pacientes',
-  path: '/pacientes',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaPerfilRoute = NutricionistaPerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaPlanosRoute = NutricionistaPlanosRouteImport.update({
-  id: '/planos',
-  path: '/planos',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const PacienteAgendamentosRoute = PacienteAgendamentosRouteImport.update({
-  id: '/agendamentos',
-  path: '/agendamentos',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteDashboardRoute = PacienteDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteEvolucaoRoute = PacienteEvolucaoRouteImport.update({
-  id: '/evolucao',
-  path: '/evolucao',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteIaNutricionalRoute = PacienteIaNutricionalRouteImport.update({
-  id: '/ia-nutricional',
-  path: '/ia-nutricional',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteMensagensRoute = PacienteMensagensRouteImport.update({
-  id: '/mensagens',
-  path: '/mensagens',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacientePerfilRoute = PacientePerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacientePlanoAlimentarRoute = PacientePlanoAlimentarRouteImport.update({
-  id: '/plano-alimentar',
-  path: '/plano-alimentar',
-  getParentRoute: () => PacienteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -318,53 +318,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contato': {
-      id: '/contato'
-      path: '/contato'
-      fullPath: '/contato'
-      preLoaderRoute: typeof ContatoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/nutricionista': {
-      id: '/nutricionista'
-      path: '/nutricionista'
-      fullPath: '/nutricionista'
-      preLoaderRoute: typeof NutricionistaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paciente': {
-      id: '/paciente'
-      path: '/paciente'
-      fullPath: '/paciente'
-      preLoaderRoute: typeof PacienteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recuperar-senha': {
-      id: '/recuperar-senha'
-      path: '/recuperar-senha'
-      fullPath: '/recuperar-senha'
-      preLoaderRoute: typeof RecuperarSenhaRouteImport
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/servicos': {
@@ -374,95 +332,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sobre': {
-      id: '/sobre'
-      path: '/sobre'
-      fullPath: '/sobre'
-      preLoaderRoute: typeof SobreRouteImport
+    '/recuperar-senha': {
+      id: '/recuperar-senha'
+      path: '/recuperar-senha'
+      fullPath: '/recuperar-senha'
+      preLoaderRoute: typeof RecuperarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/agenda': {
-      id: '/nutricionista/agenda'
-      path: '/agenda'
-      fullPath: '/nutricionista/agenda'
-      preLoaderRoute: typeof NutricionistaAgendaRouteImport
-      parentRoute: typeof NutricionistaRoute
+    '/paciente': {
+      id: '/paciente'
+      path: '/paciente'
+      fullPath: '/paciente'
+      preLoaderRoute: typeof PacienteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/configuracoes': {
-      id: '/nutricionista/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/nutricionista/configuracoes'
-      preLoaderRoute: typeof NutricionistaConfiguracoesRouteImport
-      parentRoute: typeof NutricionistaRoute
+    '/nutricionista': {
+      id: '/nutricionista'
+      path: '/nutricionista'
+      fullPath: '/nutricionista'
+      preLoaderRoute: typeof NutricionistaRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/dashboard': {
-      id: '/nutricionista/dashboard'
-      path: '/dashboard'
-      fullPath: '/nutricionista/dashboard'
-      preLoaderRoute: typeof NutricionistaDashboardRouteImport
-      parentRoute: typeof NutricionistaRoute
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/mensagens': {
-      id: '/nutricionista/mensagens'
-      path: '/mensagens'
-      fullPath: '/nutricionista/mensagens'
-      preLoaderRoute: typeof NutricionistaMensagensRouteImport
-      parentRoute: typeof NutricionistaRoute
+    '/contato': {
+      id: '/contato'
+      path: '/contato'
+      fullPath: '/contato'
+      preLoaderRoute: typeof ContatoRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/pacientes': {
-      id: '/nutricionista/pacientes'
-      path: '/pacientes'
-      fullPath: '/nutricionista/pacientes'
-      preLoaderRoute: typeof NutricionistaPacientesRouteImport
-      parentRoute: typeof NutricionistaRoute
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/perfil': {
-      id: '/nutricionista/perfil'
-      path: '/perfil'
-      fullPath: '/nutricionista/perfil'
-      preLoaderRoute: typeof NutricionistaPerfilRouteImport
-      parentRoute: typeof NutricionistaRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/nutricionista/planos': {
-      id: '/nutricionista/planos'
-      path: '/planos'
-      fullPath: '/nutricionista/planos'
-      preLoaderRoute: typeof NutricionistaPlanosRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/paciente/agendamentos': {
-      id: '/paciente/agendamentos'
-      path: '/agendamentos'
-      fullPath: '/paciente/agendamentos'
-      preLoaderRoute: typeof PacienteAgendamentosRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/dashboard': {
-      id: '/paciente/dashboard'
-      path: '/dashboard'
-      fullPath: '/paciente/dashboard'
-      preLoaderRoute: typeof PacienteDashboardRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/evolucao': {
-      id: '/paciente/evolucao'
-      path: '/evolucao'
-      fullPath: '/paciente/evolucao'
-      preLoaderRoute: typeof PacienteEvolucaoRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/ia-nutricional': {
-      id: '/paciente/ia-nutricional'
-      path: '/ia-nutricional'
-      fullPath: '/paciente/ia-nutricional'
-      preLoaderRoute: typeof PacienteIaNutricionalRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/mensagens': {
-      id: '/paciente/mensagens'
-      path: '/mensagens'
-      fullPath: '/paciente/mensagens'
-      preLoaderRoute: typeof PacienteMensagensRouteImport
+    '/paciente/plano-alimentar': {
+      id: '/paciente/plano-alimentar'
+      path: '/plano-alimentar'
+      fullPath: '/paciente/plano-alimentar'
+      preLoaderRoute: typeof PacientePlanoAlimentarRouteImport
       parentRoute: typeof PacienteRoute
     }
     '/paciente/perfil': {
@@ -472,12 +395,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PacientePerfilRouteImport
       parentRoute: typeof PacienteRoute
     }
-    '/paciente/plano-alimentar': {
-      id: '/paciente/plano-alimentar'
-      path: '/plano-alimentar'
-      fullPath: '/paciente/plano-alimentar'
-      preLoaderRoute: typeof PacientePlanoAlimentarRouteImport
+    '/paciente/mensagens': {
+      id: '/paciente/mensagens'
+      path: '/mensagens'
+      fullPath: '/paciente/mensagens'
+      preLoaderRoute: typeof PacienteMensagensRouteImport
       parentRoute: typeof PacienteRoute
+    }
+    '/paciente/ia-nutricional': {
+      id: '/paciente/ia-nutricional'
+      path: '/ia-nutricional'
+      fullPath: '/paciente/ia-nutricional'
+      preLoaderRoute: typeof PacienteIaNutricionalRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/evolucao': {
+      id: '/paciente/evolucao'
+      path: '/evolucao'
+      fullPath: '/paciente/evolucao'
+      preLoaderRoute: typeof PacienteEvolucaoRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/dashboard': {
+      id: '/paciente/dashboard'
+      path: '/dashboard'
+      fullPath: '/paciente/dashboard'
+      preLoaderRoute: typeof PacienteDashboardRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/paciente/agendamentos': {
+      id: '/paciente/agendamentos'
+      path: '/agendamentos'
+      fullPath: '/paciente/agendamentos'
+      preLoaderRoute: typeof PacienteAgendamentosRouteImport
+      parentRoute: typeof PacienteRoute
+    }
+    '/nutricionista/planos': {
+      id: '/nutricionista/planos'
+      path: '/planos'
+      fullPath: '/nutricionista/planos'
+      preLoaderRoute: typeof NutricionistaPlanosRouteImport
+      parentRoute: typeof NutricionistaRoute
+    }
+    '/nutricionista/perfil': {
+      id: '/nutricionista/perfil'
+      path: '/perfil'
+      fullPath: '/nutricionista/perfil'
+      preLoaderRoute: typeof NutricionistaPerfilRouteImport
+      parentRoute: typeof NutricionistaRoute
+    }
+    '/nutricionista/pacientes': {
+      id: '/nutricionista/pacientes'
+      path: '/pacientes'
+      fullPath: '/nutricionista/pacientes'
+      preLoaderRoute: typeof NutricionistaPacientesRouteImport
+      parentRoute: typeof NutricionistaRoute
+    }
+    '/nutricionista/mensagens': {
+      id: '/nutricionista/mensagens'
+      path: '/mensagens'
+      fullPath: '/nutricionista/mensagens'
+      preLoaderRoute: typeof NutricionistaMensagensRouteImport
+      parentRoute: typeof NutricionistaRoute
+    }
+    '/nutricionista/dashboard': {
+      id: '/nutricionista/dashboard'
+      path: '/dashboard'
+      fullPath: '/nutricionista/dashboard'
+      preLoaderRoute: typeof NutricionistaDashboardRouteImport
+      parentRoute: typeof NutricionistaRoute
+    }
+    '/nutricionista/configuracoes': {
+      id: '/nutricionista/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/nutricionista/configuracoes'
+      preLoaderRoute: typeof NutricionistaConfiguracoesRouteImport
+      parentRoute: typeof NutricionistaRoute
+    }
+    '/nutricionista/agenda': {
+      id: '/nutricionista/agenda'
+      path: '/agenda'
+      fullPath: '/nutricionista/agenda'
+      preLoaderRoute: typeof NutricionistaAgendaRouteImport
+      parentRoute: typeof NutricionistaRoute
     }
   }
 }
