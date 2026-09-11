@@ -34,7 +34,7 @@ function Home() {
                 </Link>
                 <Link
                   to="/servicos"
-                  className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary backdrop-blur-xs transition hover:bg-white/20 shadow-lg"
+                  className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary backdrop-blur-xs transition hover:bg-white/90 shadow-lg"
                 >
                   Serviços
                 </Link>
