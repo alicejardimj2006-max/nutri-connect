@@ -16,8 +16,11 @@ import { Route as PacienteRouteImport } from './routes/paciente'
 import { Route as NutricionistaRouteImport } from './routes/nutricionista'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContatoRouteImport } from './routes/contato'
+import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
+import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PacientePlanoAlimentarRouteImport } from './routes/paciente.plano-alimentar'
 import { Route as PacientePerfilRouteImport } from './routes/paciente.perfil'
 import { Route as PacienteMensagensRouteImport } from './routes/paciente.mensagens'
@@ -32,6 +35,7 @@ import { Route as NutricionistaMensagensRouteImport } from './routes/nutricionis
 import { Route as NutricionistaDashboardRouteImport } from './routes/nutricionista.dashboard'
 import { Route as NutricionistaConfiguracoesRouteImport } from './routes/nutricionista.configuracoes'
 import { Route as NutricionistaAgendaRouteImport } from './routes/nutricionista.agenda'
+import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
 
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
@@ -68,6 +72,11 @@ const ContatoRoute = ContatoRouteImport.update({
   path: '/contato',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadesRoute = ComunidadesRouteImport.update({
+  id: '/comunidades',
+  path: '/comunidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
@@ -76,6 +85,16 @@ const CadastroRoute = CadastroRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComunidadesIndexRoute = ComunidadesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ComunidadesRoute,
+} as any)
+const PerfilUserIdRoute = PerfilUserIdRouteImport.update({
+  id: '/perfil/$userId',
+  path: '/perfil/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PacientePlanoAlimentarRoute = PacientePlanoAlimentarRouteImport.update({
@@ -149,10 +168,16 @@ const NutricionistaAgendaRoute = NutricionistaAgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => NutricionistaRoute,
 } as any)
+const ComunidadesSlugRoute = ComunidadesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ComunidadesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/login': typeof LoginRoute
   '/nutricionista': typeof NutricionistaRouteWithChildren
@@ -160,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/nutricionista/agenda': typeof NutricionistaAgendaRoute
   '/nutricionista/configuracoes': typeof NutricionistaConfiguracoesRoute
   '/nutricionista/dashboard': typeof NutricionistaDashboardRoute
@@ -174,6 +200,8 @@ export interface FileRoutesByFullPath {
   '/paciente/mensagens': typeof PacienteMensagensRoute
   '/paciente/perfil': typeof PacientePerfilRoute
   '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
+  '/perfil/$userId': typeof PerfilUserIdRoute
+  '/comunidades/': typeof ComunidadesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -185,6 +213,7 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/nutricionista/agenda': typeof NutricionistaAgendaRoute
   '/nutricionista/configuracoes': typeof NutricionistaConfiguracoesRoute
   '/nutricionista/dashboard': typeof NutricionistaDashboardRoute
@@ -199,11 +228,14 @@ export interface FileRoutesByTo {
   '/paciente/mensagens': typeof PacienteMensagensRoute
   '/paciente/perfil': typeof PacientePerfilRoute
   '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
+  '/perfil/$userId': typeof PerfilUserIdRoute
+  '/comunidades': typeof ComunidadesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/login': typeof LoginRoute
   '/nutricionista': typeof NutricionistaRouteWithChildren
@@ -211,6 +243,7 @@ export interface FileRoutesById {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
+  '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/nutricionista/agenda': typeof NutricionistaAgendaRoute
   '/nutricionista/configuracoes': typeof NutricionistaConfiguracoesRoute
   '/nutricionista/dashboard': typeof NutricionistaDashboardRoute
@@ -225,12 +258,15 @@ export interface FileRoutesById {
   '/paciente/mensagens': typeof PacienteMensagensRoute
   '/paciente/perfil': typeof PacientePerfilRoute
   '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
+  '/perfil/$userId': typeof PerfilUserIdRoute
+  '/comunidades/': typeof ComunidadesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/cadastro'
+    | '/comunidades'
     | '/contato'
     | '/login'
     | '/nutricionista'
@@ -238,6 +274,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/servicos'
     | '/sobre'
+    | '/comunidades/$slug'
     | '/nutricionista/agenda'
     | '/nutricionista/configuracoes'
     | '/nutricionista/dashboard'
@@ -252,6 +289,8 @@ export interface FileRouteTypes {
     | '/paciente/mensagens'
     | '/paciente/perfil'
     | '/paciente/plano-alimentar'
+    | '/perfil/$userId'
+    | '/comunidades/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -263,6 +302,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/servicos'
     | '/sobre'
+    | '/comunidades/$slug'
     | '/nutricionista/agenda'
     | '/nutricionista/configuracoes'
     | '/nutricionista/dashboard'
@@ -277,10 +317,13 @@ export interface FileRouteTypes {
     | '/paciente/mensagens'
     | '/paciente/perfil'
     | '/paciente/plano-alimentar'
+    | '/perfil/$userId'
+    | '/comunidades'
   id:
     | '__root__'
     | '/'
     | '/cadastro'
+    | '/comunidades'
     | '/contato'
     | '/login'
     | '/nutricionista'
@@ -288,6 +331,7 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/servicos'
     | '/sobre'
+    | '/comunidades/$slug'
     | '/nutricionista/agenda'
     | '/nutricionista/configuracoes'
     | '/nutricionista/dashboard'
@@ -302,11 +346,14 @@ export interface FileRouteTypes {
     | '/paciente/mensagens'
     | '/paciente/perfil'
     | '/paciente/plano-alimentar'
+    | '/perfil/$userId'
+    | '/comunidades/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CadastroRoute: typeof CadastroRoute
+  ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
   LoginRoute: typeof LoginRoute
   NutricionistaRoute: typeof NutricionistaRouteWithChildren
@@ -314,6 +361,7 @@ export interface RootRouteChildren {
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   ServicosRoute: typeof ServicosRoute
   SobreRoute: typeof SobreRoute
+  PerfilUserIdRoute: typeof PerfilUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -367,6 +415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContatoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunidades': {
+      id: '/comunidades'
+      path: '/comunidades'
+      fullPath: '/comunidades'
+      preLoaderRoute: typeof ComunidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cadastro': {
       id: '/cadastro'
       path: '/cadastro'
@@ -379,6 +434,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunidades/': {
+      id: '/comunidades/'
+      path: '/'
+      fullPath: '/comunidades/'
+      preLoaderRoute: typeof ComunidadesIndexRouteImport
+      parentRoute: typeof ComunidadesRoute
+    }
+    '/perfil/$userId': {
+      id: '/perfil/$userId'
+      path: '/perfil/$userId'
+      fullPath: '/perfil/$userId'
+      preLoaderRoute: typeof PerfilUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/paciente/plano-alimentar': {
@@ -479,8 +548,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NutricionistaAgendaRouteImport
       parentRoute: typeof NutricionistaRoute
     }
+    '/comunidades/$slug': {
+      id: '/comunidades/$slug'
+      path: '/$slug'
+      fullPath: '/comunidades/$slug'
+      preLoaderRoute: typeof ComunidadesSlugRouteImport
+      parentRoute: typeof ComunidadesRoute
+    }
   }
 }
+
+interface ComunidadesRouteChildren {
+  ComunidadesSlugRoute: typeof ComunidadesSlugRoute
+  ComunidadesIndexRoute: typeof ComunidadesIndexRoute
+}
+
+const ComunidadesRouteChildren: ComunidadesRouteChildren = {
+  ComunidadesSlugRoute: ComunidadesSlugRoute,
+  ComunidadesIndexRoute: ComunidadesIndexRoute,
+}
+
+const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
+  ComunidadesRouteChildren,
+)
 
 interface NutricionistaRouteChildren {
   NutricionistaAgendaRoute: typeof NutricionistaAgendaRoute
@@ -533,6 +623,7 @@ const PacienteRouteWithChildren = PacienteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CadastroRoute: CadastroRoute,
+  ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
   LoginRoute: LoginRoute,
   NutricionistaRoute: NutricionistaRouteWithChildren,
@@ -540,6 +631,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   ServicosRoute: ServicosRoute,
   SobreRoute: SobreRoute,
+  PerfilUserIdRoute: PerfilUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
