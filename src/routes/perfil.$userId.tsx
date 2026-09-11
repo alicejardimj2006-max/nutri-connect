@@ -31,7 +31,13 @@ function PublicProfilePage() {
   const profile =
     stored ??
     (isSelf && user
-      ? { userId, name: user.name, role: user.role, bio: "Este perfil ainda não tem biografia." }
+      ? {
+          userId,
+          name: user.name,
+          role: user.role,
+          bio: user.bio || "Este perfil ainda não tem biografia.",
+          credential: user.crn,
+        }
       : fromPost
         ? { userId, name: fromPost.authorName, role: fromPost.authorRole, bio: "Membro da comunidade NutriConnect." }
         : null);

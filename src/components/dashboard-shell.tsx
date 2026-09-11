@@ -78,8 +78,16 @@ export function DashboardShell({
               <div className="text-sm font-medium leading-tight">{userName}</div>
               <div className="text-xs text-muted-foreground capitalize">{userRole}</div>
             </div>
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-primary-soft text-sm font-semibold text-primary-foreground">
-              {userName.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-primary-soft text-sm font-semibold text-primary">
+              {userName?.trim()
+                ? userName
+                    .split(" ")
+                    .filter(Boolean)
+                    .map((s) => s[0])
+                    .slice(0, 2)
+                    .join("")
+                    .toUpperCase()
+                : "NC"}
             </div>
           </div>
         </header>

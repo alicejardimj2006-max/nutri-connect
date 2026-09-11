@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { mockLogin, type UserRole } from "@/lib/auth";
+import { registerUser, type UserRole } from "@/lib/auth";
 import { AuthLayout, Field, RoleTabs } from "./login";
 
 export const Route = createFileRoute("/cadastro")({
@@ -21,7 +21,15 @@ function Cadastro() {
     if (Object.values(form).some((v) => !v)) return toast.error("Preencha todos os campos.");
     if (form.senha !== form.conf) return toast.error("As senhas não coincidem.");
     if (form.senha.length < 6) return toast.error("A senha deve ter ao menos 6 caracteres.");
-    mockLogin(form.email, role);
+    registerUser({
+      name: form.nome,
+      email: form.email,
+      role,
+      phone: form.tel,
+      cpf: form.cpf,
+      birthDate: form.nasc,
+      password: form.senha,
+    });
     toast.success("Conta criada com sucesso!");
     navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/paciente/dashboard" });
   };

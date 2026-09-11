@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Leaf } from "lucide-react";
 import { useState } from "react";
-import { mockLogin, type UserRole } from "@/lib/auth";
+import { loginUser, type UserRole } from "@/lib/auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -18,7 +18,7 @@ function Login() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return toast.error("Preencha e-mail e senha.");
-    mockLogin(email, role);
+    loginUser(email, role, password);
     toast.success("Bem-vindo(a) de volta!");
     navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/paciente/dashboard" });
   };
