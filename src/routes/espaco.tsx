@@ -22,7 +22,8 @@ export const Route = createFileRoute("/espaco")({
       { title: "Espaço de Hoje — NutriConnect" },
       {
         name: "description",
-        content: "Descubra receitas preparadas pela comunidade, relatos de experiências, dicas de especialistas e conversas reais sobre alimentação.",
+        content:
+          "Descubra receitas preparadas pela comunidade, relatos de experiências, dicas de especialistas e conversas reais sobre alimentação.",
       },
     ],
   }),
@@ -41,7 +42,11 @@ function EspacoPage() {
     return p.type === currentTab;
   });
 
-  const tabs: { id: FilterTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  const tabs: {
+    id: FilterTab;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
     { id: "tudo", label: "Tudo no Espaço", icon: Compass },
     { id: "receita", label: "Receitas", icon: ChefHat },
     { id: "experiencia", label: "Experiências", icon: Sparkles },
@@ -161,9 +166,7 @@ function EspacoPage() {
           {/* Barra Lateral: Tema da Semana e Desafios */}
           <aside className="space-y-6">
             {/* Widget do Tema da Semana */}
-            {weeklyTheme && (
-              <WeeklyThemeCard theme={weeklyTheme} compact={true} />
-            )}
+            {weeklyTheme && <WeeklyThemeCard theme={weeklyTheme} compact={true} />}
 
             {/* Widget de Desafios Ativos */}
             <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
@@ -188,7 +191,9 @@ function EspacoPage() {
                     </div>
                     <p className="text-muted-foreground line-clamp-2 mt-0.5">{c.description}</p>
                     <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-border/50">
-                      <span className="text-muted-foreground">👥 {c.participants.length} participantes</span>
+                      <span className="text-muted-foreground">
+                        👥 {c.participants.length} participantes
+                      </span>
                       <Link to="/desafios" className="font-semibold text-accent hover:underline">
                         Acessar
                       </Link>
@@ -202,7 +207,8 @@ function EspacoPage() {
             <div className="rounded-2xl border border-primary/20 bg-primary-soft/30 p-4 text-xs text-foreground/90">
               <p className="font-semibold text-primary mb-1">🌱 Caminhada sem pressa</p>
               <p className="text-muted-foreground leading-relaxed">
-                Você não precisa transformar toda a sua rotina de uma vez. Escolha um único hábito pequeno para cultivar esta semana.
+                Você não precisa transformar toda a sua rotina de uma vez. Escolha um único hábito
+                pequeno para cultivar esta semana.
               </p>
             </div>
           </aside>

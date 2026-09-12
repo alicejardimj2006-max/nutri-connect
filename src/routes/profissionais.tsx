@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { BookOpen, Search, BadgeCheck, Calendar, MapPin, Sparkles, MessageSquare } from "lucide-react";
+import {
+  BookOpen,
+  Search,
+  BadgeCheck,
+  Calendar,
+  MapPin,
+  Sparkles,
+  MessageSquare,
+} from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { ProfessionalCard } from "@/components/community-cards";
@@ -11,7 +19,8 @@ export const Route = createFileRoute("/profissionais")({
       { title: "Especialistas e Nutricionistas — NutriConnect" },
       {
         name: "description",
-        content: "Conheça nutricionistas verificados que compartilham conhecimento na comunidade e oferecem acompanhamento individualizado.",
+        content:
+          "Conheça nutricionistas verificados que compartilham conhecimento na comunidade e oferecem acompanhamento individualizado.",
       },
     ],
   }),
@@ -39,7 +48,8 @@ function ProfissionaisPage() {
       p.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.bio.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFocus =
-      selectedFocus === "Todos" || p.focus.some((f) => f.toLowerCase() === selectedFocus.toLowerCase());
+      selectedFocus === "Todos" ||
+      p.focus.some((f) => f.toLowerCase() === selectedFocus.toLowerCase());
     return matchesSearch && matchesFocus;
   });
 

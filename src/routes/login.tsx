@@ -17,38 +17,67 @@ function Login() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return toast.error("Preencha e-mail e senha.");
-    
+    const cleanEmail = email.trim();
+    if (!cleanEmail) return toast.error("Preencha seu e-mail.");
+    if (!password) return toast.error("Preencha sua senha.");
+
     try {
-      loginUser(email, role, password);
+      loginUser(cleanEmail, role, password);
       toast.success("Bem-vindo(a) de volta à sua jornada!");
       navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao fazer login.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao fazer login.");
     }
   };
   return (
-    <AuthLayout title="Bem-vindo de volta" subtitle="Entre na sua conta para continuar sua jornada.">
+    <AuthLayout
+      title="Bem-vindo de volta"
+      subtitle="Entre na sua conta para continuar sua jornada."
+    >
       <form onSubmit={submit} className="space-y-5">
         <RoleTabs role={role} onChange={setRole} />
         <Field label="E-mail">
-          <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" />
+          <input
+            className="input"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="voce@email.com"
+          />
         </Field>
         <Field label="Senha">
-          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+          <input
+            className="input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
         </Field>
         <button className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer">
           Entrar na comunidade
         </button>
         <div className="flex items-center justify-between text-sm">
-          <Link to="/recuperar-senha" className="text-accent hover:underline">Esqueceu a senha?</Link>
-          <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar uma conta</Link>
+          <Link to="/recuperar-senha" className="text-accent hover:underline">
+            Esqueceu a senha?
+          </Link>
+          <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">
+            Criar uma conta
+          </Link>
         </div>
       </form>
     </AuthLayout>
   );
 }
-export function AuthLayout({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+export function AuthLayout({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex min-h-screen bg-secundary/40">
       <div className="hidden w-1/2 flex-col justify-between bg-primary/90 p-12 text-primary-foreground lg:flex">
@@ -59,16 +88,22 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
           NutriConnect
         </Link>
         <div>
-          <h2 className="text-4xl font-extrabold leading-tight">Nutrição personalizada <br></br>ao alcance de todos</h2>
+          <h2 className="text-4xl font-extrabold leading-tight">
+            Nutrição personalizada <br></br>ao alcance de todos
+          </h2>
           <p className="mt-4 max-w-md text-white/90">
-            Acompanhe sua evolução, converse com os melhores profissionais, receba planos alimentares sob medida e dicas de receitas.
+            Acompanhe sua evolução, converse com os melhores profissionais, receba planos
+            alimentares sob medida e dicas de receitas.
           </p>
         </div>
         <p className="text-sm text-white/80">© {new Date().getFullYear()} NutriConnect</p>
       </div>
       <div className="flex w-full items-center justify-center p-6 lg:w-1/2">
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground lg:hidden">
+          <Link
+            to="/"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground lg:hidden"
+          >
             <Leaf className="h-4 w-4 text-primary" /> NutriConnect
           </Link>
           <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
@@ -99,7 +134,9 @@ export function RoleTabs({ role, onChange }: { role: UserRole; onChange: (r: Use
           type="button"
           onClick={() => onChange(r)}
           className={`rounded-full px-4 py-2 text-sm font-semibold capitalize transition ${
-            role === r ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"
+            role === r
+              ? "bg-primary text-primary-foreground shadow-soft"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {r}

@@ -17,14 +17,60 @@ export const Route = createFileRoute("/paciente/agendamentos")({
 });
 
 export const horarios = [
-  "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"
+  "07:30",
+  "08:00",
+  "08:30",
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
 ];
 export const nutris = ["Dra. Maria Lorena", "Dr. Pedro Costa", "Dra. Camila Ribeiro"];
 export const historico = [
-  { id: "1", d: "05 out 2026", hora: "14:00", nutri: "Dra. Maria Lorena", especialidade: "Clínica", tipo: "Retorno", modalidade: "Online", status: "Concluída" },
-  { id: "2", d: "12 set 2026", hora: "10:00", nutri: "Dra. Maria Lorena", especialidade: "Clínica", tipo: "Retorno", modalidade: "Presencial", status: "Concluída" },
-  { id: "3", d: "20 ago 2026", hora: "09:00", nutri: "Dra. Maria Lorena", especialidade: "Clínica", tipo: "Avaliação inicial", modalidade: "Online", status: "Concluída" },
+  {
+    id: "1",
+    d: "05 out 2026",
+    hora: "14:00",
+    nutri: "Dra. Maria Lorena",
+    especialidade: "Clínica",
+    tipo: "Retorno",
+    modalidade: "Online",
+    status: "Concluída",
+  },
+  {
+    id: "2",
+    d: "12 set 2026",
+    hora: "10:00",
+    nutri: "Dra. Maria Lorena",
+    especialidade: "Clínica",
+    tipo: "Retorno",
+    modalidade: "Presencial",
+    status: "Concluída",
+  },
+  {
+    id: "3",
+    d: "20 ago 2026",
+    hora: "09:00",
+    nutri: "Dra. Maria Lorena",
+    especialidade: "Clínica",
+    tipo: "Avaliação inicial",
+    modalidade: "Online",
+    status: "Concluída",
+  },
 ];
 
 export interface AgendamentoItem {
@@ -61,7 +107,9 @@ function Agendamentos() {
   const [data, setData] = useState("");
   const [hora, setHora] = useState("14:00");
   const [obs, setObs] = useState("");
-  const [filtro, setFiltro] = useState<"Todas" | "Agendadas" | "Concluídas" | "Canceladas">("Todas");
+  const [filtro, setFiltro] = useState<"Todas" | "Agendadas" | "Concluídas" | "Canceladas">(
+    "Todas",
+  );
 
   const handleConfirmar = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,11 +122,26 @@ function Agendamentos() {
     const year = dateParts[0];
     const monthIndex = parseInt(dateParts[1], 10) - 1;
     const day = dateParts[2];
-    const monthNames = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    const monthNames = [
+      "jan",
+      "fev",
+      "mar",
+      "abr",
+      "mai",
+      "jun",
+      "jul",
+      "ago",
+      "set",
+      "out",
+      "nov",
+      "dez",
+    ];
     const formattedDate = `${day} ${monthNames[monthIndex]} ${year}`;
 
     // Conflict prevention
-    const isConflict = consultas.some((c) => c.status === "Agendada" && c.d === formattedDate && c.hora === hora);
+    const isConflict = consultas.some(
+      (c) => c.status === "Agendada" && c.d === formattedDate && c.hora === hora,
+    );
     if (isConflict) {
       toast.error("Este horário já está ocupado com outra consulta. Por favor, escolha outro.");
       return;
@@ -103,7 +166,7 @@ function Agendamentos() {
 
   const handleCancelar = (id: string) => {
     setConsultas((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "Cancelada" as const } : c))
+      prev.map((c) => (c.id === id ? { ...c, status: "Cancelada" as const } : c)),
     );
     toast.info("Agendamento cancelado com sucesso.");
   };
@@ -175,7 +238,11 @@ function Agendamentos() {
               </F>
 
               <F label="Modalidade">
-                <select className="input" value={modalidade} onChange={(e) => setModalidade(e.target.value)}>
+                <select
+                  className="input"
+                  value={modalidade}
+                  onChange={(e) => setModalidade(e.target.value)}
+                >
                   <option value="Online">Online (Teleconsulta)</option>
                   <option value="Presencial">Presencial (Consultório)</option>
                 </select>
@@ -203,10 +270,11 @@ function Agendamentos() {
                         key={h}
                         type="button"
                         onClick={() => setHora(h)}
-                        className={`rounded-lg py-2 text-xs font-semibold transition-all ${isSelected
-                          ? "bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/30 scale-105"
-                          : "bg-secondary/60 text-secondary-foreground hover:bg-secondary"
-                          }`}
+                        className={`rounded-lg py-2 text-xs font-semibold transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/30 scale-105"
+                            : "bg-secondary/60 text-secondary-foreground hover:bg-secondary"
+                        }`}
                       >
                         {h}
                       </button>
@@ -250,8 +318,11 @@ function Agendamentos() {
                 key={f}
                 type="button"
                 onClick={() => setFiltro(f)}
-                className={`rounded-md px-2.5 py-1 font-medium transition-colors ${filtro === f ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                  filtro === f
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 {f}
               </button>
@@ -310,12 +381,13 @@ function Agendamentos() {
                     </td>
                     <td className="py-3">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.status === "Agendada"
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
-                          : item.status === "Concluída"
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                            : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
-                          }`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          item.status === "Agendada"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+                            : item.status === "Concluída"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+                              : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+                        }`}
                       >
                         {item.status}
                       </span>
@@ -392,14 +464,15 @@ export function MiniCalendar({ onSelectDate }: { onSelectDate?: (dateStr: string
             key={i}
             disabled={d === null}
             onClick={() => handleCellClick(d)}
-            className={`aspect-square grid place-items-center rounded-lg text-sm transition-all ${d === null
-              ? "cursor-default opacity-0"
-              : d === today
-                ? "bg-primary font-bold text-primary-foreground shadow-sm"
-                : marcados.has(d)
-                  ? "bg-primary-soft/50 font-semibold text-primary"
-                  : "hover:bg-secondary cursor-pointer"
-              }`}
+            className={`aspect-square grid place-items-center rounded-lg text-sm transition-all ${
+              d === null
+                ? "cursor-default opacity-0"
+                : d === today
+                  ? "bg-primary font-bold text-primary-foreground shadow-sm"
+                  : marcados.has(d)
+                    ? "bg-primary-soft/50 font-semibold text-primary"
+                    : "hover:bg-secondary cursor-pointer"
+            }`}
           >
             {d}
           </button>
@@ -416,4 +489,3 @@ export function MiniCalendar({ onSelectDate }: { onSelectDate?: (dateStr: string
     </div>
   );
 }
-

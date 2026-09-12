@@ -121,7 +121,11 @@ function SidebarInner({
           </span>
           <span className="font-bold">NutriConnect</span>
         </Link>
-        <button className="rounded-md p-1 hover:bg-muted lg:hidden" onClick={onNavigate} aria-label="Fechar">
+        <button
+          className="rounded-md p-1 hover:bg-muted lg:hidden"
+          onClick={onNavigate}
+          aria-label="Fechar"
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -191,7 +195,15 @@ export function StatCard({
   );
 }
 
-export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+export function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-2xl border bg-card p-5 shadow-card">
       <div className="mb-4 flex items-center justify-between gap-3">

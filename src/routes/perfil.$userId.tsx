@@ -9,9 +9,15 @@ export const Route = createFileRoute("/perfil/$userId")({
   head: () => ({
     meta: [
       { title: "Perfil público — NutriConnect" },
-      { name: "description", content: "Perfil público com biografia, selo de verificação e publicações na comunidade." },
+      {
+        name: "description",
+        content: "Perfil público com biografia, selo de verificação e publicações na comunidade.",
+      },
       { property: "og:title", content: "Perfil público — NutriConnect" },
-      { property: "og:description", content: "Conheça membros e nutricionistas responsáveis das comunidades NutriConnect." },
+      {
+        property: "og:description",
+        content: "Conheça membros e nutricionistas responsáveis das comunidades NutriConnect.",
+      },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -39,10 +45,17 @@ function PublicProfilePage() {
           credential: user.crn,
         }
       : fromPost
-        ? { userId, name: fromPost.authorName, role: fromPost.authorRole, bio: "Membro da comunidade NutriConnect." }
+        ? {
+            userId,
+            name: fromPost.authorName,
+            role: fromPost.authorRole,
+            bio: "Membro da comunidade NutriConnect.",
+          }
         : null);
 
-  const myPosts = posts.filter((p) => p.authorId === userId).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const myPosts = posts
+    .filter((p) => p.authorId === userId)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   const moderating = communities.filter((c) => c.responsible?.userId === userId);
 
   return (
@@ -54,7 +67,10 @@ function PublicProfilePage() {
         ) : !profile ? (
           <>
             <h1 className="text-2xl font-bold text-primary">Perfil não encontrado</h1>
-            <Link to="/comunidades" className="mt-3 inline-block text-sm font-semibold text-accent hover:underline">
+            <Link
+              to="/comunidades"
+              className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
+            >
               Voltar para comunidades
             </Link>
           </>
@@ -76,7 +92,9 @@ function PublicProfilePage() {
                   </h1>
                   <p className="text-sm text-muted-foreground">
                     {profile.role === "nutricionista" ? "Nutricionista" : "Membro da comunidade"}
-                    {"credential" in profile && profile.credential ? ` · ${profile.credential}` : ""}
+                    {"credential" in profile && profile.credential
+                      ? ` · ${profile.credential}`
+                      : ""}
                   </p>
                 </div>
               </div>
@@ -93,7 +111,9 @@ function PublicProfilePage() {
 
             {moderating.length > 0 && (
               <section className="mt-6 rounded-2xl border bg-card p-5 shadow-card">
-                <h2 className="text-base font-semibold text-foreground">Comunidades sob responsabilidade</h2>
+                <h2 className="text-base font-semibold text-foreground">
+                  Comunidades sob responsabilidade
+                </h2>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {moderating.map((c) => (
                     <li key={c.id}>
@@ -119,18 +139,30 @@ function PublicProfilePage() {
                     <article key={p.id} className="rounded-2xl border bg-card p-5 shadow-card">
                       <p className="text-xs text-muted-foreground">
                         {c && (
-                          <Link to="/comunidades/$slug" params={{ slug: c.slug }} className="text-accent hover:underline">
+                          <Link
+                            to="/comunidades/$slug"
+                            params={{ slug: c.slug }}
+                            className="text-accent hover:underline"
+                          >
                             {c.name}
                           </Link>
                         )}{" "}
                         · {formatDate(p.createdAt)}
                       </p>
                       <p className="mt-2 whitespace-pre-line text-sm text-foreground">{p.text}</p>
-                      {p.image && <img src={p.image} alt="Foto da publicação" className="mt-3 max-h-72 rounded-xl object-cover" />}
+                      {p.image && (
+                        <img
+                          src={p.image}
+                          alt="Foto da publicação"
+                          className="mt-3 max-h-72 rounded-xl object-cover"
+                        />
+                      )}
                     </article>
                   );
                 })}
-                {myPosts.length === 0 && <p className="text-sm text-muted-foreground">Ainda sem publicações.</p>}
+                {myPosts.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Ainda sem publicações.</p>
+                )}
               </div>
             </section>
           </>

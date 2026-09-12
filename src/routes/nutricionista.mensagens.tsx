@@ -95,7 +95,9 @@ function Chat() {
               <button
                 onClick={() => setActiveId(c.id)}
                 className={`w-full p-4 text-left transition ${
-                  activeId === c.id ? "bg-primary-soft/40 border-l-4 border-primary" : "hover:bg-secondary/60"
+                  activeId === c.id
+                    ? "bg-primary-soft/40 border-l-4 border-primary"
+                    : "hover:bg-secondary/60"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -137,7 +139,10 @@ function Chat() {
         {/* MENSAGENS */}
         <div className="flex-1 space-y-4 overflow-y-auto p-4 md:p-6">
           {messages.map((m) => (
-            <div key={m.id} className={`flex ${m.sender === "me" ? "justify-end" : "justify-start"}`}>
+            <div
+              key={m.id}
+              className={`flex ${m.sender === "me" ? "justify-end" : "justify-start"}`}
+            >
               <div
                 className={`max-w-[80%] md:max-w-[65%] rounded-3xl px-5 py-3 text-xs sm:text-sm shadow-xs ${
                   m.sender === "me"
@@ -199,5 +204,3 @@ function Chat() {
     </div>
   );
 }
-
-

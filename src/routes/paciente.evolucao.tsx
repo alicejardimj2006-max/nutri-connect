@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { StatCard, Section } from "@/components/dashboard-shell";
 import { Scale, Target, Activity, Plus, TrendingDown, Calendar, Camera } from "lucide-react";
 import { toast } from "sonner";
@@ -65,7 +75,9 @@ function Evolucao() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold">Evolução & Bioimpedância</h1>
-          <p className="text-xs text-muted-foreground">Acompanhe seu progresso de saúde ao longo do tempo</p>
+          <p className="text-xs text-muted-foreground">
+            Acompanhe seu progresso de saúde ao longo do tempo
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -77,9 +89,24 @@ function Evolucao() {
 
       {/* CARDS DE ESTATÍSTICA */}
       <div className="grid gap-6 sm:grid-cols-3">
-        <StatCard label="Peso atual" value={`${current.peso} kg`} hint={`${diffPeso} kg no total`} icon={Scale} />
-        <StatCard label="Meta Estabelecida" value="72,0 kg" hint={`${+(current.peso - 72).toFixed(1)} kg restantes`} icon={Target} />
-        <StatCard label="IMC Atual" value={`${current.imc}`} hint="Faixa de peso saudável" icon={Activity} />
+        <StatCard
+          label="Peso atual"
+          value={`${current.peso} kg`}
+          hint={`${diffPeso} kg no total`}
+          icon={Scale}
+        />
+        <StatCard
+          label="Meta Estabelecida"
+          value="72,0 kg"
+          hint={`${+(current.peso - 72).toFixed(1)} kg restantes`}
+          icon={Target}
+        />
+        <StatCard
+          label="IMC Atual"
+          value={`${current.imc}`}
+          hint="Faixa de peso saudável"
+          icon={Activity}
+        />
       </div>
 
       {/* GRÁFICOS RECHARTS */}
@@ -96,9 +123,25 @@ function Evolucao() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="m" stroke="var(--muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} domain={["dataMin - 2", "dataMax + 2"]} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--card)" }} />
-                <Area type="monotone" dataKey="peso" stroke="var(--primary)" strokeWidth={3} fill="url(#gP)" />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                  domain={["dataMin - 2", "dataMax + 2"]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="peso"
+                  stroke="var(--primary)"
+                  strokeWidth={3}
+                  fill="url(#gP)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -110,9 +153,25 @@ function Evolucao() {
               <LineChart data={history}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="m" stroke="var(--muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} domain={["dataMin - 1", "dataMax + 1"]} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--card)" }} />
-                <Line type="monotone" dataKey="gordura" stroke="var(--accent)" strokeWidth={3} dot={{ r: 5 }} />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                  domain={["dataMin - 1", "dataMax + 1"]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="gordura"
+                  stroke="var(--accent)"
+                  strokeWidth={3}
+                  dot={{ r: 5 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -145,7 +204,9 @@ function Evolucao() {
                     <td className="py-3 text-accent font-semibold">{p.gordura}%</td>
                     <td className="py-3">{p.cintura} cm</td>
                     <td className="py-3">{p.quadril} cm</td>
-                    <td className={`py-3 font-bold ${diff < 0 ? "text-emerald-600" : diff > 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                    <td
+                      className={`py-3 font-bold ${diff < 0 ? "text-emerald-600" : diff > 0 ? "text-destructive" : "text-muted-foreground"}`}
+                    >
                       {diff > 0 ? `+${diff}` : diff} kg
                     </td>
                   </tr>
@@ -161,7 +222,9 @@ function Evolucao() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl border bg-card p-6 shadow-xl">
             <h3 className="font-display text-xl font-bold">Nova Medição de Progresso</h3>
-            <p className="text-xs text-muted-foreground mt-1">Registre seus novos dados de balança e fita métrica.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Registre seus novos dados de balança e fita métrica.
+            </p>
 
             <form onSubmit={handleAddEntry} className="mt-6 space-y-4">
               <div>
@@ -178,7 +241,9 @@ function Evolucao() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-1">Circunferência de Cintura (cm)</label>
+                <label className="block text-xs font-semibold mb-1">
+                  Circunferência de Cintura (cm)
+                </label>
                 <input
                   type="number"
                   placeholder="Ex: 79"
@@ -210,4 +275,3 @@ function Evolucao() {
     </div>
   );
 }
-

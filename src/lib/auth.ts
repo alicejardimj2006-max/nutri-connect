@@ -15,6 +15,7 @@ export interface AuthUser {
   specialty?: string;
   bio?: string;
   goal?: string;
+  journeyGoal?: string;
   dietaryRestrictions?: string;
   allergies?: string;
   attendanceHours?: string;
@@ -75,11 +76,12 @@ export function registerUser(data: {
   birthDate?: string;
   password?: string;
   goal?: string;
+  journeyGoal?: string;
   crn?: string;
   specialty?: string;
 }): AuthUser {
   const cleanEmail = data.email.toLowerCase().trim();
-  
+
   const existingUsers = getStoredUsers();
   if (existingUsers[cleanEmail]) {
     throw new Error("E-mail já cadastrado");
@@ -100,6 +102,10 @@ export function registerUser(data: {
     birthDate: data.birthDate || "",
     password: data.password,
     goal: data.role === "paciente" ? data.goal || "Comer melhor e com prazer" : undefined,
+    journeyGoal:
+      data.role === "paciente"
+        ? data.journeyGoal || data.goal || "Comer melhor e com prazer"
+        : undefined,
     crn: data.crn?.trim() || "",
     specialty: data.role === "nutricionista" ? data.specialty || "Clínica" : undefined,
     attendanceHours: data.role === "nutricionista" ? "Seg–Sex, 08h–18h" : undefined,
@@ -119,8 +125,7 @@ export function loginUser(email: string, role: UserRole, password?: string): Aut
     throw new Error("E-mail não encontrado. Verifique ou crie sua conta.");
   }
 
-  // Se a conta tiver senha (é uma conta real criada via cadastro), precisamos validar
-  if (existing.password && existing.password !== password) {
+  if (existing.password !== password) {
     throw new Error("Senha incorreta.");
   }
 
@@ -131,7 +136,7 @@ export function loginUser(email: string, role: UserRole, password?: string): Aut
   const activeUser: AuthUser = {
     ...existing,
   };
-  
+
   setUser(activeUser);
   return activeUser;
 }

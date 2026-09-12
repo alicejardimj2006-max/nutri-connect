@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, HelpCircle, ChefHat, CheckCircle2, ArrowRight, MessageSquare, Award } from "lucide-react";
+import {
+  Sparkles,
+  HelpCircle,
+  ChefHat,
+  CheckCircle2,
+  ArrowRight,
+  MessageSquare,
+  Award,
+} from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
@@ -11,7 +19,8 @@ export const Route = createFileRoute("/tema-da-semana")({
       { title: "Tema da Semana — O Pulso da Comunidade | NutriConnect" },
       {
         name: "description",
-        content: "A cada semana, um assunto central une a comunidade: perguntas, enquetes, receitas e desafios para aprender e experimentar juntos.",
+        content:
+          "A cada semana, um assunto central une a comunidade: perguntas, enquetes, receitas e desafios para aprender e experimentar juntos.",
       },
     ],
   }),
@@ -28,21 +37,24 @@ function TemaDaSemanaPage() {
     {
       title: "Desvendando Rótulos e Ingredientes",
       week: "Semana de 01 a 07 de Setembro",
-      summary: "Conversamos sobre como ler a lista de ingredientes sem medo e identificar armadilhas da indústria.",
+      summary:
+        "Conversamos sobre como ler a lista de ingredientes sem medo e identificar armadilhas da indústria.",
       recipesCount: 14,
       reflectionsCount: 86,
     },
     {
       title: "Café da Manhã que Sustenta",
       week: "Semana de 25 a 31 de Agosto",
-      summary: "Trocas sobre combinações de fibras e proteínas para começar o dia com energia estável.",
+      summary:
+        "Trocas sobre combinações de fibras e proteínas para começar o dia com energia estável.",
       recipesCount: 22,
       reflectionsCount: 110,
     },
     {
       title: "Comer com Atenção Plena",
       week: "Semana de 18 a 24 de Agosto",
-      summary: "Práticas de respiração e observação de sinais de saciedade à mesa sem telas por perto.",
+      summary:
+        "Práticas de respiração e observação de sinais de saciedade à mesa sem telas por perto.",
       recipesCount: 9,
       reflectionsCount: 94,
     },
@@ -63,7 +75,8 @@ function TemaDaSemanaPage() {
             Tema da Semana
           </h1>
           <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-            Toda semana escolhemos um foco de reflexão e prática coletiva. O tema não é obrigatório, mas serve para concentrar conversas, receitas e experiências.
+            Toda semana escolhemos um foco de reflexão e prática coletiva. O tema não é obrigatório,
+            mas serve para concentrar conversas, receitas e experiências.
           </p>
         </div>
 
@@ -79,7 +92,9 @@ function TemaDaSemanaPage() {
                 <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider">
                   {weeklyTheme.badge}
                 </span>
-                <span className="text-xs font-medium text-muted-foreground">{weeklyTheme.currentWeek}</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {weeklyTheme.currentWeek}
+                </span>
               </div>
 
               <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-foreground leading-tight">
@@ -142,7 +157,10 @@ function TemaDaSemanaPage() {
                       Receitas Inspiradas no Tema
                     </h3>
                   </div>
-                  <Link to="/receitas" className="text-xs font-semibold text-primary hover:underline">
+                  <Link
+                    to="/receitas"
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
                     Ver todas as receitas
                   </Link>
                 </div>

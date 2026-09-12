@@ -26,7 +26,8 @@ export const Route = createFileRoute("/minha-jornada")({
       { title: "Minha Jornada — NutriConnect" },
       {
         name: "description",
-        content: "Acompanhe sua caminhada pessoal: seus objetivos, receitas que preparou, desafios ativos e aprendizados com a comunidade.",
+        content:
+          "Acompanhe sua caminhada pessoal: seus objetivos, receitas que preparou, desafios ativos e aprendizados com a comunidade.",
       },
     ],
   }),
@@ -53,8 +54,8 @@ function MinhaJornadaPage() {
   }
 
   // Receitas que o usuário preparou ("Eu preparei")
-  const preparedRecipes = posts.filter((p) =>
-    p.type === "receita" && (p.preparedBy || []).includes(user.id)
+  const preparedRecipes = posts.filter(
+    (p) => p.type === "receita" && (p.preparedBy || []).includes(user.id),
   );
 
   // Publicações criadas pelo usuário
@@ -65,7 +66,7 @@ function MinhaJornadaPage() {
 
   // Objetivos padrão ou configurados
   const userGoals = [
-    user.goal || "Construir uma relação mais leve com a comida",
+    user.journeyGoal || user.goal || "Construir uma relação mais leve com a comida",
     "Cozinhar com alimentos frescos em casa",
     "Respeitar meus sinais de fome e saciedade",
   ];
@@ -93,7 +94,8 @@ function MinhaJornadaPage() {
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  {user.bio || "Construindo uma caminhada alimentar tranquila e conectada com o corpo."}
+                  {user.bio ||
+                    "Construindo uma caminhada alimentar tranquila e conectada com o corpo."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
@@ -144,10 +146,7 @@ function MinhaJornadaPage() {
                 Plano Alimentar
               </Link>
               <span>·</span>
-              <Link
-                to="/paciente/dashboard"
-                className="font-semibold text-accent hover:underline"
-              >
+              <Link to="/paciente/dashboard" className="font-semibold text-accent hover:underline">
                 Painel Clínico Completo →
               </Link>
             </div>
@@ -183,9 +182,7 @@ function MinhaJornadaPage() {
               <span className="text-xs font-medium text-muted-foreground">Compartilhamentos</span>
               <Sparkles className="h-5 w-5 text-accent" />
             </div>
-            <p className="mt-2 text-2xl font-bold font-display text-foreground">
-              {myPosts.length}
-            </p>
+            <p className="mt-2 text-2xl font-bold font-display text-foreground">{myPosts.length}</p>
             <p className="mt-1 text-[11px] text-muted-foreground">relatos e ideias na rede</p>
           </div>
 
@@ -223,9 +220,12 @@ function MinhaJornadaPage() {
               ) : (
                 <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
                   <ChefHat className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-foreground">Você ainda não marcou nenhuma receita como preparada</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Você ainda não marcou nenhuma receita como preparada
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Ao navegar pelas receitas da comunidade, clique em <b>"Eu preparei"</b> para registrar suas conquistas na cozinha!
+                    Ao navegar pelas receitas da comunidade, clique em <b>"Eu preparei"</b> para
+                    registrar suas conquistas na cozinha!
                   </p>
                   <div className="mt-4">
                     <Link
@@ -336,7 +336,8 @@ function MinhaJornadaPage() {
                 <span>Especialistas Parceiros</span>
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                Encontre o nutricionista ideal para o seu momento e agende uma conversa com acompanhamento individual.
+                Encontre o nutricionista ideal para o seu momento e agende uma conversa com
+                acompanhamento individual.
               </p>
               <Link
                 to="/profissionais"

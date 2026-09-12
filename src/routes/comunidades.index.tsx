@@ -65,8 +65,8 @@ function ComunidadesPage() {
           <p className="text-sm font-medium text-accent">Rede de cuidado</p>
           <h1 className="mt-1 text-3xl font-bold text-primary md:text-4xl">Comunidades</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Espaços temáticos para trocar experiências sobre alimentação, sempre com um nutricionista responsável
-            acompanhando as conversas.
+            Espaços temáticos para trocar experiências sobre alimentação, sempre com um
+            nutricionista responsável acompanhando as conversas.
           </p>
         </div>
         <button
@@ -89,11 +89,15 @@ function ComunidadesPage() {
                 Deseja assumir a moderação destas comunidades?
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Elas foram sugeridas por pacientes e só ficam públicas com um profissional responsável.
+                Elas foram sugeridas por pacientes e só ficam públicas com um profissional
+                responsável.
               </p>
               <ul className="mt-4 space-y-3">
                 {pending.map((c) => (
-                  <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-3">
+                  <li
+                    key={c.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-3"
+                  >
                     <div>
                       <p className="text-sm font-semibold text-foreground">{c.name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -147,7 +151,11 @@ function ComunidadesPage() {
                   <li key={p.id} className="text-xs text-muted-foreground">
                     <span className="font-semibold text-foreground">{p.authorName}</span> em{" "}
                     {c && (
-                      <Link to="/comunidades/$slug" params={{ slug: c.slug }} className="text-accent hover:underline">
+                      <Link
+                        to="/comunidades/$slug"
+                        params={{ slug: c.slug }}
+                        className="text-accent hover:underline"
+                      >
                         {c.name}
                       </Link>
                     )}
@@ -155,14 +163,19 @@ function ComunidadesPage() {
                   </li>
                 );
               })}
-              {recentPosts.length === 0 && <li className="text-xs text-muted-foreground">Ainda sem publicações.</li>}
+              {recentPosts.length === 0 && (
+                <li className="text-xs text-muted-foreground">Ainda sem publicações.</li>
+              )}
             </ul>
           </div>
         </aside>
 
         <section className="grid gap-5 sm:grid-cols-2">
           {filtered.map((c) => (
-            <article key={c.id} className="flex flex-col rounded-2xl border bg-card p-5 shadow-card">
+            <article
+              key={c.id}
+              className="flex flex-col rounded-2xl border bg-card p-5 shadow-card"
+            >
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
                   {c.category}
@@ -187,7 +200,9 @@ function ComunidadesPage() {
                   </span>
                   <div className="text-xs">
                     <p className="font-semibold text-foreground">{c.responsible.name}</p>
-                    <p className="text-muted-foreground">Responsável · {c.responsible.credential}</p>
+                    <p className="text-muted-foreground">
+                      Responsável · {c.responsible.credential}
+                    </p>
                   </div>
                 </div>
               )}
@@ -212,7 +227,9 @@ function ComunidadesPage() {
             </article>
           ))}
           {hydrated && filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground">Nenhuma comunidade nesta categoria ainda.</p>
+            <p className="text-sm text-muted-foreground">
+              Nenhuma comunidade nesta categoria ainda.
+            </p>
           )}
         </section>
       </div>
@@ -263,7 +280,12 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-muted-foreground">Nome</span>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Café da manhã sem pressa" />
+          <input
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex: Café da manhã sem pressa"
+          />
         </label>
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-muted-foreground">Categoria</span>
@@ -288,7 +310,11 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
         <button className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
           Criar comunidade
         </button>
-        <button type="button" onClick={onDone} className="rounded-full border px-5 py-2.5 text-sm font-semibold text-foreground">
+        <button
+          type="button"
+          onClick={onDone}
+          className="rounded-full border px-5 py-2.5 text-sm font-semibold text-foreground"
+        >
           Cancelar
         </button>
       </div>

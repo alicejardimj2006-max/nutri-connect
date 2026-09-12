@@ -86,7 +86,9 @@ function Mensagens() {
               <button
                 onClick={() => setActiveId(c.id)}
                 className={`w-full p-4 text-left transition ${
-                  activeId === c.id ? "bg-primary-soft/40 border-l-4 border-primary" : "hover:bg-secondary/60"
+                  activeId === c.id
+                    ? "bg-primary-soft/40 border-l-4 border-primary"
+                    : "hover:bg-secondary/60"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -117,12 +119,17 @@ function Mensagens() {
         <div className="border-b border-border/80 p-4 bg-card flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-primary font-bold text-sm">
-              {activeConv?.id === "suporte" ? <Bot className="h-5 w-5 text-accent" /> : activeConv?.name.charAt(0)}
+              {activeConv?.id === "suporte" ? (
+                <Bot className="h-5 w-5 text-accent" />
+              ) : (
+                activeConv?.name.charAt(0)
+              )}
             </div>
             <div>
               <div className="text-sm font-bold text-foreground">{activeConv?.name}</div>
               <div className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" /> Respostas salvas automaticamente
+                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" /> Respostas
+                salvas automaticamente
               </div>
             </div>
           </div>
@@ -131,14 +138,17 @@ function Mensagens() {
         {/* MENSAGENS */}
         <div className="flex-1 space-y-4 overflow-y-auto p-4 md:p-6">
           {messages.map((m) => (
-            <div key={m.id} className={`flex ${m.sender === "me" ? "justify-end" : "justify-start"}`}>
+            <div
+              key={m.id}
+              className={`flex ${m.sender === "me" ? "justify-end" : "justify-start"}`}
+            >
               <div
                 className={`max-w-[85%] md:max-w-[70%] rounded-3xl px-5 py-3 text-xs sm:text-sm shadow-xs ${
                   m.sender === "me"
                     ? "bg-primary text-primary-foreground rounded-br-none"
                     : m.sender === "support"
-                    ? "bg-accent-soft/60 border border-accent/30 text-foreground rounded-bl-none"
-                    : "bg-card border border-border text-foreground rounded-bl-none"
+                      ? "bg-accent-soft/60 border border-accent/30 text-foreground rounded-bl-none"
+                      : "bg-card border border-border text-foreground rounded-bl-none"
                 }`}
               >
                 <p className="leading-relaxed whitespace-pre-line">{m.text}</p>
@@ -199,5 +209,3 @@ function Mensagens() {
     </div>
   );
 }
-
-

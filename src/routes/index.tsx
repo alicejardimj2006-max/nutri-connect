@@ -24,7 +24,12 @@ import {
 } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
-import { PostCard, WeeklyThemeCard, ChallengeCard, ProfessionalCard } from "@/components/community-cards";
+import {
+  PostCard,
+  WeeklyThemeCard,
+  ChallengeCard,
+  ProfessionalCard,
+} from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 
 export const Route = createFileRoute("/")({
@@ -60,11 +65,10 @@ function HomePage() {
 
   const featuredPosts = (posts || []).slice(0, 3);
 
-
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (heroSearchQuery.trim()) {
-      navigate({ to: "/buscar", search: { q: heroSearchQuery.trim() } as any });
+      navigate({ to: "/buscar", search: { q: heroSearchQuery.trim() } });
     } else {
       navigate({ to: "/buscar" });
     }
@@ -74,19 +78,19 @@ function HomePage() {
     setSupportQuestion(q);
     if (q.toLowerCase().includes("plano") || q.toLowerCase().includes("dieta")) {
       setSupportAnswer(
-        "Seu plano alimentar pode ser visualizado e acompanhado diariamente no Portal do Paciente > Plano Alimentar! Lá você também substitui alimentos."
+        "Seu plano alimentar pode ser visualizado e acompanhado diariamente no Portal do Paciente > Plano Alimentar! Lá você também substitui alimentos.",
       );
     } else if (q.toLowerCase().includes("senha") || q.toLowerCase().includes("login")) {
       setSupportAnswer(
-        "Para redefinir sua senha, acesse a página de Recuperação de Senha. Um código de verificação de 6 dígitos será enviado ao seu e-mail."
+        "Para redefinir sua senha, acesse a página de Recuperação de Senha. Um código de verificação de 6 dígitos será enviado ao seu e-mail.",
       );
     } else if (q.toLowerCase().includes("nutricionista") || q.toLowerCase().includes("consulta")) {
       setSupportAnswer(
-        "Você pode buscar e agendar consultas diretamente na aba Profissionais, filtrando por especialidade e horário desejado!"
+        "Você pode buscar e agendar consultas diretamente na aba Profissionais, filtrando por especialidade e horário desejado!",
       );
     } else {
       setSupportAnswer(
-        "O Suporte NutriConnect está disponível 24 horas por dia! Acesse o chat de mensagens para tirar qualquer outra dúvida em tempo real."
+        "O Suporte NutriConnect está disponível 24 horas por dia! Acesse o chat de mensagens para tirar qualquer outra dúvida em tempo real.",
       );
     }
   };
@@ -138,8 +142,9 @@ function HomePage() {
                 </h1>
 
                 <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                  Um espaço acolhedor para descobrir receitas simples, compartilhar experiências reais,
-                  cumprir desafios diários, consultar nutricionistas e tirar dúvidas no Suporte Inteligente.
+                  Um espaço acolhedor para descobrir receitas simples, compartilhar experiências
+                  reais, cumprir desafios diários, consultar nutricionistas e tirar dúvidas no
+                  Suporte Inteligente.
                 </p>
 
                 {/* Hero Search Bar */}
@@ -244,7 +249,9 @@ function HomePage() {
                 <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
                   45.000+
                 </div>
-                <div className="text-xs text-muted-foreground font-medium">Dias de Hábitos Concluídos</div>
+                <div className="text-xs text-muted-foreground font-medium">
+                  Dias de Hábitos Concluídos
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -254,7 +261,9 @@ function HomePage() {
                 <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
                   150+
                 </div>
-                <div className="text-xs text-muted-foreground font-medium">Nutricionistas de Suporte</div>
+                <div className="text-xs text-muted-foreground font-medium">
+                  Nutricionistas de Suporte
+                </div>
               </div>
             </div>
           </div>
@@ -273,12 +282,16 @@ function HomePage() {
                   Tire dúvidas em tempo real e guarde seu histórico de respostas
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Nosso assistente responde instantaneamente sobre planos de refeição, agendamento de consultas, recuperação de senha e dicas de hidratação. Todas as respostas ficam gravadas com segurança.
+                  Nosso assistente responde instantaneamente sobre planos de refeição, agendamento
+                  de consultas, recuperação de senha e dicas de hidratação. Todas as respostas ficam
+                  gravadas com segurança.
                 </p>
 
                 {/* Chips de testes rápidos */}
                 <div className="space-y-2 pt-2">
-                  <span className="text-xs font-bold text-foreground">Pergunte algo ao suporte:</span>
+                  <span className="text-xs font-bold text-foreground">
+                    Pergunte algo ao suporte:
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => handleQuickSupportAsk("Como ver meu plano alimentar?")}
@@ -293,7 +306,9 @@ function HomePage() {
                       🔑 Como redefinir minha senha?
                     </button>
                     <button
-                      onClick={() => handleQuickSupportAsk("Como agendar consulta com nutricionista?")}
+                      onClick={() =>
+                        handleQuickSupportAsk("Como agendar consulta com nutricionista?")
+                      }
                       className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent-soft hover:border-accent transition text-left"
                     >
                       👩‍⚕️ Como agendar consulta?
@@ -321,7 +336,9 @@ function HomePage() {
                         <Bot className="h-5 w-5" />
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-foreground">Suporte NutriConnect</div>
+                        <div className="text-sm font-bold text-foreground">
+                          Suporte NutriConnect
+                        </div>
                         <div className="flex items-center gap-1.5 text-[11px] text-accent font-medium">
                           <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
                           <span>Online e Pronto para Ajudar</span>
@@ -349,7 +366,9 @@ function HomePage() {
                   ) : (
                     <div className="py-8 text-center text-xs text-muted-foreground space-y-2">
                       <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/50" />
-                      <p>Clique em uma das sugestões ao lado para experimentar a resposta do suporte!</p>
+                      <p>
+                        Clique em uma das sugestões ao lado para experimentar a resposta do suporte!
+                      </p>
                     </div>
                   )}
                 </div>
@@ -370,7 +389,8 @@ function HomePage() {
                 Espaço de Hoje
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Trocas autênticas entre pessoas que estão cozinhando, aprendendo e caminhando juntas.
+                Trocas autênticas entre pessoas que estão cozinhando, aprendendo e caminhando
+                juntas.
               </p>
             </div>
 
@@ -412,7 +432,8 @@ function HomePage() {
                 Desafios de Hábitos
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Sem contagem obsessiva de calorias e sem metas inalcançáveis. Aqui celebramos cada copo d'água, cada panela que vai ao fogo e cada momento de presença.
+                Sem contagem obsessiva de calorias e sem metas inalcançáveis. Aqui celebramos cada
+                copo d'água, cada panela que vai ao fogo e cada momento de presença.
               </p>
             </div>
 
@@ -446,7 +467,8 @@ function HomePage() {
                 Nutricionistas em Destaque
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Profissionais verificados que compartilham conhecimento na comunidade e acompanham sua jornada individual.
+                Profissionais verificados que compartilham conhecimento na comunidade e acompanham
+                sua jornada individual.
               </p>
             </div>
 
@@ -517,7 +539,8 @@ function HomePage() {
               Pronto para viver uma relação mais leve com a sua alimentação?
             </h2>
             <p className="mt-3 text-sm text-foreground/80 max-w-xl mx-auto leading-relaxed">
-              Junte-se a pessoas que acreditam em comida de verdade, sem terrorismo nutricional e com apoio para cada etapa da sua caminhada.
+              Junte-se a pessoas que acreditam em comida de verdade, sem terrorismo nutricional e
+              com apoio para cada etapa da sua caminhada.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
@@ -541,4 +564,3 @@ function HomePage() {
     </div>
   );
 }
-

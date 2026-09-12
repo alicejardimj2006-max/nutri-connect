@@ -9,9 +9,12 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const saved = window.localStorage.getItem("nutriconect-theme");
-    const initial: Theme = saved === "dark" || saved === "light"
-      ? saved
-      : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const initial: Theme =
+      saved === "dark" || saved === "light"
+        ? saved
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
     setTheme(initial);
     document.documentElement.classList.toggle("dark", initial === "dark");
   }, []);

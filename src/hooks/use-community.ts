@@ -42,4 +42,3 @@ export function useCommunity() {
 
   return { ...state, hydrated };
 }
-

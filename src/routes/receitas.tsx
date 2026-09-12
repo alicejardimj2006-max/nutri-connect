@@ -14,7 +14,8 @@ export const Route = createFileRoute("/receitas")({
       { title: "Receitas da Comunidade — NutriConnect" },
       {
         name: "description",
-        content: "Receitas saudáveis, simples e afetivas compartilhadas por membros e nutricionistas da comunidade NutriConnect.",
+        content:
+          "Receitas saudáveis, simples e afetivas compartilhadas por membros e nutricionistas da comunidade NutriConnect.",
       },
     ],
   }),
@@ -182,8 +183,12 @@ function ReceitasPage() {
                     )}
 
                     <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Por <b>{recipe.authorName}</b></span>
-                      <span>Dificuldade: <b>{recipe.recipeData?.difficulty || "Fácil"}</b></span>
+                      <span>
+                        Por <b>{recipe.authorName}</b>
+                      </span>
+                      <span>
+                        Dificuldade: <b>{recipe.recipeData?.difficulty || "Fácil"}</b>
+                      </span>
                     </div>
                   </div>
 
@@ -228,7 +233,9 @@ function ReceitasPage() {
         ) : (
           <div className="rounded-3xl border border-dashed border-border p-12 text-center max-w-md mx-auto">
             <ChefHat className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-base font-bold text-foreground font-display">Nenhuma receita encontrada</h3>
+            <h3 className="text-base font-bold text-foreground font-display">
+              Nenhuma receita encontrada
+            </h3>
             <p className="text-xs text-muted-foreground mt-1">
               Tente buscar por outro termo ou seja a primeira pessoa a compartilhar nesta categoria!
             </p>

@@ -152,7 +152,9 @@
     -webkit-font-smoothing: antialiased;
     min-width: 320px;
   }
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     color: var(--color-foreground);
     font-family: var(--font-display);
     letter-spacing: 0;
@@ -179,7 +181,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

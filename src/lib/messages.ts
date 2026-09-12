@@ -146,15 +146,32 @@ export function generateSupportBotReply(userQuestion: string): string {
     return "🔐 Para recuperar sua senha, acesse a página inicial e clique em 'Esqueceu a senha?' ou vá para /recuperar-senha. Nós enviaremos um link de acesso para o seu e-mail com toda a segurança!";
   }
 
-  if (q.includes("plano") || q.includes("dieta") || q.includes("cardapio") || q.includes("cardápio")) {
+  if (
+    q.includes("plano") ||
+    q.includes("dieta") ||
+    q.includes("cardapio") ||
+    q.includes("cardápio")
+  ) {
     return "🥗 Seu plano alimentar agora faz parte da sua 'Minha Jornada'. Nele você encontra inspirações de refeição e trocas inteligentes, tudo pensado para respeitar o seu ritmo, sem dietas restritivas!";
   }
 
-  if (q.includes("agend") || q.includes("consulta") || q.includes("marcar") || q.includes("horario") || q.includes("horário")) {
+  if (
+    q.includes("agend") ||
+    q.includes("consulta") ||
+    q.includes("marcar") ||
+    q.includes("horario") ||
+    q.includes("horário")
+  ) {
     return "📅 Você pode agendar ou remarcar um encontro com seu profissional acessando a área 'Agendamentos' na sua Jornada. É só escolher o dia e horário que melhor se encaixam na sua rotina!";
   }
 
-  if (q.includes("preco") || q.includes("preço") || q.includes("valor") || q.includes("pagamento") || q.includes("pix")) {
+  if (
+    q.includes("preco") ||
+    q.includes("preço") ||
+    q.includes("valor") ||
+    q.includes("pagamento") ||
+    q.includes("pix")
+  ) {
     return "💳 O acesso à comunidade e às funcionalidades básicas da sua Jornada é gratuito! Caso tenha interesse em ferramentas avançadas, temos planos acessíveis para você e para profissionais da nutrição.";
   }
 
@@ -162,11 +179,21 @@ export function generateSupportBotReply(userQuestion: string): string {
     return "💧 Uma hidratação constante é um lindo passo na sua jornada. A sugestão inicial costuma ser entre 35ml a 40ml por kg de peso, mas ouça o seu corpo e vá adaptando aos poucos!";
   }
 
-  if (q.includes("substitu") || q.includes("trocar") || q.includes("troca") || q.includes("vontade")) {
+  if (
+    q.includes("substitu") ||
+    q.includes("trocar") ||
+    q.includes("troca") ||
+    q.includes("vontade")
+  ) {
     return "🔄 Na sua Jornada, nós abraçamos a flexibilidade. Você pode trocar alimentos no seu plano buscando o que mais te acolhe no dia. Explore também o 'Espaço de Hoje' para encontrar receitas inspiradoras!";
   }
 
-  if (q.includes("desafio") || q.includes("comunidade") || q.includes("post") || q.includes("tema")) {
+  if (
+    q.includes("desafio") ||
+    q.includes("comunidade") ||
+    q.includes("post") ||
+    q.includes("tema")
+  ) {
     return "🏆 O 'Espaço de Hoje' e os 'Temas da Semana' são o coração pulsante da nossa comunidade. Participe sem medo, compartilhe suas experiências e celebre cada pequeno passo com pessoas reais!";
   }
 

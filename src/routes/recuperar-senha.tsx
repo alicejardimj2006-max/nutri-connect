@@ -59,10 +59,10 @@ function Recuperar() {
         step === 1
           ? "Enviaremos um código de verificação para o seu e-mail."
           : step === 2
-          ? `Digite o código enviado para ${email}`
-          : step === 3
-          ? "Crie uma nova senha segura para sua conta."
-          : "Tudo pronto!"
+            ? `Digite o código enviado para ${email}`
+            : step === 3
+              ? "Crie uma nova senha segura para sua conta."
+              : "Tudo pronto!"
       }
     >
       {/* INDICADOR DE PASSOS */}
@@ -74,8 +74,8 @@ function Recuperar() {
                 step === s
                   ? "bg-primary text-primary-foreground"
                   : step > s
-                  ? "bg-emerald-500 text-white"
-                  : "bg-secondary text-muted-foreground"
+                    ? "bg-emerald-500 text-white"
+                    : "bg-secondary text-muted-foreground"
               }`}
             >
               {step > s ? "✓" : s}
@@ -139,7 +139,11 @@ function Recuperar() {
             {loading ? "Verificando..." : "Verificar Código"}
           </button>
           <div className="flex justify-between items-center text-xs">
-            <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="text-muted-foreground hover:text-foreground"
+            >
               Trocar e-mail
             </button>
             <button
@@ -206,4 +210,3 @@ function Recuperar() {
     </AuthLayout>
   );
 }
-

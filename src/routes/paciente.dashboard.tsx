@@ -12,7 +12,15 @@ import {
   Sparkles,
   Flame,
 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { StatCard, Section } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { getWeeklyThemes, getChallenges } from "@/lib/community";
@@ -57,7 +65,8 @@ function Dashboard() {
               Olá, {firstName}!
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Além do acompanhamento clínico com seu nutricionista, você faz parte de uma comunidade que troca experiências reais sem neuras.
+              Além do acompanhamento clínico com seu nutricionista, você faz parte de uma comunidade
+              que troca experiências reais sem neuras.
               {activeTheme && (
                 <span className="block mt-1 text-primary font-medium">
                   Tema da Semana: {activeTheme.title}
@@ -86,9 +95,19 @@ function Dashboard() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Próxima consulta" value="14 nov" hint="Quinta · 14:00" icon={CalendarCheck} />
+        <StatCard
+          label="Próxima consulta"
+          value="14 nov"
+          hint="Quinta · 14:00"
+          icon={CalendarCheck}
+        />
         <StatCard label="Peso atual" value="75,4 kg" hint="-6,6 kg desde jun" icon={Scale} />
-        <StatCard label="Meta" value={user?.goal || "Equilíbrio & Rotina"} hint="Foco pessoal" icon={Target} />
+        <StatCard
+          label="Meta"
+          value={user?.goal || "Equilíbrio & Rotina"}
+          hint="Foco pessoal"
+          icon={Target}
+        />
         <StatCard label="Última atualização" value="há 3 dias" hint="09 nov" icon={Clock} />
       </div>
 
@@ -99,9 +118,25 @@ function Dashboard() {
               <LineChart data={weightData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="m" stroke="var(--muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} domain={["dataMin - 1", "dataMax + 1"]} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--card)" }} />
-                <Line type="monotone" dataKey="peso" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4, fill: "var(--primary)" }} />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                  domain={["dataMin - 1", "dataMax + 1"]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid var(--border)",
+                    background: "var(--card)",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="peso"
+                  stroke="var(--primary)"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: "var(--primary)" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -112,7 +147,9 @@ function Dashboard() {
             {proximas.map((c) => (
               <li key={c.data} className="rounded-xl border bg-secondary/50 p-3">
                 <div className="text-sm font-semibold">{c.data}</div>
-                <div className="text-xs text-muted-foreground">{c.nutri} · {c.tipo}</div>
+                <div className="text-xs text-muted-foreground">
+                  {c.nutri} · {c.tipo}
+                </div>
               </li>
             ))}
           </ul>
@@ -125,7 +162,7 @@ function Dashboard() {
             <WeeklyThemeCard theme={activeTheme} compact={true} />
           </Section>
         )}
-        
+
         {activeChallenge && (
           <Section title="Seu Desafio Atual">
             <ChallengeCard challenge={activeChallenge} />
@@ -148,9 +185,20 @@ function Dashboard() {
   );
 }
 
-function Shortcut({ to, icon: Icon, label }: { to: string; icon: React.ComponentType<{ className?: string }>; label: string }) {
+function Shortcut({
+  to,
+  icon: Icon,
+  label,
+}: {
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
   return (
-    <Link to={to} className="flex items-center justify-between rounded-2xl border bg-card p-4 shadow-card transition hover:border-primary hover:shadow-soft">
+    <Link
+      to={to}
+      className="flex items-center justify-between rounded-2xl border bg-card p-4 shadow-card transition hover:border-primary hover:shadow-soft"
+    >
       <div className="flex items-center gap-3">
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">
           <Icon className="h-5 w-5" />
@@ -161,4 +209,3 @@ function Shortcut({ to, icon: Icon, label }: { to: string; icon: React.Component
     </Link>
   );
 }
-

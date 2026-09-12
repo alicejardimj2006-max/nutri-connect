@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { BadgeCheck, Heart, ImagePlus, MessageCircle, Pin, ShieldQuestion, Trash2, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  Heart,
+  ImagePlus,
+  MessageCircle,
+  Pin,
+  ShieldQuestion,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
@@ -23,9 +32,15 @@ export const Route = createFileRoute("/comunidades/$slug")({
   head: () => ({
     meta: [
       { title: "Comunidade — NutriConnect" },
-      { name: "description", content: "Feed da comunidade com publicações, comentários e moderação profissional." },
+      {
+        name: "description",
+        content: "Feed da comunidade com publicações, comentários e moderação profissional.",
+      },
       { property: "og:title", content: "Comunidade — NutriConnect" },
-      { property: "og:description", content: "Publicações, receitas e conversas acolhedoras sobre alimentação." },
+      {
+        property: "og:description",
+        content: "Publicações, receitas e conversas acolhedoras sobre alimentação.",
+      },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -44,19 +59,26 @@ function CommunityFeed() {
     () =>
       posts
         .filter((p) => p.communityId === community?.id)
-        .sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1)),
+        .sort((a, b) =>
+          a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1,
+        ),
     [posts, community?.id],
   );
 
   if (!hydrated) {
-    return <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">Carregando…</div>;
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">Carregando…</div>
+    );
   }
 
   if (!community) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-2xl font-bold text-primary">Comunidade não encontrada</h1>
-        <Link to="/comunidades" className="mt-3 inline-block text-sm font-semibold text-accent hover:underline">
+        <Link
+          to="/comunidades"
+          className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
+        >
           Voltar para comunidades
         </Link>
       </div>
@@ -69,7 +91,10 @@ function CommunityFeed() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <Link to="/comunidades" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+      <Link
+        to="/comunidades"
+        className="text-sm font-medium text-muted-foreground hover:text-foreground"
+      >
         ← Comunidades
       </Link>
 
@@ -104,9 +129,12 @@ function CommunityFeed() {
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-accent/40 bg-accent-soft px-4 py-3">
               <ShieldQuestion className="h-5 w-5 text-accent" />
               <div className="text-sm">
-                <p className="font-semibold text-foreground">Aguardando nutricionista responsável</p>
+                <p className="font-semibold text-foreground">
+                  Aguardando nutricionista responsável
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  A comunidade só fica aberta a publicações quando um profissional assumir a moderação.
+                  A comunidade só fica aberta a publicações quando um profissional assumir a
+                  moderação.
                 </p>
               </div>
               {actor?.role === "nutricionista" && (
@@ -202,7 +230,13 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
-      {image && <img src={image} alt="Prévia da imagem da publicação" className="mt-3 max-h-64 rounded-xl object-cover" />}
+      {image && (
+        <img
+          src={image}
+          alt="Prévia da imagem da publicação"
+          className="mt-3 max-h-64 rounded-xl object-cover"
+        />
+      )}
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <input
           ref={fileRef}
@@ -232,12 +266,22 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
   );
 }
 
-function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | null; isModerator: boolean }) {
+function PostCard({
+  post,
+  actor,
+  isModerator,
+}: {
+  post: Post;
+  actor: Actor | null;
+  isModerator: boolean;
+}) {
   const [comment, setComment] = useState("");
   const liked = !!actor && post.likes.includes(actor.id);
 
   return (
-    <article className={`rounded-2xl border bg-card p-5 shadow-card ${post.pinned ? "border-accent/50" : ""}`}>
+    <article
+      className={`rounded-2xl border bg-card p-5 shadow-card ${post.pinned ? "border-accent/50" : ""}`}
+    >
       {post.pinned && (
         <p className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
           <Pin className="h-3.5 w-3.5" /> Orientação fixada
@@ -283,7 +327,11 @@ function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | nul
 
       <p className="mt-3 whitespace-pre-line text-sm text-foreground">{post.text}</p>
       {post.image && (
-        <img src={post.image} alt="Foto compartilhada na publicação" className="mt-3 max-h-96 w-full rounded-xl object-cover" />
+        <img
+          src={post.image}
+          alt="Foto compartilhada na publicação"
+          className="mt-3 max-h-96 w-full rounded-xl object-cover"
+        />
       )}
 
       <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
@@ -296,7 +344,8 @@ function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | nul
             liked ? "bg-accent-soft text-accent" : "hover:bg-secondary"
           }`}
         >
-          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length} curtidas
+          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length}{" "}
+          curtidas
         </button>
         <span className="inline-flex items-center gap-1">
           <MessageCircle className="h-4 w-4" /> {post.comments.length} comentários
@@ -312,8 +361,12 @@ function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | nul
             <div className="flex-1 rounded-xl bg-secondary/60 px-3 py-2">
               <p className="flex items-center gap-1 text-xs font-semibold text-foreground">
                 {c.authorName}
-                {c.authorRole === "nutricionista" && <BadgeCheck className="h-3.5 w-3.5 text-accent" />}
-                <span className="ml-auto font-normal text-muted-foreground">{formatDate(c.createdAt)}</span>
+                {c.authorRole === "nutricionista" && (
+                  <BadgeCheck className="h-3.5 w-3.5 text-accent" />
+                )}
+                <span className="ml-auto font-normal text-muted-foreground">
+                  {formatDate(c.createdAt)}
+                </span>
               </p>
               <p className="mt-1 text-sm text-foreground">{c.text}</p>
             </div>

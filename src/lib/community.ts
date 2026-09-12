@@ -211,7 +211,12 @@ function seed(): CommunityState {
       status: "ativa",
       responsible: nutri,
       members: [
-        { userId: NUTRI_ID, name: "Dra. Maria Lorena", role: "nutricionista", joinedAt: iso(86400000 * 20) },
+        {
+          userId: NUTRI_ID,
+          name: "Dra. Maria Lorena",
+          role: "nutricionista",
+          joinedAt: iso(86400000 * 20),
+        },
         { userId: PAC_ID, name: "Ana Prado", role: "paciente", joinedAt: iso(86400000 * 12) },
       ],
       createdAt: iso(86400000 * 20),
@@ -229,7 +234,12 @@ function seed(): CommunityState {
       status: "ativa",
       responsible: nutri,
       members: [
-        { userId: NUTRI_ID, name: "Dra. Maria Lorena", role: "nutricionista", joinedAt: iso(86400000 * 15) },
+        {
+          userId: NUTRI_ID,
+          name: "Dra. Maria Lorena",
+          role: "nutricionista",
+          joinedAt: iso(86400000 * 15),
+        },
       ],
       createdAt: iso(86400000 * 15),
     },
@@ -247,7 +257,12 @@ function seed(): CommunityState {
       responsible: nutri,
       members: [
         { userId: PAC_ID, name: "Ana Prado", role: "paciente", joinedAt: iso(86400000 * 3) },
-        { userId: PAC_CARLOS_ID, name: "Carlos Eduardo", role: "paciente", joinedAt: iso(86400000 * 2) },
+        {
+          userId: PAC_CARLOS_ID,
+          name: "Carlos Eduardo",
+          role: "paciente",
+          joinedAt: iso(86400000 * 2),
+        },
       ],
       createdAt: iso(86400000 * 3),
     },
@@ -445,7 +460,12 @@ function seed(): CommunityState {
       question: "Qual o seu maior obstáculo para cozinhar mais com alimentos frescos?",
       options: [
         { id: "opt-1", text: "Falta de tempo durante a semana", votes: 48, votedUsers: [] },
-        { id: "opt-2", text: "Medo dos alimentos estragarem na geladeira", votes: 34, votedUsers: [] },
+        {
+          id: "opt-2",
+          text: "Medo dos alimentos estragarem na geladeira",
+          votes: 34,
+          votedUsers: [],
+        },
         { id: "opt-3", text: "Falta de ideias de temperos e receitas", votes: 29, votedUsers: [] },
         { id: "opt-4", text: "Cansaço ao final do dia", votes: 41, votedUsers: [] },
       ],
@@ -458,7 +478,8 @@ function seed(): CommunityState {
     {
       id: "desafio-3-frescos",
       title: "Desafio dos 3 Alimentos Frescos",
-      description: "Monte ao menos uma refeição no dia contendo 3 cores diferentes de vegetais ou frutas in natura.",
+      description:
+        "Monte ao menos uma refeição no dia contendo 3 cores diferentes de vegetais ou frutas in natura.",
       category: "Diversidade & Cores",
       badgeIcon: "🥗",
       duration: "7 dias",
@@ -474,7 +495,8 @@ function seed(): CommunityState {
     {
       id: "desafio-cozinhar-3x",
       title: "Cozinhar em Casa 3 Vezes",
-      description: "Prepare 3 refeições completas em casa durante esta semana para se reconectar com a cozinha.",
+      description:
+        "Prepare 3 refeições completas em casa durante esta semana para se reconectar com a cozinha.",
       category: "Culinária & Presença",
       badgeIcon: "🍳",
       duration: "Semana atual",
@@ -489,7 +511,8 @@ function seed(): CommunityState {
     {
       id: "desafio-agua-consciente",
       title: "Hidratação Sem Complicação",
-      description: "Mantenha uma garrafa d'água por perto e faça pausas conscientes para beber água ao longo do dia.",
+      description:
+        "Mantenha uma garrafa d'água por perto e faça pausas conscientes para beber água ao longo do dia.",
       category: "Hábitos Básicos",
       badgeIcon: "💧",
       duration: "Hábito contínuo",
@@ -567,9 +590,13 @@ export function loadState(): CommunityState {
     const defaultSeed = seed();
     // Merge defensively to ensure new models exist
     const state: CommunityState = {
-      communities: parsed.communities && parsed.communities.length > 0 ? parsed.communities : defaultSeed.communities,
+      communities:
+        parsed.communities && parsed.communities.length > 0
+          ? parsed.communities
+          : defaultSeed.communities,
       posts: parsed.posts && parsed.posts.length > 0 ? parsed.posts : defaultSeed.posts,
-      profiles: parsed.profiles && parsed.profiles.length > 0 ? parsed.profiles : defaultSeed.profiles,
+      profiles:
+        parsed.profiles && parsed.profiles.length > 0 ? parsed.profiles : defaultSeed.profiles,
       weeklyTheme: parsed.weeklyTheme ?? defaultSeed.weeklyTheme,
       challenges: parsed.challenges ?? defaultSeed.challenges,
       professionals: parsed.professionals ?? defaultSeed.professionals,
@@ -606,7 +633,9 @@ export function toggleSupport(postId: string, userId: string) {
     posts: s.posts.map((p) => {
       if (p.id !== postId) return p;
       const hasSupported = (p.supports || []).includes(userId);
-      const supports = hasSupported ? p.supports.filter((u) => u !== userId) : [...(p.supports || []), userId];
+      const supports = hasSupported
+        ? p.supports.filter((u) => u !== userId)
+        : [...(p.supports || []), userId];
       return {
         ...p,
         supports,
@@ -669,7 +698,9 @@ export function toggleJoinChallenge(challengeId: string, userId: string) {
       const joined = c.participants.includes(userId);
       return {
         ...c,
-        participants: joined ? c.participants.filter((u) => u !== userId) : [...c.participants, userId],
+        participants: joined
+          ? c.participants.filter((u) => u !== userId)
+          : [...c.participants, userId],
       };
     }),
   }));
@@ -690,7 +721,7 @@ export function createCommunityPost(input: {
   if (!trimmedText) {
     throw new Error("A publicação não pode ser vazia.");
   }
-  
+
   const post: Post = {
     id: id(),
     type: input.type,
@@ -716,7 +747,12 @@ export function createCommunityPost(input: {
   return post;
 }
 
-export function createPost(input: { communityId: string; actor: Actor; text: string; image?: string }) {
+export function createPost(input: {
+  communityId: string;
+  actor: Actor;
+  text: string;
+  image?: string;
+}) {
   return createCommunityPost({
     type: "geral",
     actor: input.actor,
@@ -731,7 +767,7 @@ export function addComment(postId: string, actor: Actor, text: string) {
   if (!trimmedText) {
     throw new Error("O comentário não pode ser vazio.");
   }
-  
+
   update((s) => ({
     ...s,
     posts: s.posts.map((p) =>
@@ -796,7 +832,12 @@ export function createCommunity(input: {
           }
         : null,
     members: [
-      { userId: input.actor.id, name: input.actor.name, role: input.actor.role, joinedAt: new Date().toISOString() },
+      {
+        userId: input.actor.id,
+        name: input.actor.name,
+        role: input.actor.role,
+        joinedAt: new Date().toISOString(),
+      },
     ],
     createdAt: new Date().toISOString(),
   };
@@ -804,7 +845,11 @@ export function createCommunity(input: {
   return community;
 }
 
-export function assumeResponsibility(communityId: string, actor: Actor, credential = "Profissional verificado") {
+export function assumeResponsibility(
+  communityId: string,
+  actor: Actor,
+  credential = "Profissional verificado",
+) {
   update((s) => ({
     ...s,
     communities: s.communities.map((c) =>
@@ -821,7 +866,15 @@ export function assumeResponsibility(communityId: string, actor: Actor, credenti
             },
             members: c.members.some((m) => m.userId === actor.id)
               ? c.members
-              : [...c.members, { userId: actor.id, name: actor.name, role: actor.role, joinedAt: new Date().toISOString() }],
+              : [
+                  ...c.members,
+                  {
+                    userId: actor.id,
+                    name: actor.name,
+                    role: actor.role,
+                    joinedAt: new Date().toISOString(),
+                  },
+                ],
           },
     ),
   }));
@@ -837,7 +890,15 @@ export function toggleMembership(communityId: string, actor: Actor) {
         ...c,
         members: isMember
           ? c.members.filter((m) => m.userId !== actor.id)
-          : [...c.members, { userId: actor.id, name: actor.name, role: actor.role, joinedAt: new Date().toISOString() }],
+          : [
+              ...c.members,
+              {
+                userId: actor.id,
+                name: actor.name,
+                role: actor.role,
+                joinedAt: new Date().toISOString(),
+              },
+            ],
       };
     }),
   }));
@@ -902,4 +963,3 @@ export function getProfessionals(): ProfessionalMember[] {
 export function getCommunityPosts(): Post[] {
   return loadState().posts || [];
 }
-

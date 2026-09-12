@@ -2,7 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Section } from "@/components/dashboard-shell";
-import { Calculator, Sparkles, Plus, Trash2, Eye, FileText, CheckCircle2, Download } from "lucide-react";
+import {
+  Calculator,
+  Sparkles,
+  Plus,
+  Trash2,
+  Eye,
+  FileText,
+  CheckCircle2,
+  Download,
+} from "lucide-react";
 
 export const Route = createFileRoute("/nutricionista/planos")({
   component: Planos,
@@ -80,7 +89,12 @@ function Planos() {
       itens: [
         { id: "i4", alimento: "Arroz integral", qtd: "4 col. sopa", subs: "Batata doce (120g)" },
         { id: "i5", alimento: "Feijão preto", qtd: "1 concha", subs: "Lentilha cozida" },
-        { id: "i6", alimento: "Filé de frango grelhado", qtd: "150g", subs: "Tilápia assada ou Tofu" },
+        {
+          id: "i6",
+          alimento: "Filé de frango grelhado",
+          qtd: "150g",
+          subs: "Tilápia assada ou Tofu",
+        },
       ],
     },
   ]);
@@ -103,10 +117,15 @@ function Planos() {
           ...b,
           itens: [
             ...b.itens,
-            { id: Date.now().toString(), alimento: "Novo alimento", qtd: "1 porção", subs: "Opção alternativa" },
+            {
+              id: Date.now().toString(),
+              alimento: "Novo alimento",
+              qtd: "1 porção",
+              subs: "Opção alternativa",
+            },
           ],
         };
-      })
+      }),
     );
   };
 
@@ -115,7 +134,7 @@ function Planos() {
       prev.map((b) => {
         if (b.id !== blockId) return b;
         return { ...b, itens: b.itens.filter((i) => i.id !== itemId) };
-      })
+      }),
     );
   };
 
@@ -131,7 +150,9 @@ function Planos() {
         <div className="grid gap-6 md:grid-cols-2">
           {/* SELEÇÃO DO PACIENTE */}
           <div>
-            <label className="block text-xs font-semibold mb-1.5 text-foreground">Selecionar Paciente</label>
+            <label className="block text-xs font-semibold mb-1.5 text-foreground">
+              Selecionar Paciente
+            </label>
             <select
               value={selectedPaciente}
               onChange={(e) => setSelectedPaciente(e.target.value)}
@@ -232,7 +253,7 @@ function Planos() {
                     value={b.nome}
                     onChange={(e) =>
                       setRefeicoes((prev) =>
-                        prev.map((x) => (x.id === b.id ? { ...x, nome: e.target.value } : x))
+                        prev.map((x) => (x.id === b.id ? { ...x, nome: e.target.value } : x)),
                       )
                     }
                     className="font-display font-bold text-lg bg-transparent border-b border-dashed border-border outline-none focus:border-primary"
@@ -241,7 +262,7 @@ function Planos() {
                     value={b.hora}
                     onChange={(e) =>
                       setRefeicoes((prev) =>
-                        prev.map((x) => (x.id === b.id ? { ...x, hora: e.target.value } : x))
+                        prev.map((x) => (x.id === b.id ? { ...x, hora: e.target.value } : x)),
                       )
                     }
                     className="w-16 rounded-full bg-primary/10 px-2 py-0.5 text-center text-xs font-bold text-primary outline-none"
@@ -260,7 +281,10 @@ function Planos() {
               {/* LISTA DE ITENS */}
               <div className="space-y-3">
                 {b.itens.map((it) => (
-                  <div key={it.id} className="grid gap-2 sm:grid-cols-[1.5fr_1fr_1.5fr_auto] items-center rounded-2xl border bg-secondary/20 p-3">
+                  <div
+                    key={it.id}
+                    className="grid gap-2 sm:grid-cols-[1.5fr_1fr_1.5fr_auto] items-center rounded-2xl border bg-secondary/20 p-3"
+                  >
                     <input
                       value={it.alimento}
                       onChange={(e) =>
@@ -269,10 +293,12 @@ function Planos() {
                             x.id === b.id
                               ? {
                                   ...x,
-                                  itens: x.itens.map((i) => (i.id === it.id ? { ...i, alimento: e.target.value } : i)),
+                                  itens: x.itens.map((i) =>
+                                    i.id === it.id ? { ...i, alimento: e.target.value } : i,
+                                  ),
                                 }
-                              : x
-                          )
+                              : x,
+                          ),
                         )
                       }
                       className="w-full rounded-xl border bg-background px-3 py-1.5 text-xs outline-none"
@@ -286,10 +312,12 @@ function Planos() {
                             x.id === b.id
                               ? {
                                   ...x,
-                                  itens: x.itens.map((i) => (i.id === it.id ? { ...i, qtd: e.target.value } : i)),
+                                  itens: x.itens.map((i) =>
+                                    i.id === it.id ? { ...i, qtd: e.target.value } : i,
+                                  ),
                                 }
-                              : x
-                          )
+                              : x,
+                          ),
                         )
                       }
                       className="w-full rounded-xl border bg-background px-3 py-1.5 text-xs outline-none"
@@ -303,10 +331,12 @@ function Planos() {
                             x.id === b.id
                               ? {
                                   ...x,
-                                  itens: x.itens.map((i) => (i.id === it.id ? { ...i, subs: e.target.value } : i)),
+                                  itens: x.itens.map((i) =>
+                                    i.id === it.id ? { ...i, subs: e.target.value } : i,
+                                  ),
                                 }
-                              : x
-                          )
+                              : x,
+                          ),
                         )
                       }
                       className="w-full rounded-xl border bg-background px-3 py-1.5 text-xs outline-none"
@@ -329,7 +359,7 @@ function Planos() {
                   value={b.obs}
                   onChange={(e) =>
                     setRefeicoes((prev) =>
-                      prev.map((x) => (x.id === b.id ? { ...x, obs: e.target.value } : x))
+                      prev.map((x) => (x.id === b.id ? { ...x, obs: e.target.value } : x)),
                     )
                   }
                   className="w-full rounded-xl border border-dashed bg-background px-3 py-2 text-xs outline-none"
@@ -403,4 +433,3 @@ function Planos() {
     </div>
   );
 }
-

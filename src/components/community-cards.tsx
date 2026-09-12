@@ -73,21 +73,37 @@ export function PostCard({ post }: PostCardProps) {
     }
     const trimmed = commentText.trim();
     if (!trimmed) return;
-    
+
     try {
       addComment(post.id, { id: user.id, name: user.name, role: user.role }, trimmed);
       setCommentText("");
       toast.success("Comentário publicado!");
-    } catch (err: any) {
-      toast.error(err.message || "Não foi possível publicar o comentário.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível publicar o comentário.");
     }
   };
 
   const badgeConfig = {
-    receita: { label: "Receita Comunitária", bg: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200", icon: ChefHat },
-    experiencia: { label: "Minha Experiência", bg: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200", icon: Sparkles },
-    especialista: { label: "Conteúdo de Especialista", bg: "bg-primary-soft text-primary font-semibold", icon: BookOpen },
-    pergunta: { label: "Pergunta da Comunidade", bg: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200", icon: HelpCircle },
+    receita: {
+      label: "Receita Comunitária",
+      bg: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
+      icon: ChefHat,
+    },
+    experiencia: {
+      label: "Minha Experiência",
+      bg: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+      icon: Sparkles,
+    },
+    especialista: {
+      label: "Conteúdo de Especialista",
+      bg: "bg-primary-soft text-primary font-semibold",
+      icon: BookOpen,
+    },
+    pergunta: {
+      label: "Pergunta da Comunidade",
+      bg: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+      icon: HelpCircle,
+    },
     geral: { label: "Compartilhamento", bg: "bg-secondary text-foreground", icon: MessageSquare },
   }[post.type || "geral"];
 
@@ -124,14 +140,17 @@ export function PostCard({ post }: PostCardProps) {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {post.authorSpecialty || (post.authorRole === "nutricionista" ? "Nutricionista" : "Membro da comunidade")}
+              {post.authorSpecialty ||
+                (post.authorRole === "nutricionista" ? "Nutricionista" : "Membro da comunidade")}
               {" · "}
               {formatDate(post.createdAt)}
             </p>
           </div>
         </div>
 
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${badgeConfig.bg}`}>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${badgeConfig.bg}`}
+        >
           <BadgeIcon className="h-3.5 w-3.5" />
           <span>{badgeConfig.label}</span>
         </span>
@@ -140,9 +159,7 @@ export function PostCard({ post }: PostCardProps) {
       {/* Conteúdo principal */}
       <div className="mt-4">
         {post.title && (
-          <h3 className="text-base font-bold text-foreground font-display mb-1.5">
-            {post.title}
-          </h3>
+          <h3 className="text-base font-bold text-foreground font-display mb-1.5">{post.title}</h3>
         )}
         <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
           {post.text}
@@ -243,7 +260,9 @@ export function PostCard({ post }: PostCardProps) {
             >
               <ChefHat className="h-3.5 w-3.5" />
               <span>{hasPrepared ? "Eu preparei!" : "Eu preparei"}</span>
-              {preparedCount > 0 && <span className="text-[11px] opacity-80">({preparedCount})</span>}
+              {preparedCount > 0 && (
+                <span className="text-[11px] opacity-80">({preparedCount})</span>
+              )}
             </button>
           )}
 
@@ -260,7 +279,8 @@ export function PostCard({ post }: PostCardProps) {
 
         {post.type === "receita" && preparedCount > 0 && (
           <span className="text-[11px] text-muted-foreground font-medium">
-            💚 {preparedCount} {preparedCount === 1 ? "pessoa da comunidade já preparou" : "pessoas já prepararam"}
+            💚 {preparedCount}{" "}
+            {preparedCount === 1 ? "pessoa da comunidade já preparou" : "pessoas já prepararam"}
           </span>
         )}
       </div>
@@ -295,7 +315,9 @@ export function PostCard({ post }: PostCardProps) {
                         <BadgeCheck className="h-3 w-3 text-accent" />
                       )}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">{formatDate(c.createdAt)}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {formatDate(c.createdAt)}
+                    </span>
                   </div>
                   <p className="text-foreground/90">{c.text}</p>
                 </div>
@@ -358,9 +380,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
           <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
             Pergunta da Semana
           </p>
-          <p className="text-sm font-medium text-foreground">
-            “{theme.questionOfTheWeek}”
-          </p>
+          <p className="text-sm font-medium text-foreground">“{theme.questionOfTheWeek}”</p>
         </div>
       )}
 
@@ -373,7 +393,8 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
           <div className="grid gap-2.5 sm:grid-cols-2">
             {theme.poll.options.map((opt) => {
               const hasVoted = (opt.votedUsers || []).includes(currentUserId);
-              const percentage = totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
+              const percentage =
+                totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
               return (
                 <button
                   key={opt.id}
@@ -454,11 +475,15 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         </div>
 
         <h3 className="text-base font-bold text-foreground font-display">{challenge.title}</h3>
-        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{challenge.description}</p>
+        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          {challenge.description}
+        </p>
 
         {challenge.steps && challenge.steps.length > 0 && (
           <div className="mt-4 space-y-1.5">
-            <p className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">Passos sugeridos:</p>
+            <p className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
+              Passos sugeridos:
+            </p>
             <ul className="space-y-1 text-xs text-foreground/90">
               {challenge.steps.map((s, i) => (
                 <li key={i} className="flex items-start gap-1.5">
@@ -524,7 +549,10 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
         {professional.focus && professional.focus.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {professional.focus.slice(0, 3).map((f) => (
-              <span key={f} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span
+                key={f}
+                className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+              >
                 {f}
               </span>
             ))}
@@ -533,7 +561,10 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
 
         <div className="text-[11px] text-muted-foreground space-y-0.5">
           <p>📍 {professional.location}</p>
-          <p>📚 {professional.articlesCount || 0} publicações · 🥗 {professional.recipesCount || 0} receitas</p>
+          <p>
+            📚 {professional.articlesCount || 0} publicações · 🥗 {professional.recipesCount || 0}{" "}
+            receitas
+          </p>
         </div>
       </div>
 
@@ -555,4 +586,3 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
     </div>
   );
 }
-

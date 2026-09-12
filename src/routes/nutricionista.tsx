@@ -1,5 +1,15 @@
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Users, FileText, MessageSquare, User, Settings, Sparkles, MessageCircleHeart } from "lucide-react";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Users,
+  FileText,
+  MessageSquare,
+  User,
+  Settings,
+  Sparkles,
+  MessageCircleHeart,
+} from "lucide-react";
 import { useEffect } from "react";
 import { DashboardShell, type NavItem } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
@@ -40,10 +50,18 @@ function NutriLayout() {
   const { user, hydrated } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  if (!hydrated || !user) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  if (!hydrated || !user)
+    return (
+      <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>
+    );
 
   return (
-    <DashboardShell items={items} title={titles[pathname] ?? "Nutricionista"} userName={user.name} userRole="Nutricionista">
+    <DashboardShell
+      items={items}
+      title={titles[pathname] ?? "Nutricionista"}
+      userName={user.name}
+      userRole="Nutricionista"
+    >
       <Outlet />
     </DashboardShell>
   );

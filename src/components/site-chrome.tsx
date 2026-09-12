@@ -40,7 +40,9 @@ export function SiteHeader() {
               key={l.to}
               to={l.to}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:underline decoration-accent/40 underline-offset-8"
-              activeProps={{ className: "text-foreground font-semibold underline decoration-accent decoration-2" }}
+              activeProps={{
+                className: "text-foreground font-semibold underline decoration-accent decoration-2",
+              }}
             >
               {l.label}
             </Link>
@@ -135,7 +137,9 @@ export function SiteHeader() {
               {user ? (
                 <div className="space-y-2">
                   <Link
-                    to={user.role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada"}
+                    to={
+                      user.role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada"
+                    }
                     onClick={() => setOpen(false)}
                     className="flex items-center justify-between rounded-xl bg-primary-soft p-3 text-sm font-semibold text-primary"
                   >
@@ -192,31 +196,71 @@ export function SiteFooter() {
             <span className="font-bold font-display text-lg">NutriConnect</span>
           </div>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Sua alimentação. Sua jornada. Uma rede viva para descobrir, compartilhar, aprender e construir hábitos melhores juntos.
+            Sua alimentação. Sua jornada. Uma rede viva para descobrir, compartilhar, aprender e
+            construir hábitos melhores juntos.
           </p>
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">Explorar</h4>
+          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">
+            Explorar
+          </h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/espaco" className="hover:text-accent transition">Espaço de Hoje</Link></li>
-            <li><Link to="/tema-da-semana" className="hover:text-accent transition">Tema da Semana</Link></li>
-            <li><Link to="/receitas" className="hover:text-accent transition">Receitas Comunitárias</Link></li>
-            <li><Link to="/desafios" className="hover:text-accent transition">Desafios de Hábitos</Link></li>
-            <li><Link to="/profissionais" className="hover:text-accent transition">Especialistas e Nutris</Link></li>
+            <li>
+              <Link to="/espaco" className="hover:text-accent transition">
+                Espaço de Hoje
+              </Link>
+            </li>
+            <li>
+              <Link to="/tema-da-semana" className="hover:text-accent transition">
+                Tema da Semana
+              </Link>
+            </li>
+            <li>
+              <Link to="/receitas" className="hover:text-accent transition">
+                Receitas Comunitárias
+              </Link>
+            </li>
+            <li>
+              <Link to="/desafios" className="hover:text-accent transition">
+                Desafios de Hábitos
+              </Link>
+            </li>
+            <li>
+              <Link to="/profissionais" className="hover:text-accent transition">
+                Especialistas e Nutris
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">Comunidade</h4>
+          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">
+            Comunidade
+          </h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/sobre" className="hover:text-accent transition">Nosso Manifesto</Link></li>
-            <li><Link to="/contato" className="hover:text-accent transition">Fale Conosco</Link></li>
-            <li><span className="text-xs text-muted-foreground/80">Cuidado sem julgamento corporal</span></li>
+            <li>
+              <Link to="/sobre" className="hover:text-accent transition">
+                Nosso Manifesto
+              </Link>
+            </li>
+            <li>
+              <Link to="/contato" className="hover:text-accent transition">
+                Fale Conosco
+              </Link>
+            </li>
+            <li>
+              <span className="text-xs text-muted-foreground/80">
+                Cuidado sem julgamento corporal
+              </span>
+            </li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">Compromisso</h4>
+          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">
+            Compromisso
+          </h4>
           <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-            Incentivamos a conexão saudável com a alimentação. Conteúdos clínicos são orientados por nutricionistas registrados.
+            Incentivamos a conexão saudável com a alimentação. Conteúdos clínicos são orientados por
+            nutricionistas registrados.
           </p>
           <div className="mt-4 text-xs text-muted-foreground">
             © {new Date().getFullYear()} NutriConnect. Sua caminhada, no seu ritmo.

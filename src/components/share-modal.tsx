@@ -3,7 +3,13 @@ import { toast } from "sonner";
 import { Sparkles, ChefHat, HelpCircle, BookOpen, Plus, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { createCommunityPost, RECIPE_CATEGORIES, type PostType } from "@/lib/community";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode }) {
   const { user } = useAuth();
@@ -81,13 +87,28 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       setTagsInput("");
       setIngredientsText("");
       setStepsText("");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao publicar no Espaço de Hoje.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao publicar no Espaço de Hoje.");
+    }
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      setTitle("");
+      setText("");
+      setTagsInput("");
+      setIngredientsText("");
+      setStepsText("");
+      setType("experiencia");
+      setPrepTime("20 min");
+      setServings("2 porções");
+      setDifficulty("Fácil");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {triggerButton || (
           <button
@@ -186,8 +207,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 type === "receita"
                   ? "Ex: Panqueca de banana com 3 ingredientes"
                   : type === "experiencia"
-                  ? "Ex: O que aprendi cozinhando minhas refeições da semana"
-                  : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
+                    ? "Ex: O que aprendi cozinhando minhas refeições da semana"
+                    : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
               }
               className="w-full rounded-xl border border-border bg-background px-3.5 py-2 text-sm outline-none focus:border-accent"
             />
@@ -213,7 +234,9 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             <div className="rounded-xl border border-border/80 bg-secondary/30 p-3.5 space-y-3">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">Tempo</label>
+                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                    Tempo
+                  </label>
                   <input
                     className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
                     value={prepTime}
@@ -222,7 +245,9 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">Rendimento</label>
+                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                    Rendimento
+                  </label>
                   <input
                     className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
                     value={servings}
@@ -231,11 +256,13 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">Dificuldade</label>
+                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                    Dificuldade
+                  </label>
                   <select
                     className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
                     value={difficulty}
-                    onChange={(e) => setDifficulty(e.target.value as any)}
+                    onChange={(e) => setDifficulty(e.target.value as "Fácil" | "Médio" | "Difícil")}
                   >
                     <option value="Fácil">Fácil</option>
                     <option value="Médio">Médio</option>
@@ -243,7 +270,9 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">Categoria</label>
+                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                    Categoria
+                  </label>
                   <select
                     className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
                     value={recipeCategory}
@@ -280,7 +309,9 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs resize-none"
                   value={stepsText}
                   onChange={(e) => setStepsText(e.target.value)}
-                  placeholder={"Misture os ingredientes secos\nAdicione o líquido aos poucos\nCozinhe por 5 minutos"}
+                  placeholder={
+                    "Misture os ingredientes secos\nAdicione o líquido aos poucos\nCozinhe por 5 minutos"
+                  }
                 />
               </div>
             </div>
@@ -303,7 +334,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
               className="rounded-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-secondary"
             >
               Cancelar

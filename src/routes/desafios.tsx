@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2, Award, Sparkles, Plus, ArrowRight, Flame, Target, Trophy, Filter } from "lucide-react";
+import {
+  CheckCircle2,
+  Award,
+  Sparkles,
+  Plus,
+  ArrowRight,
+  Flame,
+  Target,
+  Trophy,
+  Filter,
+} from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { ChallengeCard } from "@/components/community-cards";
@@ -12,7 +22,8 @@ export const Route = createFileRoute("/desafios")({
       { title: "Desafios de Hábitos — NutriConnect" },
       {
         name: "description",
-        content: "Pequenos desafios saudáveis focados em participação, cozinha caseira e hábitos acolhedores sem cobrança corporal.",
+        content:
+          "Pequenos desafios saudáveis focados em participação, cozinha caseira e hábitos acolhedores sem cobrança corporal.",
       },
     ],
   }),
@@ -50,8 +61,9 @@ function DesafiosPage() {
               Desafios de Hábitos
             </h1>
             <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-              Desafios práticos para construir uma rotina mais acolhedora com a comida. Sem metas punitivas,
-              sem contagem de calorias. Apenas constância, curiosidade e prazer de cozinhar.
+              Desafios práticos para construir uma rotina mais acolhedora com a comida. Sem metas
+              punitivas, sem contagem de calorias. Apenas constância, curiosidade e prazer de
+              cozinhar.
             </p>
           </div>
 
@@ -61,8 +73,12 @@ function DesafiosPage() {
               🔥 5d
             </div>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sua Ofensiva</div>
-              <div className="text-sm font-bold text-foreground">{joinedCount} desafios em andamento</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Sua Ofensiva
+              </div>
+              <div className="text-sm font-bold text-foreground">
+                {joinedCount} desafios em andamento
+              </div>
             </div>
           </div>
         </div>
@@ -74,7 +90,9 @@ function DesafiosPage() {
               Como funcionam os desafios no NutriConnect?
             </h2>
             <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed max-w-2xl">
-              Você escolhe um hábito simples para experimentar durante a semana. Ao participar, você se conecta com outras pessoas fazendo a mesma coisa e pode trocar fotos, dicas e reflexões no <b>Espaço de Hoje</b>.
+              Você escolhe um hábito simples para experimentar durante a semana. Ao participar, você
+              se conecta com outras pessoas fazendo a mesma coisa e pode trocar fotos, dicas e
+              reflexões no <b>Espaço de Hoje</b>.
             </p>
           </div>
           <Link
@@ -98,7 +116,11 @@ function DesafiosPage() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {tab === "todos" ? "Todos os Desafios" : tab === "meus" ? `Meus Desafios (${joinedCount})` : "Mais Populares"}
+                {tab === "todos"
+                  ? "Todos os Desafios"
+                  : tab === "meus"
+                    ? `Meus Desafios (${joinedCount})`
+                    : "Mais Populares"}
               </button>
             ))}
           </div>
@@ -115,7 +137,9 @@ function DesafiosPage() {
           </div>
         ) : filteredChallenges.length === 0 ? (
           <div className="py-16 text-center rounded-3xl border bg-card p-8">
-            <p className="text-sm text-muted-foreground">Você ainda não entrou em nenhum desafio nesta aba.</p>
+            <p className="text-sm text-muted-foreground">
+              Você ainda não entrou em nenhum desafio nesta aba.
+            </p>
             <button
               onClick={() => setFilter("todos")}
               className="mt-3 rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground"
@@ -136,4 +160,3 @@ function DesafiosPage() {
     </div>
   );
 }
-

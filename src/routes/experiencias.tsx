@@ -11,7 +11,8 @@ export const Route = createFileRoute("/experiencias")({
       { title: "Experiências e Relatos — NutriConnect" },
       {
         name: "description",
-        content: "Espaço acolhedor para compartilhar conquistas da rotina, descobertas na cozinha e aprendizados sem julgamento estético ou números de balança.",
+        content:
+          "Espaço acolhedor para compartilhar conquistas da rotina, descobertas na cozinha e aprendizados sem julgamento estético ou números de balança.",
       },
     ],
   }),
@@ -40,7 +41,8 @@ function ExperienciasPage() {
             </h1>
             <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
               Celebramos a vida real: uma refeição cozinhada em casa, um momento de paz com o prato,
-              uma vitória sobre a correria. Sem comparações corporais, apenas passos de cada jornada.
+              uma vitória sobre a correria. Sem comparações corporais, apenas passos de cada
+              jornada.
             </p>
           </div>
 
@@ -61,7 +63,9 @@ function ExperienciasPage() {
         <div className="rounded-2xl border border-primary/20 bg-primary-soft/40 p-5 mb-8 text-xs text-foreground/90 flex items-center gap-3 shadow-xs">
           <span className="text-2xl">🌿</span>
           <p className="leading-relaxed">
-            <b>Nosso pacto comunitário:</b> aqui valorizamos o bem-estar, a consistência e a relação afetiva com a comida. Não compartilhamos comparações de antes/depois ou números restritivos de calorias.
+            <b>Nosso pacto comunitário:</b> aqui valorizamos o bem-estar, a consistência e a relação
+            afetiva com a comida. Não compartilhamos comparações de antes/depois ou números
+            restritivos de calorias.
           </p>
         </div>
 

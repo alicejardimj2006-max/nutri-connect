@@ -156,6 +156,19 @@ function Perfil() {
   );
 }
 
-function F({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
-  return <label className={`block ${className ?? ""}`}><span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>{children}</label>;
+function F({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`block ${className ?? ""}`}>
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+      {children}
+    </label>
+  );
 }
