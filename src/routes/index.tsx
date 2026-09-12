@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, ArrowRight, Compass, Bot } from "lucide-react";
+import { FormEvent, useState } from "react";
+import { Search, ArrowRight, Compass, Bot, Sparkles } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
+import { type Post } from "@/lib/community";
 import { PostCard, ChallengeCard, ProfessionalCard } from "@/components/community-cards";
 
 export const Route = createFileRoute("/")({
@@ -31,7 +32,7 @@ function HomePage() {
 
   const [heroSearchQuery, setHeroSearchQuery] = useState("");
 
-  const handleHeroSearch = (e: React.FormEvent) => {
+  const handleHeroSearch = (e: FormEvent) => {
     e.preventDefault();
     if (heroSearchQuery.trim()) {
       navigate({ to: "/buscar", search: { q: heroSearchQuery.trim() } });
@@ -44,7 +45,9 @@ function HomePage() {
   const todayRecipe = posts.find((p) => p.type === "receita");
   const todayExp = posts.find((p) => p.type === "experiencia");
   const todaySpec = posts.find((p) => p.type === "especialista" || p.type === "pergunta");
-  const todayPosts = [todayRecipe, todayExp, todaySpec].filter(Boolean);
+  const todayPosts = [todayRecipe, todayExp, todaySpec].filter((post): post is Post =>
+    Boolean(post),
+  );
 
   // Filtrar receitas para a seção editorial
   const recipePosts = posts.filter((p) => p.type === "receita").slice(0, 3);
@@ -277,8 +280,8 @@ function HomePage() {
                       <img
                         src={
                           i === 0
-                            ? "/images/recipes/avocado-toast.jpg"
-                            : "/images/recipes/smoothie.jpg"
+                            ? "/images/recipes/roasted-veg.jpg"
+                            : "/images/recipes/default-recipe.jpg"
                         }
                         alt="Receita Secundária"
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -371,7 +374,7 @@ function HomePage() {
                 to="/espaco"
                 className="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline shrink-0"
               >
-                Entrar na comunidade <ArrowRight className="h-4 w-4" />
+                Entrar no Espaço de Hoje <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
