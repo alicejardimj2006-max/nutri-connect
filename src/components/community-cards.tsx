@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { useCommunity } from "@/hooks/use-community";
 import {
   type Post,
   type WeeklyTheme,
