@@ -50,7 +50,11 @@ function ComunidadesPage() {
       if (category !== "Todas" && c.category !== category) return false;
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase();
-        if (!c.name.toLowerCase().includes(q) && !c.description.toLowerCase().includes(q)) {
+        if (
+          !c.name.toLowerCase().includes(q) &&
+          !c.description.toLowerCase().includes(q) &&
+          !c.category.toLowerCase().includes(q)
+        ) {
           return false;
         }
       }
@@ -73,8 +77,8 @@ function ComunidadesPage() {
             Comunidades
           </h1>
           <p className="mt-2 max-w-2xl text-base text-muted-foreground">
-            Encontre um grupo que combine com a sua jornada. Participe de grupos sobre alimentação,
-            hábitos e interesses específicos, com acompanhamento de profissionais.
+            Encontre um grupo que combine com a sua jornada. Participe de grupos específicos para
+            conversar, aprender e construir hábitos junto com outras pessoas.
           </p>
         </div>
         <button
@@ -180,9 +184,14 @@ function ComunidadesPage() {
           {filtered.map((c) => (
             <CommunityCard key={c.id} community={c} />
           ))}
-          {hydrated && filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Nenhuma comunidade encontrada para este filtro.
+          {hydrated && filtered.length === 0 && communities.length > 0 && (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Nenhuma comunidade encontrada para essa busca.
+            </p>
+          )}
+          {hydrated && communities.length === 0 && (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Ainda não existem comunidades disponíveis.
             </p>
           )}
         </section>
@@ -217,11 +226,11 @@ function CommunityCard({ community: c }: { community: Community }) {
         <div className="flex items-center justify-between gap-3 mb-2">
           {c.status === "aguardando" ? (
             <span className="rounded-full bg-warning/20 px-2.5 py-1 text-[10px] font-semibold text-warning-foreground">
-              Aguardando Moderação
+              Aguardando nutricionista
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-semibold text-primary">
-              <BadgeCheck className="h-3 w-3" /> Ativa
+              <BadgeCheck className="h-3 w-3" /> Comunidade ativa
             </span>
           )}
         </div>
@@ -234,8 +243,8 @@ function CommunityCard({ community: c }: { community: Community }) {
               {initials(c.responsible.name)}
             </span>
             <div className="text-xs">
-              <p className="font-semibold text-foreground">{c.responsible.name}</p>
-              <p className="text-muted-foreground">Responsável · {c.responsible.credential}</p>
+              <p className="text-muted-foreground">Nutricionista responsável</p>
+              <p className="font-semibold text-foreground text-sm">{c.responsible.name}</p>
             </div>
           </div>
         ) : (
@@ -244,9 +253,7 @@ function CommunityCard({ community: c }: { community: Community }) {
               <ShieldQuestion className="h-4 w-4" />
             </div>
             <div className="text-xs">
-              <p className="font-semibold text-foreground text-warning/90">
-                Aguardando nutricionista
-              </p>
+              <p className="font-semibold text-warning/90">Aguardando nutricionista responsável</p>
             </div>
           </div>
         )}
@@ -328,7 +335,7 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
         toast.success(
           actor.role === "nutricionista"
             ? "Comunidade criada e ativada."
-            : "Comunidade criada. Agora ela aguarda um nutricionista responsável.",
+            : "Comunidade criada. Ela aguarda um nutricionista responsável.",
         );
         onDone();
       }}
