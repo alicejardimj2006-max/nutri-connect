@@ -75,7 +75,7 @@ function TemaDaSemanaPage() {
             <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-card shadow-card flex flex-col">
               <div className="h-64 sm:h-80 w-full relative">
                 <img
-                  src="/images/themes/fresh-ingredients.jpg"
+                  src="/images/challenges/salad-bowl.jpg"
                   alt={weeklyTheme.title}
                   className="w-full h-full object-cover"
                 />
@@ -211,9 +211,9 @@ function TemaDaSemanaPage() {
                 {pastThemes.map((t, index) => {
                   const cover =
                     index === 0
-                      ? "/images/themes/reading-labels.jpg"
+                      ? "/images/hero/kitchen-prep.jpg"
                       : index === 1
-                        ? "/images/recipes/oatmeal.jpg"
+                        ? "/images/recipes/default-recipe.jpg"
                         : "/images/communities/friends-dinner.jpg";
 
                   return (

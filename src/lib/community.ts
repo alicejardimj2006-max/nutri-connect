@@ -121,6 +121,17 @@ export interface Challenge {
   themeId?: string;
 }
 
+export interface ProfessionalReputation {
+  score: number;
+  positiveRatings: number;
+  negativeRatings: number;
+  helpfulAnswers: number;
+  communityPosts: number;
+  recipesPublished: number;
+  communitiesManaged: number;
+  weeklyThemeParticipation: number;
+}
+
 export interface ProfessionalMember {
   id: string;
   userId: string;
@@ -135,6 +146,7 @@ export interface ProfessionalMember {
   articlesCount: number;
   recipesCount: number;
   available: boolean;
+  reputation?: ProfessionalReputation;
 }
 
 export interface CommunityState {
@@ -968,4 +980,59 @@ export function getProfessionals(): ProfessionalMember[] {
 
 export function getCommunityPosts(): Post[] {
   return loadState().posts || [];
+}
+
+/**
+ * REPUTATION SYSTEM PREPARATION
+ * Calculate the professional reputation score based on actions.
+ * Prepared for daily limits, weighted actions, and anti-farming logic.
+ */
+export interface ReputationActionWeights {
+  helpfulAnswer: number;
+  communityPost: number;
+  recipePublished: number;
+  communityManaged: number;
+  weeklyThemeParticipation: number;
+  positiveRating: number;
+  negativeRating: number;
+}
+
+const DEFAULT_REPUTATION_WEIGHTS: ReputationActionWeights = {
+  helpfulAnswer: 10,
+  communityPost: 2, // Limite aplicado abaixo para anti-farming
+  recipePublished: 15,
+  communityManaged: 50,
+  weeklyThemeParticipation: 20,
+  positiveRating: 5,
+  negativeRating: -10,
+};
+
+export function calculateProfessionalScore(
+  reputation: ProfessionalReputation | undefined,
+  weights = DEFAULT_REPUTATION_WEIGHTS,
+): number {
+  if (!reputation) return 0;
+
+  // Anti-farming limit: Limitar a pontuação máxima de postagens para evitar spam
+  const MAX_POST_SCORE = 100;
+  const postScore = Math.min(reputation.communityPosts * weights.communityPost, MAX_POST_SCORE);
+
+  // Anti-farming limit: Limitar a pontuação máxima por participações em temas (ações rápidas)
+  const MAX_THEME_SCORE = 100;
+  const themeScore = Math.min(
+    reputation.weeklyThemeParticipation * weights.weeklyThemeParticipation,
+    MAX_THEME_SCORE,
+  );
+
+  let score = 0;
+  score += reputation.helpfulAnswers * weights.helpfulAnswer;
+  score += postScore;
+  score += reputation.recipesPublished * weights.recipePublished;
+  score += reputation.communitiesManaged * weights.communityManaged;
+  score += themeScore;
+  score += reputation.positiveRatings * weights.positiveRating;
+  score += reputation.negativeRatings * weights.negativeRating;
+
+  // Reputação nunca fica abaixo de 0 na interface (ou poderia ficar negativa dependendo da regra de negócio)
+  return Math.max(0, score);
 }

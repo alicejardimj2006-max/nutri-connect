@@ -87,7 +87,7 @@ export function PostCard({ post }: PostCardProps) {
 
   let displayImage = post.image;
   if (!displayImage) {
-    if (post.id === "p-rec-1") displayImage = "/images/recipes/oatmeal.jpg";
+    if (post.id === "p-rec-1") displayImage = "/images/recipes/default-recipe.jpg";
     else if (post.id === "p-rec-2") displayImage = "/images/recipes/roasted-veg.jpg";
     else if (post.type === "receita") displayImage = "/images/recipes/default-recipe.jpg";
     else if (post.id === "p-exp-1") displayImage = "/images/experiences/cooking.jpg";
@@ -472,7 +472,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
 
   let themeImage = null;
   if (theme.id === "tema-alimentos-frescos") {
-    themeImage = "/images/themes/fresh-ingredients.jpg";
+    themeImage = "/images/challenges/salad-bowl.jpg";
   }
 
   return (

@@ -216,7 +216,7 @@ function HomePage() {
                 <div className="lg:col-span-8">
                   <div className="relative h-[300px] w-full overflow-hidden rounded-3xl shadow-sm">
                     <img
-                      src="/images/recipes/oatmeal.jpg"
+                      src="/images/recipes/default-recipe.jpg"
                       alt="Receita Principal"
                       className="w-full h-full object-cover"
                     />
@@ -281,7 +281,7 @@ function HomePage() {
               <div className="rounded-[2.5rem] bg-[#f9f1ea] border border-[#f0dfd1] p-6 sm:p-10 flex flex-col md:flex-row items-center gap-8 shadow-sm">
                 <div className="w-full md:w-1/3 aspect-square rounded-[2rem] overflow-hidden shrink-0">
                   <img
-                    src="/images/themes/fresh-ingredients.jpg"
+                    src="/images/challenges/salad-bowl.jpg"
                     alt="Tema"
                     className="w-full h-full object-cover"
                   />
@@ -461,7 +461,7 @@ function HomePage() {
           <div className="mx-auto max-w-4xl px-4 sm:px-6">
             <div className="relative rounded-[3rem] overflow-hidden shadow-xl aspect-[21/9] flex items-center justify-center">
               <img
-                src="/images/themes/sharing-meal.jpg"
+                src="/images/communities/friends-dinner.jpg"
                 alt="Final CTA"
                 className="absolute inset-0 w-full h-full object-cover"
               />
