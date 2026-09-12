@@ -35,7 +35,7 @@ function EspacoDeHojePage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredBySearch = posts.filter((p) =>
-    searchQuery ? p.content.toLowerCase().includes(searchQuery.toLowerCase()) : true,
+    searchQuery ? p.text.toLowerCase().includes(searchQuery.toLowerCase()) : true,
   );
 
   let displayedPosts = filteredBySearch;
