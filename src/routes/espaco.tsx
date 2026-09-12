@@ -8,7 +8,21 @@ import { ShareModal } from "@/components/share-modal";
 
 export const Route = createFileRoute("/espaco")({
   head: () => ({
-    title: "Espaço de Hoje | NutriConnect",
+    meta: [
+      { title: "Espaço de Hoje | NutriConnect" },
+      {
+        name: "description",
+        content:
+          "Receitas, experiências e orientações de nutricionistas compartilhadas pela comunidade NutriConnect.",
+      },
+      { property: "og:title", content: "Espaço de Hoje | NutriConnect" },
+      {
+        property: "og:description",
+        content: "Acompanhe o feed diário da comunidade NutriConnect.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
   }),
   component: EspacoDeHojePage,
 });
@@ -21,7 +35,7 @@ function EspacoDeHojePage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredBySearch = posts.filter((p) =>
-    searchQuery ? p.content.toLowerCase().includes(searchQuery.toLowerCase()) : true,
+    searchQuery ? p.text.toLowerCase().includes(searchQuery.toLowerCase()) : true,
   );
 
   let displayedPosts = filteredBySearch;

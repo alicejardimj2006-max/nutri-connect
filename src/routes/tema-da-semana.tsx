@@ -129,7 +129,7 @@ function TemaDaSemanaPage() {
                               className="relative flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50 hover:bg-secondary/60 cursor-pointer transition"
                             >
                               <span className="text-sm font-medium text-foreground relative z-10">
-                                {opt.label}
+                                {opt.text}
                               </span>
                               <span className="text-xs font-semibold text-muted-foreground relative z-10">
                                 {opt.votes} votos

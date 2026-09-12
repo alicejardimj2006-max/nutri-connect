@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { useCommunity } from "@/hooks/use-community";
 import {
   type Post,
   type WeeklyTheme,
@@ -127,7 +128,7 @@ export function PostCard({ post }: PostCardProps) {
             {post.authorRole === "nutricionista" && (
               <BadgeCheck
                 className="h-4 w-4 text-accent"
-                title="Profissional de nutrição verificado"
+                aria-label="Profissional de nutrição verificado"
               />
             )}
           </div>
@@ -719,7 +720,7 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
               <h3 className="text-sm font-bold text-foreground truncate font-display">
                 {professional.name}
               </h3>
-              <BadgeCheck className="h-4 w-4 text-accent shrink-0" title="Registro verificado" />
+              <BadgeCheck className="h-4 w-4 text-accent shrink-0" aria-label="Registro verificado" />
             </div>
             <p className="text-xs text-accent font-medium">{professional.specialty}</p>
             <p className="text-[11px] text-muted-foreground">{professional.crn}</p>
