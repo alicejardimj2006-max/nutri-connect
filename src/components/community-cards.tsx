@@ -315,7 +315,9 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
   const { user } = useAuth();
   const currentUserId = user?.id || "guest";
 
-  const totalVotes = theme.poll.options.reduce((acc, opt) => acc + opt.votes, 0);
+  const totalVotes = theme?.poll?.options
+    ? theme.poll.options.reduce((acc, opt) => acc + (opt.votes || 0), 0)
+    : 0;
 
   const handleVote = (optionId: string) => {
     if (!user) {
@@ -326,11 +328,13 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
     toast.success("Voto registrado! Obrigado por contribuir com o pulso da comunidade.");
   };
 
+  if (!theme) return null;
+
   return (
     <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-card via-card to-accent-soft/30 p-6 sm:p-8 shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
-          <Sparkles className="h-3.5 w-3.5" /> {theme.badge}
+          <Sparkles className="h-3.5 w-3.5" /> {theme.badge || "Tema da Semana"}
         </span>
         <span className="text-xs font-medium text-muted-foreground">{theme.currentWeek}</span>
       </div>
@@ -343,25 +347,27 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
       </p>
 
       {/* Pergunta da Semana */}
-      <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
-        <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
-          Pergunta da Semana
-        </p>
-        <p className="text-sm font-medium text-foreground">
-          “{theme.questionOfTheWeek}”
-        </p>
-      </div>
+      {theme.questionOfTheWeek && (
+        <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
+          <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
+            Pergunta da Semana
+          </p>
+          <p className="text-sm font-medium text-foreground">
+            “{theme.questionOfTheWeek}”
+          </p>
+        </div>
+      )}
 
       {/* Enquete Interativa */}
-      {!compact && theme.poll && (
+      {!compact && theme.poll && theme.poll.options && (
         <div className="mt-6 border-t border-border/80 pt-5">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
             Enquete: {theme.poll.question}
           </h3>
           <div className="grid gap-2.5 sm:grid-cols-2">
             {theme.poll.options.map((opt) => {
-              const hasVoted = opt.votedUsers.includes(currentUserId);
-              const percentage = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+              const hasVoted = (opt.votedUsers || []).includes(currentUserId);
+              const percentage = totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
               return (
                 <button
                   key={opt.id}
@@ -411,7 +417,8 @@ interface ChallengeCardProps {
 export function ChallengeCard({ challenge }: ChallengeCardProps) {
   const { user } = useAuth();
   const currentUserId = user?.id || "guest";
-  const isJoined = challenge.participants.includes(currentUserId);
+  const participants = challenge?.participants || [];
+  const isJoined = participants.includes(currentUserId);
 
   const handleJoin = () => {
     if (!user) {
@@ -426,37 +433,41 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
     }
   };
 
+  if (!challenge) return null;
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-xs flex flex-col justify-between transition hover:shadow-sm">
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-xl shadow-xs">
-            {challenge.badgeIcon}
+            {challenge.badgeIcon || "🎯"}
           </span>
           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-            {challenge.duration}
+            {challenge.duration || "Semana"}
           </span>
         </div>
 
         <h3 className="text-base font-bold text-foreground font-display">{challenge.title}</h3>
         <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{challenge.description}</p>
 
-        <div className="mt-4 space-y-1.5">
-          <p className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">Passos sugeridos:</p>
-          <ul className="space-y-1 text-xs text-foreground/90">
-            {challenge.steps.map((s, i) => (
-              <li key={i} className="flex items-start gap-1.5">
-                <span className="text-accent font-bold">•</span>
-                <span>{s}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {challenge.steps && challenge.steps.length > 0 && (
+          <div className="mt-4 space-y-1.5">
+            <p className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">Passos sugeridos:</p>
+            <ul className="space-y-1 text-xs text-foreground/90">
+              {challenge.steps.map((s, i) => (
+                <li key={i} className="flex items-start gap-1.5">
+                  <span className="text-accent font-bold">•</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="mt-5 border-t border-border/60 pt-3 flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
-          👥 {challenge.participants.length} pessoas participando
+          👥 {participants.length} pessoas participando
         </span>
         <button
           type="button"
@@ -479,12 +490,14 @@ interface ProfessionalCardProps {
 }
 
 export function ProfessionalCard({ professional }: ProfessionalCardProps) {
+  if (!professional) return null;
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-start gap-3 mb-3">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-base font-bold text-primary-foreground shadow-xs">
-            {initials(professional.name)}
+            {initials(professional.name || "Nutri")}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
@@ -502,17 +515,19 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
           {professional.bio}
         </p>
 
-        <div className="flex flex-wrap gap-1 mb-3">
-          {professional.focus.slice(0, 3).map((f) => (
-            <span key={f} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              {f}
-            </span>
-          ))}
-        </div>
+        {professional.focus && professional.focus.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {professional.focus.slice(0, 3).map((f) => (
+              <span key={f} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="text-[11px] text-muted-foreground space-y-0.5">
           <p>📍 {professional.location}</p>
-          <p>📚 {professional.articlesCount} publicações · 🥗 {professional.recipesCount} receitas</p>
+          <p>📚 {professional.articlesCount || 0} publicações · 🥗 {professional.recipesCount || 0} receitas</p>
         </div>
       </div>
 
@@ -534,3 +549,4 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
     </div>
   );
 }
+
