@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Users, FileText, MessageSquare, User, Settings } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Users, FileText, MessageSquare, User, Settings, Sparkles, MessageCircleHeart } from "lucide-react";
 import { useEffect } from "react";
 import { DashboardShell, type NavItem } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,6 +10,8 @@ const items: NavItem[] = [
   { to: "/nutricionista/pacientes", label: "Pacientes", icon: Users },
   { to: "/nutricionista/planos", label: "Planos Alimentares", icon: FileText },
   { to: "/nutricionista/mensagens", label: "Mensagens", icon: MessageSquare },
+  { to: "/espaco", label: "Espaço de Hoje", icon: MessageCircleHeart },
+  { to: "/tema-da-semana", label: "Tema da Semana", icon: Sparkles },
   { to: "/nutricionista/perfil", label: "Perfil", icon: User },
   { to: "/nutricionista/configuracoes", label: "Configurações", icon: Settings },
 ];

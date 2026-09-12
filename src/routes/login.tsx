@@ -19,20 +19,30 @@ function Login() {
     e.preventDefault();
     if (!email || !password) return toast.error("Preencha e-mail e senha.");
     loginUser(email, role, password);
-    toast.success("Bem-vindo(a) de volta!");
-    navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/paciente/dashboard" });
+    toast.success("Bem-vindo(a) de volta à sua jornada!");
+    navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
   };
-return ( <AuthLayout title="Login" subtitle="Entre na sua conta NutriConnect."> <form onSubmit={submit} className="space-y-5"> 
-<RoleTabs role={role} onChange={setRole} /> 
-<Field label="E-mail"> <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" /> </Field> 
-<Field label="Senha"> 
-  <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-   </Field> 
-<button className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90"> Entrar </button>
- <div className="flex items-center justify-between text-sm"> 
-  <Link to="/recuperar-senha" className="text-primary hover:underline">Esqueceu a senha?</Link>
-   <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar uma conta</Link> 
-   </div> </form> </AuthLayout> ); }
+  return (
+    <AuthLayout title="Bem-vindo de volta" subtitle="Entre na sua conta para continuar sua jornada.">
+      <form onSubmit={submit} className="space-y-5">
+        <RoleTabs role={role} onChange={setRole} />
+        <Field label="E-mail">
+          <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" />
+        </Field>
+        <Field label="Senha">
+          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+        </Field>
+        <button className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer">
+          Entrar na comunidade
+        </button>
+        <div className="flex items-center justify-between text-sm">
+          <Link to="/recuperar-senha" className="text-accent hover:underline">Esqueceu a senha?</Link>
+          <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">Criar uma conta</Link>
+        </div>
+      </form>
+    </AuthLayout>
+  );
+}
 export function AuthLayout({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-secundary/40">
