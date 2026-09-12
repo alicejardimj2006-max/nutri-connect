@@ -128,7 +128,7 @@ export function PostCard({ post }: PostCardProps) {
             {post.authorRole === "nutricionista" && (
               <BadgeCheck
                 className="h-4 w-4 text-accent"
-                title="Profissional de nutrição verificado"
+                aria-label="Profissional de nutrição verificado"
               />
             )}
           </div>
