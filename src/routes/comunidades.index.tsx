@@ -11,6 +11,7 @@ import {
   formatDate,
   initials,
   type Actor,
+  type Community,
 } from "@/lib/community";
 
 export const Route = createFileRoute("/comunidades/")({
@@ -38,23 +39,27 @@ function ComunidadesPage() {
   const { user } = useAuth();
   const { communities, posts, hydrated } = useCommunity();
   const [category, setCategory] = useState<string>("Todas");
+  const [searchTerm, setSearchTerm] = useState("");
   const [creating, setCreating] = useState(false);
 
   const actor: Actor | null = user ? { id: user.id, name: user.name, role: user.role } : null;
 
-  const filtered = useMemo(
-    () => (category === "Todas" ? communities : communities.filter((c) => c.category === category)),
-    [communities, category],
-  );
+  const filtered = useMemo(() => {
+    return communities.filter((c) => {
+      if (category !== "Todas" && c.category !== category) return false;
+      if (searchTerm.trim()) {
+        const q = searchTerm.toLowerCase();
+        if (!c.name.toLowerCase().includes(q) && !c.description.toLowerCase().includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [communities, category, searchTerm]);
 
-  const recentPosts = useMemo(
-    () =>
-      [...posts]
-        .filter((p) => communities.find((c) => c.id === p.communityId)?.status === "ativa")
-        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-        .slice(0, 4),
-    [posts, communities],
-  );
+  const featured = useMemo(() => {
+    return communities.filter((c) => c.status === "ativa").slice(0, 3);
+  }, [communities]);
 
   const pending = communities.filter((c) => c.status === "aguardando");
 
@@ -63,18 +68,19 @@ function ComunidadesPage() {
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-sm font-medium text-accent">Rede de cuidado</p>
-          <h1 className="mt-1 text-3xl font-bold text-primary md:text-4xl">Comunidades</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Espaços temáticos para trocar experiências sobre alimentação, sempre com um
-            nutricionista responsável acompanhando as conversas.
+          <h1 className="mt-1 text-3xl font-bold font-display text-primary md:text-4xl">
+            Comunidades
+          </h1>
+          <p className="mt-2 max-w-2xl text-base text-muted-foreground">
+            Encontre um grupo que combine com a sua jornada.
           </p>
         </div>
         <button
           onClick={() => setCreating((v) => !v)}
-          className="inline-flex items-center gap-2 self-start rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-soft transition hover:opacity-90"
+          className="inline-flex items-center gap-2 self-start rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-soft transition hover:bg-accent/90"
         >
           <Plus className="h-4 w-4" />
-          Criar nova comunidade
+          Criar comunidade
         </button>
       </header>
 
@@ -89,14 +95,14 @@ function ComunidadesPage() {
                 Deseja assumir a moderação destas comunidades?
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Elas foram sugeridas por pacientes e só ficam públicas com um profissional
-                responsável.
+                Elas foram sugeridas por pacientes e aguardam um profissional responsável para
+                iniciar as publicações.
               </p>
               <ul className="mt-4 space-y-3">
                 {pending.map((c) => (
                   <li
                     key={c.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-3"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-3 shadow-sm border border-border"
                   >
                     <div>
                       <p className="text-sm font-semibold text-foreground">{c.name}</p>
@@ -121,18 +127,43 @@ function ComunidadesPage() {
         </section>
       )}
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
+      {/* Comunidades em destaque */}
+      {!searchTerm && category === "Todas" && featured.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-xl font-bold font-display text-foreground mb-6">
+            Comunidades em destaque
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((c) => (
+              <CommunityCard key={c.id} community={c} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="mt-12 border-t border-border pt-12 grid gap-8 lg:grid-cols-[260px_1fr]">
         <aside className="space-y-6">
-          <div className="rounded-2xl border bg-card p-4 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground">Categorias temáticas</h2>
-            <div className="mt-3 flex flex-wrap gap-2 lg:flex-col lg:items-start">
+          <div className="rounded-2xl border bg-card p-5 shadow-card">
+            <h2 className="text-sm font-semibold text-foreground mb-4">Buscar</h2>
+            <input
+              type="text"
+              placeholder="Nome ou tema..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div className="rounded-2xl border bg-card p-5 shadow-card">
+            <h2 className="text-sm font-semibold text-foreground mb-4">Categorias temáticas</h2>
+            <div className="flex flex-wrap gap-2 lg:flex-col lg:items-start">
               {["Todas", ...CATEGORIES].map((c) => (
                 <button
                   key={c}
                   onClick={() => setCategory(c)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                  className={`rounded-full px-4 py-2 text-xs font-medium transition ${
                     category === c
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-secondary text-secondary-foreground hover:bg-muted"
                   }`}
                 >
@@ -141,123 +172,88 @@ function ComunidadesPage() {
               ))}
             </div>
           </div>
-
-          <div className="rounded-2xl border bg-[var(--card)] p-4 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground">Últimas publicações</h2>
-            <ul className="mt-3 space-y-3">
-              {recentPosts.map((p) => {
-                const c = communities.find((x) => x.id === p.communityId);
-                return (
-                  <li key={p.id} className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">{p.authorName}</span> em{" "}
-                    {c && (
-                      <Link
-                        to="/comunidades/$slug"
-                        params={{ slug: c.slug }}
-                        className="text-accent hover:underline"
-                      >
-                        {c.name}
-                      </Link>
-                    )}
-                    <p className="mt-1 line-clamp-2">{p.text}</p>
-                  </li>
-                );
-              })}
-              {recentPosts.length === 0 && (
-                <li className="text-xs text-muted-foreground">Ainda sem publicações.</li>
-              )}
-            </ul>
-          </div>
         </aside>
 
         <section className="grid gap-5 sm:grid-cols-2">
-          {filtered.map((c) => {
-            let coverImage = "/images/communities/friends-dinner.jpg";
-            if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
-            if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
-            if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
-
-            return (
-              <article
-                key={c.id}
-                className="flex flex-col rounded-3xl border border-border bg-card shadow-card overflow-hidden transition hover:shadow-lg"
-              >
-                <div className="h-32 w-full relative">
-                  <img
-                    src={coverImage}
-                    alt={c.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute top-3 left-3">
-                    <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider">
-                      {c.category}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-5 flex flex-col flex-1">
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    {c.status === "aguardando" ? (
-                      <span className="rounded-full bg-warning/20 px-2.5 py-1 text-[10px] font-semibold text-warning-foreground">
-                        Aguardando Moderação
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-semibold text-primary">
-                        <BadgeCheck className="h-3 w-3" /> Ativa
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground font-display leading-tight">
-                    {c.name}
-                  </h3>
-                  <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">
-                    {c.description}
-                  </p>
-
-                  {c.responsible && (
-                    <div className="mt-5 flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-3">
-                      <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs">
-                        {initials(c.responsible.name)}
-                      </span>
-                      <div className="text-xs">
-                        <p className="font-semibold text-foreground">{c.responsible.name}</p>
-                        <p className="text-muted-foreground">
-                          Responsável · {c.responsible.credential}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-5 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
-                    <span className="inline-flex items-center gap-1">
-                      <Users className="h-4 w-4 text-accent" /> {c.members.length} membros
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <MessageCircle className="h-4 w-4 text-accent" />
-                      {posts.filter((p) => p.communityId === c.id).length} publicações
-                    </span>
-                  </div>
-
-                  <Link
-                    to="/comunidades/$slug"
-                    params={{ slug: c.slug }}
-                    className="mt-5 text-center rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-                  >
-                    Entrar na comunidade
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
+          {filtered.map((c) => (
+            <CommunityCard key={c.id} community={c} />
+          ))}
           {hydrated && filtered.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              Nenhuma comunidade nesta categoria ainda.
+              Nenhuma comunidade encontrada para este filtro.
             </p>
           )}
         </section>
       </div>
     </div>
+  );
+}
+
+function CommunityCard({ community: c }: { community: Community }) {
+  const { posts } = useCommunity();
+
+  let coverImage = "/images/communities/friends-dinner.jpg";
+  if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
+  if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
+  if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
+
+  return (
+    <article className="flex flex-col rounded-3xl border border-border bg-card shadow-card overflow-hidden transition hover:shadow-lg">
+      <div className="h-32 w-full relative">
+        <img src={coverImage} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute top-3 left-3">
+          <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider">
+            {c.category}
+          </span>
+        </div>
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          {c.status === "aguardando" ? (
+            <span className="rounded-full bg-warning/20 px-2.5 py-1 text-[10px] font-semibold text-warning-foreground">
+              Aguardando Moderação
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-semibold text-primary">
+              <BadgeCheck className="h-3 w-3" /> Ativa
+            </span>
+          )}
+        </div>
+        <h3 className="text-xl font-bold text-foreground font-display leading-tight">{c.name}</h3>
+        <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
+
+        {c.responsible && (
+          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-3">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs">
+              {initials(c.responsible.name)}
+            </span>
+            <div className="text-xs">
+              <p className="font-semibold text-foreground">{c.responsible.name}</p>
+              <p className="text-muted-foreground">Responsável · {c.responsible.credential}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-5 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
+          <span className="inline-flex items-center gap-1">
+            <Users className="h-4 w-4 text-accent" /> {c.members.length} membros
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <MessageCircle className="h-4 w-4 text-accent" />
+            {posts.filter((p) => p.communityId === c.id).length} publicações
+          </span>
+        </div>
+
+        <Link
+          to="/comunidades/$slug"
+          params={{ slug: c.slug }}
+          className="mt-5 text-center rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
+        >
+          Ver comunidade
+        </Link>
+      </div>
+    </article>
   );
 }
 

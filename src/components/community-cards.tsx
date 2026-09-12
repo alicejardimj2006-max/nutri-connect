@@ -36,6 +36,7 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
+  const { communities } = useCommunity();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
 
@@ -97,40 +98,56 @@ export function PostCard({ post }: PostCardProps) {
     else if (post.authorId === "seed-nutri-pedro") avatarImage = "/images/professionals/prof-2.jpg";
   }
 
+  const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
+
   // --- RENDERS COMUNS ---
   const renderAuthorInfo = (isSpecialist = false) => (
-    <div className="flex items-center gap-3 mb-4">
-      <Link
-        to="/perfil/$userId"
-        params={{ userId: post.authorId }}
-        className={`grid overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0 ${isSpecialist ? "h-12 w-12" : "h-10 w-10"}`}
-      >
-        {avatarImage ? (
-          <img src={avatarImage} alt={post.authorName} className="h-full w-full object-cover" />
-        ) : (
-          initials(post.authorName)
-        )}
-      </Link>
-      <div>
-        <div className="flex items-center gap-1.5">
-          <Link
-            to="/perfil/$userId"
-            params={{ userId: post.authorId }}
-            className={`font-semibold text-foreground hover:underline ${isSpecialist ? "text-base" : "text-sm"}`}
-          >
-            {post.authorName}
-          </Link>
-          {post.authorRole === "nutricionista" && (
-            <BadgeCheck
-              className="h-4 w-4 text-accent"
-              title="Profissional de nutrição verificado"
-            />
+    <div className="flex items-start justify-between mb-4 gap-4">
+      <div className="flex items-center gap-3">
+        <Link
+          to="/perfil/$userId"
+          params={{ userId: post.authorId }}
+          className={`grid overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0 ${isSpecialist ? "h-12 w-12" : "h-10 w-10"}`}
+        >
+          {avatarImage ? (
+            <img src={avatarImage} alt={post.authorName} className="h-full w-full object-cover" />
+          ) : (
+            initials(post.authorName)
           )}
+        </Link>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <Link
+              to="/perfil/$userId"
+              params={{ userId: post.authorId }}
+              className={`font-semibold text-foreground hover:underline ${isSpecialist ? "text-base" : "text-sm"}`}
+            >
+              {post.authorName}
+            </Link>
+            {post.authorRole === "nutricionista" && (
+              <BadgeCheck
+                className="h-4 w-4 text-accent"
+                title="Profissional de nutrição verificado"
+              />
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-1">
+            {isSpecialist && post.authorSpecialty
+              ? post.authorSpecialty
+              : formatDate(post.createdAt)}
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {isSpecialist && post.authorSpecialty ? post.authorSpecialty : formatDate(post.createdAt)}
-        </p>
       </div>
+
+      {community && (
+        <Link
+          to="/comunidades/$slug"
+          params={{ slug: community.slug }}
+          className="shrink-0 text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground px-2 py-1 rounded-md transition border border-border"
+        >
+          Da comunidade: <span className="text-accent">{community.name}</span>
+        </Link>
+      )}
     </div>
   );
 

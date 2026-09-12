@@ -97,7 +97,7 @@ function EspacoDeHojePage() {
                   className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Compartilhar na comunidade</span>
+                  <span>Compartilhar no Espaço de Hoje</span>
                 </button>
               }
             />

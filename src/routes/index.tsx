@@ -167,6 +167,64 @@ function HomePage() {
           </div>
         </section>
 
+        {/* 2.5 COMUNIDADES (Novo Bloco) */}
+        <section className="py-20 bg-secondary/30">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
+              <div className="max-w-xl">
+                <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-bold text-accent mb-4 uppercase tracking-wider">
+                  <Sparkles className="h-3.5 w-3.5" /> Grupos Específicos
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground mb-4">
+                  Encontre pessoas que estão vivendo uma jornada parecida.
+                </h2>
+                <p className="text-base text-muted-foreground leading-relaxed mb-8">
+                  Participe de grupos sobre alimentação, hábitos e interesses específicos, com
+                  acompanhamento de profissionais. Seja para rotinas mais corridas ou desafios de
+                  saúde, existe uma comunidade para você.
+                </p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link
+                    to="/comunidades"
+                    className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-xs transition hover:bg-accent/90"
+                  >
+                    Explorar comunidades
+                  </Link>
+                  <Link
+                    to="/comunidades"
+                    className="rounded-full border-2 border-border bg-card px-6 py-3 text-sm font-bold text-foreground transition hover:bg-secondary"
+                  >
+                    Criar comunidade
+                  </Link>
+                </div>
+              </div>
+
+              <div className="w-full lg:w-1/2 relative">
+                <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-sm border border-border/60">
+                  <img
+                    src="/images/experiences/cooking.jpg"
+                    alt="Pessoas cozinhando juntas"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="absolute -bottom-6 -left-6 rounded-2xl bg-card border border-border p-5 shadow-sm max-w-[200px] hidden sm:block">
+                  <p className="text-xs font-bold text-foreground mb-1">Cozinha do dia a dia</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">125 membros ativos</p>
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="h-6 w-6 rounded-full border-2 border-card bg-primary-soft"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* 3. RECEITAS (Editorial visual) */}
         {mainRecipe && (
           <section className="py-24 sm:py-32">
