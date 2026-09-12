@@ -720,7 +720,10 @@ export function ProfessionalCard({ professional }: ProfessionalCardProps) {
               <h3 className="text-sm font-bold text-foreground truncate font-display">
                 {professional.name}
               </h3>
-              <BadgeCheck className="h-4 w-4 text-accent shrink-0" aria-label="Registro verificado" />
+              <BadgeCheck
+                className="h-4 w-4 text-accent shrink-0"
+                aria-label="Registro verificado"
+              />
             </div>
             <p className="text-xs text-accent font-medium">{professional.specialty}</p>
             <p className="text-[11px] text-muted-foreground">{professional.crn}</p>

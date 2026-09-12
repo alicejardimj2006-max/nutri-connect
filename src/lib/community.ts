@@ -65,6 +65,8 @@ export interface Community {
   name: string;
   description: string;
   category: string;
+  objective?: string;
+  coverImage?: string;
   createdById: string;
   createdByName: string;
   createdByRole: UserRole;
@@ -809,6 +811,8 @@ export function createCommunity(input: {
   name: string;
   description: string;
   category: string;
+  objective?: string;
+  coverImage?: string;
   actor: Actor;
   credential?: string;
 }) {
@@ -818,6 +822,8 @@ export function createCommunity(input: {
     name: input.name,
     description: input.description,
     category: input.category,
+    objective: input.objective,
+    coverImage: input.coverImage,
     createdById: input.actor.id,
     createdByName: input.actor.name,
     createdByRole: input.actor.role,

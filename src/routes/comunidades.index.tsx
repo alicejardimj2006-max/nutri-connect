@@ -73,7 +73,8 @@ function ComunidadesPage() {
             Comunidades
           </h1>
           <p className="mt-2 max-w-2xl text-base text-muted-foreground">
-            Encontre um grupo que combine com a sua jornada.
+            Encontre um grupo que combine com a sua jornada. Participe de grupos sobre alimentação,
+            hábitos e interesses específicos, com acompanhamento de profissionais.
           </p>
         </div>
         <button
@@ -192,11 +193,14 @@ function ComunidadesPage() {
 
 function CommunityCard({ community: c }: { community: Community }) {
   const { posts } = useCommunity();
+  const { user } = useAuth();
 
-  let coverImage = "/images/communities/friends-dinner.jpg";
-  if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
-  if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
-  if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
+  let coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
+  if (!c.coverImage) {
+    if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
+    if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
+    if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
+  }
 
   return (
     <article className="flex flex-col rounded-3xl border border-border bg-card shadow-card overflow-hidden transition hover:shadow-lg">
@@ -241,7 +245,7 @@ function CommunityCard({ community: c }: { community: Community }) {
             </div>
             <div className="text-xs">
               <p className="font-semibold text-foreground text-warning/90">
-                Aguardando nutricionista responsável
+                Aguardando nutricionista
               </p>
             </div>
           </div>
@@ -290,6 +294,8 @@ function CommunityCard({ community: c }: { community: Community }) {
 function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [objective, setObjective] = useState("");
+  const [coverImage, setCoverImage] = useState("");
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
 
   if (!actor) {
@@ -311,11 +317,18 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
           toast.error("Preencha o nome e a descrição da comunidade.");
           return;
         }
-        createCommunity({ name: name.trim(), description: description.trim(), category, actor });
+        createCommunity({
+          name: name.trim(),
+          description: description.trim(),
+          objective: objective.trim(),
+          coverImage: coverImage.trim(),
+          category,
+          actor,
+        });
         toast.success(
           actor.role === "nutricionista"
             ? "Comunidade criada e ativada."
-            : "Comunidade sugerida! Ela ficará pública quando um nutricionista assumir a moderação.",
+            : "Comunidade criada. Agora ela aguarda um nutricionista responsável.",
         );
         onDone();
       }}
@@ -325,7 +338,7 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
       <p className="mt-1 text-xs text-muted-foreground">
         {actor.role === "nutricionista"
           ? "Como profissional, você será o responsável e a comunidade é ativada na hora."
-          : "Sua sugestão ficará como “aguardando nutricionista responsável” até um profissional assumir."}
+          : "Sua sugestão ficará como “aguardando nutricionista” até um profissional assumir."}
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block">
@@ -346,16 +359,41 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
           </select>
         </label>
       </div>
-      <label className="mt-4 block">
-        <span className="mb-1 block text-xs font-medium text-muted-foreground">Descrição</span>
-        <textarea
-          rows={3}
-          className="textarea"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Sobre o que a comunidade conversa?"
-        />
-      </label>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">Descrição</span>
+          <textarea
+            rows={3}
+            className="textarea"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Sobre o que a comunidade conversa?"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">Objetivo</span>
+          <textarea
+            rows={3}
+            className="textarea"
+            value={objective}
+            onChange={(e) => setObjective(e.target.value)}
+            placeholder="Qual o objetivo prático desta comunidade?"
+          />
+        </label>
+      </div>
+      <div className="mt-4 block">
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+            Imagem/Capa (opcional)
+          </span>
+          <input
+            className="input"
+            value={coverImage}
+            onChange={(e) => setCoverImage(e.target.value)}
+            placeholder="URL da imagem (ex: /images/communities/group.jpg)"
+          />
+        </label>
+      </div>
       <div className="mt-4 flex gap-3">
         <button className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
           Criar comunidade

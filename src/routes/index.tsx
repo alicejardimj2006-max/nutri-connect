@@ -246,7 +246,8 @@ function HomePage() {
                 {/* Destaque Principal */}
                 <div className="lg:col-span-8">
                   <Link
-                    to="/receitas/$id" params={{ id: mainRecipe.id }}
+                    to="/receitas/$id"
+                    params={{ id: mainRecipe.id }}
                     className="group block relative h-[400px] sm:h-[500px] w-full overflow-hidden rounded-3xl"
                   >
                     <img
@@ -274,7 +275,8 @@ function HomePage() {
                   {secondaryRecipes.map((r, i) => (
                     <Link
                       key={r.id}
-                      to="/receitas/$id" params={{ id: r.id }}
+                      to="/receitas/$id"
+                      params={{ id: r.id }}
                       className="group flex-1 relative overflow-hidden rounded-3xl flex items-end min-h-[200px]"
                     >
                       <img
