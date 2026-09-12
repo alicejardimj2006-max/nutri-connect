@@ -10,6 +10,7 @@ import {
   createCommunity,
   formatDate,
   initials,
+  toggleMembership,
   type Actor,
   type Community,
 } from "@/lib/community";
@@ -223,14 +224,25 @@ function CommunityCard({ community: c }: { community: Community }) {
         <h3 className="text-xl font-bold text-foreground font-display leading-tight">{c.name}</h3>
         <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
 
-        {c.responsible && (
+        {c.responsible ? (
           <div className="mt-5 flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs shrink-0">
               {initials(c.responsible.name)}
             </span>
             <div className="text-xs">
               <p className="font-semibold text-foreground">{c.responsible.name}</p>
               <p className="text-muted-foreground">Responsável · {c.responsible.credential}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border border-dashed bg-secondary/10 p-3">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-muted text-sm font-bold text-muted-foreground shadow-xs shrink-0">
+              <ShieldQuestion className="h-4 w-4" />
+            </div>
+            <div className="text-xs">
+              <p className="font-semibold text-foreground text-warning/90">
+                Aguardando nutricionista responsável
+              </p>
             </div>
           </div>
         )}
@@ -245,13 +257,31 @@ function CommunityCard({ community: c }: { community: Community }) {
           </span>
         </div>
 
-        <Link
-          to="/comunidades/$slug"
-          params={{ slug: c.slug }}
-          className="mt-5 text-center rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-        >
-          Ver comunidade
-        </Link>
+        <div className="mt-5 flex gap-2">
+          {c.status === "ativa" && user && (
+            <button
+              onClick={() => {
+                toggleMembership(c.id, { id: user.id, name: user.name, role: user.role });
+              }}
+              className={`flex-1 rounded-full px-4 py-2 text-[13px] font-semibold transition shadow-soft ${
+                c.members.some((m) => m.id === user.id)
+                  ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
+                  : "bg-primary-soft text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20"
+              }`}
+            >
+              {c.members.some((m) => m.id === user.id) ? "Você participa" : "Participar"}
+            </button>
+          )}
+          <Link
+            to="/comunidades/$slug"
+            params={{ slug: c.slug }}
+            className={`text-center rounded-full bg-accent px-4 py-2 text-[13px] font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 ${
+              c.status !== "ativa" || !user ? "flex-1" : ""
+            }`}
+          >
+            Ver comunidade
+          </Link>
+        </div>
       </div>
     </article>
   );

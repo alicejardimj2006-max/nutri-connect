@@ -10,6 +10,7 @@ export function SiteHeader() {
 
   const links = [
     { to: "/espaco", label: "Espaço de Hoje" },
+    { to: "/comunidades", label: "Comunidades" },
     { to: "/tema-da-semana", label: "Tema da Semana" },
     { to: "/receitas", label: "Receitas" },
     { to: "/desafios", label: "Desafios" },
@@ -118,7 +119,7 @@ export function SiteHeader() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm font-medium"
             >
-              <Search className="h-4 w-4 text-accent" /> Buscar na comunidade
+              <Search className="h-4 w-4 text-accent" /> Buscar no NutriConnect
             </Link>
 
             {links.map((l) => (
