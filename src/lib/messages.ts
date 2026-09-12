@@ -58,7 +58,7 @@ const DEFAULT_MESSAGES: Record<string, ChatMessage[]> = {
     {
       id: "sup-1",
       sender: "support",
-      text: "Olá! Seja bem-vindo(a) ao Suporte NutriConnect 🌿. Como posso te ajudar hoje? Pode perguntar sobre consultas, planos alimentares, substituições ou suporte técnico!",
+      text: "Olá! Seja bem-vindo(a) à sua Jornada NutriConnect 🌿. Como posso ajudar você hoje? Fique à vontade para perguntar sobre sua jornada alimentar, comunidades, receitas ou dúvidas com a plataforma!",
       time: "10:00",
     },
   ],
@@ -143,38 +143,38 @@ export function generateSupportBotReply(userQuestion: string): string {
   const q = userQuestion.toLowerCase().trim();
 
   if (q.includes("senha") || q.includes("esqueci") || q.includes("recuperar")) {
-    return "🔐 Para recuperar ou redefinir sua senha, acesse a página de login e clique em 'Esqueceu a senha?' ou vá para /recuperar-senha. Você receberá um código de 6 dígitos no seu e-mail cadastrado!";
+    return "🔐 Para recuperar sua senha, acesse a página inicial e clique em 'Esqueceu a senha?' ou vá para /recuperar-senha. Nós enviaremos um link de acesso para o seu e-mail com toda a segurança!";
   }
 
   if (q.includes("plano") || q.includes("dieta") || q.includes("cardapio") || q.includes("cardápio")) {
-    return "🥗 Seu plano alimentar pode ser acessado na aba 'Plano Alimentar' do seu painel. Lá você encontra as opções de refeição, calculador de calorias e a tabela com opções de substituição de alimentos!";
+    return "🥗 Seu plano alimentar agora faz parte da sua 'Minha Jornada'. Nele você encontra inspirações de refeição e trocas inteligentes, tudo pensado para respeitar o seu ritmo, sem dietas restritivas!";
   }
 
   if (q.includes("agend") || q.includes("consulta") || q.includes("marcar") || q.includes("horario") || q.includes("horário")) {
-    return "📅 Para agendar ou remarcar uma consulta, acesse a aba 'Agendamentos' no seu perfil ou vá na página de 'Profissionais'. Lá você pode escolher o melhor dia e horário disponível na agenda do seu nutricionista!";
+    return "📅 Você pode agendar ou remarcar um encontro com seu profissional acessando a área 'Agendamentos' na sua Jornada. É só escolher o dia e horário que melhor se encaixam na sua rotina!";
   }
 
   if (q.includes("preco") || q.includes("preço") || q.includes("valor") || q.includes("pagamento") || q.includes("pix")) {
-    return "💳 O uso da plataforma é gratuito para acompanhamento básico! Oferecemos o plano Paciente Premium por R$ 29/mês (com NutriAI ilimitada) e o plano Nutricionista Pro por R$ 89/mês. Aceitamos PIX e cartão de crédito.";
+    return "💳 O acesso à comunidade e às funcionalidades básicas da sua Jornada é gratuito! Caso tenha interesse em ferramentas avançadas, temos planos acessíveis para você e para profissionais da nutrição.";
   }
 
   if (q.includes("agua") || q.includes("água") || q.includes("meta") || q.includes("hidrata")) {
-    return "💧 A meta padrão sugerida de consumo de água é entre 35ml e 40ml por kg de peso corporal (aprox. 2.5 litros/dia). Você pode registrar o progresso no seu painel diário!";
+    return "💧 Uma hidratação constante é um lindo passo na sua jornada. A sugestão inicial costuma ser entre 35ml a 40ml por kg de peso, mas ouça o seu corpo e vá adaptando aos poucos!";
   }
 
-  if (q.includes("substitu") || q.includes("trocar") || q.includes("troca")) {
-    return "🔄 Caso precise trocar um alimento da sua dieta (ex: trocar frango por peixe ou pão por tapioca), clique no botão de substituição ao lado do alimento no seu Plano Alimentar. As equivalências calóricas são calculadas automaticamente!";
+  if (q.includes("substitu") || q.includes("trocar") || q.includes("troca") || q.includes("vontade")) {
+    return "🔄 Na sua Jornada, nós abraçamos a flexibilidade. Você pode trocar alimentos no seu plano buscando o que mais te acolhe no dia. Explore também o 'Espaço de Hoje' para encontrar receitas inspiradoras!";
   }
 
-  if (q.includes("desafio") || q.includes("comunidade") || q.includes("post")) {
-    return "🏆 No 'Espaço de Hoje' e na aba 'Desafios', você pode interagir com outros membros da comunidade, marcar presença em desafios semanais de hábitos e compartilhar suas receitas caseiras!";
+  if (q.includes("desafio") || q.includes("comunidade") || q.includes("post") || q.includes("tema")) {
+    return "🏆 O 'Espaço de Hoje' e os 'Temas da Semana' são o coração pulsante da nossa comunidade. Participe sem medo, compartilhe suas experiências e celebre cada pequeno passo com pessoas reais!";
   }
 
   if (q.includes("cancelar") || q.includes("reembolso")) {
-    return "ℹ️ Cancelamentos de assinatura podem ser feitos a qualquer momento em 'Configurações > Conta' sem fidelidade ou taxas adicionais.";
+    return "ℹ️ Entendemos que as rotinas mudam. Você pode cancelar qualquer assinatura em 'Configurações > Conta' de forma simples e acolhedora, sem burocracias.";
   }
 
-  return `🤖 Recebi sua mensagem: "${userQuestion}". Entendi sua dúvida! Nossa equipe de atendimento e assistentes nutricionais registraram essa solicitação. Se precisar de uma prescrição médica específica, não deixe de agendar com sua nutricionista responsável!`;
+  return `🌿 Entendi sua dúvida! Recebemos sua mensagem: "${userQuestion}". Nossa equipe e os profissionais da comunidade estão aqui para te apoiar. Lembre-se, cada jornada é única e estamos juntos nessa caminhada!`;
 }
 
 // Main function to send a message and trigger response if chatting with Support or Nutritionist
@@ -207,7 +207,7 @@ export function sendMessage(conversationId: string, text: string): ChatMessage {
     if (conversationId === "suporte") {
       replyText = generateSupportBotReply(text);
     } else {
-      replyText = `Olá! Recebi sua mensagem: "${text}". Já anotei no seu prontuário e estou avaliando a melhor recomendação para o seu plano! 💚`;
+      replyText = `Olá! Recebi sua mensagem: "${text}". Já anotei aqui com carinho e estou avaliando a melhor sugestão para a sua jornada! 💚`;
     }
 
     const replyMsg: ChatMessage = {

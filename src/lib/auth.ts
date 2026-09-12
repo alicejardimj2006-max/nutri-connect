@@ -74,8 +74,17 @@ export function registerUser(data: {
   cpf?: string;
   birthDate?: string;
   password?: string;
+  goal?: string;
+  crn?: string;
+  specialty?: string;
 }): AuthUser {
-  const cleanEmail = data.email.trim();
+  const cleanEmail = data.email.toLowerCase().trim();
+  
+  const existingUsers = getStoredUsers();
+  if (existingUsers[cleanEmail]) {
+    throw new Error("E-mail já cadastrado");
+  }
+
   const id =
     typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
@@ -90,8 +99,9 @@ export function registerUser(data: {
     cpf: data.cpf?.trim() || "",
     birthDate: data.birthDate || "",
     password: data.password,
-    goal: data.role === "paciente" ? "Perda de peso" : undefined,
-    specialty: data.role === "nutricionista" ? "Clínica" : undefined,
+    goal: data.role === "paciente" ? data.goal || "Comer melhor e com prazer" : undefined,
+    crn: data.crn?.trim() || "",
+    specialty: data.role === "nutricionista" ? data.specialty || "Clínica" : undefined,
     attendanceHours: data.role === "nutricionista" ? "Seg–Sex, 08h–18h" : undefined,
   };
 
@@ -105,38 +115,25 @@ export function loginUser(email: string, role: UserRole, password?: string): Aut
   const users = getStoredUsers();
   const existing = users[cleanEmail];
 
-  if (existing) {
-    const activeUser: AuthUser = {
-      ...existing,
-      role: role || existing.role,
-    };
-    setUser(activeUser);
-    return activeUser;
+  if (!existing) {
+    throw new Error("E-mail não encontrado. Verifique ou crie sua conta.");
   }
 
-  // Derive initial friendly name from email if not previously registered
-  const nameFromEmail = email
-    .split("@")[0]
-    .replace(/[._-]/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  // Se a conta tiver senha (é uma conta real criada via cadastro), precisamos validar
+  if (existing.password && existing.password !== password) {
+    throw new Error("Senha incorreta.");
+  }
 
-  const fallbackUser: StoredAccount = {
-    id:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2),
-    name: nameFromEmail || (role === "nutricionista" ? "Nutricionista" : "Paciente"),
-    email: cleanEmail,
-    role,
-    password,
+  if (existing.role !== role) {
+    throw new Error(`Esta conta está registrada como ${existing.role}.`);
+  }
+
+  const activeUser: AuthUser = {
+    ...existing,
   };
-
-  saveStoredUser(fallbackUser);
-  setUser(fallbackUser);
-  return fallbackUser;
+  
+  setUser(activeUser);
+  return activeUser;
 }
 
 export function updateCurrentUser(updates: Partial<AuthUser>): AuthUser | null {

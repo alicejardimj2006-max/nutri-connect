@@ -12,7 +12,7 @@ export const Route = createFileRoute("/cadastro")({
 function Cadastro() {
   const navigate = useNavigate();
   const [role, setRole] = useState<UserRole>("paciente");
-  const [form, setForm] = useState({ nome: "", cpf: "", nasc: "", tel: "", email: "", senha: "", conf: "" });
+  const [form, setForm] = useState({ nome: "", cpf: "", nasc: "", tel: "", email: "", senha: "", conf: "", crn: "", especialidade: "" });
   const [selectedGoal, setSelectedGoal] = useState("Comer melhor e com prazer");
 
   const GOALS = [
@@ -31,20 +31,28 @@ function Cadastro() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.values(form).some((v) => !v)) return toast.error("Preencha todos os campos.");
+    if (!form.nome || !form.email || !form.senha) return toast.error("Preencha nome, e-mail e senha.");
     if (form.senha !== form.conf) return toast.error("As senhas não coincidem.");
     if (form.senha.length < 6) return toast.error("A senha deve ter ao menos 6 caracteres.");
-    registerUser({
-      name: form.nome,
-      email: form.email,
-      role,
-      phone: form.tel,
-      cpf: form.cpf,
-      birthDate: form.nasc,
-      password: form.senha,
-    });
-    toast.success("Conta criada com sucesso! Bem-vindo à comunidade.");
-    navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
+    
+    try {
+      registerUser({
+        name: form.nome,
+        email: form.email,
+        role,
+        phone: form.tel,
+        cpf: form.cpf,
+        birthDate: form.nasc,
+        password: form.senha,
+        goal: role === "paciente" ? selectedGoal : undefined,
+        crn: role === "nutricionista" ? form.crn : undefined,
+        specialty: role === "nutricionista" ? form.especialidade : undefined,
+      });
+      toast.success("Conta criada com sucesso! Bem-vindo à comunidade.");
+      navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao criar conta.");
+    }
   };
 
   return (
@@ -76,8 +84,15 @@ function Cadastro() {
           </div>
         )}
 
+        {role === "nutricionista" && (
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="CRN"><input className="input" value={form.crn} onChange={upd("crn")} placeholder="00000/UF" /></Field>
+            <Field label="Especialidade Principal"><input className="input" value={form.especialidade} onChange={upd("especialidade")} placeholder="Ex: Esportiva, Clínica" /></Field>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
-          <Field label="CPF"><input className="input" value={form.cpf} onChange={upd("cpf")} placeholder="000.000.000-00" /></Field>
+          <Field label={role === "nutricionista" ? "CPF" : "CPF (Opcional)"}><input className="input" value={form.cpf} onChange={upd("cpf")} placeholder="000.000.000-00" /></Field>
           <Field label="Data de nascimento"><input type="date" className="input" value={form.nasc} onChange={upd("nasc")} /></Field>
         </div>
         <Field label="Telefone"><input className="input" value={form.tel} onChange={upd("tel")} placeholder="(11) 99999-9999" /></Field>

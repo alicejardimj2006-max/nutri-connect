@@ -15,7 +15,8 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard, Section } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
-import { getWeeklyThemes } from "@/lib/community";
+import { getWeeklyThemes, getChallenges } from "@/lib/community";
+import { WeeklyThemeCard, ChallengeCard } from "@/components/community-cards";
 
 export const Route = createFileRoute("/paciente/dashboard")({
   component: Dashboard,
@@ -38,6 +39,8 @@ const proximas = [
 function Dashboard() {
   const { user } = useAuth();
   const activeTheme = getWeeklyThemes()[0];
+  const challenges = getChallenges();
+  const activeChallenge = challenges.length > 0 ? challenges[0] : null;
   const firstName = user?.name?.split(" ")[0] || "Paciente";
 
   return (
@@ -114,6 +117,20 @@ function Dashboard() {
             ))}
           </ul>
         </Section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {activeTheme && (
+          <Section title="O Pulso da Comunidade">
+            <WeeklyThemeCard theme={activeTheme} compact={true} />
+          </Section>
+        )}
+        
+        {activeChallenge && (
+          <Section title="Seu Desafio Atual">
+            <ChallengeCard challenge={activeChallenge} />
+          </Section>
+        )}
       </div>
 
       <div>

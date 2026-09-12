@@ -59,27 +59,31 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       };
     }
 
-    createCommunityPost({
-      type,
-      actor: {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        specialty: user.specialty ? `${user.specialty} · ${user.crn || ""}` : undefined,
-      },
-      title: title.trim() || undefined,
-      text: text.trim(),
-      tags: tags.length > 0 ? tags : [type],
-      recipeData,
-    });
+    try {
+      createCommunityPost({
+        type,
+        actor: {
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          specialty: user.specialty ? `${user.specialty} · ${user.crn || ""}` : undefined,
+        },
+        title: title.trim() || undefined,
+        text: text.trim(),
+        tags: tags.length > 0 ? tags : [type],
+        recipeData,
+      });
 
-    toast.success("Publicado com sucesso no Espaço de Hoje!");
-    setOpen(false);
-    setTitle("");
-    setText("");
-    setTagsInput("");
-    setIngredientsText("");
-    setStepsText("");
+      toast.success("Publicado com sucesso no Espaço de Hoje!");
+      setOpen(false);
+      setTitle("");
+      setText("");
+      setTagsInput("");
+      setIngredientsText("");
+      setStepsText("");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao publicar no Espaço de Hoje.");
+    }
   };
 
   return (

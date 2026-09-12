@@ -686,6 +686,11 @@ export function createCommunityPost(input: {
   communityId?: string;
   recipeData?: RecipeData;
 }): Post {
+  const trimmedText = input.text.trim();
+  if (!trimmedText) {
+    throw new Error("A publicação não pode ser vazia.");
+  }
+  
   const post: Post = {
     id: id(),
     type: input.type,
@@ -694,8 +699,8 @@ export function createCommunityPost(input: {
     authorName: input.actor.name,
     authorRole: input.actor.role,
     authorSpecialty: input.actor.specialty,
-    title: input.title,
-    text: input.text,
+    title: input.title?.trim(),
+    text: trimmedText,
     tags: input.tags || [],
     image: input.image,
     createdAt: new Date().toISOString(),
@@ -722,6 +727,11 @@ export function createPost(input: { communityId: string; actor: Actor; text: str
 }
 
 export function addComment(postId: string, actor: Actor, text: string) {
+  const trimmedText = text.trim();
+  if (!trimmedText) {
+    throw new Error("O comentário não pode ser vazio.");
+  }
+  
   update((s) => ({
     ...s,
     posts: s.posts.map((p) =>
@@ -736,7 +746,7 @@ export function addComment(postId: string, actor: Actor, text: string) {
                 authorId: actor.id,
                 authorName: actor.name,
                 authorRole: actor.role,
-                text,
+                text: trimmedText,
                 createdAt: new Date().toISOString(),
               },
             ],

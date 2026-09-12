@@ -77,6 +77,13 @@ function Agendamentos() {
     const monthNames = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
     const formattedDate = `${day} ${monthNames[monthIndex]} ${year}`;
 
+    // Conflict prevention
+    const isConflict = consultas.some((c) => c.status === "Agendada" && c.d === formattedDate && c.hora === hora);
+    if (isConflict) {
+      toast.error("Este horário já está ocupado com outra consulta. Por favor, escolha outro.");
+      return;
+    }
+
     const novaConsulta: AgendamentoItem = {
       id: Date.now().toString(),
       d: formattedDate,

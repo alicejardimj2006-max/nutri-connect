@@ -18,9 +18,14 @@ function Login() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return toast.error("Preencha e-mail e senha.");
-    loginUser(email, role, password);
-    toast.success("Bem-vindo(a) de volta à sua jornada!");
-    navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
+    
+    try {
+      loginUser(email, role, password);
+      toast.success("Bem-vindo(a) de volta à sua jornada!");
+      navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao fazer login.");
+    }
   };
   return (
     <AuthLayout title="Bem-vindo de volta" subtitle="Entre na sua conta para continuar sua jornada.">

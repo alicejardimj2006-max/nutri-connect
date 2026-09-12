@@ -71,10 +71,16 @@ export function PostCard({ post }: PostCardProps) {
       toast.info("Faça login para comentar.");
       return;
     }
-    if (!commentText.trim()) return;
-    addComment(post.id, { id: user.id, name: user.name, role: user.role }, commentText.trim());
-    setCommentText("");
-    toast.success("Comentário publicado!");
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
+    
+    try {
+      addComment(post.id, { id: user.id, name: user.name, role: user.role }, trimmed);
+      setCommentText("");
+      toast.success("Comentário publicado!");
+    } catch (err: any) {
+      toast.error(err.message || "Não foi possível publicar o comentário.");
+    }
   };
 
   const badgeConfig = {

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Search, ChefHat, Sparkles, BookOpen, Users, Award, Compass, ArrowRight } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
-import { PostCard, ChallengeCard, ProfessionalCard } from "@/components/community-cards";
+import { PostCard, ChallengeCard, ProfessionalCard, WeeklyThemeCard } from "@/components/community-cards";
 
 export const Route = createFileRoute("/buscar")({
   head: () => ({
@@ -18,10 +18,10 @@ export const Route = createFileRoute("/buscar")({
   component: BuscarPage,
 });
 
-type SearchTab = "tudo" | "receitas" | "experiencias" | "profissionais" | "desafios";
+type SearchTab = "tudo" | "receitas" | "experiencias" | "profissionais" | "desafios" | "comunidades";
 
 function BuscarPage() {
-  const { posts, challenges, professionals, weeklyTheme } = useCommunity();
+  const { posts, challenges, professionals, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
 
@@ -57,16 +57,30 @@ function BuscarPage() {
       c.category.toLowerCase().includes(q),
   );
 
+  const matchingCommunities = (communities || []).filter(
+    (c) =>
+      !q ||
+      c.name.toLowerCase().includes(q) ||
+      c.description.toLowerCase().includes(q) ||
+      c.category.toLowerCase().includes(q),
+  );
+
+  const matchingTheme = weeklyTheme && (
+    !q ||
+    weeklyTheme.title.toLowerCase().includes(q) ||
+    weeklyTheme.description.toLowerCase().includes(q)
+  ) ? [weeklyTheme] : [];
   const tabs: { id: SearchTab; label: string; count: number }[] = [
     {
       id: "tudo",
       label: "Tudo",
-      count: matchingPosts.length + matchingProfessionals.length + matchingChallenges.length,
+      count: matchingPosts.length + matchingProfessionals.length + matchingChallenges.length + matchingCommunities.length + matchingTheme.length,
     },
     { id: "receitas", label: "Receitas", count: matchingRecipes.length },
     { id: "experiencias", label: "Experiências", count: matchingExperiences.length },
     { id: "profissionais", label: "Especialistas", count: matchingProfessionals.length },
     { id: "desafios", label: "Desafios", count: matchingChallenges.length },
+    { id: "comunidades", label: "Comunidades", count: matchingCommunities.length },
   ];
 
   return (
@@ -116,6 +130,13 @@ function BuscarPage() {
 
         {/* Resultados */}
         <div className="space-y-10">
+          {/* Seção de Tema da Semana */}
+          {(activeTab === "tudo") && matchingTheme.length > 0 && (
+            <div className="mb-6">
+              <WeeklyThemeCard theme={matchingTheme[0]} compact={true} />
+            </div>
+          )}
+
           {/* Seção de Receitas */}
           {(activeTab === "tudo" || activeTab === "receitas") && matchingRecipes.length > 0 && (
             <div>
@@ -192,10 +213,45 @@ function BuscarPage() {
             </div>
           )}
 
+          {/* Seção de Comunidades */}
+          {(activeTab === "tudo" || activeTab === "comunidades") && matchingCommunities.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
+                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4 text-accent" />
+                  <span>Comunidades ({matchingCommunities.length})</span>
+                </h2>
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {matchingCommunities.map((c) => (
+                  <Link
+                    key={c.id}
+                    to="/comunidades/$slug"
+                    params={{ slug: c.slug }}
+                    className="block rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm"
+                  >
+                    <h3 className="text-base font-bold text-foreground font-display">{c.name}</h3>
+                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-foreground">
+                        {c.category}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {c.members.length} {c.members.length === 1 ? "membro" : "membros"}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Caso vazio */}
           {matchingPosts.length === 0 &&
             matchingProfessionals.length === 0 &&
-            matchingChallenges.length === 0 && (
+            matchingChallenges.length === 0 &&
+            matchingCommunities.length === 0 &&
+            matchingTheme.length === 0 && (
               <div className="rounded-3xl border border-dashed border-border p-12 text-center max-w-md mx-auto">
                 <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <h3 className="text-base font-bold font-display text-foreground">
