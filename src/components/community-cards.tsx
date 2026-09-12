@@ -109,6 +109,20 @@ export function PostCard({ post }: PostCardProps) {
 
   const BadgeIcon = badgeConfig.icon;
 
+  let displayImage = post.image;
+  if (!displayImage) {
+    if (post.id === "p-rec-1") displayImage = "/images/recipes/oatmeal.jpg";
+    else if (post.id === "p-rec-2") displayImage = "/images/recipes/roasted-veg.jpg";
+    else if (post.type === "receita") displayImage = "/images/recipes/default-recipe.jpg";
+    else if (post.id === "p-exp-1") displayImage = "/images/experiences/cooking.jpg";
+  }
+
+  let avatarImage = post.authorAvatar;
+  if (!avatarImage) {
+    if (post.authorId === "seed-nutri-maria") avatarImage = "/images/professionals/prof-1.jpg";
+    else if (post.authorId === "seed-nutri-pedro") avatarImage = "/images/professionals/prof-2.jpg";
+  }
+
   return (
     <article className="rounded-2xl border border-border/90 bg-card p-5 shadow-xs transition hover:shadow-sm">
       {/* Topo do Card: Autor e Tipo */}
@@ -117,9 +131,13 @@ export function PostCard({ post }: PostCardProps) {
           <Link
             to="/perfil/$userId"
             params={{ userId: post.authorId }}
-            className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80"
+            className="grid h-10 w-10 overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0"
           >
-            {initials(post.authorName)}
+            {avatarImage ? (
+              <img src={avatarImage} alt={post.authorName} className="h-full w-full object-cover" />
+            ) : (
+              initials(post.authorName)
+            )}
           </Link>
           <div>
             <div className="flex items-center gap-1.5">
@@ -161,9 +179,21 @@ export function PostCard({ post }: PostCardProps) {
         {post.title && (
           <h3 className="text-base font-bold text-foreground font-display mb-1.5">{post.title}</h3>
         )}
-        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line mb-4">
           {post.text}
         </p>
+
+        {/* Imagem Editorial da Publicação */}
+        {displayImage && (
+          <div className="mb-4 overflow-hidden rounded-2xl shadow-sm border border-border aspect-[16/9]">
+            <img
+              src={displayImage}
+              alt={post.title || "Imagem da publicação"}
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              loading="lazy"
+            />
+          </div>
+        )}
 
         {/* Bloco de Receita se aplicável */}
         {post.type === "receita" && post.recipeData && (
@@ -358,80 +388,115 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
 
   if (!theme) return null;
 
+  let themeImage = null;
+  if (theme.id === "tema-alimentos-frescos") {
+    themeImage = "/images/themes/fresh-ingredients.jpg";
+  }
+
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-card via-card to-accent-soft/30 p-6 sm:p-8 shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
-          <Sparkles className="h-3.5 w-3.5" /> {theme.badge || "Tema da Semana"}
-        </span>
-        <span className="text-xs font-medium text-muted-foreground">{theme.currentWeek}</span>
-      </div>
-
-      <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-display leading-tight">
-        {theme.title}
-      </h2>
-      <p className="mt-2 text-sm text-foreground/80 leading-relaxed max-w-2xl">
-        {theme.description}
-      </p>
-
-      {/* Pergunta da Semana */}
-      {theme.questionOfTheWeek && (
-        <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
-          <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
-            Pergunta da Semana
-          </p>
-          <p className="text-sm font-medium text-foreground">“{theme.questionOfTheWeek}”</p>
-        </div>
-      )}
-
-      {/* Enquete Interativa */}
-      {!compact && theme.poll && theme.poll.options && (
-        <div className="mt-6 border-t border-border/80 pt-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-            Enquete: {theme.poll.question}
-          </h3>
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {theme.poll.options.map((opt) => {
-              const hasVoted = (opt.votedUsers || []).includes(currentUserId);
-              const percentage =
-                totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => handleVote(opt.id)}
-                  className={`group relative overflow-hidden rounded-xl border p-3 text-left transition cursor-pointer ${
-                    hasVoted
-                      ? "border-accent bg-accent-soft/40 shadow-xs"
-                      : "border-border bg-card hover:border-accent/60 hover:bg-secondary/40"
-                  }`}
-                >
-                  <div
-                    className="absolute inset-y-0 left-0 bg-accent/15 transition-all"
-                    style={{ width: `${percentage}%` }}
-                  />
-                  <div className="relative flex items-center justify-between text-xs font-medium">
-                    <span className="text-foreground pr-2">{opt.text}</span>
-                    <span className="font-bold text-accent">{percentage}%</span>
-                  </div>
-                </button>
-              );
-            })}
+    <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-card shadow-card flex flex-col">
+      {/* Capa Editorial do Tema */}
+      {themeImage && !compact && (
+        <div className="h-48 sm:h-64 w-full relative">
+          <img
+            src={themeImage}
+            alt={theme.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[10px] font-bold text-accent-foreground tracking-wide uppercase">
+              <Sparkles className="h-3 w-3" /> {theme.badge || "Tema da Semana"}
+            </span>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground text-right">
-            {totalVotes} membros já participaram desta reflexão
-          </p>
         </div>
       )}
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          to="/tema-da-semana"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
-        >
-          <span>Ver todas as reflexões e receitas deste tema</span>
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+      <div
+        className={`p-6 sm:p-8 ${!themeImage || compact ? "bg-gradient-to-br from-card via-card to-accent-soft/30" : ""}`}
+      >
+        {(!themeImage || compact) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
+              <Sparkles className="h-3.5 w-3.5" /> {theme.badge || "Tema da Semana"}
+            </span>
+            <span className="text-xs font-medium text-muted-foreground">{theme.currentWeek}</span>
+          </div>
+        )}
+
+        {themeImage && !compact && (
+          <div className="text-[11px] font-medium text-muted-foreground mb-3">
+            {theme.currentWeek}
+          </div>
+        )}
+
+        <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-display leading-tight">
+          {theme.title}
+        </h2>
+        <p className="mt-2 text-sm text-foreground/80 leading-relaxed max-w-2xl">
+          {theme.description}
+        </p>
+
+        {/* Pergunta da Semana */}
+        {theme.questionOfTheWeek && (
+          <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
+            <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
+              Pergunta da Semana
+            </p>
+            <p className="text-sm font-medium text-foreground">“{theme.questionOfTheWeek}”</p>
+          </div>
+        )}
+
+        {/* Enquete Interativa */}
+        {!compact && theme.poll && theme.poll.options && (
+          <div className="mt-6 border-t border-border/80 pt-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Enquete: {theme.poll.question}
+            </h3>
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {theme.poll.options.map((opt) => {
+                const hasVoted = (opt.votedUsers || []).includes(currentUserId);
+                const percentage =
+                  totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => handleVote(opt.id)}
+                    className={`group relative overflow-hidden rounded-xl border p-3 text-left transition cursor-pointer ${
+                      hasVoted
+                        ? "border-accent bg-accent-soft/40 shadow-xs"
+                        : "border-border bg-card hover:border-accent/60 hover:bg-secondary/40"
+                    }`}
+                  >
+                    <div
+                      className="absolute inset-y-0 left-0 bg-accent/15 transition-all"
+                      style={{ width: `${percentage}%` }}
+                    />
+                    <div className="relative flex items-center justify-between text-xs font-medium">
+                      <span className="text-foreground pr-2">{opt.text}</span>
+                      <span className="font-bold text-accent">{percentage}%</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground text-right">
+              {totalVotes} membros já participaram desta reflexão
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            to="/tema-da-semana"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+          >
+            <span>Ver todas as reflexões e receitas deste tema</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -462,25 +527,50 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
 
   if (!challenge) return null;
 
+  let challengeImage = null;
+  if (challenge.id === "desafio-3-frescos") {
+    challengeImage = "/images/challenges/salad-bowl.jpg";
+  }
+
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs flex flex-col justify-between transition hover:shadow-sm">
+    <div className="rounded-2xl border border-border bg-card shadow-xs flex flex-col justify-between transition hover:shadow-sm overflow-hidden">
       <div>
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-xl shadow-xs">
-            {challenge.badgeIcon || "🎯"}
-          </span>
-          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-            {challenge.duration || "Semana"}
-          </span>
+        {/* Cover image or colored header */}
+        {challengeImage ? (
+          <div className="h-28 w-full relative">
+            <img
+              src={challengeImage}
+              alt={challenge.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-lg bg-card/90 text-lg shadow-xs backdrop-blur-sm">
+              {challenge.badgeIcon || "🎯"}
+            </div>
+            <div className="absolute top-3 right-3 rounded-full bg-card/90 px-2.5 py-0.5 text-[11px] font-bold text-foreground backdrop-blur-sm shadow-xs">
+              {challenge.duration || "Semana"}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-2 p-5 pb-2">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-xl shadow-xs">
+              {challenge.badgeIcon || "🎯"}
+            </span>
+            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              {challenge.duration || "Semana"}
+            </span>
+          </div>
+        )}
+
+        <div className={`px-5 ${challengeImage ? "pt-4" : "pt-2"}`}>
+          <h3 className="text-base font-bold text-foreground font-display">{challenge.title}</h3>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+            {challenge.description}
+          </p>
         </div>
 
-        <h3 className="text-base font-bold text-foreground font-display">{challenge.title}</h3>
-        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-          {challenge.description}
-        </p>
-
         {challenge.steps && challenge.steps.length > 0 && (
-          <div className="mt-4 space-y-1.5">
+          <div className="mt-4 space-y-1.5 px-5">
             <p className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
               Passos sugeridos:
             </p>
@@ -496,10 +586,8 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         )}
       </div>
 
-      <div className="mt-5 border-t border-border/60 pt-3 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
-          👥 {participants.length} pessoas participando
-        </span>
+      <div className="mt-5 border-t border-border/60 pt-3 flex items-center justify-between px-5 pb-5">
+        <span className="text-xs text-muted-foreground">👥 {participants.length} participando</span>
         <button
           type="button"
           onClick={handleJoin}
@@ -523,12 +611,27 @@ interface ProfessionalCardProps {
 export function ProfessionalCard({ professional }: ProfessionalCardProps) {
   if (!professional) return null;
 
+  let avatarImage = null;
+  if (professional.userId === "seed-nutri-maria") avatarImage = "/images/professionals/prof-1.jpg";
+  else if (professional.userId === "seed-nutri-pedro")
+    avatarImage = "/images/professionals/prof-2.jpg";
+  else if (professional.userId === "seed-nutri-camila")
+    avatarImage = "/images/professionals/prof-3.jpg";
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-start gap-3 mb-3">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-base font-bold text-primary-foreground shadow-xs">
-            {initials(professional.name || "Nutri")}
+          <span className="grid h-12 w-12 overflow-hidden place-items-center rounded-2xl bg-primary text-base font-bold text-primary-foreground shadow-xs shrink-0">
+            {avatarImage ? (
+              <img
+                src={avatarImage}
+                alt={professional.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials(professional.name || "Nutri")
+            )}
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">

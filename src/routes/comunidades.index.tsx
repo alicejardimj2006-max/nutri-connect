@@ -171,61 +171,85 @@ function ComunidadesPage() {
         </aside>
 
         <section className="grid gap-5 sm:grid-cols-2">
-          {filtered.map((c) => (
-            <article
-              key={c.id}
-              className="flex flex-col rounded-2xl border bg-card p-5 shadow-card"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-                  {c.category}
-                </span>
-                {c.status === "aguardando" ? (
-                  <span className="rounded-full bg-warning/20 px-3 py-1 text-xs font-semibold text-warning-foreground">
-                    Aguardando nutricionista responsável
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    <BadgeCheck className="h-3.5 w-3.5" /> Ativa
-                  </span>
-                )}
-              </div>
-              <h3 className="mt-3 text-lg font-semibold text-primary">{c.name}</h3>
-              <p className="mt-1 flex-1 text-sm text-muted-foreground">{c.description}</p>
+          {filtered.map((c) => {
+            let coverImage = "/images/communities/friends-dinner.jpg";
+            if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
+            if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
+            if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
 
-              {c.responsible && (
-                <div className="mt-4 flex items-center gap-2 rounded-xl bg-secondary/60 p-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {initials(c.responsible.name)}
-                  </span>
-                  <div className="text-xs">
-                    <p className="font-semibold text-foreground">{c.responsible.name}</p>
-                    <p className="text-muted-foreground">
-                      Responsável · {c.responsible.credential}
-                    </p>
+            return (
+              <article
+                key={c.id}
+                className="flex flex-col rounded-3xl border border-border bg-card shadow-card overflow-hidden transition hover:shadow-lg"
+              >
+                <div className="h-32 w-full relative">
+                  <img
+                    src={coverImage}
+                    alt={c.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-3 left-3">
+                    <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider">
+                      {c.category}
+                    </span>
                   </div>
                 </div>
-              )}
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    {c.status === "aguardando" ? (
+                      <span className="rounded-full bg-warning/20 px-2.5 py-1 text-[10px] font-semibold text-warning-foreground">
+                        Aguardando Moderação
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-semibold text-primary">
+                        <BadgeCheck className="h-3 w-3" /> Ativa
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground font-display leading-tight">
+                    {c.name}
+                  </h3>
+                  <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">
+                    {c.description}
+                  </p>
 
-              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" /> {c.members.length} membros
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  {posts.filter((p) => p.communityId === c.id).length} publicações
-                </span>
-              </div>
+                  {c.responsible && (
+                    <div className="mt-5 flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-3">
+                      <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs">
+                        {initials(c.responsible.name)}
+                      </span>
+                      <div className="text-xs">
+                        <p className="font-semibold text-foreground">{c.responsible.name}</p>
+                        <p className="text-muted-foreground">
+                          Responsável · {c.responsible.credential}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-              <Link
-                to="/comunidades/$slug"
-                params={{ slug: c.slug }}
-                className="mt-4 inline-flex justify-center rounded-full border border-primary/40 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-secondary"
-              >
-                Entrar na comunidade
-              </Link>
-            </article>
-          ))}
+                  <div className="mt-5 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
+                    <span className="inline-flex items-center gap-1">
+                      <Users className="h-4 w-4 text-accent" /> {c.members.length} membros
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <MessageCircle className="h-4 w-4 text-accent" />
+                      {posts.filter((p) => p.communityId === c.id).length} publicações
+                    </span>
+                  </div>
+
+                  <Link
+                    to="/comunidades/$slug"
+                    params={{ slug: c.slug }}
+                    className="mt-5 text-center rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
+                  >
+                    Entrar na comunidade
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
           {hydrated && filtered.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Nenhuma comunidade nesta categoria ainda.

@@ -124,45 +124,59 @@ function HomePage() {
 
       <main className="flex-1">
         {/* HERO SECTION */}
-        <section className="relative overflow-hidden border-b border-border/80 bg-gradient-to-b from-card via-background to-secondary/30 py-16 sm:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <section className="relative overflow-hidden border-b border-border/80 bg-background pt-16 sm:pt-24 pb-20">
+          <div className="absolute inset-0 bg-gradient-to-b from-card via-background to-background pointer-events-none" />
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 relative">
             <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
               {/* Coluna Esquerda: Apresentação & Busca */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-3.5 py-1 text-xs font-semibold text-accent shadow-xs">
-                  <Sparkles className="h-3.5 w-3.5" />
+              <div className="lg:col-span-6 space-y-7 relative z-10">
+                <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-3.5 py-1.5 text-xs font-semibold text-accent shadow-xs">
+                  <Sparkles className="h-4 w-4" />
                   <span>Comunidade Viva de Alimentação & Hábitos</span>
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground font-display leading-[1.1]">
-                  Sua alimentação. <br className="hidden sm:inline" />
-                  <span className="text-accent underline decoration-accent/30 underline-offset-8">
-                    Sua jornada.
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground font-display leading-[1.05]">
+                  Sua alimentação.
+                  <br className="hidden sm:inline" />
+                  <span className="relative inline-block mt-2">
+                    <span className="relative z-10 text-accent">Sua jornada.</span>
+                    <svg
+                      className="absolute w-full h-3 -bottom-1 left-0 text-accent/20"
+                      viewBox="0 0 100 10"
+                      preserveAspectRatio="none"
+                    >
+                      <path
+                        d="M0 5 Q 50 10 100 5"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </span>
                 </h1>
 
-                <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl">
                   Um espaço acolhedor para descobrir receitas simples, compartilhar experiências
-                  reais, cumprir desafios diários, consultar nutricionistas e tirar dúvidas no
-                  Suporte Inteligente.
+                  reais e consultar profissionais. Comida de verdade, sem terrorismo.
                 </p>
 
                 {/* Hero Search Bar */}
                 <form
                   onSubmit={handleHeroSearch}
-                  className="relative flex items-center max-w-xl rounded-full border border-border bg-card shadow-soft p-1.5 focus-within:ring-2 focus-within:ring-accent"
+                  className="relative flex items-center max-w-lg rounded-full border border-border bg-card shadow-soft p-1.5 focus-within:ring-2 focus-within:ring-accent/50 transition-all"
                 >
-                  <Search className="ml-3 h-5 w-5 text-muted-foreground" />
+                  <Search className="ml-4 h-5 w-5 text-muted-foreground" />
                   <input
                     type="text"
                     value={heroSearchQuery}
                     onChange={(e) => setHeroSearchQuery(e.target.value)}
-                    placeholder="Busque por receitas, desafios, profissionais..."
-                    className="w-full bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    placeholder="Busque receitas, desafios..."
+                    className="w-full bg-transparent px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-accent px-5 py-2.5 text-xs font-bold text-accent-foreground transition hover:bg-accent/90 shrink-0"
+                    className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground transition hover:bg-accent/90 shrink-0 shadow-sm"
                   >
                     Buscar
                   </button>
@@ -172,47 +186,46 @@ function HomePage() {
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <Link
                     to="/espaco"
-                    className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 hover:scale-[1.02] flex items-center gap-2"
+                    className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90 hover:-translate-y-0.5 flex items-center gap-2"
                   >
                     <span>Entrar na comunidade</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-
-                  <Link
-                    to="/paciente/mensagens"
-                    className="rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary hover:border-primary/40 shadow-xs flex items-center gap-2"
-                  >
-                    <Bot className="h-4 w-4 text-accent" />
-                    <span>Falar com Suporte</span>
-                  </Link>
-
                   <ShareModal />
-                </div>
-
-                {/* Pilares da Comunidade */}
-                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border/70 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <span className="text-accent font-bold text-base">🍲</span>
-                    <span>Receitas testadas e reais</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-accent font-bold text-base">🌱</span>
-                    <span>Hábitos sem julgamentos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-accent font-bold text-base">👩‍⚕️</span>
-                    <span>Nutricionistas verificados</span>
-                  </div>
                 </div>
               </div>
 
-              {/* Coluna Direita: Card do Tema da Semana em Destaque */}
-              <div className="lg:col-span-5">
-                {hydrated && weeklyTheme && (
-                  <div className="transform transition hover:-translate-y-1 duration-300">
-                    <WeeklyThemeCard theme={weeklyTheme} />
+              {/* Coluna Direita: Fotografia Editorial */}
+              <div className="lg:col-span-6 relative lg:-mr-12">
+                <div className="relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] w-full max-w-lg mx-auto">
+                  {/* Decorative Elements */}
+                  <div className="absolute -top-6 -right-6 w-32 h-32 bg-primary-soft rounded-full opacity-60 blur-2xl" />
+                  <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-accent-soft rounded-full opacity-60 blur-2xl" />
+
+                  {/* Main Image Mask */}
+                  <div className="relative w-full h-full overflow-hidden rounded-[2rem] rounded-tr-[6rem] rounded-bl-[6rem] border-[8px] border-card shadow-card transform rotate-2 transition-transform duration-700 hover:rotate-0">
+                    <img
+                      src="/images/hero/hero-table.jpg"
+                      alt="Pessoas compartilhando uma refeição acolhedora"
+                      className="w-full h-full object-cover scale-105"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                   </div>
-                )}
+
+                  {/* Floating Badge */}
+                  <div className="absolute -bottom-4 right-4 sm:-bottom-8 sm:right-12 rounded-2xl bg-card p-4 shadow-card border border-border/60 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
+                        <Heart className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-foreground">Comunidade Viva</p>
+                        <p className="text-[10px] text-muted-foreground">+12.400 membros</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -377,8 +390,40 @@ function HomePage() {
           </div>
         </section>
 
+        {/* TEMA DA SEMANA */}
+        {hydrated && weeklyTheme && (
+          <section className="border-b border-border/80 bg-secondary/20 py-16">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="grid gap-10 lg:grid-cols-2 items-center">
+                <div className="space-y-6">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent mb-1">
+                    <Sparkles className="h-4 w-4" />
+                    <span>Em destaque nesta semana</span>
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground leading-tight">
+                    O Pulso da Comunidade
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Toda semana escolhemos um foco de reflexão e prática coletiva. O tema não é
+                    obrigatório, mas serve para concentrar conversas, receitas e experiências.
+                  </p>
+                  <Link
+                    to="/tema-da-semana"
+                    className="inline-flex justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
+                  >
+                    Ver detalhes do tema
+                  </Link>
+                </div>
+                <div>
+                  <WeeklyThemeCard theme={weeklyTheme} />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* SEÇÃO 2: ESPAÇO DE HOJE (PULSO DA COMUNIDADE) */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
               <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent mb-1">

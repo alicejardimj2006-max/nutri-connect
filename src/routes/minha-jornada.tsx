@@ -77,13 +77,38 @@ function MinhaJornadaPage() {
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {/* Banner do Perfil de Jornada */}
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-accent-soft/20 p-6 sm:p-10 shadow-card mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="grid h-20 w-20 place-items-center rounded-3xl bg-primary text-2xl font-extrabold text-primary-foreground shadow-md">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-card mb-8 flex flex-col">
+          {/* Capa do Perfil */}
+          <div className="h-32 sm:h-48 w-full relative">
+            <img
+              src="/images/hero/hero-table.jpg"
+              alt="Capa da Jornada"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          </div>
 
+          <div className="p-6 sm:p-10 pt-12 sm:pt-14 relative bg-gradient-to-br from-card via-card to-accent-soft/20">
+            {/* Avatar Sobreposto */}
+            <div className="absolute -top-10 sm:-top-12 left-6 sm:left-10 grid h-20 w-20 sm:h-24 sm:w-24 overflow-hidden place-items-center rounded-3xl bg-primary text-3xl font-extrabold text-primary-foreground shadow-card border-4 border-card">
+              {user.role === "nutricionista" && user.id === "seed-nutri-maria" ? (
+                <img
+                  src="/images/professionals/prof-1.jpg"
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : user.role === "nutricionista" && user.id === "seed-nutri-pedro" ? (
+                <img
+                  src="/images/professionals/prof-2.jpg"
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user.name.charAt(0).toUpperCase()
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
@@ -101,54 +126,57 @@ function MinhaJornadaPage() {
                   📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
                 </p>
               </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                <ShareModal
+                  triggerButton={
+                    <button
+                      type="button"
+                      className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Compartilhar</span>
+                    </button>
+                  }
+                />
+
+                <Link
+                  to={user.role === "nutricionista" ? "/nutricionista/perfil" : "/paciente/perfil"}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition"
+                >
+                  Editar meus dados
+                </Link>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
-              <ShareModal
-                triggerButton={
-                  <button
-                    type="button"
-                    className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Compartilhar</span>
-                  </button>
-                }
-              />
-
-              <Link
-                to={user.role === "nutricionista" ? "/nutricionista/perfil" : "/paciente/perfil"}
-                className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition"
-              >
-                Editar meus dados
-              </Link>
-            </div>
-          </div>
-
-          {/* Atalho para Acompanhamento Clínico se aplicável */}
-          <div className="mt-8 pt-6 border-t border-border/70 flex flex-wrap items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4 text-accent" />
-              <span>Acompanhamento clínico individual e plano alimentar:</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                to="/paciente/agendamentos"
-                className="font-semibold text-primary hover:underline"
-              >
-                Minhas Consultas
-              </Link>
-              <span>·</span>
-              <Link
-                to="/paciente/plano-alimentar"
-                className="font-semibold text-primary hover:underline"
-              >
-                Plano Alimentar
-              </Link>
-              <span>·</span>
-              <Link to="/paciente/dashboard" className="font-semibold text-accent hover:underline">
-                Painel Clínico Completo →
-              </Link>
+            {/* Atalho para Acompanhamento Clínico se aplicável */}
+            <div className="mt-8 pt-6 border-t border-border/70 flex flex-wrap items-center justify-between gap-4 text-xs">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="h-4 w-4 text-accent" />
+                <span>Acompanhamento clínico individual e plano alimentar:</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/paciente/agendamentos"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Minhas Consultas
+                </Link>
+                <span>·</span>
+                <Link
+                  to="/paciente/plano-alimentar"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Plano Alimentar
+                </Link>
+                <span>·</span>
+                <Link
+                  to="/paciente/dashboard"
+                  className="font-semibold text-accent hover:underline"
+                >
+                  Painel Clínico Completo →
+                </Link>
+              </div>
             </div>
           </div>
         </div>
