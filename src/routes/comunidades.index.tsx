@@ -153,7 +153,7 @@ function ComunidadesPage() {
             <h2 className="text-sm font-semibold text-foreground mb-4">Buscar</h2>
             <input
               type="text"
-              placeholder="Nome ou tema..."
+              placeholder="Buscar comunidades..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -162,7 +162,7 @@ function ComunidadesPage() {
 
           <div className="rounded-2xl border bg-card p-5 shadow-card">
             <h2 className="text-sm font-semibold text-foreground mb-4">Categorias temáticas</h2>
-            <div className="flex flex-wrap gap-2 lg:flex-col lg:items-start">
+            <div className="flex overflow-x-auto no-scrollbar gap-2 lg:flex-col lg:items-start pb-2 lg:pb-0">
               {["Todas", ...CATEGORIES].map((c) => (
                 <button
                   key={c}
@@ -335,7 +335,7 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
         toast.success(
           actor.role === "nutricionista"
             ? "Comunidade criada e ativada."
-            : "Comunidade criada. Ela aguarda um nutricionista responsável.",
+            : "Comunidade criada. Agora ela aguarda um nutricionista responsável.",
         );
         onDone();
       }}
