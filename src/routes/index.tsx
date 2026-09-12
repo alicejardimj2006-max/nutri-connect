@@ -1,36 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Sparkles,
-  Search,
-  Heart,
-  Users,
-  ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  Compass,
-  MessageSquare,
-  Star,
-  ShieldCheck,
-  TrendingUp,
-  Apple,
-  Award,
-  HelpCircle,
-  Clock,
-  ChevronRight,
-  Flame,
-  Bot,
-  Zap,
-} from "lucide-react";
+import { Search, ArrowRight, Compass, Bot } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
-import {
-  PostCard,
-  WeeklyThemeCard,
-  ChallengeCard,
-  ProfessionalCard,
-} from "@/components/community-cards";
-import { ShareModal } from "@/components/share-modal";
+import { PostCard, ChallengeCard, ProfessionalCard } from "@/components/community-cards";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -57,13 +30,6 @@ function HomePage() {
   const navigate = useNavigate();
 
   const [heroSearchQuery, setHeroSearchQuery] = useState("");
-  const [activeFaq, setActiveFaq] = useState<number | null>(0);
-
-  // Quick Support AI Teaser state
-  const [supportQuestion, setSupportQuestion] = useState("");
-  const [supportAnswer, setSupportAnswer] = useState<string | null>(null);
-
-  const featuredPosts = (posts || []).slice(0, 3);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,74 +40,39 @@ function HomePage() {
     }
   };
 
-  const handleQuickSupportAsk = (q: string) => {
-    setSupportQuestion(q);
-    if (q.toLowerCase().includes("plano") || q.toLowerCase().includes("dieta")) {
-      setSupportAnswer(
-        "Seu plano alimentar pode ser visualizado e acompanhado diariamente no Portal do Paciente > Plano Alimentar! Lá você também substitui alimentos.",
-      );
-    } else if (q.toLowerCase().includes("senha") || q.toLowerCase().includes("login")) {
-      setSupportAnswer(
-        "Para redefinir sua senha, acesse a página de Recuperação de Senha. Um código de verificação de 6 dígitos será enviado ao seu e-mail.",
-      );
-    } else if (q.toLowerCase().includes("nutricionista") || q.toLowerCase().includes("consulta")) {
-      setSupportAnswer(
-        "Você pode buscar e agendar consultas diretamente na aba Profissionais, filtrando por especialidade e horário desejado!",
-      );
-    } else {
-      setSupportAnswer(
-        "O Suporte NutriConnect está disponível 24 horas por dia! Acesse o chat de mensagens para tirar qualquer outra dúvida em tempo real.",
-      );
-    }
-  };
+  // Filtrar posts para o Espaço de Hoje (1 receita, 1 experiencia, 1 especialista/pergunta)
+  const todayRecipe = posts.find((p) => p.type === "receita");
+  const todayExp = posts.find((p) => p.type === "experiencia");
+  const todaySpec = posts.find((p) => p.type === "especialista" || p.type === "pergunta");
+  const todayPosts = [todayRecipe, todayExp, todaySpec].filter(Boolean);
 
-  const faqs = [
-    {
-      question: "O NutriConnect é gratuito para começar?",
-      answer:
-        "Sim! O cadastro e o acesso à comunidade, aos desafios diários, às receitas e ao assistente de suporte inteligente são 100% gratuitos.",
-    },
-    {
-      question: "Como funcionam as consultas com nutricionistas?",
-      answer:
-        "Você pode buscar profissionais por especialidade (ex: Nutrição Esportiva, Emagrecimento, Vegetariana), visualizar os perfis e agendar teleconsultas diretamente na plataforma.",
-    },
-    {
-      question: "O que é o Suporte Inteligente com salvamento de respostas?",
-      answer:
-        "É nosso assistente virtual integrado que responde a dúvidas sobre seus hábitos, uso da plataforma, receitas e planos. Suas conversas ficam salvas com segurança no seu navegador.",
-    },
-    {
-      question: "Sou nutricionista. Como posso me cadastrar?",
-      answer:
-        "Na página de Cadastro, selecione a opção 'Nutricionista', informe seu registro profissional (CRN) e tenha acesso a ferramentas de gestão de pacientes, criação de dietas e agenda.",
-    },
-  ];
+  // Filtrar receitas para a seção editorial
+  const recipePosts = posts.filter((p) => p.type === "receita").slice(0, 3);
+  const mainRecipe = recipePosts[0];
+  const secondaryRecipes = recipePosts.slice(1, 3);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary-soft selection:text-primary">
       <SiteHeader />
 
       <main className="flex-1">
-        {/* HERO SECTION */}
-        <section className="relative overflow-hidden border-b border-border/80 bg-background pt-16 sm:pt-24 pb-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-card via-background to-background pointer-events-none" />
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 relative">
-            <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
-              {/* Coluna Esquerda: Apresentação & Busca */}
-              <div className="lg:col-span-6 space-y-7 relative z-10">
-                <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-3.5 py-1.5 text-xs font-semibold text-accent shadow-xs">
-                  <Sparkles className="h-4 w-4" />
-                  <span>Comunidade Viva de Alimentação & Hábitos</span>
-                </div>
+        {/* 1. HERO SECTION */}
+        <section className="relative overflow-hidden bg-background pt-16 sm:pt-28 pb-20 sm:pb-32">
+          {/* Organic Background Shapes */}
+          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-accent-soft/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-primary-soft/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground font-display leading-[1.05]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
+            <div className="grid gap-16 lg:grid-cols-12 lg:items-center">
+              {/* Coluna Esquerda: Texto + Busca */}
+              <div className="lg:col-span-6 space-y-8">
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground font-display leading-[1.1]">
                   Sua alimentação.
                   <br className="hidden sm:inline" />
                   <span className="relative inline-block mt-2">
                     <span className="relative z-10 text-accent">Sua jornada.</span>
                     <svg
-                      className="absolute w-full h-3 -bottom-1 left-0 text-accent/20"
+                      className="absolute w-full h-4 -bottom-2 left-0 text-accent/20"
                       viewBox="0 0 100 10"
                       preserveAspectRatio="none"
                     >
@@ -156,74 +87,43 @@ function HomePage() {
                   </span>
                 </h1>
 
-                <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                  Um espaço acolhedor para descobrir receitas simples, compartilhar experiências
-                  reais e consultar profissionais. Comida de verdade, sem terrorismo.
+                <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-lg">
+                  Um espaço acolhedor para descobrir receitas, compartilhar experiências e aprender
+                  com profissionais. Comida de verdade, no seu ritmo.
                 </p>
 
-                {/* Hero Search Bar */}
+                {/* Elegante Barra de Busca */}
                 <form
                   onSubmit={handleHeroSearch}
-                  className="relative flex items-center max-w-lg rounded-full border border-border bg-card shadow-soft p-1.5 focus-within:ring-2 focus-within:ring-accent/50 transition-all"
+                  className="relative flex items-center max-w-lg border-b-2 border-border focus-within:border-accent transition-colors pb-2"
                 >
-                  <Search className="ml-4 h-5 w-5 text-muted-foreground" />
+                  <Search className="h-5 w-5 text-muted-foreground mr-3" />
                   <input
                     type="text"
                     value={heroSearchQuery}
                     onChange={(e) => setHeroSearchQuery(e.target.value)}
-                    placeholder="Busque receitas, desafios..."
-                    className="w-full bg-transparent px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    placeholder="Receitas, pessoas, profissionais, temas..."
+                    className="w-full bg-transparent py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground transition hover:bg-accent/90 shrink-0 shadow-sm"
+                    className="text-sm font-bold text-accent hover:text-accent/80 transition ml-2"
                   >
-                    Buscar
+                    Descobrir
                   </button>
                 </form>
-
-                {/* CTAs rápidos */}
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <Link
-                    to="/espaco"
-                    className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90 hover:-translate-y-0.5 flex items-center gap-2"
-                  >
-                    <span>Entrar na comunidade</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <ShareModal />
-                </div>
               </div>
 
-              {/* Coluna Direita: Fotografia Editorial */}
-              <div className="lg:col-span-6 relative lg:-mr-12">
-                <div className="relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] w-full max-w-lg mx-auto">
-                  {/* Decorative Elements */}
-                  <div className="absolute -top-6 -right-6 w-32 h-32 bg-primary-soft rounded-full opacity-60 blur-2xl" />
-                  <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-accent-soft rounded-full opacity-60 blur-2xl" />
-
-                  {/* Main Image Mask */}
-                  <div className="relative w-full h-full overflow-hidden rounded-[2rem] rounded-tr-[6rem] rounded-bl-[6rem] border-[8px] border-card shadow-card transform rotate-2 transition-transform duration-700 hover:rotate-0">
+              {/* Coluna Direita: Fotografia */}
+              <div className="lg:col-span-6 relative">
+                <div className="relative aspect-[4/5] w-full max-w-md mx-auto lg:max-w-none lg:ml-auto">
+                  <div className="w-full h-full overflow-hidden rounded-t-[12rem] rounded-b-[2rem] shadow-xl">
                     <img
                       src="/images/hero/hero-table.jpg"
-                      alt="Pessoas compartilhando uma refeição acolhedora"
-                      className="w-full h-full object-cover scale-105"
+                      alt="Pessoas em uma mesa acolhedora"
+                      className="w-full h-full object-cover"
                       loading="eager"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-                  </div>
-
-                  {/* Floating Badge */}
-                  <div className="absolute -bottom-4 right-4 sm:-bottom-8 sm:right-12 rounded-2xl bg-card p-4 shadow-card border border-border/60 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
-                        <Heart className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-foreground">Comunidade Viva</p>
-                        <p className="text-[10px] text-muted-foreground">+12.400 membros</p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -231,376 +131,316 @@ function HomePage() {
           </div>
         </section>
 
-        {/* ESTATÍSTICAS E IMPACTO DA COMUNIDADE */}
-        <section className="border-b border-border/80 bg-card/60 py-10">
+        {/* 2. BENEFÍCIOS / ESTATÍSTICAS (Sem números fake) */}
+        <section className="border-y border-border/40 bg-card/30 py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div className="space-y-1">
-                <div className="flex justify-center text-accent mb-2">
-                  <Users className="h-6 w-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
-                  12.400+
-                </div>
-                <div className="text-xs text-muted-foreground font-medium">Membros Ativos</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-border/50">
+              <div className="px-4">
+                <span className="block text-sm font-bold font-display text-foreground mb-1">
+                  Receitas testadas
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Compartilhadas pela comunidade
+                </span>
               </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-center text-accent mb-2">
-                  <Apple className="h-6 w-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
-                  3.800+
-                </div>
-                <div className="text-xs text-muted-foreground font-medium">Receitas Saudáveis</div>
+              <div className="px-4">
+                <span className="block text-sm font-bold font-display text-foreground mb-1">
+                  Histórias reais
+                </span>
+                <span className="text-xs text-muted-foreground">Pessoas caminhando juntas</span>
               </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-center text-accent mb-2">
-                  <Flame className="h-6 w-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
-                  45.000+
-                </div>
-                <div className="text-xs text-muted-foreground font-medium">
-                  Dias de Hábitos Concluídos
-                </div>
+              <div className="px-4">
+                <span className="block text-sm font-bold font-display text-foreground mb-1">
+                  Desafios gentis
+                </span>
+                <span className="text-xs text-muted-foreground">Passos constantes e sem culpa</span>
               </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-center text-accent mb-2">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
-                  150+
-                </div>
-                <div className="text-xs text-muted-foreground font-medium">
-                  Nutricionistas de Suporte
-                </div>
+              <div className="px-4">
+                <span className="block text-sm font-bold font-display text-foreground mb-1">
+                  Nutricionistas
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Profissionais presentes e humanos
+                </span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* DEMO DO SUPORTE INTELIGENTE */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <div className="rounded-3xl border border-accent/20 bg-gradient-to-br from-card via-background to-accent-soft/20 p-8 sm:p-12 shadow-card">
-            <div className="grid gap-8 lg:grid-cols-12 items-center">
-              <div className="lg:col-span-6 space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-                  <Bot className="h-4 w-4" />
-                  <span>Suporte NutriConnect 24/7</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
-                  Tire dúvidas em tempo real e guarde seu histórico de respostas
+        {/* 3. RECEITAS (Editorial visual) */}
+        {mainRecipe && (
+          <section className="py-24 sm:py-32">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="mb-12">
+                <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
+                  Comida de verdade
                 </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Nosso assistente responde instantaneamente sobre planos de refeição, agendamento
-                  de consultas, recuperação de senha e dicas de hidratação. Todas as respostas ficam
-                  gravadas com segurança.
+                <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-2xl">
+                  Receitas caseiras, ingredientes naturais e o prazer de preparar a própria
+                  refeição.
                 </p>
+              </div>
 
-                {/* Chips de testes rápidos */}
-                <div className="space-y-2 pt-2">
-                  <span className="text-xs font-bold text-foreground">
-                    Pergunte algo ao suporte:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => handleQuickSupportAsk("Como ver meu plano alimentar?")}
-                      className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent-soft hover:border-accent transition text-left"
-                    >
-                      💡 Como ver meu plano alimentar?
-                    </button>
-                    <button
-                      onClick={() => handleQuickSupportAsk("Como redefinir minha senha?")}
-                      className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent-soft hover:border-accent transition text-left"
-                    >
-                      🔑 Como redefinir minha senha?
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleQuickSupportAsk("Como agendar consulta com nutricionista?")
-                      }
-                      className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent-soft hover:border-accent transition text-left"
-                    >
-                      👩‍⚕️ Como agendar consulta?
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-4">
+              <div className="grid gap-6 lg:grid-cols-12">
+                {/* Destaque Principal */}
+                <div className="lg:col-span-8">
                   <Link
-                    to="/paciente/mensagens"
-                    className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-xs font-bold text-accent-foreground shadow-xs transition hover:bg-accent/90"
+                    to={`/receitas/${mainRecipe.id}`}
+                    className="group block relative h-[400px] sm:h-[500px] w-full overflow-hidden rounded-3xl"
                   >
-                    <span>Abrir Chat Completo de Suporte</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <img
+                      src="/images/recipes/oatmeal.jpg"
+                      alt="Receita"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-6 left-6 right-6 sm:bottom-10 sm:left-10 sm:right-10">
+                      <span className="inline-block rounded-full bg-accent/90 px-3 py-1 text-[10px] font-bold text-accent-foreground uppercase tracking-wider mb-3 backdrop-blur-sm">
+                        Receita em Destaque
+                      </span>
+                      <h3 className="text-2xl sm:text-3xl font-bold font-display text-white mb-2 group-hover:underline underline-offset-4 decoration-accent/50">
+                        {mainRecipe.title || "Aveia com Frutas Frescas"}
+                      </h3>
+                      <p className="text-sm text-white/80 line-clamp-2 max-w-xl">
+                        {mainRecipe.text}
+                      </p>
+                    </div>
                   </Link>
                 </div>
+
+                {/* Secundárias */}
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                  {secondaryRecipes.map((r, i) => (
+                    <Link
+                      key={r.id}
+                      to={`/receitas/${r.id}`}
+                      className="group flex-1 relative overflow-hidden rounded-3xl flex items-end min-h-[200px]"
+                    >
+                      <img
+                        src={
+                          i === 0
+                            ? "/images/recipes/avocado-toast.jpg"
+                            : "/images/recipes/smoothie.jpg"
+                        }
+                        alt="Receita Secundária"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      <div className="relative p-6">
+                        <h4 className="text-lg font-bold font-display text-white group-hover:underline decoration-accent/50">
+                          {r.title || "Receita Caseira"}
+                        </h4>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
 
-              {/* Caixa de Preview da Resposta do Suporte */}
-              <div className="lg:col-span-6">
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-4">
-                  <div className="flex items-center justify-between border-b border-border pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                        <Bot className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-foreground">
-                          Suporte NutriConnect
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-accent font-medium">
-                          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-                          <span>Online e Pronto para Ajudar</span>
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">Agora</span>
-                  </div>
+              <div className="mt-10">
+                <Link
+                  to="/receitas"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline"
+                >
+                  Ver todas as receitas <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
 
-                  {supportQuestion ? (
-                    <div className="space-y-3">
-                      <div className="flex justify-end">
-                        <div className="rounded-2xl rounded-tr-none bg-accent px-4 py-2.5 text-xs font-medium text-accent-foreground max-w-[85%]">
-                          {supportQuestion}
-                        </div>
-                      </div>
-                      {supportAnswer && (
-                        <div className="flex justify-start">
-                          <div className="rounded-2xl rounded-tl-none bg-secondary/80 border border-border px-4 py-2.5 text-xs text-foreground max-w-[85%] leading-relaxed">
-                            {supportAnswer}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="py-8 text-center text-xs text-muted-foreground space-y-2">
-                      <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/50" />
-                      <p>
-                        Clique em uma das sugestões ao lado para experimentar a resposta do suporte!
+        {/* 4. TEMA DA SEMANA (Destacado e Editorial) */}
+        {hydrated && weeklyTheme && (
+          <section className="bg-secondary/20 py-24 sm:py-32 border-y border-border/40">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="grid gap-12 lg:grid-cols-2 items-center">
+                <div className="relative h-[500px] w-full rounded-full overflow-hidden shadow-xl lg:order-2">
+                  <img
+                    src="/images/themes/fresh-ingredients.jpg"
+                    alt={weeklyTheme.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="lg:order-1 space-y-6">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-accent mb-2">
+                    Tema da Semana
+                  </div>
+                  <h2 className="text-4xl sm:text-5xl font-extrabold font-display text-foreground leading-tight">
+                    {weeklyTheme.title}
+                  </h2>
+                  <p className="text-base text-muted-foreground leading-relaxed max-w-lg">
+                    {weeklyTheme.description}
+                  </p>
+
+                  {weeklyTheme.questionOfTheWeek && (
+                    <div className="mt-8 border-l-4 border-accent pl-5">
+                      <p className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
+                        Pergunta para você:
+                      </p>
+                      <p className="text-lg font-display text-foreground italic">
+                        “{weeklyTheme.questionOfTheWeek}”
                       </p>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* TEMA DA SEMANA */}
-        {hydrated && weeklyTheme && (
-          <section className="border-b border-border/80 bg-secondary/20 py-16">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6">
-              <div className="grid gap-10 lg:grid-cols-2 items-center">
-                <div className="space-y-6">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent mb-1">
-                    <Sparkles className="h-4 w-4" />
-                    <span>Em destaque nesta semana</span>
+                  <div className="pt-6">
+                    <Link
+                      to="/tema-da-semana"
+                      className="inline-flex justify-center rounded-full bg-accent px-8 py-3.5 text-sm font-bold text-accent-foreground shadow-soft transition hover:bg-accent/90"
+                    >
+                      Refletir e Participar
+                    </Link>
                   </div>
-                  <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground leading-tight">
-                    O Pulso da Comunidade
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Toda semana escolhemos um foco de reflexão e prática coletiva. O tema não é
-                    obrigatório, mas serve para concentrar conversas, receitas e experiências.
-                  </p>
-                  <Link
-                    to="/tema-da-semana"
-                    className="inline-flex justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-                  >
-                    Ver detalhes do tema
-                  </Link>
-                </div>
-                <div>
-                  <WeeklyThemeCard theme={weeklyTheme} />
                 </div>
               </div>
             </div>
           </section>
         )}
 
-        {/* SEÇÃO 2: ESPAÇO DE HOJE (PULSO DA COMUNIDADE) */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent mb-1">
-                <Compass className="h-3.5 w-3.5" />
-                <span>O que está acontecendo agora</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
-                Espaço de Hoje
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Trocas autênticas entre pessoas que estão cozinhando, aprendendo e caminhando
-                juntas.
-              </p>
-            </div>
-
-            <Link
-              to="/espaco"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
-            >
-              <span>Ver todas as publicações</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              to="/espaco"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary transition shadow-xs"
-            >
-              <span>Explorar conversas, receitas e experiências</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </section>
-
-        {/* SEÇÃO 3: DESAFIOS DE HÁBITOS */}
-        <section className="border-y border-border/80 bg-secondary/40 py-16">
+        {/* 5. ESPAÇO DE HOJE (Diferenciado) */}
+        <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="mx-auto max-w-2xl text-center mb-10">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary mb-2">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>Pequenos passos constantes</span>
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
-                Desafios de Hábitos
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Sem contagem obsessiva de calorias e sem metas inalcançáveis. Aqui celebramos cada
-                copo d'água, cada panela que vai ao fogo e cada momento de presença.
-              </p>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {challenges.map((c) => (
-                <ChallengeCard key={c.id} challenge={c} />
-              ))}
-            </div>
-
-            <div className="mt-8 text-center">
-              <Link
-                to="/desafios"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
-              >
-                <span>Conhecer todos os desafios comunitários</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* SEÇÃO 4: ESPECIALISTAS DA REDE */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-            <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent mb-1">
-                <BookOpen className="h-3.5 w-3.5" />
-                <span>Ciência e Acolhimento</span>
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
-                Nutricionistas em Destaque
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Profissionais verificados que compartilham conhecimento na comunidade e acompanham
-                sua jornada individual.
-              </p>
-            </div>
-
-            <Link
-              to="/profissionais"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
-            >
-              <span>Ver todos os profissionais</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {professionals.map((prof) => (
-              <ProfessionalCard key={prof.id} professional={prof} />
-            ))}
-          </div>
-        </section>
-
-        {/* PERGUNTAS FREQUENTES (FAQ) */}
-        <section className="border-t border-border/80 bg-card/40 py-16">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6">
-            <div className="text-center mb-10 space-y-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3.5 py-1 text-xs font-semibold text-accent">
-                <HelpCircle className="h-3.5 w-3.5" />
-                <span>Tire Suas Dúvidas</span>
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
-                Perguntas Frequentes
-              </h2>
-            </div>
-
-            <div className="space-y-3">
-              {faqs.map((faq, index) => {
-                const isOpen = activeFaq === index;
-                return (
-                  <div
-                    key={index}
-                    className="rounded-2xl border border-border bg-card overflow-hidden transition shadow-xs"
-                  >
-                    <button
-                      onClick={() => setActiveFaq(isOpen ? null : index)}
-                      className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-foreground hover:bg-secondary/50 transition"
-                    >
-                      <span>{faq.question}</span>
-                      <ChevronRight
-                        className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
-                          isOpen ? "rotate-90 text-accent" : ""
-                        }`}
-                      />
-                    </button>
-                    {isOpen && (
-                      <div className="px-5 pb-5 text-xs text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
-                        {faq.answer}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* CONVITE FINAL */}
-        <section className="mx-auto max-w-5xl px-4 sm:px-6 pb-20 pt-8">
-          <div className="rounded-3xl border border-accent/20 bg-gradient-to-r from-accent/10 via-primary-soft/30 to-accent-soft/40 p-8 sm:p-12 text-center shadow-card">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground font-display">
-              Pronto para viver uma relação mais leve com a sua alimentação?
-            </h2>
-            <p className="mt-3 text-sm text-foreground/80 max-w-xl mx-auto leading-relaxed">
-              Junte-se a pessoas que acreditam em comida de verdade, sem terrorismo nutricional e
-              com apoio para cada etapa da sua caminhada.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link
-                to="/cadastro"
-                className="rounded-full bg-accent px-8 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-              >
-                Criar minha conta gratuita
-              </Link>
+            <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
+                  A comunidade hoje
+                </h2>
+                <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-xl">
+                  Pessoas cozinhando, aprendendo e compartilhando suas jornadas agora mesmo.
+                </p>
+              </div>
               <Link
                 to="/espaco"
-                className="rounded-full border border-border bg-card px-8 py-3 text-sm font-semibold text-foreground hover:bg-secondary transition"
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline shrink-0"
               >
-                Ver a comunidade primeiro
+                Entrar na comunidade <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {todayPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 6. MINHA JORNADA (Nova Seção Conceitual) */}
+        <section className="relative overflow-hidden bg-accent-soft/20 py-24 sm:py-32 border-y border-border/40">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10 text-center">
+            <div className="inline-block p-4 bg-background rounded-full shadow-sm mb-6">
+              <Compass className="h-8 w-8 text-accent" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground mb-4">
+              Cada pessoa tem uma jornada diferente.
+            </h2>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10">
+              Acompanhe seu progresso, salve suas receitas favoritas e colecione pequenas vitórias
+              diárias. Sem pressa, sem julgamentos.
+            </p>
+            <Link
+              to="/minha-jornada"
+              className="inline-flex justify-center rounded-full border-2 border-accent text-accent bg-transparent px-8 py-3.5 text-sm font-bold hover:bg-accent hover:text-accent-foreground transition"
+            >
+              Começar meu diário
+            </Link>
+          </div>
+        </section>
+
+        {/* 7. DESAFIOS (Apenas 1 ou 2) */}
+        {challenges.length > 0 && (
+          <section className="py-24 sm:py-32">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground mb-3">
+                  Pequenos passos, juntos.
+                </h2>
+                <p className="text-base text-muted-foreground max-w-xl mx-auto">
+                  A constância é mais importante que a perfeição.
+                </p>
+              </div>
+              <div className="max-w-4xl mx-auto grid gap-6 sm:grid-cols-2 justify-center">
+                {challenges.slice(0, 2).map((c) => (
+                  <ChallengeCard key={c.id} challenge={c} />
+                ))}
+              </div>
+              <div className="mt-10 text-center">
+                <Link
+                  to="/desafios"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline"
+                >
+                  Ver todos os passos <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 8. PROFISSIONAIS (2-3) */}
+        {professionals.length > 0 && (
+          <section className="bg-card/40 py-24 sm:py-32 border-t border-border/40">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
+              <div className="mb-12">
+                <h2 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground mb-3">
+                  Aprenda com quem entende.
+                </h2>
+                <p className="text-base text-muted-foreground max-w-xl">
+                  Nutricionistas que vivem a comunidade junto com você.
+                </p>
+              </div>
+              <div className="grid gap-6 md:grid-cols-3">
+                {professionals.slice(0, 3).map((prof) => (
+                  <ProfessionalCard key={prof.id} professional={prof} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 9. SUPORTE (Menor e Elegante) */}
+        <section className="py-20 border-t border-border/40">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
+            <Bot className="h-10 w-10 text-accent mx-auto mb-4 opacity-80" />
+            <h3 className="text-2xl font-bold font-display text-foreground mb-3">
+              Precisa de ajuda com a plataforma?
+            </h3>
+            <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
+              Nosso assistente está sempre disponível para tirar dúvidas sobre o uso do
+              NutriConnect.
+            </p>
+            <Link
+              to="/paciente/mensagens"
+              className="inline-flex items-center gap-2 text-sm font-bold text-foreground border-b-2 border-accent pb-1 hover:text-accent transition"
+            >
+              Falar com o suporte
+            </Link>
+          </div>
+        </section>
+
+        {/* 10. CTA FINAL (Forte e Fotográfico) */}
+        <section className="relative py-32 sm:py-48 overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="/images/communities/friends-dinner.jpg"
+              alt="Convivência"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/60" />
+          </div>
+          <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center z-10">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-display text-white mb-6">
+              Sua jornada começa com um pequeno passo.
+            </h2>
+            <p className="text-lg text-white/80 mb-10 max-w-xl mx-auto">
+              Sinta-se em casa. Desfrute da comida, compartilhe histórias e descubra que o
+              equilíbrio é possível e acolhedor.
+            </p>
+            <Link
+              to="/cadastro"
+              className="inline-flex justify-center rounded-full bg-accent px-10 py-4 text-base font-bold text-accent-foreground shadow-xl transition hover:bg-accent/90 hover:scale-105"
+            >
+              Começar minha jornada
+            </Link>
           </div>
         </section>
       </main>
