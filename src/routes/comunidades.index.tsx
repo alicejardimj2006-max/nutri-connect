@@ -269,18 +269,18 @@ function CommunityCard({ community: c }: { community: Community }) {
         </div>
 
         <div className="mt-5 flex gap-2">
-          {c.status === "ativa" && user && (
+        {c.status === "ativa" && user && (
             <button
               onClick={() => {
                 toggleMembership(c.id, { id: user.id, name: user.name, role: user.role });
               }}
               className={`flex-1 rounded-full px-4 py-2 text-[13px] font-semibold transition shadow-soft ${
-                c.members.some((m) => m.id === user.id)
+                c.members.some((m) => m.userId === user.id)
                   ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
                   : "bg-primary-soft text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20"
               }`}
             >
-              {c.members.some((m) => m.id === user.id) ? "Você participa" : "Participar"}
+              {c.members.some((m) => m.userId === user.id) ? "Você participa" : "Participar"}
             </button>
           )}
           <Link

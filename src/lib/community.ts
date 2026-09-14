@@ -142,6 +142,7 @@ export interface ProfessionalMember {
   location: string;
   modalities: string[];
   focus: string[];
+  avatar?: string;
   verified: boolean;
   articlesCount: number;
   recipesCount: number;
