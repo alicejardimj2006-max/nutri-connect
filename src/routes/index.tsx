@@ -153,6 +153,33 @@ function HomePage() {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-primary text-primary-foreground">
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary via-primary to-primary/90" />
+          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:py-24 md:items-center">
+            <div>
+
+              <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-white md:text-5xl">
+                Sua alimentação
+                <br></br>do seu jeito
+              </h1>
+              <p className="mt-5 max-w-xl text-lg text-white/90">
+                Conectamos pacientes e nutricionistas para
+                <br></br>um acompanhamento completo e personalizado
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/cadastro"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-lg transition hover:bg-white/90"
+                >
+                  Começar minha jornada <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/servicos"
+                  className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary backdrop-blur-xs transition hover:bg-white/90 shadow-lg"
+                >
+                  Serviços
+                </Link>
               </div>
 
               <div className="lg:col-span-6 relative hidden sm:block">
