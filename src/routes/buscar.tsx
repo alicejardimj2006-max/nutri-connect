@@ -1,9 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, ChefHat, Sparkles, BookOpen, Users, Award, Compass, ArrowRight } from "lucide-react";
+import {
+  Search,
+  ChefHat,
+  Sparkles,
+  BookOpen,
+  Users,
+  Award,
+  Compass,
+  ArrowRight,
+} from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
-import { PostCard, ChallengeCard, ProfessionalCard, WeeklyThemeCard } from "@/components/community-cards";
+import {
+  PostCard,
+  ChallengeCard,
+  ProfessionalCard,
+  WeeklyThemeCard,
+} from "@/components/community-cards";
 
 export const Route = createFileRoute("/buscar")({
   head: () => ({
@@ -11,14 +25,16 @@ export const Route = createFileRoute("/buscar")({
       { title: "Busca e Descoberta — NutriConnect" },
       {
         name: "description",
-        content: "Encontre receitas, relatos de experiências, desafios de hábitos e nutricionistas parceiros na comunidade NutriConnect.",
+        content:
+          "Encontre receitas, relatos de experiências, desafios de hábitos e nutricionistas parceiros na comunidade NutriConnect.",
       },
     ],
   }),
   component: BuscarPage,
 });
 
-type SearchTab = "tudo" | "receitas" | "experiencias" | "profissionais" | "desafios" | "comunidades";
+type SearchTab =
+  "tudo" | "receitas" | "experiencias" | "profissionais" | "desafios" | "comunidades";
 
 function BuscarPage() {
   const { posts, challenges, professionals, weeklyTheme, communities } = useCommunity();
@@ -65,16 +81,23 @@ function BuscarPage() {
       c.category.toLowerCase().includes(q),
   );
 
-  const matchingTheme = weeklyTheme && (
-    !q ||
-    weeklyTheme.title.toLowerCase().includes(q) ||
-    weeklyTheme.description.toLowerCase().includes(q)
-  ) ? [weeklyTheme] : [];
+  const matchingTheme =
+    weeklyTheme &&
+    (!q ||
+      weeklyTheme.title.toLowerCase().includes(q) ||
+      weeklyTheme.description.toLowerCase().includes(q))
+      ? [weeklyTheme]
+      : [];
   const tabs: { id: SearchTab; label: string; count: number }[] = [
     {
       id: "tudo",
       label: "Tudo",
-      count: matchingPosts.length + matchingProfessionals.length + matchingChallenges.length + matchingCommunities.length + matchingTheme.length,
+      count:
+        matchingPosts.length +
+        matchingProfessionals.length +
+        matchingChallenges.length +
+        matchingCommunities.length +
+        matchingTheme.length,
     },
     { id: "receitas", label: "Receitas", count: matchingRecipes.length },
     { id: "experiencias", label: "Experiências", count: matchingExperiences.length },
@@ -94,7 +117,8 @@ function BuscarPage() {
             O que você quer descobrir hoje?
           </h1>
           <p className="text-sm text-muted-foreground">
-            Pesquise por ingredientes, receitas afetivas, relatos de rotina, desafios ou profissionais parceiros.
+            Pesquise por ingredientes, receitas afetivas, relatos de rotina, desafios ou
+            profissionais parceiros.
           </p>
 
           <div className="relative mt-4">
@@ -131,7 +155,7 @@ function BuscarPage() {
         {/* Resultados */}
         <div className="space-y-10">
           {/* Seção de Tema da Semana */}
-          {(activeTab === "tudo") && matchingTheme.length > 0 && (
+          {activeTab === "tudo" && matchingTheme.length > 0 && (
             <div className="mb-6">
               <WeeklyThemeCard theme={matchingTheme[0]} compact={true} />
             </div>
@@ -163,38 +187,40 @@ function BuscarPage() {
           )}
 
           {/* Seção de Experiências */}
-          {(activeTab === "tudo" || activeTab === "experiencias") && matchingExperiences.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-accent" />
-                  <span>Experiências e Relatos ({matchingExperiences.length})</span>
-                </h2>
+          {(activeTab === "tudo" || activeTab === "experiencias") &&
+            matchingExperiences.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
+                  <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-accent" />
+                    <span>Experiências e Relatos ({matchingExperiences.length})</span>
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  {matchingExperiences.slice(0, activeTab === "tudo" ? 2 : undefined).map((exp) => (
+                    <PostCard key={exp.id} post={exp} />
+                  ))}
+                </div>
               </div>
-              <div className="space-y-4">
-                {matchingExperiences.slice(0, activeTab === "tudo" ? 2 : undefined).map((exp) => (
-                  <PostCard key={exp.id} post={exp} />
-                ))}
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Seção de Profissionais */}
-          {(activeTab === "tudo" || activeTab === "profissionais") && matchingProfessionals.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-accent" />
-                  <span>Especialistas ({matchingProfessionals.length})</span>
-                </h2>
+          {(activeTab === "tudo" || activeTab === "profissionais") &&
+            matchingProfessionals.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
+                  <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-accent" />
+                    <span>Especialistas ({matchingProfessionals.length})</span>
+                  </h2>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {matchingProfessionals.map((prof) => (
+                    <ProfessionalCard key={prof.id} professional={prof} />
+                  ))}
+                </div>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {matchingProfessionals.map((prof) => (
-                  <ProfessionalCard key={prof.id} professional={prof} />
-                ))}
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Seção de Desafios */}
           {(activeTab === "tudo" || activeTab === "desafios") && matchingChallenges.length > 0 && (
@@ -214,37 +240,40 @@ function BuscarPage() {
           )}
 
           {/* Seção de Comunidades */}
-          {(activeTab === "tudo" || activeTab === "comunidades") && matchingCommunities.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                  <Users className="h-4 w-4 text-accent" />
-                  <span>Comunidades ({matchingCommunities.length})</span>
-                </h2>
+          {(activeTab === "tudo" || activeTab === "comunidades") &&
+            matchingCommunities.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
+                  <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                    <Users className="h-4 w-4 text-accent" />
+                    <span>Comunidades ({matchingCommunities.length})</span>
+                  </h2>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {matchingCommunities.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/comunidades/$slug"
+                      params={{ slug: c.slug }}
+                      className="block rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm"
+                    >
+                      <h3 className="text-base font-bold text-foreground font-display">{c.name}</h3>
+                      <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
+                        {c.description}
+                      </p>
+                      <div className="mt-4 flex items-center gap-2">
+                        <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-foreground">
+                          {c.category}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {c.members.length} {c.members.length === 1 ? "membro" : "membros"}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {matchingCommunities.map((c) => (
-                  <Link
-                    key={c.id}
-                    to="/comunidades/$slug"
-                    params={{ slug: c.slug }}
-                    className="block rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm"
-                  >
-                    <h3 className="text-base font-bold text-foreground font-display">{c.name}</h3>
-                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{c.description}</p>
-                    <div className="mt-4 flex items-center gap-2">
-                      <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-foreground">
-                        {c.category}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {c.members.length} {c.members.length === 1 ? "membro" : "membros"}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Caso vazio */}
           {matchingPosts.length === 0 &&

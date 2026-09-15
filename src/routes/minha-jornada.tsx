@@ -26,7 +26,8 @@ export const Route = createFileRoute("/minha-jornada")({
       { title: "Minha Jornada — NutriConnect" },
       {
         name: "description",
-        content: "Acompanhe sua caminhada pessoal: seus objetivos, receitas que preparou, desafios ativos e aprendizados com a comunidade.",
+        content:
+          "Acompanhe sua caminhada pessoal: seus objetivos, receitas que preparou, desafios ativos e aprendizados com a comunidade.",
       },
     ],
   }),
@@ -53,8 +54,8 @@ function MinhaJornadaPage() {
   }
 
   // Receitas que o usuário preparou ("Eu preparei")
-  const preparedRecipes = posts.filter((p) =>
-    p.type === "receita" && (p.preparedBy || []).includes(user.id)
+  const preparedRecipes = posts.filter(
+    (p) => p.type === "receita" && (p.preparedBy || []).includes(user.id),
   );
 
   // Publicações criadas pelo usuário
@@ -65,7 +66,7 @@ function MinhaJornadaPage() {
 
   // Objetivos padrão ou configurados
   const userGoals = [
-    user.goal || "Construir uma relação mais leve com a comida",
+    user.journeyGoal || user.goal || "Construir uma relação mais leve com a comida",
     "Cozinhar com alimentos frescos em casa",
     "Respeitar meus sinais de fome e saciedade",
   ];
@@ -76,13 +77,38 @@ function MinhaJornadaPage() {
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {/* Banner do Perfil de Jornada */}
-        <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-accent-soft/20 p-6 sm:p-10 shadow-card mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="grid h-20 w-20 place-items-center rounded-3xl bg-primary text-2xl font-extrabold text-primary-foreground shadow-md">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-card mb-8 flex flex-col">
+          {/* Capa do Perfil */}
+          <div className="h-32 sm:h-48 w-full relative">
+            <img
+              src="/images/hero/hero-table.jpg"
+              alt="Capa da Jornada"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          </div>
 
+          <div className="p-6 sm:p-10 pt-12 sm:pt-14 relative bg-gradient-to-br from-card via-card to-accent-soft/20">
+            {/* Avatar Sobreposto */}
+            <div className="absolute -top-10 sm:-top-12 left-6 sm:left-10 grid h-20 w-20 sm:h-24 sm:w-24 overflow-hidden place-items-center rounded-3xl bg-primary text-3xl font-extrabold text-primary-foreground shadow-card border-4 border-card">
+              {user.role === "nutricionista" && user.id === "seed-nutri-maria" ? (
+                <img
+                  src="/images/professionals/prof-1.jpg"
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : user.role === "nutricionista" && user.id === "seed-nutri-pedro" ? (
+                <img
+                  src="/images/professionals/prof-2.jpg"
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                user.name.charAt(0).toUpperCase()
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
@@ -93,11 +119,33 @@ function MinhaJornadaPage() {
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  {user.bio || "Construindo uma caminhada alimentar tranquila e conectada com o corpo."}
+                  {user.bio ||
+                    "Construindo uma caminhada alimentar tranquila e conectada com o corpo."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
                 </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                <ShareModal
+                  triggerButton={
+                    <button
+                      type="button"
+                      className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Compartilhar</span>
+                    </button>
+                  }
+                />
+
+                <Link
+                  to={user.role === "nutricionista" ? "/nutricionista/perfil" : "/paciente/perfil"}
+                  className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition"
+                >
+                  Editar meus dados
+                </Link>
               </div>
             </div>
 
@@ -176,9 +224,7 @@ function MinhaJornadaPage() {
               <span className="text-xs font-medium text-muted-foreground">Compartilhamentos</span>
               <Sparkles className="h-5 w-5 text-accent" />
             </div>
-            <p className="mt-2 text-2xl font-bold font-display text-foreground">
-              {myPosts.length}
-            </p>
+            <p className="mt-2 text-2xl font-bold font-display text-foreground">{myPosts.length}</p>
             <p className="mt-1 text-[11px] text-muted-foreground">relatos e ideias na rede</p>
           </div>
 
@@ -216,9 +262,12 @@ function MinhaJornadaPage() {
               ) : (
                 <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
                   <ChefHat className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-foreground">Você ainda não marcou nenhuma receita como preparada</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Você ainda não marcou nenhuma receita como preparada
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Ao navegar pelas receitas da comunidade, clique em <b>"Eu preparei"</b> para registrar suas conquistas na cozinha!
+                    Ao navegar pelas receitas da comunidade, clique em <b>"Eu preparei"</b> para
+                    registrar suas conquistas na cozinha!
                   </p>
                   <div className="mt-4">
                     <Link
@@ -329,7 +378,8 @@ function MinhaJornadaPage() {
                 <span>Especialistas Parceiros</span>
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                Encontre o nutricionista ideal para o seu momento e agende uma conversa com acompanhamento individual.
+                Encontre o nutricionista ideal para o seu momento e agende uma conversa com
+                acompanhamento individual.
               </p>
               <Link
                 to="/profissionais"

@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Video, Calendar as CalendarIcon, Clock, CheckCircle2, Lock, UserCheck } from "lucide-react";
+import {
+  Plus,
+  Video,
+  Calendar as CalendarIcon,
+  Clock,
+  CheckCircle2,
+  Lock,
+  UserCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Section } from "@/components/dashboard-shell";
 import { MiniCalendar } from "./paciente.agendamentos";
@@ -20,12 +28,40 @@ interface Slot {
 
 const initialSlots: Slot[] = [
   { id: "1", h: "08:00", p: "Livre", status: "Livre" },
-  { id: "2", h: "09:00", p: "Ana Souza", status: "Ocupado", tipo: "Primeira Consulta", modalidade: "Online" },
+  {
+    id: "2",
+    h: "09:00",
+    p: "Ana Souza",
+    status: "Ocupado",
+    tipo: "Primeira Consulta",
+    modalidade: "Online",
+  },
   { id: "3", h: "10:00", p: "Livre", status: "Livre" },
-  { id: "4", h: "10:30", p: "Bruno Lima", status: "Ocupado", tipo: "Retorno", modalidade: "Presencial" },
+  {
+    id: "4",
+    h: "10:30",
+    p: "Bruno Lima",
+    status: "Ocupado",
+    tipo: "Retorno",
+    modalidade: "Presencial",
+  },
   { id: "5", h: "12:00", p: "Horário de Almoço", status: "Bloqueado" },
-  { id: "6", h: "14:00", p: "Cainã Lopes", status: "Ocupado", tipo: "Acompanhamento", modalidade: "Online" },
-  { id: "7", h: "15:30", p: "Carla Mendes", status: "Ocupado", tipo: "Retorno", modalidade: "Online" },
+  {
+    id: "6",
+    h: "14:00",
+    p: "Cainã Lopes",
+    status: "Ocupado",
+    tipo: "Acompanhamento",
+    modalidade: "Online",
+  },
+  {
+    id: "7",
+    h: "15:30",
+    p: "Carla Mendes",
+    status: "Ocupado",
+    tipo: "Retorno",
+    modalidade: "Online",
+  },
   { id: "8", h: "16:30", p: "Livre", status: "Livre" },
 ];
 
@@ -42,7 +78,7 @@ function Agenda() {
         if (s.id !== id) return s;
         if (s.status === "Bloqueado") return { ...s, p: "Livre", status: "Livre" };
         return { ...s, p: "Bloqueado pelo Profissional", status: "Bloqueado" };
-      })
+      }),
     );
     toast.info("Status do horário atualizado.");
   };
@@ -72,7 +108,9 @@ function Agenda() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="font-display text-2xl font-bold">Gestão de Agenda & Consultas</h1>
-          <p className="text-xs text-muted-foreground">Visualize e gerencie os horários do seu consultório</p>
+          <p className="text-xs text-muted-foreground">
+            Visualize e gerencie os horários do seu consultório
+          </p>
         </div>
 
         <button
@@ -91,7 +129,10 @@ function Agenda() {
         <Section title="Grade de Horários do Dia">
           <ul className="divide-y divide-border/60">
             {slots.map((s) => (
-              <li key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-3.5 gap-2">
+              <li
+                key={s.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between py-3.5 gap-2"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-16 rounded-lg bg-primary-soft/60 px-2 py-1 text-center font-extrabold text-xs text-primary">
                     {s.h}
@@ -121,7 +162,11 @@ function Agenda() {
                   {s.status === "Ocupado" && (
                     <button
                       onClick={() =>
-                        setSlots((prev) => prev.map((x) => (x.id === s.id ? { ...x, p: "Livre", status: "Livre" } : x)))
+                        setSlots((prev) =>
+                          prev.map((x) =>
+                            x.id === s.id ? { ...x, p: "Livre", status: "Livre" } : x,
+                          ),
+                        )
                       }
                       className="rounded-full border border-border px-3 py-1 text-xs font-medium text-destructive hover:bg-destructive/10"
                     >
@@ -158,7 +203,9 @@ function Agenda() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl border bg-card p-6 shadow-xl">
             <h3 className="font-display text-xl font-bold">Agendar Nova Consulta</h3>
-            <p className="text-xs text-muted-foreground mt-1">Insira os dados do paciente para encaixe ou consulta.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Insira os dados do paciente para encaixe ou consulta.
+            </p>
 
             <form onSubmit={handleAddSlot} className="mt-6 space-y-4">
               <div>
@@ -175,7 +222,11 @@ function Agenda() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold mb-1">Horário</label>
-                  <select value={newHora} onChange={(e) => setNewHora(e.target.value)} className="input">
+                  <select
+                    value={newHora}
+                    onChange={(e) => setNewHora(e.target.value)}
+                    className="input"
+                  >
                     <option value="08:00">08:00</option>
                     <option value="10:00">10:00</option>
                     <option value="11:30">11:30</option>
@@ -186,7 +237,11 @@ function Agenda() {
 
                 <div>
                   <label className="block text-xs font-semibold mb-1">Tipo</label>
-                  <select value={newTipo} onChange={(e) => setNewTipo(e.target.value)} className="input">
+                  <select
+                    value={newTipo}
+                    onChange={(e) => setNewTipo(e.target.value)}
+                    className="input"
+                  >
                     <option value="Retorno">Retorno</option>
                     <option value="Primeira Consulta">Primeira Consulta</option>
                     <option value="Acompanhamento">Acompanhamento</option>
@@ -216,4 +271,3 @@ function Agenda() {
     </div>
   );
 }
-

@@ -9,7 +9,9 @@ export const Route = createFileRoute("/nutricionista/configuracoes")({
 });
 
 function Config() {
-  const [tab, setTab] = useState<"perfil" | "agenda" | "notificacoes" | "financeiro" | "seguranca">("perfil");
+  const [tab, setTab] = useState<"perfil" | "agenda" | "notificacoes" | "financeiro" | "seguranca">(
+    "perfil",
+  );
 
   // Form State
   const [nome, setNome] = useState("Dra. Camila Jardim");
@@ -35,7 +37,9 @@ function Config() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="font-display text-2xl font-bold">Configurações do Consultório</h1>
-          <p className="text-xs text-muted-foreground">Gerencie seus dados profissionais, agenda, valores e segurança</p>
+          <p className="text-xs text-muted-foreground">
+            Gerencie seus dados profissionais, agenda, valores e segurança
+          </p>
         </div>
 
         <button
@@ -58,7 +62,9 @@ function Config() {
             key={t.id}
             onClick={() => setTab(t.id as typeof tab)}
             className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition ${
-              tab === t.id ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:bg-background hover:text-foreground"
+              tab === t.id
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:bg-background hover:text-foreground"
             }`}
           >
             <t.icon className="h-3.5 w-3.5" />
@@ -81,11 +87,19 @@ function Config() {
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1">Especialidade Principal</label>
-              <input value={especialidade} onChange={(e) => setEspecialidade(e.target.value)} className="input" />
+              <input
+                value={especialidade}
+                onChange={(e) => setEspecialidade(e.target.value)}
+                className="input"
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold mb-1">E-mail Profissional</label>
-              <input value="dra.camila@nutriconnect.com.br" disabled className="input opacity-70 bg-secondary/30" />
+              <input
+                value="dra.camila@nutriconnect.com.br"
+                disabled
+                className="input opacity-70 bg-secondary/30"
+              />
             </div>
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold mb-1">Biografia Resumida</label>
@@ -104,7 +118,9 @@ function Config() {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1">Valor Padrão da Consulta (R$)</label>
+                <label className="block text-xs font-semibold mb-1">
+                  Valor Padrão da Consulta (R$)
+                </label>
                 <input
                   type="number"
                   value={valorConsulta}
@@ -114,7 +130,9 @@ function Config() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-1">Duração Padrão por Atendimento</label>
+                <label className="block text-xs font-semibold mb-1">
+                  Duração Padrão por Atendimento
+                </label>
                 <select
                   value={duracaoSessao}
                   onChange={(e) => setDuracaoSessao(e.target.value)}
@@ -176,14 +194,17 @@ function Config() {
         <Section title="Dados Financeiros e Recebimentos via PIX">
           <div className="space-y-4 max-w-xl">
             <div>
-              <label className="block text-xs font-semibold mb-1">Chave PIX para Recebimentos Diretos</label>
+              <label className="block text-xs font-semibold mb-1">
+                Chave PIX para Recebimentos Diretos
+              </label>
               <input value={pixKey} onChange={(e) => setPixKey(e.target.value)} className="input" />
             </div>
 
             <div className="rounded-2xl border bg-secondary/30 p-4 space-y-2 text-xs">
               <div className="font-bold text-foreground">Repasse Automático da Plataforma</div>
               <p className="text-muted-foreground">
-                As consultas pagas via cartão de crédito na plataforma são repassadas semanalmente todas as terças-feiras diretamente para sua conta cadastrada.
+                As consultas pagas via cartão de crédito na plataforma são repassadas semanalmente
+                todas as terças-feiras diretamente para sua conta cadastrada.
               </p>
             </div>
           </div>
@@ -209,7 +230,9 @@ function Config() {
             <div className="flex items-center justify-between rounded-xl border p-4">
               <div>
                 <div className="text-sm font-semibold">Exportação Completa de Dados (LGPD)</div>
-                <div className="text-xs text-muted-foreground">Baixar arquivo ZIP com todos os prontuários e receitas</div>
+                <div className="text-xs text-muted-foreground">
+                  Baixar arquivo ZIP com todos os prontuários e receitas
+                </div>
               </div>
               <button
                 onClick={() => toast.success("Iniciando exportação de dados em segundo plano...")}
@@ -225,7 +248,15 @@ function Config() {
   );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-center justify-between rounded-2xl border bg-card p-4 cursor-pointer hover:border-primary/40 transition">
       <span className="text-xs font-semibold text-foreground pr-4">{label}</span>
@@ -238,4 +269,3 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
     </label>
   );
 }
-

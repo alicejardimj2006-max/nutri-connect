@@ -41,13 +41,16 @@ function NutriLayout() {
   const { user, hydrated } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  if (!hydrated || !user) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  if (!hydrated || !user)
+    return (
+      <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>
+    );
 
   return (
-    <DashboardShell 
-      items={items} 
-      title={titles[pathname] ?? "Profissional da Rede"} 
-      userName={user.name} 
+    <DashboardShell
+      items={items}
+      title={titles[pathname] ?? "Profissional da Rede"}
+      userName={user.name}
       userRole="Profissional"
     >
       <Outlet />

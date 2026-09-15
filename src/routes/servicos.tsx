@@ -114,7 +114,8 @@ const pricingPlans = [
     name: "Nutricionista Pro",
     price: "R$ 89",
     period: "/mês",
-    description: "Tudo que o profissional precisa para gerenciar até 100 pacientes com alta eficiência.",
+    description:
+      "Tudo que o profissional precisa para gerenciar até 100 pacientes com alta eficiência.",
     features: [
       "Prontuário eletrônico ilimitado",
       "Gerador de plano alimentar rápido com IA",
@@ -172,7 +173,8 @@ function Servicos() {
               <span className="text-primary">tecnologia e humanização</span>
             </h1>
             <p className="mx-auto mt-5 max-w-3xl text-lg text-muted-foreground">
-              Da primeira consulta ao acompanhamento diário. Oferecemos as melhores ferramentas para pacientes atingirem metas e nutricionistas escalarem seus consultórios.
+              Da primeira consulta ao acompanhamento diário. Oferecemos as melhores ferramentas para
+              pacientes atingirem metas e nutricionistas escalarem seus consultórios.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link
@@ -196,7 +198,9 @@ function Servicos() {
         <section className="mx-auto max-w-6xl px-4 py-16">
           <div className="text-center">
             <h2 className="font-display text-3xl font-bold">O que oferecemos na prática</h2>
-            <p className="mt-2 text-muted-foreground">Recursos desenvolvidos especificamente para atender as reais necessidades do dia a dia</p>
+            <p className="mt-2 text-muted-foreground">
+              Recursos desenvolvidos especificamente para atender as reais necessidades do dia a dia
+            </p>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -235,7 +239,8 @@ function Servicos() {
                     Calcule sua economia de tempo com o NutriConnect
                   </h2>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Veja quantas horas semanais você ganha ao automatizar a montagem de dietas e confirmações.
+                    Veja quantas horas semanais você ganha ao automatizar a montagem de dietas e
+                    confirmações.
                   </p>
                 </div>
               </div>
@@ -279,8 +284,12 @@ function Servicos() {
                   <div className="flex items-center gap-3">
                     <Clock className="h-8 w-8 text-primary" />
                     <div>
-                      <div className="text-2xl font-extrabold text-foreground">{horasEconomizadasSemana}h / semana</div>
-                      <div className="text-xs text-muted-foreground">Economizadas em burocracia e prescrições</div>
+                      <div className="text-2xl font-extrabold text-foreground">
+                        {horasEconomizadasSemana}h / semana
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Economizadas em burocracia e prescrições
+                      </div>
                     </div>
                   </div>
                   <div className="border-t border-primary/20 pt-4 flex items-center gap-3">
@@ -289,7 +298,9 @@ function Servicos() {
                       <div className="text-2xl font-extrabold text-foreground">
                         R$ {faturamentoEstimado.toLocaleString("pt-BR")}
                       </div>
-                      <div className="text-xs text-muted-foreground">Potencial de faturamento mensal gerenciado</div>
+                      <div className="text-xs text-muted-foreground">
+                        Potencial de faturamento mensal gerenciado
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -301,8 +312,12 @@ function Servicos() {
         {/* PRICING PLANS */}
         <section className="mx-auto max-w-6xl px-4 py-20">
           <div className="text-center">
-            <h2 className="font-display text-3xl font-bold">Planos transparentes para cada perfil</h2>
-            <p className="mt-2 text-muted-foreground">Sem fidelidade, cancele ou troque de plano quando quiser</p>
+            <h2 className="font-display text-3xl font-bold">
+              Planos transparentes para cada perfil
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Sem fidelidade, cancele ou troque de plano quando quiser
+            </p>
           </div>
 
           <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -310,7 +325,9 @@ function Servicos() {
               <div
                 key={plan.name}
                 className={`relative flex flex-col justify-between rounded-3xl border p-8 shadow-card transition-all ${
-                  plan.popular ? "border-primary bg-card shadow-soft ring-2 ring-primary" : "bg-card"
+                  plan.popular
+                    ? "border-primary bg-card shadow-soft ring-2 ring-primary"
+                    : "bg-card"
                 }`}
               >
                 {plan.popular && (
@@ -320,10 +337,14 @@ function Servicos() {
                 )}
                 <div>
                   <h3 className="font-display text-xl font-bold">{plan.name}</h3>
-                  <p className="mt-2 text-xs text-muted-foreground min-h-[36px]">{plan.description}</p>
+                  <p className="mt-2 text-xs text-muted-foreground min-h-[36px]">
+                    {plan.description}
+                  </p>
 
                   <div className="mt-6 flex items-baseline gap-1">
-                    <span className="font-display text-4xl font-extrabold tracking-tight">{plan.price}</span>
+                    <span className="font-display text-4xl font-extrabold tracking-tight">
+                      {plan.price}
+                    </span>
                     <span className="text-xs text-muted-foreground">{plan.period}</span>
                   </div>
 
@@ -359,7 +380,9 @@ function Servicos() {
               <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-primary">
                 <HelpCircle className="h-4 w-4" /> Dúvidas Frequentes
               </span>
-              <h2 className="mt-2 font-display text-3xl font-bold">Ainda ficou com alguma pergunta?</h2>
+              <h2 className="mt-2 font-display text-3xl font-bold">
+                Ainda ficou com alguma pergunta?
+              </h2>
             </div>
 
             <div className="mt-10 space-y-4">
@@ -391,9 +414,12 @@ function Servicos() {
         <section className="mx-auto max-w-6xl px-4 py-16">
           <div className="rounded-3xl bg-gradient-to-r from-primary via-primary/90 to-accent-hover p-8 md:p-14 text-primary-foreground shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="space-y-3 text-center md:text-left">
-              <h2 className="font-display text-3xl font-bold">Pronto para transformar sua saúde ou consultório?</h2>
+              <h2 className="font-display text-3xl font-bold">
+                Pronto para transformar sua saúde ou consultório?
+              </h2>
               <p className="max-w-xl text-sm text-primary-foreground/90">
-                Junte-se a milhares de pessoas que já usam o NutriConnect para uma vida mais saudável e organizada.
+                Junte-se a milhares de pessoas que já usam o NutriConnect para uma vida mais
+                saudável e organizada.
               </p>
             </div>
             <div className="flex flex-wrap gap-4 shrink-0">
@@ -418,4 +444,3 @@ function Servicos() {
     </div>
   );
 }
-

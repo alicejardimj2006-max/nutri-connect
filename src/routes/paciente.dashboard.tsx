@@ -74,7 +74,7 @@ function Dashboard() {
             <WeeklyThemeCard theme={activeTheme} compact={true} />
           </Section>
         )}
-        
+
         {activeChallenge && (
           <Section title="Seu Desafio Atual">
             <ChallengeCard challenge={activeChallenge} />
@@ -91,7 +91,7 @@ function Dashboard() {
             <Shortcut to="/tema-da-semana" icon={BookOpen} label="Tema da Semana" description="Aprenda e discuta" />
           </div>
         </Section>
-        
+
         <Section title="Suas Conexões">
           <div className="grid gap-4 sm:grid-cols-2">
             <Shortcut to="/minha-jornada" icon={Flame} label="Metas & Hábitos" description="Acompanhe sua rotina" />
@@ -116,4 +116,3 @@ function Shortcut({ to, icon: Icon, label, description }: { to: string; icon: Re
     </Link>
   );
 }
-

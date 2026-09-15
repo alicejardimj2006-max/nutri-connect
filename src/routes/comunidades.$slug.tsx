@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { BadgeCheck, Heart, ImagePlus, MessageCircle, Pin, ShieldQuestion, Trash2, Users } from "lucide-react";
+import {
+  BadgeCheck,
+  Heart,
+  ImagePlus,
+  MessageCircle,
+  Pin,
+  ShieldQuestion,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
@@ -23,9 +32,15 @@ export const Route = createFileRoute("/comunidades/$slug")({
   head: () => ({
     meta: [
       { title: "Comunidade — NutriConnect" },
-      { name: "description", content: "Feed da comunidade com publicações, comentários e moderação profissional." },
+      {
+        name: "description",
+        content: "Feed da comunidade com publicações, comentários e moderação profissional.",
+      },
       { property: "og:title", content: "Comunidade — NutriConnect" },
-      { property: "og:description", content: "Publicações, receitas e conversas acolhedoras sobre alimentação." },
+      {
+        property: "og:description",
+        content: "Publicações, receitas e conversas acolhedoras sobre alimentação.",
+      },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -44,19 +59,26 @@ function CommunityFeed() {
     () =>
       posts
         .filter((p) => p.communityId === community?.id)
-        .sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1)),
+        .sort((a, b) =>
+          a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1,
+        ),
     [posts, community?.id],
   );
 
   if (!hydrated) {
-    return <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">Carregando…</div>;
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">Carregando…</div>
+    );
   }
 
   if (!community) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-2xl font-bold text-primary">Comunidade não encontrada</h1>
-        <Link to="/comunidades" className="mt-3 inline-block text-sm font-semibold text-accent hover:underline">
+        <Link
+          to="/comunidades"
+          className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
+        >
           Voltar para comunidades
         </Link>
       </div>
@@ -67,78 +89,119 @@ function CommunityFeed() {
   const isMember = !!actor && community.members.some((m) => m.userId === actor.id);
   const canPost = !!actor && community.status === "ativa" && (isMember || isModerator);
 
+  let coverImage = "/images/communities/friends-dinner.jpg";
+  if (community.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
+  if (community.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
+  if (community.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <Link to="/comunidades" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-        ← Comunidades
+      <Link
+        to="/comunidades"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground mb-4"
+      >
+        &larr; Voltar para comunidades
       </Link>
 
-      <header className="mt-4 rounded-2xl border bg-card p-6 shadow-card">
-        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-          {community.category}
-        </span>
-        <h1 className="mt-3 text-3xl font-bold text-primary">{community.name}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{community.description}</p>
+      <header className="rounded-3xl border border-border bg-card shadow-card overflow-hidden">
+        <div className="h-48 sm:h-64 w-full relative">
+          <img src={coverImage} alt={community.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-4">
+            <div>
+              <span className="inline-block rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider mb-2">
+                {community.category}
+              </span>
+              <h1 className="text-3xl sm:text-4xl font-bold font-display text-white">
+                {community.name}
+              </h1>
+            </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-4">
-          {community.responsible ? (
-            <Link
-              to="/perfil/$userId"
-              params={{ userId: community.responsible.userId }}
-              className="flex items-center gap-3 rounded-xl bg-secondary/70 px-3 py-2 transition hover:bg-secondary"
-            >
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                {initials(community.responsible.name)}
-              </span>
-              <span className="text-sm">
-                <span className="flex items-center gap-1 font-semibold text-foreground">
-                  {community.responsible.name}
-                  <BadgeCheck className="h-4 w-4 text-accent" />
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Nutricionista responsável · {community.responsible.credential}
-                </span>
-              </span>
-            </Link>
-          ) : (
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-accent/40 bg-accent-soft px-4 py-3">
-              <ShieldQuestion className="h-5 w-5 text-accent" />
-              <div className="text-sm">
-                <p className="font-semibold text-foreground">Aguardando nutricionista responsável</p>
-                <p className="text-xs text-muted-foreground">
-                  A comunidade só fica aberta a publicações quando um profissional assumir a moderação.
-                </p>
+            {actor && community.status === "ativa" && !isModerator && (
+              <button
+                onClick={() => toggleMembership(community.id, actor)}
+                className={`hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition ${
+                  isMember
+                    ? "bg-white/20 text-white hover:bg-white/30 backdrop-blur-md border border-white/30"
+                    : "bg-accent text-accent-foreground hover:bg-accent/90"
+                }`}
+              >
+                {isMember ? "Sair da comunidade" : "Participar"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="flex flex-col sm:flex-row gap-6 justify-between items-start">
+            <div className="max-w-2xl">
+              <p className="text-base text-muted-foreground leading-relaxed">
+                {community.description}
+              </p>
+
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                {community.responsible ? (
+                  <Link
+                    to="/perfil/$userId"
+                    params={{ userId: community.responsible.userId }}
+                    className="flex items-center gap-3 rounded-xl bg-secondary/50 px-3 py-2 border border-border/50 transition hover:bg-secondary"
+                  >
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                      {initials(community.responsible.name)}
+                    </span>
+                    <span className="text-sm">
+                      <span className="flex items-center gap-1 font-semibold text-foreground">
+                        {community.responsible.name}
+                        <BadgeCheck className="h-4 w-4 text-accent" />
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Nutricionista responsável · {community.responsible.credential}
+                      </span>
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+                    <ShieldQuestion className="h-5 w-5 text-warning" />
+                    <div className="text-sm">
+                      <p className="font-semibold text-warning-foreground">
+                        Aguardando nutricionista responsável
+                      </p>
+                    </div>
+                    {actor?.role === "nutricionista" && (
+                      <button
+                        onClick={() => {
+                          assumeResponsibility(community.id, actor);
+                          toast.success("Você assumiu a moderação desta comunidade.");
+                        }}
+                        className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition hover:opacity-90 ml-auto"
+                      >
+                        Assumir moderação
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-              {actor?.role === "nutricionista" && (
+            </div>
+
+            <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
+                <Users className="h-4 w-4 text-accent" /> {community.members.length} membros
+              </span>
+
+              {actor && community.status === "ativa" && !isModerator && (
                 <button
-                  onClick={() => {
-                    assumeResponsibility(community.id, actor);
-                    toast.success("Você assumiu a moderação desta comunidade.");
-                  }}
-                  className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition hover:opacity-90"
+                  onClick={() => toggleMembership(community.id, actor)}
+                  className={`sm:hidden w-full rounded-full px-5 py-2.5 text-sm font-bold transition ${
+                    isMember
+                      ? "border border-border bg-secondary text-foreground hover:bg-muted"
+                      : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-soft"
+                  }`}
                 >
-                  Deseja assumir a moderação?
+                  {isMember ? "Sair da comunidade" : "Participar"}
                 </button>
               )}
             </div>
-          )}
-
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="h-4 w-4" /> {community.members.length} membros
-          </span>
-
-          {actor && community.status === "ativa" && !isModerator && (
-            <button
-              onClick={() => toggleMembership(community.id, actor)}
-              className={`ml-auto rounded-full px-4 py-2 text-xs font-semibold transition ${
-                isMember
-                  ? "border border-primary/40 text-primary hover:bg-secondary"
-                  : "bg-accent text-accent-foreground hover:opacity-90"
-              }`}
-            >
-              {isMember ? "Sair da comunidade" : "Participar"}
-            </button>
-          )}
+          </div>
         </div>
       </header>
 
@@ -202,7 +265,13 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
-      {image && <img src={image} alt="Prévia da imagem da publicação" className="mt-3 max-h-64 rounded-xl object-cover" />}
+      {image && (
+        <img
+          src={image}
+          alt="Prévia da imagem da publicação"
+          className="mt-3 max-h-64 rounded-xl object-cover"
+        />
+      )}
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <input
           ref={fileRef}
@@ -225,19 +294,29 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
           <ImagePlus className="h-4 w-4" /> Adicionar foto
         </button>
         <button className="ml-auto rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
-          Publicar
+          Publicar na comunidade
         </button>
       </div>
     </form>
   );
 }
 
-function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | null; isModerator: boolean }) {
+function PostCard({
+  post,
+  actor,
+  isModerator,
+}: {
+  post: Post;
+  actor: Actor | null;
+  isModerator: boolean;
+}) {
   const [comment, setComment] = useState("");
   const liked = !!actor && post.likes.includes(actor.id);
 
   return (
-    <article className={`rounded-2xl border bg-card p-5 shadow-card ${post.pinned ? "border-accent/50" : ""}`}>
+    <article
+      className={`rounded-2xl border bg-card p-5 shadow-card ${post.pinned ? "border-accent/50" : ""}`}
+    >
       {post.pinned && (
         <p className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
           <Pin className="h-3.5 w-3.5" /> Orientação fixada
@@ -283,20 +362,25 @@ function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | nul
 
       <p className="mt-3 whitespace-pre-line text-sm text-foreground">{post.text}</p>
       {post.image && (
-        <img src={post.image} alt="Foto compartilhada na publicação" className="mt-3 max-h-96 w-full rounded-xl object-cover" />
+        <img
+          src={post.image}
+          alt="Foto compartilhada na publicação"
+          className="mt-3 max-h-96 w-full rounded-xl object-cover"
+        />
       )}
 
       <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
         <button
           onClick={() => {
-            if (!actor) return toast.error("Entre na sua conta para curtir.");
+            if (!actor) return toast.error("Entre na sua conta para apoiar.");
             toggleLike(post.id, actor.id);
           }}
           className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold transition ${
             liked ? "bg-accent-soft text-accent" : "hover:bg-secondary"
           }`}
         >
-          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length} curtidas
+          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length}{" "}
+          {post.likes.length === 1 ? "apoio" : "apoios"}
         </button>
         <span className="inline-flex items-center gap-1">
           <MessageCircle className="h-4 w-4" /> {post.comments.length} comentários
@@ -312,8 +396,12 @@ function PostCard({ post, actor, isModerator }: { post: Post; actor: Actor | nul
             <div className="flex-1 rounded-xl bg-secondary/60 px-3 py-2">
               <p className="flex items-center gap-1 text-xs font-semibold text-foreground">
                 {c.authorName}
-                {c.authorRole === "nutricionista" && <BadgeCheck className="h-3.5 w-3.5 text-accent" />}
-                <span className="ml-auto font-normal text-muted-foreground">{formatDate(c.createdAt)}</span>
+                {c.authorRole === "nutricionista" && (
+                  <BadgeCheck className="h-3.5 w-3.5 text-accent" />
+                )}
+                <span className="ml-auto font-normal text-muted-foreground">
+                  {formatDate(c.createdAt)}
+                </span>
               </p>
               <p className="mt-1 text-sm text-foreground">{c.text}</p>
             </div>

@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { Mail, Phone, MapPin, Clock, MessageCircle, Send, CheckCircle2, HelpCircle, Sparkles } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  MessageCircle,
+  Send,
+  CheckCircle2,
+  HelpCircle,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +26,10 @@ export const Route = createFileRoute("/contato")({
           "Precisa de ajuda ou tem dúvidas sobre a plataforma NutriConnect? Entre em contato com nosso time de atendimento.",
       },
       { property: "og:title", content: "Fale Conosco — NutriConnect" },
-      { property: "og:description", content: "Estamos aqui para ajudar você a ter a melhor experiência." },
+      {
+        property: "og:description",
+        content: "Estamos aqui para ajudar você a ter a melhor experiência.",
+      },
     ],
   }),
   component: Contato,
@@ -60,7 +73,10 @@ function Contato() {
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
-      toast.success("Mensagem enviada com sucesso! Código do ticket: #NC-" + Math.floor(1000 + Math.random() * 9000));
+      toast.success(
+        "Mensagem enviada com sucesso! Código do ticket: #NC-" +
+          Math.floor(1000 + Math.random() * 9000),
+      );
     }, 1000);
   };
 
@@ -79,7 +95,8 @@ function Contato() {
               Fale com a gente
             </h1>
             <p className="mt-3 text-lg text-muted-foreground">
-              Dúvidas, suporte técnico, sugestões ou parcerias? Envie sua mensagem para nossa equipe.
+              Dúvidas, suporte técnico, sugestões ou parcerias? Envie sua mensagem para nossa
+              equipe.
             </p>
           </div>
         </section>
@@ -98,7 +115,9 @@ function Contato() {
                   </span>
                   <div>
                     <div className="text-sm font-bold">Suporte em Tempo Real</div>
-                    <div className="text-xs text-muted-foreground">Tempo médio de espera: ~10 minutos</div>
+                    <div className="text-xs text-muted-foreground">
+                      Tempo médio de espera: ~10 minutos
+                    </div>
                   </div>
                 </div>
                 <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
@@ -109,12 +128,17 @@ function Contato() {
               {/* CHANNELS LIST */}
               <div className="space-y-4">
                 {contactChannels.map((c) => (
-                  <div key={c.title} className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-card hover:border-primary/40 transition">
+                  <div
+                    key={c.title}
+                    className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-card hover:border-primary/40 transition"
+                  >
                     <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
                       <c.icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{c.title}</div>
+                      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        {c.title}
+                      </div>
                       <div className="text-sm font-bold text-foreground mt-0.5">{c.value}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">{c.hint}</div>
                     </div>
@@ -153,7 +177,8 @@ function Contato() {
                   </div>
                   <h3 className="font-display text-2xl font-bold">Mensagem Recebida!</h3>
                   <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                    Obrigado por entrar em contato. Um de nossos especialistas analisará sua solicitação e enviará uma resposta para o seu e-mail em breve.
+                    Obrigado por entrar em contato. Um de nossos especialistas analisará sua
+                    solicitação e enviará uma resposta para o seu e-mail em breve.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
@@ -165,7 +190,7 @@ function Contato() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <h2 className="font-display text-2xl font-bold">Envie sua mensagem</h2>
-                  
+
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Nome Completo">
                       <Input required placeholder="Ex: Maria Silva" />
@@ -236,4 +261,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
-

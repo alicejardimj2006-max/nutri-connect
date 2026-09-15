@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, Plus, MessageSquare, UtensilsCrossed, LineChart, FileText, UserPlus, Phone, Mail } from "lucide-react";
+import {
+  Search,
+  Plus,
+  MessageSquare,
+  UtensilsCrossed,
+  LineChart,
+  FileText,
+  UserPlus,
+  Phone,
+  Mail,
+} from "lucide-react";
 import { useState } from "react";
 import { Section } from "@/components/dashboard-shell";
 import { toast } from "sonner";
@@ -21,10 +31,50 @@ interface PacienteItem {
 }
 
 const initialPacientes: PacienteItem[] = [
-  { id: 1, nome: "Ana Souza", obj: "Perda de peso", peso: "68 kg", altura: "1,65 m", ultima: "05 nov", status: "Ativo", email: "ana.souza@gmail.com", tel: "(11) 98888-1234" },
-  { id: 2, nome: "Bruno Lima", obj: "Ganho de massa", peso: "72 kg", altura: "1,78 m", ultima: "02 nov", status: "Ativo", email: "bruno.lima@hotmail.com", tel: "(11) 97777-5678" },
-  { id: 3, nome: "Cainã Lopes de Andrade", obj: "Perda de peso", peso: "75,4 kg", altura: "1,75 m", ultima: "09 nov", status: "Ativo", email: "caina.lopes@gmail.com", tel: "(11) 99999-4321" },
-  { id: 4, nome: "Carla Mendes", obj: "Manutenção", peso: "60 kg", altura: "1,68 m", ultima: "28 out", status: "Em Risco", email: "carla.mendes@yahoo.com", tel: "(11) 96666-8765" },
+  {
+    id: 1,
+    nome: "Ana Souza",
+    obj: "Perda de peso",
+    peso: "68 kg",
+    altura: "1,65 m",
+    ultima: "05 nov",
+    status: "Ativo",
+    email: "ana.souza@gmail.com",
+    tel: "(11) 98888-1234",
+  },
+  {
+    id: 2,
+    nome: "Bruno Lima",
+    obj: "Ganho de massa",
+    peso: "72 kg",
+    altura: "1,78 m",
+    ultima: "02 nov",
+    status: "Ativo",
+    email: "bruno.lima@hotmail.com",
+    tel: "(11) 97777-5678",
+  },
+  {
+    id: 3,
+    nome: "Cainã Lopes de Andrade",
+    obj: "Perda de peso",
+    peso: "75,4 kg",
+    altura: "1,75 m",
+    ultima: "09 nov",
+    status: "Ativo",
+    email: "caina.lopes@gmail.com",
+    tel: "(11) 99999-4321",
+  },
+  {
+    id: 4,
+    nome: "Carla Mendes",
+    obj: "Manutenção",
+    peso: "60 kg",
+    altura: "1,68 m",
+    ultima: "28 out",
+    status: "Em Risco",
+    email: "carla.mendes@yahoo.com",
+    tel: "(11) 96666-8765",
+  },
 ];
 
 function Pacientes() {
@@ -70,7 +120,9 @@ function Pacientes() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <h1 className="font-display text-2xl font-bold">Gestão de Pacientes</h1>
-          <p className="text-xs text-muted-foreground">Acompanhe prontuários, evoluções e planos cadastrados</p>
+          <p className="text-xs text-muted-foreground">
+            Acompanhe prontuários, evoluções e planos cadastrados
+          </p>
         </div>
 
         <button
@@ -106,11 +158,17 @@ function Pacientes() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                        {p.nome.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+                        {p.nome
+                          .split(" ")
+                          .map((s) => s[0])
+                          .slice(0, 2)
+                          .join("")}
                       </div>
                       <div>
                         <div className="text-sm font-bold text-foreground">{p.nome}</div>
-                        <div className="text-xs text-muted-foreground">{p.obj} • Última: {p.ultima}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {p.obj} • Última: {p.ultima}
+                        </div>
                       </div>
                     </div>
 
@@ -119,8 +177,8 @@ function Pacientes() {
                         p.status === "Ativo"
                           ? "bg-emerald-500/10 text-emerald-600"
                           : p.status === "Novo"
-                          ? "bg-blue-500/10 text-blue-600"
-                          : "bg-amber-500/10 text-amber-600"
+                            ? "bg-blue-500/10 text-blue-600"
+                            : "bg-amber-500/10 text-amber-600"
                       }`}
                     >
                       {p.status}
@@ -167,16 +225,21 @@ function Pacientes() {
 
               {/* HISTÓRICO DE CONSULTAS */}
               <div>
-                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">Histórico Recente no Prontuário</h4>
+                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Histórico Recente no Prontuário
+                </h4>
                 <ul className="space-y-2 text-xs">
                   <li className="rounded-xl border bg-card p-3 shadow-xs">
-                    <span className="font-bold text-primary">05 nov</span> • Retorno Presencial — Paciente reportou ótima disposição. Redução de 1.2kg.
+                    <span className="font-bold text-primary">05 nov</span> • Retorno Presencial —
+                    Paciente reportou ótima disposição. Redução de 1.2kg.
                   </li>
                   <li className="rounded-xl border bg-card p-3 shadow-xs">
-                    <span className="font-bold text-primary">12 out</span> • Ajuste de Plano Alimentar — Incremento de proteína na ceia.
+                    <span className="font-bold text-primary">12 out</span> • Ajuste de Plano
+                    Alimentar — Incremento de proteína na ceia.
                   </li>
                   <li className="rounded-xl border bg-card p-3 shadow-xs">
-                    <span className="font-bold text-primary">20 set</span> • Consulta de Anamnese Inicial — Criação de metas.
+                    <span className="font-bold text-primary">20 set</span> • Consulta de Anamnese
+                    Inicial — Criação de metas.
                   </li>
                 </ul>
               </div>
@@ -196,7 +259,9 @@ function Pacientes() {
                   <MessageSquare className="h-3.5 w-3.5" /> Enviar Mensagem
                 </Link>
                 <button
-                  onClick={() => toast.success("Acessando gráficos de bioimpedância de " + sel.nome)}
+                  onClick={() =>
+                    toast.success("Acessando gráficos de bioimpedância de " + sel.nome)
+                  }
                   className="rounded-full border border-border bg-background px-4 py-2.5 text-center text-xs font-semibold text-foreground hover:bg-secondary flex items-center justify-center gap-1.5"
                 >
                   <LineChart className="h-3.5 w-3.5" /> Ver Evolução
@@ -216,7 +281,9 @@ function Pacientes() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl border bg-card p-6 shadow-xl">
             <h3 className="font-display text-xl font-bold">Cadastrar Novo Paciente</h3>
-            <p className="text-xs text-muted-foreground mt-1">Preencha os dados básicos para iniciar o acompanhamento.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Preencha os dados básicos para iniciar o acompanhamento.
+            </p>
 
             <form onSubmit={handleAddPaciente} className="mt-6 space-y-4">
               <div>
@@ -243,7 +310,11 @@ function Pacientes() {
 
               <div>
                 <label className="block text-xs font-semibold mb-1">Objetivo da Nutrição</label>
-                <select value={novoObj} onChange={(e) => setNovoObj(e.target.value)} className="input">
+                <select
+                  value={novoObj}
+                  onChange={(e) => setNovoObj(e.target.value)}
+                  className="input"
+                >
                   <option value="Reeducação Alimentar">Reeducação Alimentar</option>
                   <option value="Perda de Gordura">Perda de Gordura</option>
                   <option value="Hipertrofia">Hipertrofia</option>
@@ -282,4 +353,3 @@ function Info({ l, v }: { l: string; v: string }) {
     </div>
   );
 }
-

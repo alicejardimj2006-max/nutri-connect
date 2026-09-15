@@ -62,7 +62,7 @@ function Perfil() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-      <Section title="Foto">
+      <Section title="Sua Foto na Comunidade">
         <div className="flex flex-col items-center">
           <div className="grid h-32 w-32 place-items-center rounded-full bg-primary-soft text-3xl font-bold text-primary">
             {initials}
@@ -76,7 +76,7 @@ function Perfil() {
           </button>
         </div>
       </Section>
-      <Section title="Dados profissionais">
+      <Section title="Sua Presença na Rede">
         <form onSubmit={handleSave}>
           <div className="grid gap-4 sm:grid-cols-2">
             <F label="Nome">
@@ -156,6 +156,19 @@ function Perfil() {
   );
 }
 
-function F({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
-  return <label className={`block ${className ?? ""}`}><span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>{children}</label>;
+function F({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={`block ${className ?? ""}`}>
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+      {children}
+    </label>
+  );
 }

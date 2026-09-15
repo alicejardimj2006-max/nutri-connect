@@ -120,7 +120,9 @@ function Sobre() {
               <span className="text-primary">você e sua alimentação</span>
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground leading-relaxed">
-              A NutriConnect nasceu da convicção de que mudar hábitos alimentares não precisa ser solitário nem complicado. Combinamos empatia humana com inteligência tecnológica para criar o melhor ecossistema de nutrição da América Latina.
+              A NutriConnect nasceu da convicção de que mudar hábitos alimentares não precisa ser
+              solitário nem complicado. Combinamos empatia humana com inteligência tecnológica para
+              criar o melhor ecossistema de nutrição da América Latina.
             </p>
           </div>
         </section>
@@ -148,7 +150,9 @@ function Sobre() {
               </span>
               <h2 className="mt-4 font-display text-2xl font-bold">Nossa Missão</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Democratizar o acesso a um acompanhamento nutricional de excelência, oferecendo ferramentas que aproximam profissionais e pacientes em uma jornada de saúde contínua, prazerosa e baseada em evidências.
+                Democratizar o acesso a um acompanhamento nutricional de excelência, oferecendo
+                ferramentas que aproximam profissionais e pacientes em uma jornada de saúde
+                contínua, prazerosa e baseada em evidências.
               </p>
             </div>
 
@@ -159,7 +163,9 @@ function Sobre() {
               </span>
               <h2 className="mt-4 font-display text-2xl font-bold">Nossa Visão</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Ser a principal referência em saúde preventiva digital, transformando a relação das pessoas com a comida e capacitando nutricionistas a entregarem o melhor cuidado possível com máxima produtividade.
+                Ser a principal referência em saúde preventiva digital, transformando a relação das
+                pessoas com a comida e capacitando nutricionistas a entregarem o melhor cuidado
+                possível com máxima produtividade.
               </p>
             </div>
           </div>
@@ -190,7 +196,9 @@ function Sobre() {
                     <div className="rounded-2xl border bg-card p-6 shadow-card">
                       <span className="text-xs font-bold text-primary">{item.year}</span>
                       <h3 className="mt-1 font-display text-lg font-bold">{item.title}</h3>
-                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        {item.desc}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -203,12 +211,17 @@ function Sobre() {
         <section className="mx-auto max-w-6xl px-4 py-20">
           <div className="text-center">
             <h2 className="font-display text-3xl font-bold">Nossos Valores Fundamentais</h2>
-            <p className="mt-2 text-muted-foreground">O que nos guia em cada linha de código e decisão</p>
+            <p className="mt-2 text-muted-foreground">
+              O que nos guia em cada linha de código e decisão
+            </p>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
-              <div key={v.title} className="rounded-3xl border bg-card p-6 shadow-card flex flex-col justify-between">
+              <div
+                key={v.title}
+                className="rounded-3xl border bg-card p-6 shadow-card flex flex-col justify-between"
+              >
                 <div>
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <v.icon className="h-6 w-6" />
@@ -233,7 +246,10 @@ function Sobre() {
 
             <div className="mt-12 grid gap-8 md:grid-cols-3">
               {team.map((member) => (
-                <div key={member.name} className="rounded-3xl border bg-background p-6 shadow-card text-center">
+                <div
+                  key={member.name}
+                  className="rounded-3xl border bg-background p-6 shadow-card text-center"
+                >
                   <div className="mx-auto h-20 w-20 rounded-full bg-gradient-to-tr from-primary to-accent-soft p-1">
                     <div className="h-full w-full rounded-full bg-secondary flex items-center justify-center font-display font-extrabold text-2xl text-primary">
                       {member.name.split(" ")[1]?.[0] ?? "N"}
@@ -256,7 +272,8 @@ function Sobre() {
           <div className="rounded-3xl border bg-gradient-to-b from-secondary/60 to-background p-10 md:p-14 shadow-lg">
             <h2 className="font-display text-3xl font-bold">Faça parte desta transformação</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-              Seja para alcançar sua melhor versão física ou para levar seu consultório para o próximo nível, o NutriConnect é o seu lugar.
+              Seja para alcançar sua melhor versão física ou para levar seu consultório para o
+              próximo nível, o NutriConnect é o seu lugar.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link
@@ -280,4 +297,3 @@ function Sobre() {
     </div>
   );
 }
-
