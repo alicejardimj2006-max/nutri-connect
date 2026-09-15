@@ -1,29 +1,30 @@
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Users, FileText, MessageSquare, User, Settings, Sparkles, MessageCircleHeart } from "lucide-react";
-import { useEffect } from "react";
+import { LayoutDashboard, CalendarDays, Users, MessageSquare, User, Settings, Sparkles, Compass, Salad, BookOpen } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { getUser } from "@/lib/auth";
 
 const items: NavItem[] = [
-  { to: "/nutricionista/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/nutricionista/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/nutricionista/pacientes", label: "Pacientes", icon: Users },
-  { to: "/nutricionista/planos", label: "Planos Alimentares", icon: FileText },
+  { to: "/nutricionista/dashboard", label: "Início", icon: LayoutDashboard },
+  { to: "/espaco", label: "Espaço de Hoje", icon: Compass },
+  { to: "/comunidades", label: "Comunidades", icon: Users },
+  { to: "/receitas", label: "Receitas", icon: Salad },
+  { to: "/tema-da-semana", label: "Tema da Semana", icon: BookOpen },
   { to: "/nutricionista/mensagens", label: "Mensagens", icon: MessageSquare },
-  { to: "/espaco", label: "Espaço de Hoje", icon: MessageCircleHeart },
-  { to: "/tema-da-semana", label: "Tema da Semana", icon: Sparkles },
+  { to: "/nutricionista/agenda", label: "Consultas", icon: CalendarDays },
   { to: "/nutricionista/perfil", label: "Perfil", icon: User },
   { to: "/nutricionista/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 const titles: Record<string, string> = {
-  "/nutricionista/dashboard": "Dashboard",
-  "/nutricionista/agenda": "Agenda",
-  "/nutricionista/pacientes": "Pacientes",
-  "/nutricionista/planos": "Planos Alimentares",
+  "/nutricionista/dashboard": "Rede Social",
+  "/espaco": "Espaço de Hoje",
+  "/comunidades": "Comunidades",
+  "/receitas": "Receitas",
+  "/tema-da-semana": "Tema da Semana",
   "/nutricionista/mensagens": "Mensagens",
-  "/nutricionista/perfil": "Perfil",
+  "/nutricionista/agenda": "Consultas",
+  "/nutricionista/perfil": "Perfil Profissional",
   "/nutricionista/configuracoes": "Configurações",
 };
 
@@ -43,7 +44,12 @@ function NutriLayout() {
   if (!hydrated || !user) return <div className="grid min-h-screen place-items-center text-muted-foreground">Carregando…</div>;
 
   return (
-    <DashboardShell items={items} title={titles[pathname] ?? "Nutricionista"} userName={user.name} userRole="Nutricionista">
+    <DashboardShell 
+      items={items} 
+      title={titles[pathname] ?? "Profissional da Rede"} 
+      userName={user.name} 
+      userRole="Profissional"
+    >
       <Outlet />
     </DashboardShell>
   );

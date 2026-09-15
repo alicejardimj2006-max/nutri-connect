@@ -123,11 +123,11 @@ function MinhaJornadaPage() {
             </div>
           </div>
 
-          {/* Atalho para Acompanhamento Clínico se aplicável */}
+          {/* Atalho para Consultas e Mensagens */}
           <div className="mt-8 pt-6 border-t border-border/70 flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4 text-accent" />
-              <span>Acompanhamento clínico individual e plano alimentar:</span>
+              <span>Acompanhamento Profissional:</span>
             </div>
             <div className="flex items-center gap-3">
               <Link
@@ -138,17 +138,10 @@ function MinhaJornadaPage() {
               </Link>
               <span>·</span>
               <Link
-                to="/paciente/plano-alimentar"
+                to="/paciente/mensagens"
                 className="font-semibold text-primary hover:underline"
               >
-                Plano Alimentar
-              </Link>
-              <span>·</span>
-              <Link
-                to="/paciente/dashboard"
-                className="font-semibold text-accent hover:underline"
-              >
-                Painel Clínico Completo →
+                Mensagens com Especialistas
               </Link>
             </div>
           </div>

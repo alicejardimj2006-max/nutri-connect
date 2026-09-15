@@ -53,9 +53,9 @@ const coreServices = [
   },
   {
     icon: LineChart,
-    title: "Monitoramento de Evolução 360°",
-    desc: "Gráficos em tempo real de peso, IMC, percentual de gordura, bioimpedância e galeria privada de fotos antes/depois.",
-    tag: "Para Pacientes",
+    title: "Acompanhamento da Jornada",
+    desc: "Acompanhe seus hábitos diários, participe de desafios com a comunidade e celebre pequenas vitórias de forma saudável.",
+    tag: "Para Todos",
   },
   {
     icon: MessageSquare,
@@ -71,8 +71,8 @@ const coreServices = [
   },
   {
     icon: Users,
-    title: "Gestão Completa de Consultório",
-    desc: "Dashboard financeiro, controle de recebimentos via PIX/cartão, gestão de retorno de pacientes e prontuário eletrônico em conformidade com a LGPD.",
+    title: "Presença Forte na Comunidade",
+    desc: "Publique artigos, crie grupos de apoio, compartilhe receitas exclusivas e fortaleça sua autoridade diretamente na rede.",
     tag: "Para Profissionais",
   },
 ];

@@ -74,7 +74,7 @@ function HomePage() {
     setSupportQuestion(q);
     if (q.toLowerCase().includes("plano") || q.toLowerCase().includes("dieta")) {
       setSupportAnswer(
-        "Seu plano alimentar pode ser visualizado e acompanhado diariamente no Portal do Paciente > Plano Alimentar! Lá você também substitui alimentos."
+        "Suas metas e planos podem ser acompanhados diariamente na aba Minha Jornada! Lá você também acompanha seus hábitos."
       );
     } else if (q.toLowerCase().includes("senha") || q.toLowerCase().includes("login")) {
       setSupportAnswer(
@@ -110,7 +110,7 @@ function HomePage() {
     {
       question: "Sou nutricionista. Como posso me cadastrar?",
       answer:
-        "Na página de Cadastro, selecione a opção 'Nutricionista', informe seu registro profissional (CRN) e tenha acesso a ferramentas de gestão de pacientes, criação de dietas e agenda.",
+        "Na página de Cadastro, selecione a opção 'Nutricionista', informe seu registro profissional (CRN) e tenha acesso a ferramentas de presença na rede, publicação de conteúdos, interação com a comunidade e consultas."
     },
   ];
 

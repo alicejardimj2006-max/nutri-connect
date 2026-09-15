@@ -1,29 +1,34 @@
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Calendar, Salad, Activity, MessageSquare, User, Sparkles, Compass } from "lucide-react";
-import { useEffect } from "react";
+import { LayoutDashboard, Calendar, Salad, MessageSquare, User, Sparkles, Compass, Users, Flame, Award, BookOpen } from "lucide-react";
 import { DashboardShell, type NavItem } from "@/components/dashboard-shell";
 import { useAuth } from "@/hooks/use-auth";
 import { getUser } from "@/lib/auth";
 
 const items: NavItem[] = [
-  { to: "/minha-jornada", label: "Minha Jornada", icon: Sparkles },
+  { to: "/paciente/dashboard", label: "Início", icon: LayoutDashboard },
   { to: "/espaco", label: "Espaço de Hoje", icon: Compass },
-  { to: "/paciente/dashboard", label: "Clínico & Metas", icon: LayoutDashboard },
-  { to: "/paciente/agendamentos", label: "Agendamentos", icon: Calendar },
-  { to: "/paciente/plano-alimentar", label: "Plano Alimentar", icon: Salad },
-  { to: "/paciente/ia-nutricional", label: "IA Nutricional", icon: Sparkles },
-  { to: "/paciente/evolucao", label: "Evolução", icon: Activity },
+  { to: "/comunidades", label: "Comunidades", icon: Users },
+  { to: "/receitas", label: "Receitas", icon: Salad },
+  { to: "/tema-da-semana", label: "Tema da Semana", icon: BookOpen },
+  { to: "/desafios", label: "Desafios", icon: Award },
+  { to: "/profissionais", label: "Profissionais", icon: User },
+  { to: "/minha-jornada", label: "Minha Jornada", icon: Flame },
   { to: "/paciente/mensagens", label: "Mensagens", icon: MessageSquare },
+  { to: "/paciente/agendamentos", label: "Consultas", icon: Calendar },
   { to: "/paciente/perfil", label: "Perfil", icon: User },
 ];
 
 const titles: Record<string, string> = {
-  "/paciente/dashboard": "Acompanhamento Clínico & Metas",
-  "/paciente/agendamentos": "Agendamentos",
-  "/paciente/plano-alimentar": "Plano Alimentar",
-  "/paciente/ia-nutricional": "IA Nutricional",
-  "/paciente/evolucao": "Evolução",
+  "/paciente/dashboard": "Rede Social",
+  "/espaco": "Espaço de Hoje",
+  "/comunidades": "Comunidades",
+  "/receitas": "Receitas",
+  "/tema-da-semana": "Tema da Semana",
+  "/desafios": "Desafios",
+  "/profissionais": "Profissionais",
+  "/minha-jornada": "Minha Jornada",
   "/paciente/mensagens": "Mensagens",
+  "/paciente/agendamentos": "Consultas",
   "/paciente/perfil": "Perfil",
 };
 
@@ -45,9 +50,9 @@ function PacienteLayout() {
   return (
     <DashboardShell
       items={items}
-      title={titles[pathname] ?? "Paciente"}
+      title={titles[pathname] ?? "Rede"}
       userName={user.name}
-      userRole="Paciente"
+      userRole="Membro"
     >
       <Outlet />
     </DashboardShell>
