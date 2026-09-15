@@ -37,8 +37,10 @@ function IaNutricional() {
   const [result, setResult] = useState<RecomendacaoReceitas | null>(null);
   const gerar = useServerFn(recomendarReceitas);
 
-  const upd = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm({ ...form, [k]: e.target.value });
+  const upd =
+    (k: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +75,12 @@ function IaNutricional() {
         y = margin;
       }
     };
-    const write = (text: string, size = 11, style: "normal" | "bold" = "normal", color: [number, number, number] = [30, 30, 30]) => {
+    const write = (
+      text: string,
+      size = 11,
+      style: "normal" | "bold" = "normal",
+      color: [number, number, number] = [30, 30, 30],
+    ) => {
       doc.setFont("helvetica", style);
       doc.setFontSize(size);
       doc.setTextColor(...color);
@@ -101,7 +108,12 @@ function IaNutricional() {
       write(`${i + 1}. ${r.nome}  (${r.refeicao})`, 12, "bold");
       write(r.descricao);
       write(`Benefícios: ${r.beneficios}`, 10, "normal", [90, 90, 90]);
-      write(`Tempo: ${r.tempoPreparo} · Porções: ${r.porcoes} · Calorias: ${r.calorias}`, 10, "normal", [90, 90, 90]);
+      write(
+        `Tempo: ${r.tempoPreparo} · Porções: ${r.porcoes} · Calorias: ${r.calorias}`,
+        10,
+        "normal",
+        [90, 90, 90],
+      );
       write("Ingredientes:", 11, "bold");
       r.ingredientes.forEach((it) => write(`  • ${it}`));
       write("Modo de preparo:", 11, "bold");
@@ -126,8 +138,10 @@ function IaNutricional() {
         }
       >
         <p className="mb-4 text-sm text-muted-foreground">
-          <b>Descreva sua análise médica e estado psicológico. A IA vai interpretar o contexto e recomendar receitas específicas 
-          para o seu caso.</b>
+          <b>
+            Descreva sua análise médica e estado psicológico. A IA vai interpretar o contexto e
+            recomendar receitas específicas para o seu caso.
+          </b>
         </p>
         <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
           <F label="Objetivo">
@@ -143,22 +157,54 @@ function IaNutricional() {
             </select>
           </F>
           <F label="Restrições e alergias">
-            <input className="input" placeholder="Ex: sem glúten, sem lactose" value={form.restricoes} onChange={upd("restricoes")} />
+            <input
+              className="input"
+              placeholder="Ex: sem glúten, sem lactose"
+              value={form.restricoes}
+              onChange={upd("restricoes")}
+            />
           </F>
           <F label="Código(s) CID" full>
-            <input className="input" placeholder="Ex: E11 (Diabetes tipo 2), F41.1 (Ansiedade generalizada), I10 (Hipertensão)" value={form.cid} onChange={upd("cid")} />
+            <input
+              className="input"
+              placeholder="Ex: E11 (Diabetes tipo 2), F41.1 (Ansiedade generalizada), I10 (Hipertensão)"
+              value={form.cid}
+              onChange={upd("cid")}
+            />
           </F>
           <F label="Análise médica / condições clínicas" full>
-            <textarea rows={3} className="input" placeholder="Ex: hipertensão leve, pré-diabetes, colesterol LDL 160, gastrite…" value={form.condicoesMedicas} onChange={upd("condicoesMedicas")} />
+            <textarea
+              rows={3}
+              className="input"
+              placeholder="Ex: hipertensão leve, pré-diabetes, colesterol LDL 160, gastrite…"
+              value={form.condicoesMedicas}
+              onChange={upd("condicoesMedicas")}
+            />
           </F>
           <F label="Estado psicológico / emocional" full>
-            <textarea rows={3} className="input" placeholder="Ex: ansiedade, compulsão por doces à noite, estresse elevado, insônia…" value={form.estadoPsicologico} onChange={upd("estadoPsicologico")} />
+            <textarea
+              rows={3}
+              className="input"
+              placeholder="Ex: ansiedade, compulsão por doces à noite, estresse elevado, insônia…"
+              value={form.estadoPsicologico}
+              onChange={upd("estadoPsicologico")}
+            />
           </F>
           <F label="Preferências alimentares">
-            <input className="input" placeholder="Ex: vegetariano, adora peixes" value={form.preferencias} onChange={upd("preferencias")} />
+            <input
+              className="input"
+              placeholder="Ex: vegetariano, adora peixes"
+              value={form.preferencias}
+              onChange={upd("preferencias")}
+            />
           </F>
           <F label="Observações adicionais">
-            <input className="input" placeholder="Rotina, prática de atividades…" value={form.observacoes} onChange={upd("observacoes")} />
+            <input
+              className="input"
+              placeholder="Rotina, prática de atividades…"
+              value={form.observacoes}
+              onChange={upd("observacoes")}
+            />
           </F>
           <div className="md:col-span-2">
             <button
@@ -166,7 +212,11 @@ function IaNutricional() {
               disabled={loading}
               className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90 disabled:opacity-60"
             >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
               {loading ? "Analisando com IA…" : "Gerar recomendações"}
             </button>
           </div>
@@ -178,7 +228,10 @@ function IaNutricional() {
         <Section
           title="Resultado da análise"
           action={
-            <button onClick={baixarPdf} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+            <button
+              onClick={baixarPdf}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
               <Download className="h-4 w-4" /> Baixar PDF
             </button>
           }
@@ -199,24 +252,40 @@ function IaNutricional() {
                     <h4 className="text-sm font-semibold">{r.nome}</h4>
                     <span className="text-xs text-muted-foreground">{r.refeicao}</span>
                   </div>
-                  <span className="rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{r.calorias}</span>
+                  <span className="rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                    {r.calorias}
+                  </span>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">{r.descricao}</p>
-                <p className="mt-2 rounded-lg bg-accent px-2 py-1 text-[11px] text-accent-foreground">💚 {r.beneficios}</p>
+                <p className="mt-2 rounded-lg bg-accent px-2 py-1 text-[11px] text-accent-foreground">
+                  💚 {r.beneficios}
+                </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
                   <span className="rounded-full border px-2 py-0.5">⏱ {r.tempoPreparo}</span>
                   <span className="rounded-full border px-2 py-0.5">🍽 {r.porcoes}</span>
                 </div>
                 <div className="mt-3">
-                  <p className="text-xs font-semibold"> <b>Ingredientes</b></p>
+                  <p className="text-xs font-semibold">
+                    {" "}
+                    <b>Ingredientes</b>
+                  </p>
                   <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                    {r.ingredientes.map((it, k) => <li key={k}>• {it}</li>)}
+                    {r.ingredientes.map((it, k) => (
+                      <li key={k}>• {it}</li>
+                    ))}
                   </ul>
                 </div>
                 <div className="mt-3">
-                  <p className="text-xs font-semibold"> <b>Modo de preparo</b></p>
+                  <p className="text-xs font-semibold">
+                    {" "}
+                    <b>Modo de preparo</b>
+                  </p>
                   <ol className="mt-1 space-y-1 text-xs text-muted-foreground">
-                    {r.modoPreparo.map((s, k) => <li key={k}>{k + 1}. {s}</li>)}
+                    {r.modoPreparo.map((s, k) => (
+                      <li key={k}>
+                        {k + 1}. {s}
+                      </li>
+                    ))}
                   </ol>
                 </div>
               </div>
@@ -224,9 +293,14 @@ function IaNutricional() {
           </div>
 
           <div className="mt-6 rounded-2xl border p-4">
-            <h3 className="mb-2 text-sm font-semibold"> <b>Recomendações gerais</b></h3>
+            <h3 className="mb-2 text-sm font-semibold">
+              {" "}
+              <b>Recomendações gerais</b>
+            </h3>
             <ul className="space-y-1 text-sm text-muted-foreground">
-              {result.recomendacoesGerais.map((r, i) => <li key={i}>• {r}</li>)}
+              {result.recomendacoesGerais.map((r, i) => (
+                <li key={i}>• {r}</li>
+              ))}
             </ul>
           </div>
         </Section>
@@ -235,7 +309,15 @@ function IaNutricional() {
   );
 }
 
-function F({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
+function F({
+  label,
+  children,
+  full,
+}: {
+  label: string;
+  children: React.ReactNode;
+  full?: boolean;
+}) {
   return (
     <label className={`block ${full ? "md:col-span-2" : ""}`}>
       <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>

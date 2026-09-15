@@ -79,16 +79,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "NutriConnect — Nutrição personalizada e acompanhamento online" },
-      { name: "description", content: "Conectamos pacientes e nutricionistas para um acompanhamento completo, com agendamento online, plano alimentar personalizado e evolução em tempo real." },
-      { property: "og:title", content: "NutriConnect — Nutrição personalizada e acompanhamento online" },
-      { property: "og:description", content: "Conectamos pacientes e nutricionistas para um acompanhamento completo e personalizado." },
+      {
+        name: "description",
+        content:
+          "Conectamos pacientes e nutricionistas para um acompanhamento completo, com agendamento online, plano alimentar personalizado e evolução em tempo real.",
+      },
+      {
+        property: "og:title",
+        content: "NutriConnect — Nutrição personalizada e acompanhamento online",
+      },
+      {
+        property: "og:description",
+        content:
+          "Conectamos pacientes e nutricionistas para um acompanhamento completo e personalizado.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap",
+      },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
