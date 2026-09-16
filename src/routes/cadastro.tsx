@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { registerUser } from "@/lib/auth";
+import { JOURNEY_GOALS } from "@/lib/community";
 import { AuthLayout, Field } from "./login";
 
 export const Route = createFileRoute("/cadastro")({
@@ -20,19 +21,7 @@ function Cadastro() {
     senha: "",
     conf: "",
   });
-  const [selectedGoal, setSelectedGoal] = useState("Comer melhor e com prazer");
-
-  const GOALS = [
-    "Comer melhor e com prazer",
-    "Melhorar minha rotina alimentar",
-    "Cozinhar mais em casa",
-    "Aprender receitas práticas",
-    "Organização de marmitas",
-    "Alimentação vegetariana",
-    "Ganho de massa muscular",
-    "Emagrecimento consciente",
-    "Qualidade de vida",
-  ];
+  const [selectedGoal, setSelectedGoal] = useState<string>(JOURNEY_GOALS[0]);
 
   const upd = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
@@ -91,7 +80,7 @@ function Cadastro() {
             Qual o foco da sua caminhada alimentar?
           </span>
           <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border/80 bg-secondary/30">
-            {GOALS.map((g) => (
+            {JOURNEY_GOALS.map((g) => (
               <button
                 key={g}
                 type="button"

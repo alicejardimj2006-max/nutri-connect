@@ -1,11 +1,30 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ChefHat, Award, Plus, CheckCircle2, Sparkles, Compass } from "lucide-react";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import {
+  ChefHat,
+  Award,
+  Plus,
+  CheckCircle2,
+  Sparkles,
+  Compass,
+  MoreVertical,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { toast } from "sonner";
 import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { initials } from "@/lib/community";
+import { signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/perfil/$userId")({
   head: () => ({
@@ -31,8 +50,15 @@ function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { profiles, posts, communities, challenges, hydrated } = useCommunity();
+  const navigate = useNavigate();
 
   if (!authHydrated || !user) return <AuthGateLoading />;
+
+  const handleSignOut = () => {
+    signOut();
+    toast.success("Você saiu da sua conta.");
+    navigate({ to: "/login" });
+  };
 
   const isSelf = user?.id === userId;
 
@@ -112,9 +138,7 @@ function PublicProfilePage() {
                     <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
                       {profile.name}
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                      {profile.bio}
-                    </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{profile.bio}</p>
                     {isSelf && user && (
                       <p className="text-xs text-muted-foreground mt-1">
                         📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
@@ -123,17 +147,50 @@ function PublicProfilePage() {
                   </div>
 
                   {isSelf && (
-                    <ShareModal
-                      triggerButton={
-                        <button
-                          type="button"
-                          className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
-                        >
-                          <Plus className="h-4 w-4" />
-                          <span>Compartilhar</span>
-                        </button>
-                      }
-                    />
+                    <div className="flex items-center gap-2">
+                      <ShareModal
+                        triggerButton={
+                          <button
+                            type="button"
+                            className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
+                          >
+                            <Plus className="h-4 w-4" />
+                            <span>Compartilhar</span>
+                          </button>
+                        }
+                      />
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
+                            aria-label="Abrir menu do perfil"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to="/perfil/configuracoes"
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <Settings className="h-4 w-4" />
+                              <span>Configurações</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={handleSignOut}
+                            className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            <span>Sair da conta</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   )}
                 </div>
               </div>
@@ -156,9 +213,7 @@ function PublicProfilePage() {
 
               <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Desafios Ativos
-                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">Desafios Ativos</span>
                   <Award className="h-5 w-5 text-accent" />
                 </div>
                 <p className="mt-2 text-2xl font-bold font-display text-foreground">
@@ -226,8 +281,8 @@ function PublicProfilePage() {
                       {isSelf && (
                         <>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Ao navegar pelas receitas da comunidade, clique em{" "}
-                            <b>"Eu preparei"</b> para registrar suas conquistas na cozinha!
+                            Ao navegar pelas receitas da comunidade, clique em <b>"Eu preparei"</b>{" "}
+                            para registrar suas conquistas na cozinha!
                           </p>
                           <div className="mt-4">
                             <Link
@@ -303,7 +358,10 @@ function PublicProfilePage() {
                       <Award className="h-4 w-4 text-accent" />
                       <span>Desafios em Andamento</span>
                     </h3>
-                    <Link to="/desafios" className="text-xs text-primary font-semibold hover:underline">
+                    <Link
+                      to="/desafios"
+                      className="text-xs text-primary font-semibold hover:underline"
+                    >
                       Ver todos
                     </Link>
                   </div>
@@ -315,9 +373,7 @@ function PublicProfilePage() {
                           <div className="flex items-center gap-1.5 font-bold text-foreground">
                             <span>{c.badgeIcon}</span> {c.title}
                           </div>
-                          <p className="text-[11px] text-muted-foreground mt-1">
-                            {c.description}
-                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-1">{c.description}</p>
                         </div>
                       ))}
                     </div>

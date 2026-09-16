@@ -112,6 +112,18 @@ export interface CommunityState {
   challenges: Challenge[];
 }
 
+export const JOURNEY_GOALS = [
+  "Comer melhor e com prazer",
+  "Melhorar minha rotina alimentar",
+  "Cozinhar mais em casa",
+  "Aprender receitas práticas",
+  "Organização de marmitas",
+  "Alimentação vegetariana",
+  "Ganho de massa muscular",
+  "Emagrecimento consciente",
+  "Qualidade de vida",
+] as const;
+
 export const CATEGORIES = [
   "Educação alimentar",
   "Relação com a comida",
@@ -178,8 +190,7 @@ function seed(): CommunityState {
       id: "c-relacao",
       slug: "relacao-com-a-comida",
       name: "Relação saudável com a comida",
-      description:
-        "Conversas acolhedoras sobre comer com atenção, fome emocional e autocuidado.",
+      description: "Conversas acolhedoras sobre comer com atenção, fome emocional e autocuidado.",
       category: "Relação com a comida",
       createdById: MARIA_ID,
       createdByName: "Maria Lorena",

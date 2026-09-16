@@ -25,6 +25,7 @@ import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
+import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -107,6 +108,11 @@ const PerfilUserIdRoute = PerfilUserIdRouteImport.update({
   path: '/perfil/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilConfiguracoesRoute = PerfilConfiguracoesRouteImport.update({
+  id: '/perfil/configuracoes',
+  path: '/perfil/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasIdRoute = ReceitasIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
+  '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
 }
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
+  '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades': typeof ComunidadesIndexRoute
 }
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
+  '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
 }
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/tema-da-semana'
     | '/comunidades/$slug'
     | '/perfil/$userId'
+    | '/perfil/configuracoes'
     | '/receitas/$id'
     | '/comunidades/'
   fileRoutesByTo: FileRoutesByTo
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/tema-da-semana'
     | '/comunidades/$slug'
     | '/perfil/$userId'
+    | '/perfil/configuracoes'
     | '/receitas/$id'
     | '/comunidades'
   id:
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/tema-da-semana'
     | '/comunidades/$slug'
     | '/perfil/$userId'
+    | '/perfil/configuracoes'
     | '/receitas/$id'
     | '/comunidades/'
   fileRoutesById: FileRoutesById
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
+  PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perfil/configuracoes': {
+      id: '/perfil/configuracoes'
+      path: '/perfil/configuracoes'
+      fullPath: '/perfil/configuracoes'
+      preLoaderRoute: typeof PerfilConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receitas/$id': {
       id: '/receitas/$id'
       path: '/$id'
@@ -411,6 +431,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   TemaDaSemanaRoute: TemaDaSemanaRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,
+  PerfilConfiguracoesRoute: PerfilConfiguracoesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
