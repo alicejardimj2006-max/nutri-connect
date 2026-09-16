@@ -243,7 +243,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       </DialogTrigger>
 
       {/* O "mural": um quadro amplo, não um formulário estreito e empilhado */}
-      <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:22px_22px] bg-secondary/30">
+      <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:22px_22px] bg-secondary">
         <DialogTitle className="sr-only">Nova publicação para a comunidade</DialogTitle>
 
         <form
