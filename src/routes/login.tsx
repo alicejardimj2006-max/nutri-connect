@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Leaf } from "lucide-react";
 import { useState } from "react";
-import { loginUser, type UserRole } from "@/lib/auth";
+import { loginUser } from "@/lib/auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -11,7 +11,6 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<UserRole>("paciente");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -22,9 +21,9 @@ function Login() {
     if (!password) return toast.error("Preencha sua senha.");
 
     try {
-      loginUser(cleanEmail, role, password);
+      const loggedIn = loginUser(cleanEmail, password);
       toast.success("Bem-vindo(a) de volta à sua jornada!");
-      navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
+      navigate({ to: "/perfil/$userId", params: { userId: loggedIn.id } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao fazer login.");
     }
@@ -35,7 +34,6 @@ function Login() {
       subtitle="Entre na sua conta para continuar sua jornada."
     >
       <form onSubmit={submit} className="space-y-5">
-        <RoleTabs role={role} onChange={setRole} />
         <Field label="E-mail">
           <input
             className="input"
@@ -89,11 +87,11 @@ export function AuthLayout({
         </Link>
         <div>
           <h2 className="text-4xl font-extrabold leading-tight">
-            Nutrição personalizada <br></br>ao alcance de todos
+            Uma rede social <br></br>sobre alimentação de verdade
           </h2>
           <p className="mt-4 max-w-md text-white/90">
-            Acompanhe sua evolução, converse com os melhores profissionais, receba planos
-            alimentares sob medida e dicas de receitas.
+            Compartilhe receitas, participe de comunidades e desafios, e construa sua jornada
+            alimentar junto com outras pessoas.
           </p>
         </div>
         <p className="text-sm text-white/80">© {new Date().getFullYear()} NutriConnect</p>
@@ -122,26 +120,5 @@ export function Field({ label, children }: { label: string; children: React.Reac
       <span className="mb-1.5 block text-sm font-medium">{label}</span>
       {children}
     </label>
-  );
-}
-
-export function RoleTabs({ role, onChange }: { role: UserRole; onChange: (r: UserRole) => void }) {
-  return (
-    <div className="grid grid-cols-2 gap-1 rounded-full bg-secondary p-1">
-      {(["paciente", "nutricionista"] as const).map((r) => (
-        <button
-          key={r}
-          type="button"
-          onClick={() => onChange(r)}
-          className={`rounded-full px-4 py-2 text-sm font-semibold capitalize transition ${
-            role === r
-              ? "bg-primary text-primary-foreground shadow-soft"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {r}
-        </button>
-      ))}
-    </div>
   );
 }

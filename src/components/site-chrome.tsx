@@ -14,7 +14,6 @@ export function SiteHeader() {
     { to: "/tema-da-semana", label: "Tema da Semana" },
     { to: "/receitas", label: "Receitas" },
     { to: "/desafios", label: "Desafios" },
-    { to: "/profissionais", label: "Profissionais" },
   ] as const;
 
   return (
@@ -55,7 +54,7 @@ export function SiteHeader() {
           <Link
             to="/buscar"
             className="flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground shadow-xs"
-            title="Buscar receitas, experiências, especialistas"
+            title="Buscar receitas, experiências, pessoas"
           >
             <Search className="h-3.5 w-3.5 text-accent" />
             <span>Buscar</span>
@@ -64,14 +63,8 @@ export function SiteHeader() {
           {user ? (
             <div className="flex items-center gap-3">
               <Link
-                to={user.role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada"}
-                className="flex items-center gap-2 rounded-full bg-primary-soft/80 px-3.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary-soft"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span>Minha Jornada</span>
-              </Link>
-              <Link
-                to={user.role === "nutricionista" ? "/nutricionista/perfil" : "/paciente/perfil"}
+                to="/perfil/$userId"
+                params={{ userId: user.id }}
                 className="grid h-8 w-8 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-xs"
                 title={user.name}
               >
@@ -138,14 +131,13 @@ export function SiteHeader() {
               {user ? (
                 <div className="space-y-2">
                   <Link
-                    to={
-                      user.role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada"
-                    }
+                    to="/perfil/$userId"
+                    params={{ userId: user.id }}
                     onClick={() => setOpen(false)}
                     className="flex items-center justify-between rounded-xl bg-primary-soft p-3 text-sm font-semibold text-primary"
                   >
                     <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4" /> Minha Jornada
+                      <Sparkles className="h-4 w-4" /> Meu Perfil
                     </span>
                     <span className="text-xs opacity-75">{user.name}</span>
                   </Link>
@@ -226,11 +218,6 @@ export function SiteFooter() {
                 Desafios de Hábitos
               </Link>
             </li>
-            <li>
-              <Link to="/profissionais" className="hover:text-accent transition">
-                Especialistas e Nutris
-              </Link>
-            </li>
           </ul>
         </div>
         <div>
@@ -260,8 +247,8 @@ export function SiteFooter() {
             Compromisso
           </h4>
           <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-            Incentivamos a conexão saudável com a alimentação. Conteúdos clínicos são orientados por
-            nutricionistas registrados.
+            Incentivamos a conexão saudável com a alimentação, sem culpa e sem julgamento
+            corporal.
           </p>
           <div className="mt-4 text-xs text-muted-foreground">
             © {new Date().getFullYear()} NutriConnect. Sua caminhada, no seu ritmo.

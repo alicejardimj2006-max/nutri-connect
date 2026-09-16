@@ -3,15 +3,11 @@ import {
   Heart,
   ChefHat,
   MessageSquare,
-  BadgeCheck,
-  Calendar,
   Clock,
   Sparkles,
   ArrowRight,
   Send,
   HelpCircle,
-  BookOpen,
-  Award,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,7 +17,6 @@ import {
   type Post,
   type WeeklyTheme,
   type Challenge,
-  type ProfessionalMember,
   toggleSupport,
   togglePrepared,
   addComment,
@@ -77,7 +72,7 @@ export function PostCard({ post }: PostCardProps) {
     if (!trimmed) return;
 
     try {
-      addComment(post.id, { id: user.id, name: user.name, role: user.role }, trimmed);
+      addComment(post.id, { id: user.id, name: user.name }, trimmed);
       setCommentText("");
       toast.success("Comentário publicado!");
     } catch (err) {
@@ -95,20 +90,20 @@ export function PostCard({ post }: PostCardProps) {
 
   let avatarImage = post.authorAvatar;
   if (!avatarImage) {
-    if (post.authorId === "seed-nutri-maria") avatarImage = "/images/professionals/prof-1.jpg";
-    else if (post.authorId === "seed-nutri-pedro") avatarImage = "/images/professionals/prof-2.jpg";
+    if (post.authorId === "seed-maria") avatarImage = "/images/professionals/prof-1.jpg";
+    else if (post.authorId === "seed-pedro") avatarImage = "/images/professionals/prof-2.jpg";
   }
 
   const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
 
   // --- RENDERS COMUNS ---
-  const renderAuthorInfo = (isSpecialist = false) => (
+  const renderAuthorInfo = () => (
     <div className="flex items-start justify-between mb-4 gap-4">
       <div className="flex items-center gap-3">
         <Link
           to="/perfil/$userId"
           params={{ userId: post.authorId }}
-          className={`grid overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0 ${isSpecialist ? "h-12 w-12" : "h-10 w-10"}`}
+          className="grid h-10 w-10 overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0"
         >
           {avatarImage ? (
             <img src={avatarImage} alt={post.authorName} className="h-full w-full object-cover" />
@@ -121,21 +116,13 @@ export function PostCard({ post }: PostCardProps) {
             <Link
               to="/perfil/$userId"
               params={{ userId: post.authorId }}
-              className={`font-semibold text-foreground hover:underline ${isSpecialist ? "text-base" : "text-sm"}`}
+              className="font-semibold text-foreground hover:underline text-sm"
             >
               {post.authorName}
             </Link>
-            {post.authorRole === "nutricionista" && (
-              <BadgeCheck
-                className="h-4 w-4 text-accent"
-                aria-label="Profissional de nutrição verificado"
-              />
-            )}
           </div>
           <p className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-1">
-            {isSpecialist && post.authorSpecialty
-              ? post.authorSpecialty
-              : formatDate(post.createdAt)}
+            {formatDate(post.createdAt)}
           </p>
         </div>
       </div>
@@ -162,9 +149,6 @@ export function PostCard({ post }: PostCardProps) {
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-bold text-foreground flex items-center gap-1 text-xs">
                     {c.authorName}
-                    {c.authorRole === "nutricionista" && (
-                      <BadgeCheck className="h-3 w-3 text-accent" />
-                    )}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     {formatDate(c.createdAt)}
@@ -356,40 +340,6 @@ export function PostCard({ post }: PostCardProps) {
             />
           </div>
         )}
-
-        {renderActions()}
-        {renderCommentsSection()}
-      </article>
-    );
-  }
-
-  // --- ESPECIALISTA ---
-  if (post.type === "especialista") {
-    return (
-      <article className="rounded-3xl border-2 border-primary/20 bg-primary-soft/10 p-6 shadow-sm transition hover:shadow-md">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <BookOpen className="h-4 w-4" /> Dica de Especialista
-          </div>
-          <Link
-            to="/perfil/$userId"
-            params={{ userId: post.authorId }}
-            className="text-xs font-bold text-accent hover:underline"
-          >
-            Ver profissional
-          </Link>
-        </div>
-
-        {renderAuthorInfo(true)}
-
-        <div className="bg-card rounded-2xl p-5 border border-primary/10 shadow-xs mb-2">
-          {post.title && (
-            <h3 className="text-lg font-bold font-display text-foreground mb-2">{post.title}</h3>
-          )}
-          <p className="text-sm sm:text-base text-foreground/90 leading-relaxed whitespace-pre-line text-pretty">
-            {post.text}
-          </p>
-        </div>
 
         {renderActions()}
         {renderCommentsSection()}
@@ -681,95 +631,6 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         >
           {isJoined ? "Participando ✓" : "Participar"}
         </button>
-      </div>
-    </div>
-  );
-}
-
-interface ProfessionalCardProps {
-  professional: ProfessionalMember;
-}
-
-export function ProfessionalCard({ professional }: ProfessionalCardProps) {
-  if (!professional) return null;
-
-  let avatarImage = null;
-  if (professional.userId === "seed-nutri-maria") avatarImage = "/images/professionals/prof-1.jpg";
-  else if (professional.userId === "seed-nutri-pedro")
-    avatarImage = "/images/professionals/prof-2.jpg";
-  else if (professional.userId === "seed-nutri-camila")
-    avatarImage = "/images/professionals/prof-3.jpg";
-
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm flex flex-col justify-between">
-      <div>
-        <div className="flex items-start gap-3 mb-3">
-          <span className="grid h-12 w-12 overflow-hidden place-items-center rounded-2xl bg-primary text-base font-bold text-primary-foreground shadow-xs shrink-0">
-            {avatarImage ? (
-              <img
-                src={avatarImage}
-                alt={professional.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              initials(professional.name || "Nutri")
-            )}
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-bold text-foreground truncate font-display">
-                {professional.name}
-              </h3>
-              <BadgeCheck
-                className="h-4 w-4 text-accent shrink-0"
-                aria-label="Registro verificado"
-              />
-            </div>
-            <p className="text-xs text-accent font-medium">{professional.specialty}</p>
-            <p className="text-[11px] text-muted-foreground">{professional.crn}</p>
-          </div>
-        </div>
-
-        <p className="text-xs text-foreground/80 line-clamp-3 leading-relaxed mb-3">
-          {professional.bio}
-        </p>
-
-        {professional.focus && professional.focus.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {professional.focus.slice(0, 3).map((f) => (
-              <span
-                key={f}
-                className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
-              >
-                {f}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="text-[11px] text-muted-foreground space-y-0.5">
-          <p>📍 {professional.location}</p>
-          <p>
-            📚 {professional.articlesCount || 0} publicações · 🥗 {professional.recipesCount || 0}{" "}
-            receitas
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-        <Link
-          to="/perfil/$userId"
-          params={{ userId: professional.userId }}
-          className="text-xs font-semibold text-primary hover:underline"
-        >
-          Ver publicações
-        </Link>
-        <Link
-          to="/paciente/agendamentos"
-          className="rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90 shadow-xs"
-        >
-          Agendar consulta
-        </Link>
       </div>
     </div>
   );

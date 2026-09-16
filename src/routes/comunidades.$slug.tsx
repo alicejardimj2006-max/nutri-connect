@@ -1,21 +1,11 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import {
-  BadgeCheck,
-  Heart,
-  ImagePlus,
-  MessageCircle,
-  Pin,
-  ShieldQuestion,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
   addComment,
-  assumeResponsibility,
   createPost,
   formatDate,
   initials,
@@ -34,7 +24,7 @@ export const Route = createFileRoute("/comunidades/$slug")({
       { title: "Comunidade — NutriConnect" },
       {
         name: "description",
-        content: "Feed da comunidade com publicações, comentários e moderação profissional.",
+        content: "Feed da comunidade com publicações e comentários.",
       },
       { property: "og:title", content: "Comunidade — NutriConnect" },
       {
@@ -52,7 +42,7 @@ function CommunityFeed() {
   const { slug } = useParams({ from: "/comunidades/$slug" });
   const { user } = useAuth();
   const { communities, posts, hydrated } = useCommunity();
-  const actor: Actor | null = user ? { id: user.id, name: user.name, role: user.role } : null;
+  const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
 
   const community = communities.find((c) => c.slug === slug);
   const feed = useMemo(
@@ -85,9 +75,9 @@ function CommunityFeed() {
     );
   }
 
-  const isModerator = !!actor && community.responsible?.userId === actor.id;
+  const isModerator = !!actor && community.createdById === actor.id;
   const isMember = !!actor && community.members.some((m) => m.userId === actor.id);
-  const canPost = !!actor && community.status === "ativa" && (isMember || isModerator);
+  const canPost = !!actor && (isMember || isModerator);
 
   let coverImage = "/images/communities/friends-dinner.jpg";
   if (community.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
@@ -117,7 +107,7 @@ function CommunityFeed() {
               </h1>
             </div>
 
-            {actor && community.status === "ativa" && !isModerator && (
+            {actor && !isModerator && (
               <button
                 onClick={() => toggleMembership(community.id, actor)}
                 className={`hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition ${
@@ -140,46 +130,21 @@ function CommunityFeed() {
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-4">
-                {community.responsible ? (
-                  <Link
-                    to="/perfil/$userId"
-                    params={{ userId: community.responsible.userId }}
-                    className="flex items-center gap-3 rounded-xl bg-secondary/50 px-3 py-2 border border-border/50 transition hover:bg-secondary"
-                  >
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                      {initials(community.responsible.name)}
+                <Link
+                  to="/perfil/$userId"
+                  params={{ userId: community.createdById }}
+                  className="flex items-center gap-3 rounded-xl bg-secondary/50 px-3 py-2 border border-border/50 transition hover:bg-secondary"
+                >
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                    {initials(community.createdByName)}
+                  </span>
+                  <span className="text-sm">
+                    <span className="flex items-center gap-1 font-semibold text-foreground">
+                      {community.createdByName}
                     </span>
-                    <span className="text-sm">
-                      <span className="flex items-center gap-1 font-semibold text-foreground">
-                        {community.responsible.name}
-                        <BadgeCheck className="h-4 w-4 text-accent" />
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Nutricionista responsável · {community.responsible.credential}
-                      </span>
-                    </span>
-                  </Link>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
-                    <ShieldQuestion className="h-5 w-5 text-warning" />
-                    <div className="text-sm">
-                      <p className="font-semibold text-warning-foreground">
-                        Aguardando nutricionista responsável
-                      </p>
-                    </div>
-                    {actor?.role === "nutricionista" && (
-                      <button
-                        onClick={() => {
-                          assumeResponsibility(community.id, actor);
-                          toast.success("Você assumiu a moderação desta comunidade.");
-                        }}
-                        className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition hover:opacity-90 ml-auto"
-                      >
-                        Assumir moderação
-                      </button>
-                    )}
-                  </div>
-                )}
+                    <span className="text-xs text-muted-foreground">Criador da comunidade</span>
+                  </span>
+                </Link>
               </div>
             </div>
 
@@ -188,7 +153,7 @@ function CommunityFeed() {
                 <Users className="h-4 w-4 text-accent" /> {community.members.length} membros
               </span>
 
-              {actor && community.status === "ativa" && !isModerator && (
+              {actor && !isModerator && (
                 <button
                   onClick={() => toggleMembership(community.id, actor)}
                   className={`sm:hidden w-full rounded-full px-5 py-2.5 text-sm font-bold transition ${
@@ -216,8 +181,6 @@ function CommunityFeed() {
               </Link>{" "}
               para participar e publicar nesta comunidade.
             </>
-          ) : community.status !== "ativa" ? (
-            "As publicações serão liberadas assim que um nutricionista assumir a responsabilidade."
           ) : (
             "Participe da comunidade para publicar."
           )}
@@ -333,7 +296,6 @@ function PostCard({
             className="flex items-center gap-1 text-sm font-semibold text-foreground hover:underline"
           >
             {post.authorName}
-            {post.authorRole === "nutricionista" && <BadgeCheck className="h-4 w-4 text-accent" />}
           </Link>
           <p className="text-xs text-muted-foreground">{formatDate(post.createdAt)}</p>
         </div>
@@ -396,9 +358,6 @@ function PostCard({
             <div className="flex-1 rounded-xl bg-secondary/60 px-3 py-2">
               <p className="flex items-center gap-1 text-xs font-semibold text-foreground">
                 {c.authorName}
-                {c.authorRole === "nutricionista" && (
-                  <BadgeCheck className="h-3.5 w-3.5 text-accent" />
-                )}
                 <span className="ml-auto font-normal text-muted-foreground">
                   {formatDate(c.createdAt)}
                 </span>

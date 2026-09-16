@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Sparkles, ChefHat, HelpCircle, BookOpen, Plus, X } from "lucide-react";
+import { Sparkles, ChefHat, HelpCircle, Plus, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { createCommunityPost, RECIPE_CATEGORIES, type PostType } from "@/lib/community";
 import {
@@ -71,8 +71,6 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         actor: {
           id: user.id,
           name: user.name,
-          role: user.role,
-          specialty: user.specialty ? `${user.specialty} · ${user.crn || ""}` : undefined,
         },
         title: title.trim() || undefined,
         text: text.trim(),
@@ -176,21 +174,6 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 <HelpCircle className="h-4 w-4" />
                 <span>Pergunta</span>
               </button>
-
-              {user?.role === "nutricionista" && (
-                <button
-                  type="button"
-                  onClick={() => setType("especialista")}
-                  className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition cursor-pointer ${
-                    type === "especialista"
-                      ? "border-primary bg-primary-soft text-primary font-bold"
-                      : "border-border hover:bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <span>Especialista</span>
-                </button>
-              )}
             </div>
           </div>
 

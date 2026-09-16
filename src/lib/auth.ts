@@ -1,24 +1,16 @@
 // Frontend auth stored in localStorage.
 // Ready for future API/DB integration.
 
-export type UserRole = "paciente" | "nutricionista";
-
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
   phone?: string;
   cpf?: string;
   birthDate?: string;
-  crn?: string;
-  specialty?: string;
   bio?: string;
   goal?: string;
   journeyGoal?: string;
-  dietaryRestrictions?: string;
-  allergies?: string;
-  attendanceHours?: string;
 }
 
 export interface StoredAccount extends AuthUser {
@@ -70,15 +62,12 @@ export function saveStoredUser(account: StoredAccount) {
 export function registerUser(data: {
   name: string;
   email: string;
-  role: UserRole;
   phone?: string;
   cpf?: string;
   birthDate?: string;
   password?: string;
   goal?: string;
   journeyGoal?: string;
-  crn?: string;
-  specialty?: string;
 }): AuthUser {
   const cleanEmail = data.email.toLowerCase().trim();
 
@@ -96,19 +85,12 @@ export function registerUser(data: {
     id,
     name: data.name.trim(),
     email: cleanEmail,
-    role: data.role,
     phone: data.phone?.trim() || "",
     cpf: data.cpf?.trim() || "",
     birthDate: data.birthDate || "",
     password: data.password,
-    goal: data.role === "paciente" ? data.goal || "Comer melhor e com prazer" : undefined,
-    journeyGoal:
-      data.role === "paciente"
-        ? data.journeyGoal || data.goal || "Comer melhor e com prazer"
-        : undefined,
-    crn: data.crn?.trim() || "",
-    specialty: data.role === "nutricionista" ? data.specialty || "Clínica" : undefined,
-    attendanceHours: data.role === "nutricionista" ? "Seg–Sex, 08h–18h" : undefined,
+    goal: data.goal || "Comer melhor e com prazer",
+    journeyGoal: data.journeyGoal || data.goal || "Comer melhor e com prazer",
   };
 
   saveStoredUser(newUser);
@@ -116,7 +98,7 @@ export function registerUser(data: {
   return newUser;
 }
 
-export function loginUser(email: string, role: UserRole, password?: string): AuthUser {
+export function loginUser(email: string, password?: string): AuthUser {
   const cleanEmail = email.toLowerCase().trim();
   const users = getStoredUsers();
   const existing = users[cleanEmail];
@@ -127,10 +109,6 @@ export function loginUser(email: string, role: UserRole, password?: string): Aut
 
   if (existing.password !== password) {
     throw new Error("Senha incorreta.");
-  }
-
-  if (existing.role !== role) {
-    throw new Error(`Esta conta está registrada como ${existing.role}.`);
   }
 
   const activeUser: AuthUser = {
@@ -168,6 +146,6 @@ export function updateCurrentUser(updates: Partial<AuthUser>): AuthUser | null {
   return updated;
 }
 
-export function mockLogin(email: string, role: UserRole): AuthUser {
-  return loginUser(email, role);
+export function mockLogin(email: string): AuthUser {
+  return loginUser(email);
 }

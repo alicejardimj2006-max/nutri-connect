@@ -1,23 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Search,
-  ChefHat,
-  Sparkles,
-  BookOpen,
-  Users,
-  Award,
-  Compass,
-  ArrowRight,
-} from "lucide-react";
+import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
-import {
-  PostCard,
-  ChallengeCard,
-  ProfessionalCard,
-  WeeklyThemeCard,
-} from "@/components/community-cards";
+import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
 
 export const Route = createFileRoute("/buscar")({
   head: () => ({
@@ -26,18 +12,17 @@ export const Route = createFileRoute("/buscar")({
       {
         name: "description",
         content:
-          "Encontre receitas, relatos de experiências, desafios de hábitos e nutricionistas parceiros na comunidade NutriConnect.",
+          "Encontre receitas, relatos de experiências, desafios de hábitos e comunidades na rede NutriConnect.",
       },
     ],
   }),
   component: BuscarPage,
 });
 
-type SearchTab =
-  "tudo" | "receitas" | "experiencias" | "profissionais" | "desafios" | "comunidades";
+type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidades";
 
 function BuscarPage() {
-  const { posts, challenges, professionals, weeklyTheme, communities } = useCommunity();
+  const { posts, challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
 
@@ -55,15 +40,6 @@ function BuscarPage() {
 
   const matchingRecipes = matchingPosts.filter((p) => p.type === "receita");
   const matchingExperiences = matchingPosts.filter((p) => p.type === "experiencia");
-
-  const matchingProfessionals = professionals.filter(
-    (prof) =>
-      !q ||
-      prof.name.toLowerCase().includes(q) ||
-      prof.specialty.toLowerCase().includes(q) ||
-      prof.focus.some((f) => f.toLowerCase().includes(q)) ||
-      prof.location.toLowerCase().includes(q),
-  );
 
   const matchingChallenges = challenges.filter(
     (c) =>
@@ -94,14 +70,12 @@ function BuscarPage() {
       label: "Tudo",
       count:
         matchingPosts.length +
-        matchingProfessionals.length +
         matchingChallenges.length +
         matchingCommunities.length +
         matchingTheme.length,
     },
     { id: "receitas", label: "Receitas", count: matchingRecipes.length },
     { id: "experiencias", label: "Experiências", count: matchingExperiences.length },
-    { id: "profissionais", label: "Especialistas", count: matchingProfessionals.length },
     { id: "desafios", label: "Desafios", count: matchingChallenges.length },
     { id: "comunidades", label: "Comunidades", count: matchingCommunities.length },
   ];
@@ -117,8 +91,7 @@ function BuscarPage() {
             O que você quer descobrir hoje?
           </h1>
           <p className="text-sm text-muted-foreground">
-            Pesquise por ingredientes, receitas afetivas, relatos de rotina, desafios ou
-            profissionais parceiros.
+            Pesquise por ingredientes, receitas afetivas, relatos de rotina ou desafios.
           </p>
 
           <div className="relative mt-4">
@@ -127,7 +100,7 @@ function BuscarPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ex: aveia, maçã, marmitas, Dra. Maria Lorena, rotina..."
+              placeholder="Ex: aveia, maçã, marmitas, rotina..."
               className="w-full rounded-full border border-border bg-card pl-12 pr-4 py-3.5 text-sm text-foreground outline-none focus:border-accent shadow-card"
               autoFocus
             />
@@ -204,24 +177,6 @@ function BuscarPage() {
               </div>
             )}
 
-          {/* Seção de Profissionais */}
-          {(activeTab === "tudo" || activeTab === "profissionais") &&
-            matchingProfessionals.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                  <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-accent" />
-                    <span>Especialistas ({matchingProfessionals.length})</span>
-                  </h2>
-                </div>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {matchingProfessionals.map((prof) => (
-                    <ProfessionalCard key={prof.id} professional={prof} />
-                  ))}
-                </div>
-              </div>
-            )}
-
           {/* Seção de Desafios */}
           {(activeTab === "tudo" || activeTab === "desafios") && matchingChallenges.length > 0 && (
             <div>
@@ -277,7 +232,6 @@ function BuscarPage() {
 
           {/* Caso vazio */}
           {matchingPosts.length === 0 &&
-            matchingProfessionals.length === 0 &&
             matchingChallenges.length === 0 &&
             matchingCommunities.length === 0 &&
             matchingTheme.length === 0 && (

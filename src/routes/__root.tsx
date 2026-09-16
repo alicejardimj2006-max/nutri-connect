@@ -78,20 +78,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NutriConnect — Nutrição personalizada e acompanhamento online" },
+      { title: "NutriConnect — Uma rede social sobre alimentação" },
       {
         name: "description",
         content:
-          "Conectamos pacientes e nutricionistas para um acompanhamento completo, com agendamento online, plano alimentar personalizado e evolução em tempo real.",
+          "Uma rede social para descobrir receitas, compartilhar experiências, participar de comunidades e construir hábitos alimentares junto com outras pessoas.",
       },
       {
         property: "og:title",
-        content: "NutriConnect — Nutrição personalizada e acompanhamento online",
+        content: "NutriConnect — Uma rede social sobre alimentação",
       },
       {
         property: "og:description",
         content:
-          "Conectamos pacientes e nutricionistas para um acompanhamento completo e personalizado.",
+          "Descubra receitas, participe de comunidades e desafios, e compartilhe sua jornada alimentar.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

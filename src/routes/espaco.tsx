@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Compass, ChefHat, Sparkles, BookOpen, HelpCircle, Plus, Search } from "lucide-react";
+import { Compass, ChefHat, Sparkles, HelpCircle, Plus, Search } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, WeeklyThemeCard } from "@/components/community-cards";
@@ -12,8 +12,7 @@ export const Route = createFileRoute("/espaco")({
       { title: "Espaço de Hoje | NutriConnect" },
       {
         name: "description",
-        content:
-          "Receitas, experiências e orientações de nutricionistas compartilhadas pela comunidade NutriConnect.",
+        content: "Receitas e experiências compartilhadas pela comunidade NutriConnect.",
       },
       { property: "og:title", content: "Espaço de Hoje | NutriConnect" },
       {
@@ -27,7 +26,7 @@ export const Route = createFileRoute("/espaco")({
   component: EspacoDeHojePage,
 });
 
-type FilterTab = "tudo" | "receita" | "experiencia" | "especialista" | "pergunta";
+type FilterTab = "tudo" | "receita" | "experiencia" | "pergunta";
 
 function EspacoDeHojePage() {
   const { posts, weeklyTheme, challenges, hydrated } = useCommunity();
@@ -41,24 +40,18 @@ function EspacoDeHojePage() {
   let displayedPosts = filteredBySearch;
 
   if (currentTab === "tudo") {
-    // Ordem: destaque (geral), receita, experiencia, especialista, pergunta
+    // Ordem: destaque (geral), receita, experiencia, pergunta
     const destaque = filteredBySearch.find((p) => p.type === "geral") || null;
     const receita = filteredBySearch.find((p) => p.type === "receita") || null;
     const experiencia = filteredBySearch.find((p) => p.type === "experiencia") || null;
-    const especialista = filteredBySearch.find((p) => p.type === "especialista") || null;
     const pergunta = filteredBySearch.find((p) => p.type === "pergunta") || null;
 
     // Add rest of the posts in case there are more
     const rest = filteredBySearch.filter(
-      (p) =>
-        p !== destaque &&
-        p !== receita &&
-        p !== experiencia &&
-        p !== especialista &&
-        p !== pergunta,
+      (p) => p !== destaque && p !== receita && p !== experiencia && p !== pergunta,
     );
 
-    displayedPosts = [destaque, receita, experiencia, especialista, pergunta, ...rest].filter(
+    displayedPosts = [destaque, receita, experiencia, pergunta, ...rest].filter(
       Boolean,
     ) as typeof posts;
   } else {
@@ -73,7 +66,6 @@ function EspacoDeHojePage() {
     { id: "tudo", label: "Tudo no Espaço", icon: Compass },
     { id: "receita", label: "Receitas", icon: ChefHat },
     { id: "experiencia", label: "Experiências", icon: Sparkles },
-    { id: "especialista", label: "Especialistas", icon: BookOpen },
     { id: "pergunta", label: "Perguntas & Dúvidas", icon: HelpCircle },
   ];
 
@@ -83,7 +75,6 @@ function EspacoDeHojePage() {
     if (currentTab === "experiencia")
       return "A comunidade ainda não compartilhou experiências aqui.";
     if (currentTab === "pergunta") return "Seja a primeira pessoa a abrir uma conversa.";
-    if (currentTab === "especialista") return "Os especialistas ainda não publicaram por aqui.";
     return "Nenhuma publicação encontrada nesta categoria ainda.";
   };
 

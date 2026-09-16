@@ -20,19 +20,19 @@ export const Route = createFileRoute("/sobre")({
       {
         name: "description",
         content:
-          "Conheça a história da NutriConnect, nossa missão de humanizar e democratizar o acompanhamento nutricional com tecnologia de ponta.",
+          "Conheça a história da NutriConnect, nossa missão de humanizar e conectar pessoas em torno da alimentação através de uma rede social acolhedora.",
       },
       { property: "og:title", content: "Sobre Nós — NutriConnect" },
-      { property: "og:description", content: "Nutrição personalizada, humanizada e conectada." },
+      { property: "og:description", content: "Uma rede social sobre alimentação, humanizada e conectada." },
     ],
   }),
   component: Sobre,
 });
 
 const stats = [
-  { label: "Nutricionistas Ativos", value: "+1.200", hint: "em todo o Brasil" },
-  { label: "Pacientes Acompanhados", value: "+45.000", hint: "metas atingidas" },
-  { label: "Planos Alimentares", value: "+180.000", hint: "gerados e adaptados" },
+  { label: "Membros Ativos", value: "+45.000", hint: "em todo o Brasil" },
+  { label: "Comunidades Temáticas", value: "+1.200", hint: "criadas pela rede" },
+  { label: "Receitas Compartilhadas", value: "+180.000", hint: "publicadas e preparadas" },
   { label: "Índice de Satisfação", value: "98.4%", hint: "avaliação positiva" },
 ];
 
@@ -40,22 +40,22 @@ const timeline = [
   {
     year: "2023",
     title: "O Início da Jornada",
-    desc: "Fundada por nutricionistas e engenheiros com o propósito de eliminar planilhas impressas e aproximar pacientes de seus profissionais no dia a dia.",
+    desc: "Fundada com o propósito de criar um espaço onde falar sobre comida não fosse sinônimo de culpa ou comparação.",
   },
   {
     year: "2024",
-    title: "Lançamento da NutriAI",
-    desc: "Integração da primeira assistente virtual inteligente de nutrição no Brasil para auxílio na substituição de alimentos e dúvidas instantâneas.",
+    title: "Comunidades Temáticas",
+    desc: "Lançamento das primeiras comunidades temáticas, unindo pessoas em torno de objetivos e rotinas alimentares parecidas.",
   },
   {
     year: "2025",
-    title: "Plataforma Completa de Telemedicina",
-    desc: "Lançamento de consultas por vídeo em HD integradas com prontuário dinâmico e prescreção de exames e manipulados.",
+    title: "Desafios & Tema da Semana",
+    desc: "Chegada dos desafios de hábitos e do Tema da Semana, trazendo mais constância e leveza para a jornada de cada pessoa.",
   },
   {
     year: "2026",
-    title: "Expansão & Comunidades",
-    desc: "Alcançamos a marca de mais de 45 mil pacientes com funcionalidades de comunidades temáticas e desafios com premiação.",
+    title: "Expansão da Rede",
+    desc: "Alcançamos a marca de mais de 45 mil membros compartilhando receitas, experiências e conquistas todos os dias.",
   },
 ];
 
@@ -150,9 +150,9 @@ function Sobre() {
               </span>
               <h2 className="mt-4 font-display text-2xl font-bold">Nossa Missão</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Democratizar o acesso a um acompanhamento nutricional de excelência, oferecendo
-                ferramentas que aproximam profissionais e pacientes em uma jornada de saúde
-                contínua, prazerosa e baseada em evidências.
+                Democratizar o acesso a uma comunidade acolhedora sobre alimentação, oferecendo um
+                espaço para trocar experiências, receitas e conquistas em uma jornada contínua,
+                prazerosa e sem julgamentos.
               </p>
             </div>
 
@@ -163,9 +163,8 @@ function Sobre() {
               </span>
               <h2 className="mt-4 font-display text-2xl font-bold">Nossa Visão</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Ser a principal referência em saúde preventiva digital, transformando a relação das
-                pessoas com a comida e capacitando nutricionistas a entregarem o melhor cuidado
-                possível com máxima produtividade.
+                Ser a principal referência em comunidade digital sobre alimentação, transformando a
+                relação das pessoas com a comida através de conexão real e apoio mútuo.
               </p>
             </div>
           </div>
@@ -272,8 +271,8 @@ function Sobre() {
           <div className="rounded-3xl border bg-gradient-to-b from-secondary/60 to-background p-10 md:p-14 shadow-lg">
             <h2 className="font-display text-3xl font-bold">Faça parte desta transformação</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-              Seja para alcançar sua melhor versão física ou para levar seu consultório para o
-              próximo nível, o NutriConnect é o seu lugar.
+              Seja para alcançar sua melhor versão física ou para encontrar pessoas que entendem a
+              sua jornada, o NutriConnect é o seu lugar.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link

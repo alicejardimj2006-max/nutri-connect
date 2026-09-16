@@ -21,7 +21,6 @@ const EMPTY: CommunityState = {
     featuredRecipeIds: [],
   },
   challenges: [],
-  professionals: [],
 };
 
 export function useCommunity() {

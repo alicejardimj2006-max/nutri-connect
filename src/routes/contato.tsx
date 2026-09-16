@@ -211,9 +211,8 @@ function Contato() {
                         className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:border-primary outline-none"
                       >
                         <option value="duvida-geral">Dúvida Geral</option>
-                        <option value="suporte-paciente">Suporte ao Paciente</option>
-                        <option value="sou-nutricionista">Sou Nutricionista (Parceria)</option>
-                        <option value="financeiro">Financeiro e Planos</option>
+                        <option value="suporte-conta">Suporte à Conta</option>
+                        <option value="parcerias">Parcerias</option>
                         <option value="imprensa">Imprensa e Mídia</option>
                       </select>
                     </Field>

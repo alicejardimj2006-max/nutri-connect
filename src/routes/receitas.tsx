@@ -15,7 +15,7 @@ export const Route = createFileRoute("/receitas")({
       {
         name: "description",
         content:
-          "Receitas saudáveis, simples e afetivas compartilhadas por membros e nutricionistas da comunidade NutriConnect.",
+          "Receitas saudáveis, simples e afetivas compartilhadas pelos membros da comunidade NutriConnect.",
       },
     ],
   }),

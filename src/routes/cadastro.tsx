@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { registerUser, type UserRole } from "@/lib/auth";
-import { AuthLayout, Field, RoleTabs } from "./login";
+import { registerUser } from "@/lib/auth";
+import { AuthLayout, Field } from "./login";
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({ meta: [{ title: "Criar conta — NutriConnect" }] }),
@@ -11,7 +11,6 @@ export const Route = createFileRoute("/cadastro")({
 
 function Cadastro() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<UserRole>("paciente");
   const [form, setForm] = useState({
     nome: "",
     cpf: "",
@@ -20,8 +19,6 @@ function Cadastro() {
     email: "",
     senha: "",
     conf: "",
-    crn: "",
-    especialidade: "",
   });
   const [selectedGoal, setSelectedGoal] = useState("Comer melhor e com prazer");
 
@@ -57,21 +54,18 @@ function Cadastro() {
     if (cleanSenha !== cleanConf) return toast.error("As senhas não coincidem.");
 
     try {
-      registerUser({
+      const created = registerUser({
         name: cleanNome,
         email: cleanEmail,
-        role,
         phone: cleanTel,
         cpf: form.cpf,
         birthDate: form.nasc,
         password: cleanSenha,
-        goal: role === "paciente" ? selectedGoal : undefined,
-        journeyGoal: role === "paciente" ? selectedGoal : undefined,
-        crn: role === "nutricionista" ? form.crn : undefined,
-        specialty: role === "nutricionista" ? form.especialidade : undefined,
+        goal: selectedGoal,
+        journeyGoal: selectedGoal,
       });
       toast.success("Conta criada com sucesso! Bem-vindo à comunidade.");
-      navigate({ to: role === "nutricionista" ? "/nutricionista/dashboard" : "/minha-jornada" });
+      navigate({ to: "/perfil/$userId", params: { userId: created.id } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao criar conta.");
     }
@@ -83,7 +77,6 @@ function Cadastro() {
       subtitle="Faça parte de uma comunidade que cuida da alimentação de verdade."
     >
       <form onSubmit={submit} className="space-y-4">
-        <RoleTabs role={role} onChange={setRole} />
         <Field label="Nome completo">
           <input
             className="input"
@@ -93,54 +86,30 @@ function Cadastro() {
           />
         </Field>
 
-        {/* Objetivos da jornada para membros comuns */}
-        {role === "paciente" && (
-          <div>
-            <span className="mb-1.5 block text-xs font-semibold text-foreground">
-              Qual o foco da sua caminhada alimentar?
-            </span>
-            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border/80 bg-secondary/30">
-              {GOALS.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setSelectedGoal(g)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer ${
-                    selectedGoal === g
-                      ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                      : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+        <div>
+          <span className="mb-1.5 block text-xs font-semibold text-foreground">
+            Qual o foco da sua caminhada alimentar?
+          </span>
+          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border/80 bg-secondary/30">
+            {GOALS.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setSelectedGoal(g)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer ${
+                  selectedGoal === g
+                    ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+                    : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
           </div>
-        )}
-
-        {role === "nutricionista" && (
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="CRN">
-              <input
-                className="input"
-                value={form.crn}
-                onChange={upd("crn")}
-                placeholder="00000/UF"
-              />
-            </Field>
-            <Field label="Especialidade Principal">
-              <input
-                className="input"
-                value={form.especialidade}
-                onChange={upd("especialidade")}
-                placeholder="Ex: Esportiva, Clínica"
-              />
-            </Field>
-          </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label={role === "nutricionista" ? "CPF" : "CPF (Opcional)"}>
+          <Field label="CPF (Opcional)">
             <input
               className="input"
               value={form.cpf}

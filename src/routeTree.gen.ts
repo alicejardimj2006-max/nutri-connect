@@ -18,31 +18,12 @@ import { Route as DesafiosRouteImport } from './routes/desafios'
 import { Route as EspacoRouteImport } from './routes/espaco'
 import { Route as ExperienciasRouteImport } from './routes/experiencias'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as MinhaJornadaRouteImport } from './routes/minha-jornada'
-import { Route as NutricionistaRouteImport } from './routes/nutricionista'
-import { Route as PacienteRouteImport } from './routes/paciente'
-import { Route as ProfissionaisRouteImport } from './routes/profissionais'
 import { Route as ReceitasRouteImport } from './routes/receitas'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
-import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
-import { Route as NutricionistaAgendaRouteImport } from './routes/nutricionista.agenda'
-import { Route as NutricionistaConfiguracoesRouteImport } from './routes/nutricionista.configuracoes'
-import { Route as NutricionistaDashboardRouteImport } from './routes/nutricionista.dashboard'
-import { Route as NutricionistaMensagensRouteImport } from './routes/nutricionista.mensagens'
-import { Route as NutricionistaPacientesRouteImport } from './routes/nutricionista.pacientes'
-import { Route as NutricionistaPerfilRouteImport } from './routes/nutricionista.perfil'
-import { Route as NutricionistaPlanosRouteImport } from './routes/nutricionista.planos'
-import { Route as PacienteAgendamentosRouteImport } from './routes/paciente.agendamentos'
-import { Route as PacienteDashboardRouteImport } from './routes/paciente.dashboard'
-import { Route as PacienteEvolucaoRouteImport } from './routes/paciente.evolucao'
-import { Route as PacienteIaNutricionalRouteImport } from './routes/paciente.ia-nutricional'
-import { Route as PacienteMensagensRouteImport } from './routes/paciente.mensagens'
-import { Route as PacientePerfilRouteImport } from './routes/paciente.perfil'
-import { Route as PacientePlanoAlimentarRouteImport } from './routes/paciente.plano-alimentar'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 
@@ -91,26 +72,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MinhaJornadaRoute = MinhaJornadaRouteImport.update({
-  id: '/minha-jornada',
-  path: '/minha-jornada',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NutricionistaRoute = NutricionistaRouteImport.update({
-  id: '/nutricionista',
-  path: '/nutricionista',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PacienteRoute = PacienteRouteImport.update({
-  id: '/paciente',
-  path: '/paciente',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfissionaisRoute = ProfissionaisRouteImport.update({
-  id: '/profissionais',
-  path: '/profissionais',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ReceitasRoute = ReceitasRouteImport.update({
   id: '/receitas',
   path: '/receitas',
@@ -119,11 +80,6 @@ const ReceitasRoute = ReceitasRouteImport.update({
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
   id: '/recuperar-senha',
   path: '/recuperar-senha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ServicosRoute = ServicosRouteImport.update({
-  id: '/servicos',
-  path: '/servicos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SobreRoute = SobreRouteImport.update({
@@ -146,77 +102,6 @@ const ComunidadesSlugRoute = ComunidadesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ComunidadesRoute,
 } as any)
-const NutricionistaAgendaRoute = NutricionistaAgendaRouteImport.update({
-  id: '/agenda',
-  path: '/agenda',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaConfiguracoesRoute =
-  NutricionistaConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => NutricionistaRoute,
-  } as any)
-const NutricionistaDashboardRoute = NutricionistaDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaMensagensRoute = NutricionistaMensagensRouteImport.update({
-  id: '/mensagens',
-  path: '/mensagens',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaPacientesRoute = NutricionistaPacientesRouteImport.update({
-  id: '/pacientes',
-  path: '/pacientes',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaPerfilRoute = NutricionistaPerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const NutricionistaPlanosRoute = NutricionistaPlanosRouteImport.update({
-  id: '/planos',
-  path: '/planos',
-  getParentRoute: () => NutricionistaRoute,
-} as any)
-const PacienteAgendamentosRoute = PacienteAgendamentosRouteImport.update({
-  id: '/agendamentos',
-  path: '/agendamentos',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteDashboardRoute = PacienteDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteEvolucaoRoute = PacienteEvolucaoRouteImport.update({
-  id: '/evolucao',
-  path: '/evolucao',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteIaNutricionalRoute = PacienteIaNutricionalRouteImport.update({
-  id: '/ia-nutricional',
-  path: '/ia-nutricional',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacienteMensagensRoute = PacienteMensagensRouteImport.update({
-  id: '/mensagens',
-  path: '/mensagens',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacientePerfilRoute = PacientePerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => PacienteRoute,
-} as any)
-const PacientePlanoAlimentarRoute = PacientePlanoAlimentarRouteImport.update({
-  id: '/plano-alimentar',
-  path: '/plano-alimentar',
-  getParentRoute: () => PacienteRoute,
-} as any)
 const PerfilUserIdRoute = PerfilUserIdRouteImport.update({
   id: '/perfil/$userId',
   path: '/perfil/$userId',
@@ -238,30 +123,11 @@ export interface FileRoutesByFullPath {
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/login': typeof LoginRoute
-  '/minha-jornada': typeof MinhaJornadaRoute
-  '/nutricionista': typeof NutricionistaRouteWithChildren
-  '/paciente': typeof PacienteRouteWithChildren
-  '/profissionais': typeof ProfissionaisRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
-  '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
-  '/nutricionista/agenda': typeof NutricionistaAgendaRoute
-  '/nutricionista/configuracoes': typeof NutricionistaConfiguracoesRoute
-  '/nutricionista/dashboard': typeof NutricionistaDashboardRoute
-  '/nutricionista/mensagens': typeof NutricionistaMensagensRoute
-  '/nutricionista/pacientes': typeof NutricionistaPacientesRoute
-  '/nutricionista/perfil': typeof NutricionistaPerfilRoute
-  '/nutricionista/planos': typeof NutricionistaPlanosRoute
-  '/paciente/agendamentos': typeof PacienteAgendamentosRoute
-  '/paciente/dashboard': typeof PacienteDashboardRoute
-  '/paciente/evolucao': typeof PacienteEvolucaoRoute
-  '/paciente/ia-nutricional': typeof PacienteIaNutricionalRoute
-  '/paciente/mensagens': typeof PacienteMensagensRoute
-  '/paciente/perfil': typeof PacientePerfilRoute
-  '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
@@ -275,30 +141,11 @@ export interface FileRoutesByTo {
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/login': typeof LoginRoute
-  '/minha-jornada': typeof MinhaJornadaRoute
-  '/nutricionista': typeof NutricionistaRouteWithChildren
-  '/paciente': typeof PacienteRouteWithChildren
-  '/profissionais': typeof ProfissionaisRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
-  '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
-  '/nutricionista/agenda': typeof NutricionistaAgendaRoute
-  '/nutricionista/configuracoes': typeof NutricionistaConfiguracoesRoute
-  '/nutricionista/dashboard': typeof NutricionistaDashboardRoute
-  '/nutricionista/mensagens': typeof NutricionistaMensagensRoute
-  '/nutricionista/pacientes': typeof NutricionistaPacientesRoute
-  '/nutricionista/perfil': typeof NutricionistaPerfilRoute
-  '/nutricionista/planos': typeof NutricionistaPlanosRoute
-  '/paciente/agendamentos': typeof PacienteAgendamentosRoute
-  '/paciente/dashboard': typeof PacienteDashboardRoute
-  '/paciente/evolucao': typeof PacienteEvolucaoRoute
-  '/paciente/ia-nutricional': typeof PacienteIaNutricionalRoute
-  '/paciente/mensagens': typeof PacienteMensagensRoute
-  '/paciente/perfil': typeof PacientePerfilRoute
-  '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades': typeof ComunidadesIndexRoute
@@ -314,30 +161,11 @@ export interface FileRoutesById {
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/login': typeof LoginRoute
-  '/minha-jornada': typeof MinhaJornadaRoute
-  '/nutricionista': typeof NutricionistaRouteWithChildren
-  '/paciente': typeof PacienteRouteWithChildren
-  '/profissionais': typeof ProfissionaisRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
-  '/servicos': typeof ServicosRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
-  '/nutricionista/agenda': typeof NutricionistaAgendaRoute
-  '/nutricionista/configuracoes': typeof NutricionistaConfiguracoesRoute
-  '/nutricionista/dashboard': typeof NutricionistaDashboardRoute
-  '/nutricionista/mensagens': typeof NutricionistaMensagensRoute
-  '/nutricionista/pacientes': typeof NutricionistaPacientesRoute
-  '/nutricionista/perfil': typeof NutricionistaPerfilRoute
-  '/nutricionista/planos': typeof NutricionistaPlanosRoute
-  '/paciente/agendamentos': typeof PacienteAgendamentosRoute
-  '/paciente/dashboard': typeof PacienteDashboardRoute
-  '/paciente/evolucao': typeof PacienteEvolucaoRoute
-  '/paciente/ia-nutricional': typeof PacienteIaNutricionalRoute
-  '/paciente/mensagens': typeof PacienteMensagensRoute
-  '/paciente/perfil': typeof PacientePerfilRoute
-  '/paciente/plano-alimentar': typeof PacientePlanoAlimentarRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
@@ -354,30 +182,11 @@ export interface FileRouteTypes {
     | '/espaco'
     | '/experiencias'
     | '/login'
-    | '/minha-jornada'
-    | '/nutricionista'
-    | '/paciente'
-    | '/profissionais'
     | '/receitas'
     | '/recuperar-senha'
-    | '/servicos'
     | '/sobre'
     | '/tema-da-semana'
     | '/comunidades/$slug'
-    | '/nutricionista/agenda'
-    | '/nutricionista/configuracoes'
-    | '/nutricionista/dashboard'
-    | '/nutricionista/mensagens'
-    | '/nutricionista/pacientes'
-    | '/nutricionista/perfil'
-    | '/nutricionista/planos'
-    | '/paciente/agendamentos'
-    | '/paciente/dashboard'
-    | '/paciente/evolucao'
-    | '/paciente/ia-nutricional'
-    | '/paciente/mensagens'
-    | '/paciente/perfil'
-    | '/paciente/plano-alimentar'
     | '/perfil/$userId'
     | '/receitas/$id'
     | '/comunidades/'
@@ -391,30 +200,11 @@ export interface FileRouteTypes {
     | '/espaco'
     | '/experiencias'
     | '/login'
-    | '/minha-jornada'
-    | '/nutricionista'
-    | '/paciente'
-    | '/profissionais'
     | '/receitas'
     | '/recuperar-senha'
-    | '/servicos'
     | '/sobre'
     | '/tema-da-semana'
     | '/comunidades/$slug'
-    | '/nutricionista/agenda'
-    | '/nutricionista/configuracoes'
-    | '/nutricionista/dashboard'
-    | '/nutricionista/mensagens'
-    | '/nutricionista/pacientes'
-    | '/nutricionista/perfil'
-    | '/nutricionista/planos'
-    | '/paciente/agendamentos'
-    | '/paciente/dashboard'
-    | '/paciente/evolucao'
-    | '/paciente/ia-nutricional'
-    | '/paciente/mensagens'
-    | '/paciente/perfil'
-    | '/paciente/plano-alimentar'
     | '/perfil/$userId'
     | '/receitas/$id'
     | '/comunidades'
@@ -429,30 +219,11 @@ export interface FileRouteTypes {
     | '/espaco'
     | '/experiencias'
     | '/login'
-    | '/minha-jornada'
-    | '/nutricionista'
-    | '/paciente'
-    | '/profissionais'
     | '/receitas'
     | '/recuperar-senha'
-    | '/servicos'
     | '/sobre'
     | '/tema-da-semana'
     | '/comunidades/$slug'
-    | '/nutricionista/agenda'
-    | '/nutricionista/configuracoes'
-    | '/nutricionista/dashboard'
-    | '/nutricionista/mensagens'
-    | '/nutricionista/pacientes'
-    | '/nutricionista/perfil'
-    | '/nutricionista/planos'
-    | '/paciente/agendamentos'
-    | '/paciente/dashboard'
-    | '/paciente/evolucao'
-    | '/paciente/ia-nutricional'
-    | '/paciente/mensagens'
-    | '/paciente/perfil'
-    | '/paciente/plano-alimentar'
     | '/perfil/$userId'
     | '/receitas/$id'
     | '/comunidades/'
@@ -468,13 +239,8 @@ export interface RootRouteChildren {
   EspacoRoute: typeof EspacoRoute
   ExperienciasRoute: typeof ExperienciasRoute
   LoginRoute: typeof LoginRoute
-  MinhaJornadaRoute: typeof MinhaJornadaRoute
-  NutricionistaRoute: typeof NutricionistaRouteWithChildren
-  PacienteRoute: typeof PacienteRouteWithChildren
-  ProfissionaisRoute: typeof ProfissionaisRoute
   ReceitasRoute: typeof ReceitasRouteWithChildren
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
-  ServicosRoute: typeof ServicosRoute
   SobreRoute: typeof SobreRoute
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
@@ -545,34 +311,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/minha-jornada': {
-      id: '/minha-jornada'
-      path: '/minha-jornada'
-      fullPath: '/minha-jornada'
-      preLoaderRoute: typeof MinhaJornadaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/nutricionista': {
-      id: '/nutricionista'
-      path: '/nutricionista'
-      fullPath: '/nutricionista'
-      preLoaderRoute: typeof NutricionistaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paciente': {
-      id: '/paciente'
-      path: '/paciente'
-      fullPath: '/paciente'
-      preLoaderRoute: typeof PacienteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profissionais': {
-      id: '/profissionais'
-      path: '/profissionais'
-      fullPath: '/profissionais'
-      preLoaderRoute: typeof ProfissionaisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/receitas': {
       id: '/receitas'
       path: '/receitas'
@@ -585,13 +323,6 @@ declare module '@tanstack/react-router' {
       path: '/recuperar-senha'
       fullPath: '/recuperar-senha'
       preLoaderRoute: typeof RecuperarSenhaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/servicos': {
-      id: '/servicos'
-      path: '/servicos'
-      fullPath: '/servicos'
-      preLoaderRoute: typeof ServicosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sobre': {
@@ -621,104 +352,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/comunidades/$slug'
       preLoaderRoute: typeof ComunidadesSlugRouteImport
       parentRoute: typeof ComunidadesRoute
-    }
-    '/nutricionista/agenda': {
-      id: '/nutricionista/agenda'
-      path: '/agenda'
-      fullPath: '/nutricionista/agenda'
-      preLoaderRoute: typeof NutricionistaAgendaRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/nutricionista/configuracoes': {
-      id: '/nutricionista/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/nutricionista/configuracoes'
-      preLoaderRoute: typeof NutricionistaConfiguracoesRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/nutricionista/dashboard': {
-      id: '/nutricionista/dashboard'
-      path: '/dashboard'
-      fullPath: '/nutricionista/dashboard'
-      preLoaderRoute: typeof NutricionistaDashboardRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/nutricionista/mensagens': {
-      id: '/nutricionista/mensagens'
-      path: '/mensagens'
-      fullPath: '/nutricionista/mensagens'
-      preLoaderRoute: typeof NutricionistaMensagensRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/nutricionista/pacientes': {
-      id: '/nutricionista/pacientes'
-      path: '/pacientes'
-      fullPath: '/nutricionista/pacientes'
-      preLoaderRoute: typeof NutricionistaPacientesRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/nutricionista/perfil': {
-      id: '/nutricionista/perfil'
-      path: '/perfil'
-      fullPath: '/nutricionista/perfil'
-      preLoaderRoute: typeof NutricionistaPerfilRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/nutricionista/planos': {
-      id: '/nutricionista/planos'
-      path: '/planos'
-      fullPath: '/nutricionista/planos'
-      preLoaderRoute: typeof NutricionistaPlanosRouteImport
-      parentRoute: typeof NutricionistaRoute
-    }
-    '/paciente/agendamentos': {
-      id: '/paciente/agendamentos'
-      path: '/agendamentos'
-      fullPath: '/paciente/agendamentos'
-      preLoaderRoute: typeof PacienteAgendamentosRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/dashboard': {
-      id: '/paciente/dashboard'
-      path: '/dashboard'
-      fullPath: '/paciente/dashboard'
-      preLoaderRoute: typeof PacienteDashboardRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/evolucao': {
-      id: '/paciente/evolucao'
-      path: '/evolucao'
-      fullPath: '/paciente/evolucao'
-      preLoaderRoute: typeof PacienteEvolucaoRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/ia-nutricional': {
-      id: '/paciente/ia-nutricional'
-      path: '/ia-nutricional'
-      fullPath: '/paciente/ia-nutricional'
-      preLoaderRoute: typeof PacienteIaNutricionalRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/mensagens': {
-      id: '/paciente/mensagens'
-      path: '/mensagens'
-      fullPath: '/paciente/mensagens'
-      preLoaderRoute: typeof PacienteMensagensRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/perfil': {
-      id: '/paciente/perfil'
-      path: '/perfil'
-      fullPath: '/paciente/perfil'
-      preLoaderRoute: typeof PacientePerfilRouteImport
-      parentRoute: typeof PacienteRoute
-    }
-    '/paciente/plano-alimentar': {
-      id: '/paciente/plano-alimentar'
-      path: '/plano-alimentar'
-      fullPath: '/paciente/plano-alimentar'
-      preLoaderRoute: typeof PacientePlanoAlimentarRouteImport
-      parentRoute: typeof PacienteRoute
     }
     '/perfil/$userId': {
       id: '/perfil/$userId'
@@ -751,54 +384,6 @@ const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
   ComunidadesRouteChildren,
 )
 
-interface NutricionistaRouteChildren {
-  NutricionistaAgendaRoute: typeof NutricionistaAgendaRoute
-  NutricionistaConfiguracoesRoute: typeof NutricionistaConfiguracoesRoute
-  NutricionistaDashboardRoute: typeof NutricionistaDashboardRoute
-  NutricionistaMensagensRoute: typeof NutricionistaMensagensRoute
-  NutricionistaPacientesRoute: typeof NutricionistaPacientesRoute
-  NutricionistaPerfilRoute: typeof NutricionistaPerfilRoute
-  NutricionistaPlanosRoute: typeof NutricionistaPlanosRoute
-}
-
-const NutricionistaRouteChildren: NutricionistaRouteChildren = {
-  NutricionistaAgendaRoute: NutricionistaAgendaRoute,
-  NutricionistaConfiguracoesRoute: NutricionistaConfiguracoesRoute,
-  NutricionistaDashboardRoute: NutricionistaDashboardRoute,
-  NutricionistaMensagensRoute: NutricionistaMensagensRoute,
-  NutricionistaPacientesRoute: NutricionistaPacientesRoute,
-  NutricionistaPerfilRoute: NutricionistaPerfilRoute,
-  NutricionistaPlanosRoute: NutricionistaPlanosRoute,
-}
-
-const NutricionistaRouteWithChildren = NutricionistaRoute._addFileChildren(
-  NutricionistaRouteChildren,
-)
-
-interface PacienteRouteChildren {
-  PacienteAgendamentosRoute: typeof PacienteAgendamentosRoute
-  PacienteDashboardRoute: typeof PacienteDashboardRoute
-  PacienteEvolucaoRoute: typeof PacienteEvolucaoRoute
-  PacienteIaNutricionalRoute: typeof PacienteIaNutricionalRoute
-  PacienteMensagensRoute: typeof PacienteMensagensRoute
-  PacientePerfilRoute: typeof PacientePerfilRoute
-  PacientePlanoAlimentarRoute: typeof PacientePlanoAlimentarRoute
-}
-
-const PacienteRouteChildren: PacienteRouteChildren = {
-  PacienteAgendamentosRoute: PacienteAgendamentosRoute,
-  PacienteDashboardRoute: PacienteDashboardRoute,
-  PacienteEvolucaoRoute: PacienteEvolucaoRoute,
-  PacienteIaNutricionalRoute: PacienteIaNutricionalRoute,
-  PacienteMensagensRoute: PacienteMensagensRoute,
-  PacientePerfilRoute: PacientePerfilRoute,
-  PacientePlanoAlimentarRoute: PacientePlanoAlimentarRoute,
-}
-
-const PacienteRouteWithChildren = PacienteRoute._addFileChildren(
-  PacienteRouteChildren,
-)
-
 interface ReceitasRouteChildren {
   ReceitasIdRoute: typeof ReceitasIdRoute
 }
@@ -821,13 +406,8 @@ const rootRouteChildren: RootRouteChildren = {
   EspacoRoute: EspacoRoute,
   ExperienciasRoute: ExperienciasRoute,
   LoginRoute: LoginRoute,
-  MinhaJornadaRoute: MinhaJornadaRoute,
-  NutricionistaRoute: NutricionistaRouteWithChildren,
-  PacienteRoute: PacienteRouteWithChildren,
-  ProfissionaisRoute: ProfissionaisRoute,
   ReceitasRoute: ReceitasRouteWithChildren,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
-  ServicosRoute: ServicosRoute,
   SobreRoute: SobreRoute,
   TemaDaSemanaRoute: TemaDaSemanaRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,

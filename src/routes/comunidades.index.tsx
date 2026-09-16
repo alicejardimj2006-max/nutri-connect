@@ -1,15 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { BadgeCheck, MessageCircle, Plus, ShieldQuestion, Users } from "lucide-react";
+import { MessageCircle, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
   CATEGORIES,
-  assumeResponsibility,
   createCommunity,
-  formatDate,
-  initials,
   toggleMembership,
   type Actor,
   type Community,
@@ -21,13 +18,12 @@ export const Route = createFileRoute("/comunidades/")({
       { title: "Comunidades — NutriConnect" },
       {
         name: "description",
-        content:
-          "Participe de comunidades temáticas sobre alimentação equilibrada, moderadas por nutricionistas responsáveis.",
+        content: "Participe de comunidades temáticas sobre alimentação equilibrada.",
       },
       { property: "og:title", content: "Comunidades — NutriConnect" },
       {
         property: "og:description",
-        content: "Feed de publicações, grupos temáticos e moderação profissional no NutriConnect.",
+        content: "Feed de publicações e grupos temáticos no NutriConnect.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -43,7 +39,7 @@ function ComunidadesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const actor: Actor | null = user ? { id: user.id, name: user.name, role: user.role } : null;
+  const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
 
   const filtered = useMemo(() => {
     return communities.filter((c) => {
@@ -62,11 +58,7 @@ function ComunidadesPage() {
     });
   }, [communities, category, searchTerm]);
 
-  const featured = useMemo(() => {
-    return communities.filter((c) => c.status === "ativa").slice(0, 3);
-  }, [communities]);
-
-  const pending = communities.filter((c) => c.status === "aguardando");
+  const featured = useMemo(() => communities.slice(0, 3), [communities]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
@@ -91,47 +83,6 @@ function ComunidadesPage() {
       </header>
 
       {creating && <CreateForm actor={actor} onDone={() => setCreating(false)} />}
-
-      {hydrated && actor?.role === "nutricionista" && pending.length > 0 && (
-        <section className="mt-8 rounded-2xl border border-accent/40 bg-accent-soft p-5">
-          <div className="flex items-start gap-3">
-            <ShieldQuestion className="mt-0.5 h-5 w-5 text-accent" />
-            <div className="flex-1">
-              <h2 className="text-base font-semibold text-foreground">
-                Deseja assumir a moderação destas comunidades?
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Elas foram sugeridas por pacientes e aguardam um profissional responsável para
-                iniciar as publicações.
-              </p>
-              <ul className="mt-4 space-y-3">
-                {pending.map((c) => (
-                  <li
-                    key={c.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card p-3 shadow-sm border border-border"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Sugerida por {c.createdByName} · {formatDate(c.createdAt)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        assumeResponsibility(c.id, actor);
-                        toast.success("Você agora é o nutricionista responsável desta comunidade.");
-                      }}
-                      className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition hover:opacity-90"
-                    >
-                      Assumir moderação
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Comunidades em destaque */}
       {!searchTerm && category === "Todas" && featured.length > 0 && (
@@ -223,40 +174,8 @@ function CommunityCard({ community: c }: { community: Community }) {
         </div>
       </div>
       <div className="p-5 flex flex-col flex-1">
-        <div className="flex items-center justify-between gap-3 mb-2">
-          {c.status === "aguardando" ? (
-            <span className="rounded-full bg-warning/20 px-2.5 py-1 text-[10px] font-semibold text-warning-foreground">
-              Aguardando nutricionista
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-semibold text-primary">
-              <BadgeCheck className="h-3 w-3" /> Comunidade ativa
-            </span>
-          )}
-        </div>
         <h3 className="text-xl font-bold text-foreground font-display leading-tight">{c.name}</h3>
         <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
-
-        {c.responsible ? (
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-3">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-xs shrink-0">
-              {initials(c.responsible.name)}
-            </span>
-            <div className="text-xs">
-              <p className="text-muted-foreground">Nutricionista responsável</p>
-              <p className="font-semibold text-foreground text-sm">{c.responsible.name}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border border-dashed bg-secondary/10 p-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-muted text-sm font-bold text-muted-foreground shadow-xs shrink-0">
-              <ShieldQuestion className="h-4 w-4" />
-            </div>
-            <div className="text-xs">
-              <p className="font-semibold text-warning/90">Aguardando nutricionista responsável</p>
-            </div>
-          </div>
-        )}
 
         <div className="mt-5 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
           <span className="inline-flex items-center gap-1">
@@ -269,10 +188,10 @@ function CommunityCard({ community: c }: { community: Community }) {
         </div>
 
         <div className="mt-5 flex gap-2">
-        {c.status === "ativa" && user && (
+          {user && (
             <button
               onClick={() => {
-                toggleMembership(c.id, { id: user.id, name: user.name, role: user.role });
+                toggleMembership(c.id, { id: user.id, name: user.name });
               }}
               className={`flex-1 rounded-full px-4 py-2 text-[13px] font-semibold transition shadow-soft ${
                 c.members.some((m) => m.userId === user.id)
@@ -287,7 +206,7 @@ function CommunityCard({ community: c }: { community: Community }) {
             to="/comunidades/$slug"
             params={{ slug: c.slug }}
             className={`text-center rounded-full bg-accent px-4 py-2 text-[13px] font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 ${
-              c.status !== "ativa" || !user ? "flex-1" : ""
+              !user ? "flex-1" : ""
             }`}
           >
             Ver comunidade
@@ -308,7 +227,7 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
   if (!actor) {
     return (
       <div className="mt-6 rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
-        Entre na sua conta para sugerir uma nova comunidade.{" "}
+        Entre na sua conta para criar uma nova comunidade.{" "}
         <Link to="/login" className="font-semibold text-accent hover:underline">
           Fazer login
         </Link>
@@ -332,20 +251,14 @@ function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void
           category,
           actor,
         });
-        toast.success(
-          actor.role === "nutricionista"
-            ? "Comunidade criada e ativada."
-            : "Comunidade criada. Agora ela aguarda um nutricionista responsável.",
-        );
+        toast.success("Comunidade criada com sucesso!");
         onDone();
       }}
       className="mt-6 rounded-2xl border bg-card p-5 shadow-card"
     >
       <h2 className="text-base font-semibold text-foreground">Nova comunidade</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        {actor.role === "nutricionista"
-          ? "Como profissional, você será o responsável e a comunidade é ativada na hora."
-          : "Sua sugestão ficará como “aguardando nutricionista” até um profissional assumir."}
+        Sua comunidade é criada e ativada na hora.
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block">

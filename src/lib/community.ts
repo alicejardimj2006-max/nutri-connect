@@ -1,18 +1,9 @@
 // Comunidade & Jornadas — Armazenamento local reativo (pronto para futura API/DB).
-import type { UserRole } from "@/lib/auth";
 
 export interface CommunityMember {
   userId: string;
   name: string;
-  role: UserRole;
   joinedAt: string;
-}
-
-export interface ResponsibleProfessional {
-  userId: string;
-  name: string;
-  credential: string;
-  acceptedAt: string;
 }
 
 export interface Comment {
@@ -20,12 +11,11 @@ export interface Comment {
   postId: string;
   authorId: string;
   authorName: string;
-  authorRole: UserRole;
   text: string;
   createdAt: string;
 }
 
-export type PostType = "receita" | "experiencia" | "especialista" | "pergunta" | "geral";
+export type PostType = "receita" | "experiencia" | "pergunta" | "geral";
 
 export interface RecipeData {
   prepTime: string;
@@ -42,9 +32,7 @@ export interface Post {
   type: PostType;
   authorId: string;
   authorName: string;
-  authorRole: UserRole;
   authorAvatar?: string;
-  authorSpecialty?: string;
   title?: string;
   text: string;
   image?: string;
@@ -69,9 +57,6 @@ export interface Community {
   coverImage?: string;
   createdById: string;
   createdByName: string;
-  createdByRole: UserRole;
-  status: "ativa" | "aguardando";
-  responsible: ResponsibleProfessional | null;
   members: CommunityMember[];
   createdAt: string;
 }
@@ -79,9 +64,7 @@ export interface Community {
 export interface PublicProfile {
   userId: string;
   name: string;
-  role: UserRole;
   bio: string;
-  credential?: string;
 }
 
 export interface PollOption {
@@ -121,42 +104,12 @@ export interface Challenge {
   themeId?: string;
 }
 
-export interface ProfessionalReputation {
-  score: number;
-  positiveRatings: number;
-  negativeRatings: number;
-  helpfulAnswers: number;
-  communityPosts: number;
-  recipesPublished: number;
-  communitiesManaged: number;
-  weeklyThemeParticipation: number;
-}
-
-export interface ProfessionalMember {
-  id: string;
-  userId: string;
-  name: string;
-  specialty: string;
-  crn: string;
-  bio: string;
-  location: string;
-  modalities: string[];
-  focus: string[];
-  avatar?: string;
-  verified: boolean;
-  articlesCount: number;
-  recipesCount: number;
-  available: boolean;
-  reputation?: ProfessionalReputation;
-}
-
 export interface CommunityState {
   communities: Community[];
   posts: Post[];
   profiles: PublicProfile[];
   weeklyTheme: WeeklyTheme;
   challenges: Challenge[];
-  professionals: ProfessionalMember[];
 }
 
 export const CATEGORIES = [
@@ -183,7 +136,7 @@ const EVENT = "community-change";
 export function slugify(value: string) {
   return value
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
@@ -196,21 +149,14 @@ function id() {
     : Math.random().toString(36).slice(2);
 }
 
-const NUTRI_ID = "seed-nutri-maria";
+const MARIA_ID = "seed-maria";
 const PAC_ID = "seed-paciente-ana";
-const NUTRI_PEDRO_ID = "seed-nutri-pedro";
+const PEDRO_ID = "seed-pedro";
 const PAC_CARLOS_ID = "seed-paciente-carlos";
 
 function seed(): CommunityState {
   const now = Date.now();
   const iso = (minus: number) => new Date(now - minus).toISOString();
-
-  const nutri: ResponsibleProfessional = {
-    userId: NUTRI_ID,
-    name: "Dra. Maria Lorena",
-    credential: "CRN-3 12345",
-    acceptedAt: iso(86400000 * 20),
-  };
 
   const communities: Community[] = [
     {
@@ -220,19 +166,11 @@ function seed(): CommunityState {
       description:
         "Um espaço para aprender sobre alimentos, rótulos e escolhas possíveis — sem culpa e sem regras rígidas.",
       category: "Educação alimentar",
-      createdById: NUTRI_ID,
-      createdByName: "Dra. Maria Lorena",
-      createdByRole: "nutricionista",
-      status: "ativa",
-      responsible: nutri,
+      createdById: MARIA_ID,
+      createdByName: "Maria Lorena",
       members: [
-        {
-          userId: NUTRI_ID,
-          name: "Dra. Maria Lorena",
-          role: "nutricionista",
-          joinedAt: iso(86400000 * 20),
-        },
-        { userId: PAC_ID, name: "Ana Prado", role: "paciente", joinedAt: iso(86400000 * 12) },
+        { userId: MARIA_ID, name: "Maria Lorena", joinedAt: iso(86400000 * 20) },
+        { userId: PAC_ID, name: "Ana Prado", joinedAt: iso(86400000 * 12) },
       ],
       createdAt: iso(86400000 * 20),
     },
@@ -241,21 +179,11 @@ function seed(): CommunityState {
       slug: "relacao-com-a-comida",
       name: "Relação saudável com a comida",
       description:
-        "Conversas acolhedoras sobre comer com atenção, fome emocional e autocuidado. Moderado por profissional.",
+        "Conversas acolhedoras sobre comer com atenção, fome emocional e autocuidado.",
       category: "Relação com a comida",
-      createdById: NUTRI_ID,
-      createdByName: "Dra. Maria Lorena",
-      createdByRole: "nutricionista",
-      status: "ativa",
-      responsible: nutri,
-      members: [
-        {
-          userId: NUTRI_ID,
-          name: "Dra. Maria Lorena",
-          role: "nutricionista",
-          joinedAt: iso(86400000 * 15),
-        },
-      ],
+      createdById: MARIA_ID,
+      createdByName: "Maria Lorena",
+      members: [{ userId: MARIA_ID, name: "Maria Lorena", joinedAt: iso(86400000 * 15) }],
       createdAt: iso(86400000 * 15),
     },
     {
@@ -267,17 +195,9 @@ function seed(): CommunityState {
       category: "Cozinha do dia a dia",
       createdById: PAC_ID,
       createdByName: "Ana Prado",
-      createdByRole: "paciente",
-      status: "ativa",
-      responsible: nutri,
       members: [
-        { userId: PAC_ID, name: "Ana Prado", role: "paciente", joinedAt: iso(86400000 * 3) },
-        {
-          userId: PAC_CARLOS_ID,
-          name: "Carlos Eduardo",
-          role: "paciente",
-          joinedAt: iso(86400000 * 2),
-        },
+        { userId: PAC_ID, name: "Ana Prado", joinedAt: iso(86400000 * 3) },
+        { userId: PAC_CARLOS_ID, name: "Carlos Eduardo", joinedAt: iso(86400000 * 2) },
       ],
       createdAt: iso(86400000 * 3),
     },
@@ -287,10 +207,8 @@ function seed(): CommunityState {
     {
       id: "p-rec-1",
       type: "receita",
-      authorId: NUTRI_ID,
-      authorName: "Dra. Maria Lorena",
-      authorRole: "nutricionista",
-      authorSpecialty: "Nutrição Clínica & Comportamental",
+      authorId: MARIA_ID,
+      authorName: "Maria Lorena",
       title: "Cumbuca de Aveia Cremosa com Maçã e Canela",
       text: "Uma opção acolhedora para o café da manhã ou lanche da tarde. O aquecimento da maçã libera doçura natural, diminuindo a necessidade de açúcares adicionados e garantindo saciedade por horas.",
       tags: ["Café da manhã", "Fácil", "Fibras", "Conforto"],
@@ -324,7 +242,6 @@ function seed(): CommunityState {
           postId: "p-rec-1",
           authorId: PAC_ID,
           authorName: "Ana Prado",
-          authorRole: "paciente",
           text: "Preparei hoje de manhã! O cheirinho de canela na casa faz toda a diferença.",
           createdAt: iso(86400000 * 0.8),
         },
@@ -335,22 +252,20 @@ function seed(): CommunityState {
       type: "experiencia",
       authorId: PAC_ID,
       authorName: "Ana Prado",
-      authorRole: "paciente",
       title: "O dia em que parei de temer o almoço de domingo",
-      text: "Durante muito tempo, o almoço em família me dava ansiedade por achar que 'sairia da linha'. Na consulta passada, conversamos sobre comer com presença, saboreando cada garfada e conversando com calma. Foi o primeiro domingo em anos que me levantei leve, satisfeita e em paz com o prato.",
+      text: "Durante muito tempo, o almoço em família me dava ansiedade por achar que 'sairia da linha'. Passei a comer com presença, saboreando cada garfada e conversando com calma. Foi o primeiro domingo em anos que me levantei leve, satisfeita e em paz com o prato.",
       tags: ["Relação com a comida", "Conquistas", "Vida Real"],
       createdAt: iso(86400000 * 2),
       pinned: false,
-      likes: [NUTRI_ID, NUTRI_PEDRO_ID],
-      supports: [NUTRI_ID, NUTRI_PEDRO_ID, PAC_CARLOS_ID],
+      likes: [MARIA_ID, PEDRO_ID],
+      supports: [MARIA_ID, PEDRO_ID, PAC_CARLOS_ID],
       preparedBy: [],
       comments: [
         {
           id: "cm-2",
           postId: "p-exp-1",
-          authorId: NUTRI_ID,
-          authorName: "Dra. Maria Lorena",
-          authorRole: "nutricionista",
+          authorId: MARIA_ID,
+          authorName: "Maria Lorena",
           text: "Muito feliz com o seu relato, Ana! O objetivo principal sempre é construir paz com o prato e presença com quem amamos.",
           createdAt: iso(86400000 * 1.5),
         },
@@ -358,18 +273,16 @@ function seed(): CommunityState {
     },
     {
       id: "p-esp-1",
-      type: "especialista",
-      authorId: NUTRI_PEDRO_ID,
-      authorName: "Dr. Pedro Costa",
-      authorRole: "nutricionista",
-      authorSpecialty: "Nutrição Esportiva e Rotina Prática",
+      type: "experiencia",
+      authorId: PEDRO_ID,
+      authorName: "Pedro Costa",
       title: "Regra dos 3 Potes: Como não se perder na correria da semana",
       text: "Você não precisa de 14 marmitas idênticas no congelador. Apenas deixe prontos na geladeira: 1 pote de leguminosa cozida (feijão, lentilha ou grão-de-bico), 1 pote de grão integral (arroz ou quinoa) e 1 pote de vegetais assados. Na hora de comer, basta aquecer e variar a proteína fresca.",
-      tags: ["Organização", "Cozinha Prática", "Dica Profissional"],
+      tags: ["Organização", "Cozinha Prática", "Dica da Comunidade"],
       createdAt: iso(86400000 * 3),
       pinned: false,
       likes: [PAC_ID],
-      supports: [PAC_ID, NUTRI_ID],
+      supports: [PAC_ID, MARIA_ID],
       preparedBy: [],
       comments: [],
     },
@@ -378,14 +291,13 @@ function seed(): CommunityState {
       type: "receita",
       authorId: PAC_CARLOS_ID,
       authorName: "Carlos Eduardo",
-      authorRole: "paciente",
       title: "Legumes Assados Crocantes de Tabuleiro",
       text: "Minha receita coringa para o jantar da semana. Uso o que estiver sobrando na geladeira com azeite e alecrim!",
       tags: ["Almoço e Jantar", "Vegetais", "Fácil"],
       createdAt: iso(86400000 * 4),
       pinned: false,
-      likes: [NUTRI_ID],
-      supports: [NUTRI_ID, PAC_ID],
+      likes: [MARIA_ID],
+      supports: [MARIA_ID, PAC_ID],
       preparedBy: [PAC_ID],
       recipeData: {
         prepTime: "30 min",
@@ -414,22 +326,20 @@ function seed(): CommunityState {
       type: "pergunta",
       authorId: PAC_ID,
       authorName: "Ana Prado",
-      authorRole: "paciente",
       title: "Como vocês organizam os lanches da tarde fora de casa?",
       text: "Sempre que passo o dia na rua, acabo recorrendo à primeira cafeteria que vejo. Quais opções práticas e que não estragam na bolsa vocês costumam carregar?",
       tags: ["Dúvida", "Rotina de Trabalho", "Lanches"],
       createdAt: iso(86400000 * 5),
       pinned: false,
-      likes: [NUTRI_PEDRO_ID],
-      supports: [NUTRI_PEDRO_ID, PAC_CARLOS_ID],
+      likes: [PEDRO_ID],
+      supports: [PEDRO_ID, PAC_CARLOS_ID],
       preparedBy: [],
       comments: [
         {
           id: "cm-3",
           postId: "p-perg-1",
-          authorId: NUTRI_PEDRO_ID,
-          authorName: "Dr. Pedro Costa",
-          authorRole: "nutricionista",
+          authorId: PEDRO_ID,
+          authorName: "Pedro Costa",
           text: "Misturas de castanhas com frutas secas em potinhos pequenos, frutas mais firmes (como maçã ou pera) e biscoitos integrais de sementes são ótimos coringas de bolsa!",
           createdAt: iso(86400000 * 4.5),
         },
@@ -439,23 +349,18 @@ function seed(): CommunityState {
 
   const profiles: PublicProfile[] = [
     {
-      userId: NUTRI_ID,
-      name: "Dra. Maria Lorena",
-      role: "nutricionista",
-      bio: "Nutricionista clínica e comportamental há 10 anos. Apaixonada por descomplicar a cozinha e criar relações pacíficas com o prato.",
-      credential: "CRN-3 12345",
+      userId: MARIA_ID,
+      name: "Maria Lorena",
+      bio: "Apaixonada por descomplicar a cozinha e criar relações pacíficas com o prato.",
     },
     {
-      userId: NUTRI_PEDRO_ID,
-      name: "Dr. Pedro Costa",
-      role: "nutricionista",
+      userId: PEDRO_ID,
+      name: "Pedro Costa",
       bio: "Focado em alimentação para o dia a dia moderno, rotina ativa e planejamento realista para quem não tem tempo a perder.",
-      credential: "CRN-3 67890",
     },
     {
       userId: PAC_ID,
       name: "Ana Prado",
-      role: "paciente",
       bio: "Em busca de mais calma à mesa, testando receitas simples e construindo novos hábitos passo a passo.",
     },
   ];
@@ -541,57 +446,7 @@ function seed(): CommunityState {
     },
   ];
 
-  const professionals: ProfessionalMember[] = [
-    {
-      id: "prof-maria",
-      userId: NUTRI_ID,
-      name: "Dra. Maria Lorena",
-      specialty: "Nutrição Clínica & Reeducação Alimentar",
-      crn: "CRN-3 12345",
-      bio: "10 anos de prática clínica guiando pessoas a fazerem as pazes com a comida através de escolhas reais e sem restrições severas.",
-      location: "São Paulo, SP · Atendimento Online e Presencial",
-      modalities: ["Online em todo o Brasil", "Presencial em São Paulo"],
-      focus: ["Reeducação Alimentar", "Saúde da Mulher", "Vegetarianismo"],
-      avatar: "/images/professionals/prof-1.jpg",
-      verified: true,
-      articlesCount: 14,
-      recipesCount: 8,
-      available: true,
-    },
-    {
-      id: "prof-pedro",
-      userId: NUTRI_PEDRO_ID,
-      name: "Dr. Pedro Costa",
-      specialty: "Nutrição Funcional & Performance da Rotina",
-      crn: "CRN-3 67890",
-      bio: "Especialista em organizar o planejamento alimentar de profissionais com rotinas corridas. Menos regras impraticáveis, mais eficácia.",
-      location: "Belo Horizonte, MG · Atendimento Online",
-      modalities: ["Online em todo o Brasil"],
-      focus: ["Planejamento de Marmitas", "Energia e Disposição", "Hipertrofia"],
-      avatar: "/images/professionals/prof-2.jpg",
-      verified: true,
-      articlesCount: 9,
-      recipesCount: 5,
-      available: true,
-    },
-    {
-      id: "prof-camila",
-      userId: "seed-nutri-camila",
-      name: "Dra. Camila Ribeiro",
-      specialty: "Nutrição Materno-Infantil & Familiar",
-      crn: "CRN-3 54321",
-      bio: "Dedicada a transformar a refeição em família num momento de acolhimento, prazer e nutrição equilibrada para todas as idades.",
-      location: "Curitiba, PR · Atendimento Online",
-      modalities: ["Online em todo o Brasil"],
-      focus: ["Alimentação em Família", "Introdução Alimentar", "Seletividade"],
-      verified: true,
-      articlesCount: 11,
-      recipesCount: 12,
-      available: true,
-    },
-  ];
-
-  return { communities, posts, profiles, weeklyTheme, challenges, professionals };
+  return { communities, posts, profiles, weeklyTheme, challenges };
 }
 
 export function loadState(): CommunityState {
@@ -616,7 +471,6 @@ export function loadState(): CommunityState {
         parsed.profiles && parsed.profiles.length > 0 ? parsed.profiles : defaultSeed.profiles,
       weeklyTheme: parsed.weeklyTheme ?? defaultSeed.weeklyTheme,
       challenges: parsed.challenges ?? defaultSeed.challenges,
-      professionals: parsed.professionals ?? defaultSeed.professionals,
     };
     return state;
   } catch {
@@ -639,8 +493,6 @@ function update(fn: (state: CommunityState) => CommunityState) {
 export interface Actor {
   id: string;
   name: string;
-  role: UserRole;
-  specialty?: string;
 }
 
 // Ações Comunitárias: Apoiar post
@@ -723,7 +575,7 @@ export function toggleJoinChallenge(challengeId: string, userId: string) {
   }));
 }
 
-// Criar Publicação Multifacetada (Receita, Experiência, Especialista, Pergunta)
+// Criar Publicação Multifacetada (Receita, Experiência, Pergunta)
 export function createCommunityPost(input: {
   type: PostType;
   actor: Actor;
@@ -745,8 +597,6 @@ export function createCommunityPost(input: {
     communityId: input.communityId,
     authorId: input.actor.id,
     authorName: input.actor.name,
-    authorRole: input.actor.role,
-    authorSpecialty: input.actor.specialty,
     title: input.title?.trim(),
     text: trimmedText,
     tags: input.tags || [],
@@ -798,7 +648,6 @@ export function addComment(postId: string, actor: Actor, text: string) {
                 postId,
                 authorId: actor.id,
                 authorName: actor.name,
-                authorRole: actor.role,
                 text: trimmedText,
                 createdAt: new Date().toISOString(),
               },
@@ -829,7 +678,6 @@ export function createCommunity(input: {
   objective?: string;
   coverImage?: string;
   actor: Actor;
-  credential?: string;
 }) {
   const community: Community = {
     id: id(),
@@ -841,22 +689,10 @@ export function createCommunity(input: {
     coverImage: input.coverImage,
     createdById: input.actor.id,
     createdByName: input.actor.name,
-    createdByRole: input.actor.role,
-    status: input.actor.role === "nutricionista" ? "ativa" : "aguardando",
-    responsible:
-      input.actor.role === "nutricionista"
-        ? {
-            userId: input.actor.id,
-            name: input.actor.name,
-            credential: input.credential ?? "Profissional verificado",
-            acceptedAt: new Date().toISOString(),
-          }
-        : null,
     members: [
       {
         userId: input.actor.id,
         name: input.actor.name,
-        role: input.actor.role,
         joinedAt: new Date().toISOString(),
       },
     ],
@@ -864,41 +700,6 @@ export function createCommunity(input: {
   };
   update((s) => ({ ...s, communities: [community, ...s.communities] }));
   return community;
-}
-
-export function assumeResponsibility(
-  communityId: string,
-  actor: Actor,
-  credential = "Profissional verificado",
-) {
-  update((s) => ({
-    ...s,
-    communities: s.communities.map((c) =>
-      c.id !== communityId || c.responsible
-        ? c
-        : {
-            ...c,
-            status: "ativa",
-            responsible: {
-              userId: actor.id,
-              name: actor.name,
-              credential,
-              acceptedAt: new Date().toISOString(),
-            },
-            members: c.members.some((m) => m.userId === actor.id)
-              ? c.members
-              : [
-                  ...c.members,
-                  {
-                    userId: actor.id,
-                    name: actor.name,
-                    role: actor.role,
-                    joinedAt: new Date().toISOString(),
-                  },
-                ],
-          },
-    ),
-  }));
 }
 
 export function toggleMembership(communityId: string, actor: Actor) {
@@ -916,7 +717,6 @@ export function toggleMembership(communityId: string, actor: Actor) {
               {
                 userId: actor.id,
                 name: actor.name,
-                role: actor.role,
                 joinedAt: new Date().toISOString(),
               },
             ],
@@ -977,65 +777,6 @@ export function getChallenges(): Challenge[] {
   return loadState().challenges || [];
 }
 
-export function getProfessionals(): ProfessionalMember[] {
-  return loadState().professionals || [];
-}
-
 export function getCommunityPosts(): Post[] {
   return loadState().posts || [];
-}
-
-/**
- * REPUTATION SYSTEM PREPARATION
- * Calculate the professional reputation score based on actions.
- * Prepared for daily limits, weighted actions, and anti-farming logic.
- */
-export interface ReputationActionWeights {
-  helpfulAnswer: number;
-  communityPost: number;
-  recipePublished: number;
-  communityManaged: number;
-  weeklyThemeParticipation: number;
-  positiveRating: number;
-  negativeRating: number;
-}
-
-const DEFAULT_REPUTATION_WEIGHTS: ReputationActionWeights = {
-  helpfulAnswer: 10,
-  communityPost: 2, // Limite aplicado abaixo para anti-farming
-  recipePublished: 15,
-  communityManaged: 50,
-  weeklyThemeParticipation: 20,
-  positiveRating: 5,
-  negativeRating: -10,
-};
-
-export function calculateProfessionalScore(
-  reputation: ProfessionalReputation | undefined,
-  weights = DEFAULT_REPUTATION_WEIGHTS,
-): number {
-  if (!reputation) return 0;
-
-  // Anti-farming limit: Limitar a pontuação máxima de postagens para evitar spam
-  const MAX_POST_SCORE = 100;
-  const postScore = Math.min(reputation.communityPosts * weights.communityPost, MAX_POST_SCORE);
-
-  // Anti-farming limit: Limitar a pontuação máxima por participações em temas (ações rápidas)
-  const MAX_THEME_SCORE = 100;
-  const themeScore = Math.min(
-    reputation.weeklyThemeParticipation * weights.weeklyThemeParticipation,
-    MAX_THEME_SCORE,
-  );
-
-  let score = 0;
-  score += reputation.helpfulAnswers * weights.helpfulAnswer;
-  score += postScore;
-  score += reputation.recipesPublished * weights.recipePublished;
-  score += reputation.communitiesManaged * weights.communityManaged;
-  score += themeScore;
-  score += reputation.positiveRatings * weights.positiveRating;
-  score += reputation.negativeRatings * weights.negativeRating;
-
-  // Reputação nunca fica abaixo de 0 na interface (ou poderia ficar negativa dependendo da regra de negócio)
-  return Math.max(0, score);
 }

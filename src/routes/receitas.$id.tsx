@@ -115,7 +115,7 @@ function ReceitaDetalhePage() {
       return;
     }
     if (!commentText.trim()) return;
-    addComment(recipe.id, { id: user.id, name: user.name, role: user.role }, commentText.trim());
+    addComment(recipe.id, { id: user.id, name: user.name }, commentText.trim());
     setCommentText("");
     toast.success("Dica ou comentário publicado!");
   };
@@ -193,10 +193,7 @@ function ReceitaDetalhePage() {
               <div>
                 <p className="font-semibold text-foreground">{recipe.authorName}</p>
                 <p className="text-muted-foreground">
-                  {recipe.authorSpecialty ||
-                    (recipe.authorRole === "nutricionista"
-                      ? "Nutricionista"
-                      : "Membro da comunidade")}
+                  Membro da comunidade
                   {" · "}
                   {formatDate(recipe.createdAt)}
                 </p>

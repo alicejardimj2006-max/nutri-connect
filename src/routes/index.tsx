@@ -11,6 +11,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { type Post } from "@/lib/community";
 
@@ -29,11 +30,11 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { user } = useAuth();
   const {
     posts = [],
     weeklyTheme = null,
     challenges = [],
-    professionals = [],
     communities = [],
     hydrated = false,
   } = useCommunity();
@@ -50,54 +51,11 @@ function HomePage() {
     }
   };
 
-  const handleQuickSupportAsk = (q: string) => {
-    setSupportQuestion(q);
-    if (q.toLowerCase().includes("plano") || q.toLowerCase().includes("dieta")) {
-      setSupportAnswer(
-        "Suas metas e planos podem ser acompanhados diariamente na aba Minha Jornada! Lá você também acompanha seus hábitos."
-      );
-    } else if (q.toLowerCase().includes("senha") || q.toLowerCase().includes("login")) {
-      setSupportAnswer(
-        "Para redefinir sua senha, acesse a página de Recuperação de Senha. Um código de verificação de 6 dígitos será enviado ao seu e-mail."
-      );
-    } else if (q.toLowerCase().includes("nutricionista") || q.toLowerCase().includes("consulta")) {
-      setSupportAnswer(
-        "Você pode buscar e agendar consultas diretamente na aba Profissionais, filtrando por especialidade e horário desejado!"
-      );
-    } else {
-      setSupportAnswer(
-        "O Suporte NutriConnect está disponível 24 horas por dia! Acesse o chat de mensagens para tirar qualquer outra dúvida em tempo real."
-      );
-    }
-  };
-
-  const faqs = [
-    {
-      question: "O NutriConnect é gratuito para começar?",
-      answer:
-        "Sim! O cadastro e o acesso à comunidade, aos desafios diários, às receitas e ao assistente de suporte inteligente são 100% gratuitos.",
-    },
-    {
-      question: "Como funcionam as consultas com nutricionistas?",
-      answer:
-        "Você pode buscar profissionais por especialidade (ex: Nutrição Esportiva, Emagrecimento, Vegetariana), visualizar os perfis e agendar teleconsultas diretamente na plataforma.",
-    },
-    {
-      question: "O que é o Suporte Inteligente com salvamento de respostas?",
-      answer:
-        "É nosso assistente virtual integrado que responde a dúvidas sobre seus hábitos, uso da plataforma, receitas e planos. Suas conversas ficam salvas com segurança no seu navegador.",
-    },
-    {
-      question: "Sou nutricionista. Como posso me cadastrar?",
-      answer:
-        "Na página de Cadastro, selecione a opção 'Nutricionista', informe seu registro profissional (CRN) e tenha acesso a ferramentas de presença na rede, publicação de conteúdos, interação com a comunidade e consultas."
-    },
-  ];
   // Filtrar posts para o Espaço de Hoje
   const todayRecipe = posts.find((p) => p.type === "receita");
   const todayExp = posts.find((p) => p.type === "experiencia");
-  const todaySpec = posts.find((p) => p.type === "especialista" || p.type === "pergunta");
-  const todayPosts = [todayRecipe, todayExp, todaySpec].filter((post): post is Post =>
+  const todayQuestion = posts.find((p) => p.type === "pergunta");
+  const todayPosts = [todayRecipe, todayExp, todayQuestion].filter((post): post is Post =>
     Boolean(post),
   );
 
@@ -133,7 +91,7 @@ function HomePage() {
                     type="text"
                     value={heroSearchQuery}
                     onChange={(e) => setHeroSearchQuery(e.target.value)}
-                    placeholder="Receitas, pessoas, profissionais, temas..."
+                    placeholder="Receitas, pessoas, temas..."
                     className="w-full bg-transparent py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <button
@@ -396,7 +354,7 @@ function HomePage() {
                     </div>
                     <div className="mt-auto pt-4 border-t border-border/50 flex justify-between items-center">
                       <span className="text-[10px] text-muted-foreground truncate">
-                        {c.responsible ? `Resp: ${c.responsible.name}` : "Aguardando nutricionista"}
+                        Criada por {c.createdByName}
                       </span>
                       <Link
                         to="/comunidades"
@@ -412,7 +370,7 @@ function HomePage() {
           </section>
         )}
 
-        {/* 6. MINHA JORNADA E DESAFIO E PROFISSIONAIS (Misto) */}
+        {/* 6. MINHA JORNADA E DESAFIO (Misto) */}
         <section className="py-16 bg-background">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid gap-8 lg:grid-cols-12">
@@ -426,12 +384,22 @@ function HomePage() {
                   Acompanhe seu progresso, salve suas receitas favoritas e colecione pequenas
                   vitórias diárias.
                 </p>
-                <Link
-                  to="/minha-jornada"
-                  className="self-start rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-bold hover:bg-primary/90 transition"
-                >
-                  Ver minha jornada
-                </Link>
+                {user ? (
+                  <Link
+                    to="/perfil/$userId"
+                    params={{ userId: user.id }}
+                    className="self-start rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-bold hover:bg-primary/90 transition"
+                  >
+                    Ver minha jornada
+                  </Link>
+                ) : (
+                  <Link
+                    to="/cadastro"
+                    className="self-start rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-bold hover:bg-primary/90 transition"
+                  >
+                    Começar minha jornada
+                  </Link>
+                )}
               </div>
 
               <div className="lg:col-span-7 flex flex-col gap-8">
@@ -454,41 +422,6 @@ function HomePage() {
                       >
                         Participar
                       </Link>
-                    </div>
-                  </div>
-                )}
-
-                {/* Profissionais */}
-                {professionals.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground mb-4">
-                      Aprenda com especialistas
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {professionals.slice(0, 2).map((prof) => (
-                        <div
-                          key={prof.id}
-                          className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-                        >
-                          <div className="flex items-center gap-3 mb-2">
-                            <img
-                              src={prof.avatar || "/images/professionals/prof-1.jpg"}
-                              alt={prof.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div>
-                              <p className="text-xs font-bold text-foreground">{prof.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{prof.specialty}</p>
-                            </div>
-                          </div>
-                          <Link
-                            to="/buscar"
-                            className="text-[10px] font-bold text-primary hover:underline"
-                          >
-                            Ver perfil
-                          </Link>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 )}
