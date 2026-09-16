@@ -11,53 +11,60 @@ import {
   AlignLeft,
   Tag,
   Layers,
+  Send,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { createCommunityPost, initials, RECIPE_CATEGORIES, type PostType } from "@/lib/community";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const THEMES = {
   accent: {
-    badge: "bg-accent-soft text-accent",
-    ring: "focus-within:border-accent/60 hover:border-accent/30",
-    dot: "bg-accent",
+    wash: "from-accent-soft/80 to-card",
+    border: "border-accent/25",
+    tape: "bg-accent",
+    badge: "bg-accent text-accent-foreground",
     active: "border-accent bg-accent-soft text-accent shadow-xs",
+    solid: "bg-accent",
   },
   primary: {
-    badge: "bg-primary-soft text-primary",
-    ring: "focus-within:border-primary/60 hover:border-primary/30",
-    dot: "bg-primary",
+    wash: "from-primary-soft/80 to-card",
+    border: "border-primary/25",
+    tape: "bg-primary",
+    badge: "bg-primary text-primary-foreground",
     active: "border-primary bg-primary-soft text-primary shadow-xs",
+    solid: "bg-primary",
   },
   olive: {
-    badge: "bg-chart-3/15 text-chart-3",
-    ring: "focus-within:border-chart-3/60 hover:border-chart-3/30",
-    dot: "bg-chart-3",
+    wash: "from-chart-3/25 to-card",
+    border: "border-chart-3/30",
+    tape: "bg-chart-3",
+    badge: "bg-chart-3 text-white",
     active: "border-chart-3 bg-chart-3/15 text-chart-3 shadow-xs",
+    solid: "bg-chart-3",
   },
   sand: {
-    badge: "bg-chart-4/15 text-chart-4",
-    ring: "focus-within:border-chart-4/60 hover:border-chart-4/30",
-    dot: "bg-chart-4",
+    wash: "from-chart-4/25 to-card",
+    border: "border-chart-4/30",
+    tape: "bg-chart-4",
+    badge: "bg-chart-4 text-white",
     active: "border-chart-4 bg-chart-4/15 text-chart-4 shadow-xs",
+    solid: "bg-chart-4",
   },
   sage: {
-    badge: "bg-chart-5/15 text-chart-5",
-    ring: "focus-within:border-chart-5/60 hover:border-chart-5/30",
-    dot: "bg-chart-5",
+    wash: "from-chart-5/25 to-card",
+    border: "border-chart-5/30",
+    tape: "bg-chart-5",
+    badge: "bg-chart-5 text-white",
     active: "border-chart-5 bg-chart-5/15 text-chart-5 shadow-xs",
+    solid: "bg-chart-5",
   },
   warning: {
-    badge: "bg-warning/15 text-warning-foreground",
-    ring: "focus-within:border-warning/60 hover:border-warning/30",
-    dot: "bg-warning",
+    wash: "from-warning/25 to-card",
+    border: "border-warning/30",
+    tape: "bg-warning",
+    badge: "bg-warning text-warning-foreground",
     active: "border-warning bg-warning/15 text-warning-foreground shadow-xs",
+    solid: "bg-warning",
   },
 } as const;
 
@@ -74,33 +81,42 @@ const TYPE_OPTIONS: {
   { id: "pergunta", label: "Pergunta", icon: HelpCircle, theme: "sage" },
 ];
 
-function FieldCard({
+/** Um "recorte" independente preso ao mural — não uma linha de formulário. */
+function PinnedCard({
   icon: Icon,
   theme,
   label,
   hint,
+  rotate = "rotate-0",
+  className = "",
   children,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   theme: ThemeKey;
   label: string;
   hint?: string;
+  rotate?: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   const t = THEMES[theme];
   return (
     <div
-      className={`rounded-2xl border border-border/70 bg-card p-4 sm:p-5 shadow-xs transition-all duration-200 hover:shadow-md ${t.ring}`}
+      className={`relative rounded-[1.75rem] border-2 ${t.border} bg-gradient-to-br ${t.wash} p-5 shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl ${rotate} ${className}`}
     >
+      <span
+        className={`absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] ${t.tape} opacity-90 shadow-sm`}
+      />
       <div className="flex items-center gap-2.5 mb-3.5">
-        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${t.badge}`}>
+        <span
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${t.badge} shadow-xs`}
+        >
           <Icon className="h-4 w-4" />
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold font-display text-foreground">{label}</p>
           {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
         </div>
-        <span className={`hidden sm:block h-1.5 w-1.5 rounded-full ${t.dot}`} />
       </div>
       {children}
     </div>
@@ -212,8 +228,6 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     if (!newOpen) resetForm();
   };
 
-  const activeTypeTheme = THEMES[TYPE_OPTIONS.find((o) => o.id === type)?.theme ?? "accent"];
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -228,39 +242,40 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         )}
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-2xl gap-0 rounded-[2rem] p-0 overflow-hidden max-h-[90vh] flex flex-col border-border/60">
-        <DialogHeader className="relative px-6 sm:px-8 pt-6 sm:pt-8 pb-5 border-b border-border/70 text-left space-y-0 bg-gradient-to-br from-card via-card to-accent-soft/25 overflow-hidden">
-          <div
-            className={`absolute top-0 right-0 h-24 w-24 rounded-full blur-3xl opacity-40 -translate-y-1/3 translate-x-1/4 ${activeTypeTheme.dot}`}
-          />
-          <div className="relative flex items-center gap-3.5">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary-soft text-base font-bold text-primary shadow-xs">
+      {/* O "mural": um quadro amplo, não um formulário estreito e empilhado */}
+      <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:22px_22px] bg-secondary/30">
+        <DialogTitle className="sr-only">Nova publicação para a comunidade</DialogTitle>
+
+        <form
+          onSubmit={handleSubmit}
+          className="relative h-full overflow-y-auto px-5 sm:px-10 py-8 sm:py-10"
+        >
+          {/* Cabeçalho solto, sem caixa própria */}
+          <div className="mb-8 flex items-center gap-3.5">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary-soft text-base font-bold text-primary shadow-md ring-4 ring-card">
               {initials(user?.name || "Você")}
             </span>
             <div>
-              <DialogTitle className="text-xl font-bold font-display text-foreground">
-                Compartilhar com a comunidade
-              </DialogTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Contribua para a jornada de outras pessoas sem cobranças ou comparações.
+              <p className="text-2xl sm:text-3xl font-extrabold font-display text-foreground leading-tight">
+                O que você quer compartilhar hoje?
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                Cada ideia é um recorte no mural — sem cobranças, sem comparações.
               </p>
             </div>
           </div>
-        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-4 bg-secondary/10">
-            {/* Seletor de Tipo */}
-            <div className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5 shadow-xs">
-              <div className="flex items-center gap-2.5 mb-3.5">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
-                  <Layers className="h-4 w-4" />
-                </span>
-                <p className="text-sm font-bold font-display text-foreground">
-                  O que você vai compartilhar?
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
+          {/* Mural de recortes coloridos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+            {/* Tipo */}
+            <PinnedCard
+              icon={Layers}
+              theme="sage"
+              label="Tipo de publicação"
+              rotate="-rotate-1"
+              className="sm:col-span-2"
+            >
+              <div className="grid grid-cols-3 gap-2.5">
                 {TYPE_OPTIONS.map((opt) => {
                   const Icon = opt.icon;
                   const t = THEMES[opt.theme];
@@ -270,28 +285,35 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       key={opt.id}
                       type="button"
                       onClick={() => setType(opt.id)}
-                      className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-sm font-medium transition-all duration-200 cursor-pointer ${
+                      className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-200 cursor-pointer ${
                         active
-                          ? `${t.active} scale-[1.03] font-bold`
-                          : "border-border text-muted-foreground hover:bg-secondary hover:scale-[1.02]"
+                          ? `${t.active} scale-[1.04] font-bold`
+                          : "border-border/70 bg-card/60 text-muted-foreground hover:bg-card"
                       }`}
                     >
                       <span
-                        className={`grid h-10 w-10 place-items-center rounded-full transition-colors ${
-                          active ? t.dot + " text-white" : "bg-secondary"
+                        className={`grid h-8 w-8 place-items-center rounded-full transition-colors ${
+                          active ? t.solid + " text-white" : "bg-secondary"
                         }`}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-4 w-4" />
                       </span>
                       <span>{opt.label}</span>
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </PinnedCard>
 
             {/* Título */}
-            <FieldCard icon={Type} theme="olive" label="Título" hint="Opcional, mas acolhedor">
+            <PinnedCard
+              icon={Type}
+              theme="olive"
+              label="Título"
+              hint="Opcional, mas acolhedor"
+              rotate="rotate-1"
+              className="sm:col-span-2"
+            >
               <input
                 type="text"
                 value={title}
@@ -303,29 +325,19 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       ? "Ex: O que aprendi cozinhando minhas refeições da semana"
                       : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
                 }
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
+                className="w-full rounded-xl border border-border bg-card/80 px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
               />
-            </FieldCard>
+            </PinnedCard>
 
-            {/* Texto principal */}
-            <FieldCard
-              icon={AlignLeft}
-              theme="sage"
-              label="Relato ou descrição"
-              hint="O coração da sua publicação"
+            {/* Foto */}
+            <PinnedCard
+              icon={ImagePlus}
+              theme="sand"
+              label="Foto"
+              hint="Opcional"
+              rotate="rotate-2"
+              className="sm:col-span-2"
             >
-              <textarea
-                rows={4}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Compartilhe como foi sua experiência, dicas ou reflexões..."
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-accent transition resize-none"
-                required
-              />
-            </FieldCard>
-
-            {/* Imagem */}
-            <FieldCard icon={ImagePlus} theme="sand" label="Foto" hint="Opcional">
               <input
                 ref={fileRef}
                 type="file"
@@ -338,7 +350,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   <img
                     src={image}
                     alt="Prévia da imagem da publicação"
-                    className="max-h-72 w-full object-cover"
+                    className="max-h-56 w-full object-cover"
                   />
                   <button
                     type="button"
@@ -353,21 +365,42 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4/40 bg-chart-4/5 py-8 text-sm font-medium text-muted-foreground transition hover:border-chart-4 hover:bg-chart-4/10 hover:text-foreground cursor-pointer"
+                  className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4/50 bg-card/40 py-7 text-sm font-medium text-muted-foreground transition hover:border-chart-4 hover:bg-card/70 hover:text-foreground cursor-pointer"
                 >
                   <ImagePlus className="h-6 w-6 text-chart-4" />
                   <span>Adicionar uma foto</span>
                 </button>
               )}
-            </FieldCard>
+            </PinnedCard>
+
+            {/* Texto principal */}
+            <PinnedCard
+              icon={AlignLeft}
+              theme="primary"
+              label="Relato ou descrição"
+              hint="O coração da sua publicação"
+              rotate="-rotate-2"
+              className="sm:col-span-2"
+            >
+              <textarea
+                rows={5}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Compartilhe como foi sua experiência, dicas ou reflexões..."
+                className="w-full rounded-xl border border-border bg-card/80 px-4 py-3 text-sm outline-none focus:border-primary transition resize-none"
+                required
+              />
+            </PinnedCard>
 
             {/* Campos específicos de receita */}
             {type === "receita" && (
-              <FieldCard
+              <PinnedCard
                 icon={ChefHat}
                 theme="accent"
                 label="Detalhes da receita"
                 hint="Ajude a comunidade a reproduzir"
+                rotate="rotate-1"
+                className="sm:col-span-2 lg:col-span-4"
               >
                 <div className="space-y-3.5">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -376,7 +409,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Tempo
                       </label>
                       <input
-                        className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
                         value={prepTime}
                         onChange={(e) => setPrepTime(e.target.value)}
                         placeholder="Ex: 25 min"
@@ -387,7 +420,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Rendimento
                       </label>
                       <input
-                        className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
                         value={servings}
                         onChange={(e) => setServings(e.target.value)}
                         placeholder="Ex: 2 porções"
@@ -398,7 +431,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Dificuldade
                       </label>
                       <select
-                        className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
                         value={difficulty}
                         onChange={(e) =>
                           setDifficulty(e.target.value as "Fácil" | "Médio" | "Difícil")
@@ -414,7 +447,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Categoria
                       </label>
                       <select
-                        className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
                         value={recipeCategory}
                         onChange={(e) => setRecipeCategory(e.target.value)}
                       >
@@ -427,63 +460,80 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                      Ingredientes (um por linha)
-                    </label>
-                    <textarea
-                      rows={3}
-                      className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs resize-none"
-                      value={ingredientsText}
-                      onChange={(e) => setIngredientsText(e.target.value)}
-                      placeholder={"1 xícara de aveia\n1 maçã picada\n1 colher de canela"}
-                    />
-                  </div>
+                  <div className="grid gap-3.5 sm:grid-cols-2">
+                    <div>
+                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                        Ingredientes (um por linha)
+                      </label>
+                      <textarea
+                        rows={3}
+                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs resize-none"
+                        value={ingredientsText}
+                        onChange={(e) => setIngredientsText(e.target.value)}
+                        placeholder={"1 xícara de aveia\n1 maçã picada\n1 colher de canela"}
+                      />
+                    </div>
 
-                  <div>
-                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                      Modo de preparo (um passo por linha)
-                    </label>
-                    <textarea
-                      rows={3}
-                      className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs resize-none"
-                      value={stepsText}
-                      onChange={(e) => setStepsText(e.target.value)}
-                      placeholder={
-                        "Misture os ingredientes secos\nAdicione o líquido aos poucos\nCozinhe por 5 minutos"
-                      }
-                    />
+                    <div>
+                      <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                        Modo de preparo (um passo por linha)
+                      </label>
+                      <textarea
+                        rows={3}
+                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs resize-none"
+                        value={stepsText}
+                        onChange={(e) => setStepsText(e.target.value)}
+                        placeholder={
+                          "Misture os ingredientes secos\nAdicione o líquido aos poucos\nCozinhe por 5 minutos"
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
-              </FieldCard>
+              </PinnedCard>
             )}
 
             {/* Tags */}
-            <FieldCard icon={Tag} theme="warning" label="Tags" hint="Separadas por vírgula">
+            <PinnedCard
+              icon={Tag}
+              theme="warning"
+              label="Tags"
+              hint="Separadas por vírgula"
+              rotate="rotate-2"
+              className="sm:col-span-2 lg:col-span-2"
+            >
               <input
                 type="text"
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
                 placeholder="Café da manhã, Fibras, Praticidade"
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-warning transition"
+                className="w-full rounded-xl border border-border bg-card/80 px-4 py-2.5 text-sm outline-none focus:border-warning transition"
               />
-            </FieldCard>
-          </div>
+            </PinnedCard>
 
-          <div className="flex items-center justify-end gap-3 px-6 sm:px-8 py-4 border-t border-border/70 bg-card">
-            <button
-              type="button"
-              onClick={() => handleOpenChange(false)}
-              className="rounded-full px-5 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary transition cursor-pointer"
+            {/* Ação: o próprio "publicar" é um recorte do mural */}
+            <div
+              className={`relative rounded-[1.75rem] border-2 border-accent/30 bg-gradient-to-br from-accent to-accent/80 p-5 shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl -rotate-1 sm:col-span-2 lg:col-span-2 flex flex-col items-center justify-center text-center gap-3`}
             >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 shadow-soft transition-transform hover:scale-[1.03] cursor-pointer"
-            >
-              Publicar no Espaço de Hoje
-            </button>
+              <span className="absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] bg-card/90 opacity-90 shadow-sm" />
+              <p className="text-sm font-bold text-accent-foreground">
+                Pronto para compartilhar? 🌱
+              </p>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 rounded-full bg-white/95 px-6 py-2.5 text-sm font-bold text-accent shadow-soft transition-transform hover:scale-[1.04] cursor-pointer"
+              >
+                <Send className="h-4 w-4" />
+                <span>Publicar no Espaço de Hoje</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenChange(false)}
+                className="text-xs font-medium text-accent-foreground/80 hover:text-accent-foreground underline-offset-2 hover:underline cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </form>
       </DialogContent>
