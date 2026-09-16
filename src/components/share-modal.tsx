@@ -19,51 +19,51 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 
 const THEMES = {
   accent: {
-    wash: "from-accent-soft/80 to-card",
-    border: "border-accent/25",
+    wash: "from-accent/35 via-accent-soft to-card",
+    border: "border-accent/60",
     tape: "bg-accent",
     badge: "bg-accent text-accent-foreground",
-    active: "border-accent bg-accent-soft text-accent shadow-xs",
+    active: "border-accent bg-accent text-accent-foreground shadow-md",
     solid: "bg-accent",
   },
   primary: {
-    wash: "from-primary-soft/80 to-card",
-    border: "border-primary/25",
+    wash: "from-primary/35 via-primary-soft to-card",
+    border: "border-primary/60",
     tape: "bg-primary",
     badge: "bg-primary text-primary-foreground",
-    active: "border-primary bg-primary-soft text-primary shadow-xs",
+    active: "border-primary bg-primary text-primary-foreground shadow-md",
     solid: "bg-primary",
   },
   olive: {
-    wash: "from-chart-3/25 to-card",
-    border: "border-chart-3/30",
+    wash: "from-chart-3/45 via-chart-3/15 to-card",
+    border: "border-chart-3/60",
     tape: "bg-chart-3",
     badge: "bg-chart-3 text-white",
-    active: "border-chart-3 bg-chart-3/15 text-chart-3 shadow-xs",
+    active: "border-chart-3 bg-chart-3 text-white shadow-md",
     solid: "bg-chart-3",
   },
   sand: {
-    wash: "from-chart-4/25 to-card",
-    border: "border-chart-4/30",
+    wash: "from-chart-4/45 via-chart-4/15 to-card",
+    border: "border-chart-4/60",
     tape: "bg-chart-4",
     badge: "bg-chart-4 text-white",
-    active: "border-chart-4 bg-chart-4/15 text-chart-4 shadow-xs",
+    active: "border-chart-4 bg-chart-4 text-white shadow-md",
     solid: "bg-chart-4",
   },
   sage: {
-    wash: "from-chart-5/25 to-card",
-    border: "border-chart-5/30",
+    wash: "from-chart-5/45 via-chart-5/15 to-card",
+    border: "border-chart-5/60",
     tape: "bg-chart-5",
     badge: "bg-chart-5 text-white",
-    active: "border-chart-5 bg-chart-5/15 text-chart-5 shadow-xs",
+    active: "border-chart-5 bg-chart-5 text-white shadow-md",
     solid: "bg-chart-5",
   },
   warning: {
-    wash: "from-warning/25 to-card",
-    border: "border-warning/30",
+    wash: "from-warning/45 via-warning/15 to-card",
+    border: "border-warning/60",
     tape: "bg-warning",
     badge: "bg-warning text-warning-foreground",
-    active: "border-warning bg-warning/15 text-warning-foreground shadow-xs",
+    active: "border-warning bg-warning text-warning-foreground shadow-md",
     solid: "bg-warning",
   },
 } as const;
@@ -245,7 +245,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       {/* O "mural": um quadro amplo, não um formulário estreito e empilhado */}
       <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-background">
         {/* Backgrounds coloridos com padrão de pontos separados para não sobrepor */}
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-primary-soft via-secondary to-accent-soft opacity-90" />
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-primary/25 via-accent-soft to-chart-4/25" />
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:22px_22px]" />
         
         <DialogTitle className="sr-only">Nova publicação para a comunidade</DialogTitle>
