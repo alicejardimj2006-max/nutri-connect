@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles, Plus, Heart, MessageSquare } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
@@ -20,7 +21,10 @@ export const Route = createFileRoute("/experiencias")({
 });
 
 function ExperienciasPage() {
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { posts, hydrated } = useCommunity();
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   const experiences = posts.filter((p) => p.type === "experiencia");
 

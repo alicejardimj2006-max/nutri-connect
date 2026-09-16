@@ -258,3 +258,11 @@ export function SiteFooter() {
     </footer>
   );
 }
+
+export function AuthGateLoading() {
+  return (
+    <div className="grid min-h-screen place-items-center text-muted-foreground text-sm">
+      Carregando…
+    </div>
+  );
+}

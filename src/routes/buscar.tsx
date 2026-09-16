@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
 
@@ -22,9 +23,12 @@ export const Route = createFileRoute("/buscar")({
 type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidades";
 
 function BuscarPage() {
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { posts, challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   const q = query.toLowerCase().trim();
 

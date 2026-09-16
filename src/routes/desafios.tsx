@@ -11,10 +11,10 @@ import {
   Trophy,
   Filter,
 } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { ChallengeCard } from "@/components/community-cards";
-import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/desafios")({
   head: () => ({
@@ -31,9 +31,11 @@ export const Route = createFileRoute("/desafios")({
 });
 
 function DesafiosPage() {
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { challenges, hydrated } = useCommunity();
-  const { user } = useAuth();
   const [filter, setFilter] = useState<"todos" | "meus" | "populares">("todos");
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   const currentUserId = user?.id || "guest";
 

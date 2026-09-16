@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Compass, ChefHat, Sparkles, HelpCircle, Plus, Search } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, WeeklyThemeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
@@ -29,9 +30,12 @@ export const Route = createFileRoute("/espaco")({
 type FilterTab = "tudo" | "receita" | "experiencia" | "pergunta";
 
 function EspacoDeHojePage() {
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { posts, weeklyTheme, challenges, hydrated } = useCommunity();
   const [currentTab, setCurrentTab] = useState<FilterTab>("tudo");
   const [searchQuery, setSearchQuery] = useState("");
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   const filteredBySearch = posts.filter((p) =>
     searchQuery ? p.text.toLowerCase().includes(searchQuery.toLowerCase()) : true,

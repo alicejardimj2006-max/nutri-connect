@@ -8,7 +8,8 @@ import {
   MessageSquare,
   Award,
 } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
@@ -28,7 +29,10 @@ export const Route = createFileRoute("/tema-da-semana")({
 });
 
 function TemaDaSemanaPage() {
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { weeklyTheme, posts, challenges, hydrated } = useCommunity();
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   const themeRecipes = posts.filter((p) => p.type === "receita");
   const linkedChallenge = challenges.find((c) => c.themeId === weeklyTheme?.id) || challenges[0];

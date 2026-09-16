@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ChefHat, Award, Plus, CheckCircle2, Sparkles, Compass } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
-import { useAuth } from "@/hooks/use-auth";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { initials } from "@/lib/community";
 import { PostCard } from "@/components/community-cards";
@@ -29,8 +29,10 @@ export const Route = createFileRoute("/perfil/$userId")({
 
 function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
-  const { user } = useAuth();
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { profiles, posts, communities, challenges, hydrated } = useCommunity();
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   const isSelf = user?.id === userId;
 

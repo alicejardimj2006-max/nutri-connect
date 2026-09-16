@@ -11,9 +11,9 @@ import {
   Send,
   Sparkles,
 } from "lucide-react";
-import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
-import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { togglePrepared, toggleSupport, addComment, formatDate, initials } from "@/lib/community";
 import { toast } from "sonner";
 
@@ -33,8 +33,8 @@ export const Route = createFileRoute("/receitas/$id")({
 
 function ReceitaDetalhePage() {
   const { id } = useParams({ from: "/receitas/$id" });
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { posts, hydrated } = useCommunity();
-  const { user } = useAuth();
 
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
   const [commentText, setCommentText] = useState("");
@@ -46,6 +46,8 @@ function ReceitaDetalhePage() {
   const prepCount = (recipe?.preparedBy || []).length;
   const hasSupported = (recipe?.supports || []).includes(currentUserId);
   const supportCount = (recipe?.supports || []).length;
+
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   if (!hydrated) {
     return (
