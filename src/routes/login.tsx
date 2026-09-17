@@ -21,9 +21,9 @@ function Login() {
     if (!password) return toast.error("Preencha sua senha.");
 
     try {
-      const loggedIn = loginUser(cleanEmail, password);
+      loginUser(cleanEmail, password);
       toast.success("Bem-vindo(a) de volta à sua jornada!");
-      navigate({ to: "/perfil/$userId", params: { userId: loggedIn.id } });
+      navigate({ to: "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao fazer login.");
     }

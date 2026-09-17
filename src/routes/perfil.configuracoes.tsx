@@ -104,7 +104,7 @@ function ConfiguracoesPage() {
                   placeholder="Fale um pouco sobre a sua jornada alimentar..."
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Telefone">
                   <input
                     className="input"

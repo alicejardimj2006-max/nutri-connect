@@ -73,7 +73,7 @@ function DesafiosIndexPage() {
 
       {/* Suas Conquistas: distintivos por desafios concluídos */}
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 mb-10 shadow-xs">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
           <h2 className="text-base font-bold font-display text-foreground flex items-center gap-2">
             <Award className="h-4.5 w-4.5 text-accent" />
             <span>Suas Conquistas</span>

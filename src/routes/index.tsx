@@ -24,7 +24,7 @@ function HomeGate() {
   useEffect(() => {
     if (!hydrated) return;
     if (user) {
-      navigate({ to: "/perfil/$userId", params: { userId: user.id } });
+      navigate({ to: "/espaco" });
     } else {
       navigate({ to: "/login" });
     }

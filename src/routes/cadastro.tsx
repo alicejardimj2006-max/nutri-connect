@@ -43,7 +43,7 @@ function Cadastro() {
     if (cleanSenha !== cleanConf) return toast.error("As senhas não coincidem.");
 
     try {
-      const created = registerUser({
+      registerUser({
         name: cleanNome,
         email: cleanEmail,
         phone: cleanTel,
@@ -54,7 +54,7 @@ function Cadastro() {
         journeyGoal: selectedGoal,
       });
       toast.success("Conta criada com sucesso! Bem-vindo à comunidade.");
-      navigate({ to: "/perfil/$userId", params: { userId: created.id } });
+      navigate({ to: "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao criar conta.");
     }
@@ -97,7 +97,7 @@ function Cadastro() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="CPF (Opcional)">
             <input
               className="input"
@@ -127,7 +127,7 @@ function Cadastro() {
             placeholder="seu@email.com"
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Senha">
             <input
               type="password"

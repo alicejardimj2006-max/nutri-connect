@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Leaf, Search, Sparkles, User, LogOut } from "lucide-react";
+import { Leaf, Search, Sparkles, User, LogOut, Home, Users, Award, Plus } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "@/lib/auth";
+import { ShareModal } from "@/components/share-modal";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -17,6 +18,7 @@ export function SiteHeader() {
   ] as const;
 
   return (
+    <>
     <header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5">
@@ -174,12 +176,74 @@ export function SiteHeader() {
         </div>
       )}
     </header>
+
+    {/* Barra de navegação inferior estilo app — atalhos essenciais no mobile */}
+    {user && (
+      <nav
+        aria-label="Navegação principal"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] lg:hidden"
+      >
+        <Link
+          to="/espaco"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
+          activeProps={{ className: "text-accent" }}
+        >
+          <Home className="h-5 w-5" />
+          <span>Espaço</span>
+        </Link>
+
+        <Link
+          to="/comunidades"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
+          activeProps={{ className: "text-accent" }}
+        >
+          <Users className="h-5 w-5" />
+          <span>Grupos</span>
+        </Link>
+
+        <div className="flex flex-1 items-center justify-center">
+          <ShareModal
+            triggerButton={
+              <button
+                type="button"
+                className="grid h-12 w-12 -translate-y-3 place-items-center rounded-full bg-accent text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer"
+                aria-label="Compartilhar no Espaço de Hoje"
+              >
+                <Plus className="h-6 w-6" />
+              </button>
+            }
+          />
+        </div>
+
+        <Link
+          to="/desafios"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
+          activeProps={{ className: "text-accent" }}
+        >
+          <Award className="h-5 w-5" />
+          <span>Desafios</span>
+        </Link>
+
+        <Link
+          to="/perfil/$userId"
+          params={{ userId: user.id }}
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
+          activeProps={{ className: "text-accent" }}
+        >
+          <span className="grid h-5 w-5 place-items-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">
+            {user.name.charAt(0).toUpperCase()}
+          </span>
+          <span>Perfil</span>
+        </Link>
+      </nav>
+    )}
+    </>
   );
 }
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-card/60 text-foreground">
+    <footer className="border-t border-border bg-card/60 text-foreground pb-20 lg:pb-0">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">

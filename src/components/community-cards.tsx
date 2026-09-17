@@ -152,8 +152,8 @@ export function PostCard({ post }: PostCardProps) {
 
   // --- RENDERS COMUNS ---
   const renderAuthorInfo = () => (
-    <div className="flex items-start justify-between mb-4 gap-4">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-start justify-between mb-4 gap-2">
+      <div className="flex items-center gap-3 min-w-0">
         <Link
           to="/perfil/$userId"
           params={{ userId: post.authorId }}
@@ -165,12 +165,12 @@ export function PostCard({ post }: PostCardProps) {
             initials(post.authorName)
           )}
         </Link>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <Link
               to="/perfil/$userId"
               params={{ userId: post.authorId }}
-              className="font-semibold text-foreground hover:underline text-sm"
+              className="font-semibold text-foreground hover:underline text-sm truncate"
             >
               {post.authorName}
             </Link>

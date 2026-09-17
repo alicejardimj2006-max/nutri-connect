@@ -218,8 +218,8 @@ function ReceitaDetalhePage() {
           </div>
 
           {/* Selo Comunitário: Eu Preparei */}
-          <div className="mt-6 rounded-2xl bg-gradient-to-r from-accent-soft/40 to-primary-soft/30 p-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5 text-xs text-foreground font-medium">
+          <div className="mt-6 rounded-2xl bg-gradient-to-r from-accent-soft/40 to-primary-soft/30 p-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5 text-xs text-foreground font-medium min-w-0">
               <span className="text-xl">👩‍🍳</span>
               <span>
                 <b>{prepCount} pessoas</b> desta comunidade já prepararam esta receita e
