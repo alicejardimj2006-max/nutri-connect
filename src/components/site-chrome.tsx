@@ -9,7 +9,8 @@ export function SiteHeader() {
   return (
     <>
     <header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+      {/* Cabeçalho mobile */}
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
         <Link
           to="/notificacoes"
           className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
@@ -33,6 +34,97 @@ export function SiteHeader() {
         >
           <Search className="h-5 w-5" />
         </Link>
+      </div>
+
+      {/* Cabeçalho desktop — reúne os atalhos que no mobile ficam na barra inferior */}
+      <div className="relative mx-auto hidden h-16 max-w-7xl items-center justify-between gap-4 px-6 lg:flex">
+        {user ? (
+          <nav aria-label="Navegação principal" className="flex items-center gap-1">
+            <Link
+              to="/espaco"
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              activeProps={{ className: "text-accent" }}
+            >
+              <Home className="h-4 w-4" />
+              Espaço
+            </Link>
+            <Link
+              to="/comunidades"
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              activeProps={{ className: "text-accent" }}
+            >
+              <Users className="h-4 w-4" />
+              Grupos
+            </Link>
+            <Link
+              to="/desafios"
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              activeProps={{ className: "text-accent" }}
+            >
+              <Award className="h-4 w-4" />
+              Desafios
+            </Link>
+          </nav>
+        ) : (
+          <span />
+        )}
+
+        <Link
+          to="/"
+          className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center"
+        >
+          <span className="text-lg font-bold tracking-tight leading-none text-foreground font-display">
+            Nutri<span className="text-accent">Connect</span>
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            to="/explorar"
+            className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+            aria-label="Pesquisar"
+            title="Pesquisar"
+          >
+            <Search className="h-5 w-5" />
+          </Link>
+
+          <Link
+            to="/notificacoes"
+            className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+            aria-label="Notificações"
+            title="Notificações"
+          >
+            <Bell className="h-5 w-5" />
+          </Link>
+
+          {user && (
+            <ShareModal
+              triggerButton={
+                <button
+                  type="button"
+                  className="ml-1 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer"
+                  aria-label="Compartilhar no Espaço de Hoje"
+                >
+                  <Plus className="h-4 w-4" />
+                  Postar
+                </button>
+              }
+            />
+          )}
+
+          {user && (
+            <Link
+              to="/perfil/$userId"
+              params={{ userId: user.id }}
+              className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80"
+              activeProps={{ className: "ring-2 ring-accent" }}
+              aria-label="Perfil"
+              title="Perfil"
+            >
+              {user.name.charAt(0).toUpperCase()}
+            </Link>
+          )}
+        </div>
       </div>
     </header>
 
