@@ -19,48 +19,48 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 
 const THEMES = {
   accent: {
-    wash: "from-accent/35 via-accent-soft to-card",
-    border: "border-accent/60",
+    wash: "from-[color-mix(in_oklab,var(--color-accent)_38%,var(--color-card))] to-card",
+    border: "border-accent",
     tape: "bg-accent",
     badge: "bg-accent text-accent-foreground",
     active: "border-accent bg-accent text-accent-foreground shadow-md",
     solid: "bg-accent",
   },
   primary: {
-    wash: "from-primary/35 via-primary-soft to-card",
-    border: "border-primary/60",
+    wash: "from-[color-mix(in_oklab,var(--color-primary)_38%,var(--color-card))] to-card",
+    border: "border-primary",
     tape: "bg-primary",
     badge: "bg-primary text-primary-foreground",
     active: "border-primary bg-primary text-primary-foreground shadow-md",
     solid: "bg-primary",
   },
   olive: {
-    wash: "from-chart-3/45 via-chart-3/15 to-card",
-    border: "border-chart-3/60",
+    wash: "from-[color-mix(in_oklab,var(--color-chart-3)_48%,var(--color-card))] to-card",
+    border: "border-chart-3",
     tape: "bg-chart-3",
     badge: "bg-chart-3 text-white",
     active: "border-chart-3 bg-chart-3 text-white shadow-md",
     solid: "bg-chart-3",
   },
   sand: {
-    wash: "from-chart-4/45 via-chart-4/15 to-card",
-    border: "border-chart-4/60",
+    wash: "from-[color-mix(in_oklab,var(--color-chart-4)_48%,var(--color-card))] to-card",
+    border: "border-chart-4",
     tape: "bg-chart-4",
     badge: "bg-chart-4 text-white",
     active: "border-chart-4 bg-chart-4 text-white shadow-md",
     solid: "bg-chart-4",
   },
   sage: {
-    wash: "from-chart-5/45 via-chart-5/15 to-card",
-    border: "border-chart-5/60",
+    wash: "from-[color-mix(in_oklab,var(--color-chart-5)_48%,var(--color-card))] to-card",
+    border: "border-chart-5",
     tape: "bg-chart-5",
     badge: "bg-chart-5 text-white",
     active: "border-chart-5 bg-chart-5 text-white shadow-md",
     solid: "bg-chart-5",
   },
   warning: {
-    wash: "from-warning/45 via-warning/15 to-card",
-    border: "border-warning/60",
+    wash: "from-[color-mix(in_oklab,var(--color-warning)_48%,var(--color-card))] to-card",
+    border: "border-warning",
     tape: "bg-warning",
     badge: "bg-warning text-warning-foreground",
     active: "border-warning bg-warning text-warning-foreground shadow-md",
@@ -243,9 +243,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       </DialogTrigger>
 
       {/* O "mural": um quadro amplo, não um formulário estreito e empilhado */}
-      <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-background">
-        {/* Backgrounds coloridos com padrão de pontos separados para não sobrepor */}
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-primary/25 via-accent-soft to-chart-4/25" />
+      <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-gradient-to-br from-[color-mix(in_oklab,var(--color-primary)_20%,var(--color-background))] via-[color-mix(in_oklab,var(--color-accent)_14%,var(--color-background))] to-[color-mix(in_oklab,var(--color-chart-4)_20%,var(--color-background))]">
+        {/* Padrão de pontos sutil para textura, sem lavar as cores do mural */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:22px_22px]" />
         
         <DialogTitle className="sr-only">Nova publicação para a comunidade</DialogTitle>
@@ -292,7 +291,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-200 cursor-pointer ${
                         active
                           ? `${t.active} scale-[1.04] font-bold`
-                          : "border-border/70 bg-card/60 text-muted-foreground hover:bg-card"
+                          : "border-border bg-card text-muted-foreground hover:bg-secondary"
                       }`}
                     >
                       <span
@@ -329,7 +328,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       ? "Ex: O que aprendi cozinhando minhas refeições da semana"
                       : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
                 }
-                className="w-full rounded-xl border border-border bg-card/80 px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
+                className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
               />
             </PinnedCard>
 
@@ -369,7 +368,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4/50 bg-card/40 py-7 text-sm font-medium text-muted-foreground transition hover:border-chart-4 hover:bg-card/70 hover:text-foreground cursor-pointer"
+                  className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4 bg-card py-7 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground cursor-pointer"
                 >
                   <ImagePlus className="h-6 w-6 text-chart-4" />
                   <span>Adicionar uma foto</span>
@@ -391,7 +390,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Compartilhe como foi sua experiência, dicas ou reflexões..."
-                className="w-full rounded-xl border border-border bg-card/80 px-4 py-3 text-sm outline-none focus:border-primary transition resize-none"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary transition resize-none"
                 required
               />
             </PinnedCard>
@@ -413,7 +412,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Tempo
                       </label>
                       <input
-                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={prepTime}
                         onChange={(e) => setPrepTime(e.target.value)}
                         placeholder="Ex: 25 min"
@@ -424,7 +423,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Rendimento
                       </label>
                       <input
-                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={servings}
                         onChange={(e) => setServings(e.target.value)}
                         placeholder="Ex: 2 porções"
@@ -435,7 +434,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Dificuldade
                       </label>
                       <select
-                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={difficulty}
                         onChange={(e) =>
                           setDifficulty(e.target.value as "Fácil" | "Médio" | "Difícil")
@@ -451,7 +450,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Categoria
                       </label>
                       <select
-                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs"
+                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={recipeCategory}
                         onChange={(e) => setRecipeCategory(e.target.value)}
                       >
@@ -471,7 +470,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       </label>
                       <textarea
                         rows={3}
-                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs resize-none"
+                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs resize-none"
                         value={ingredientsText}
                         onChange={(e) => setIngredientsText(e.target.value)}
                         placeholder={"1 xícara de aveia\n1 maçã picada\n1 colher de canela"}
@@ -484,7 +483,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       </label>
                       <textarea
                         rows={3}
-                        className="w-full rounded-lg border border-border bg-card/80 px-2.5 py-1.5 text-xs resize-none"
+                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs resize-none"
                         value={stepsText}
                         onChange={(e) => setStepsText(e.target.value)}
                         placeholder={
@@ -511,21 +510,21 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
                 placeholder="Café da manhã, Fibras, Praticidade"
-                className="w-full rounded-xl border border-border bg-card/80 px-4 py-2.5 text-sm outline-none focus:border-warning transition"
+                className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-warning transition"
               />
             </PinnedCard>
 
             {/* Ação: o próprio "publicar" é um recorte do mural */}
             <div
-              className={`relative rounded-[1.75rem] border-2 border-accent/30 bg-gradient-to-br from-accent to-accent/80 p-5 shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl -rotate-1 sm:col-span-2 lg:col-span-2 flex flex-col items-center justify-center text-center gap-3`}
+              className={`relative rounded-[1.75rem] border-2 border-accent bg-gradient-to-br from-accent to-[color-mix(in_oklab,var(--color-accent)_70%,black)] p-5 shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl -rotate-1 sm:col-span-2 lg:col-span-2 flex flex-col items-center justify-center text-center gap-3`}
             >
-              <span className="absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] bg-card/90 opacity-90 shadow-sm" />
+              <span className="absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] bg-card shadow-sm" />
               <p className="text-sm font-bold text-accent-foreground">
                 Pronto para compartilhar? 🌱
               </p>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-white/95 px-6 py-2.5 text-sm font-bold text-accent shadow-soft transition-transform hover:scale-[1.04] cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-accent shadow-soft transition-transform hover:scale-[1.04] cursor-pointer"
               >
                 <Send className="h-4 w-4" />
                 <span>Publicar no Espaço de Hoje</span>
