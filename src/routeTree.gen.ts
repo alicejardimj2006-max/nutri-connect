@@ -10,14 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as DesafiosRouteImport } from './routes/desafios'
 import { Route as EspacoRouteImport } from './routes/espaco'
 import { Route as ExperienciasRouteImport } from './routes/experiencias'
+import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as ReceitasRouteImport } from './routes/receitas'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as SobreRouteImport } from './routes/sobre'
@@ -33,11 +34,6 @@ import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BuscarRoute = BuscarRouteImport.update({
-  id: '/buscar',
-  path: '/buscar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -70,9 +66,19 @@ const ExperienciasRoute = ExperienciasRouteImport.update({
   path: '/experiencias',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExplorarRoute = ExplorarRouteImport.update({
+  id: '/explorar',
+  path: '/explorar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificacoesRoute = NotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceitasRoute = ReceitasRouteImport.update({
@@ -133,14 +139,15 @@ const ReceitasIdRoute = ReceitasIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/desafios': typeof DesafiosRouteWithChildren
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
+  '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
@@ -155,12 +162,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
+  '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
@@ -176,14 +184,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/buscar': typeof BuscarRoute
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/desafios': typeof DesafiosRouteWithChildren
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
+  '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
@@ -200,14 +209,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/buscar'
     | '/cadastro'
     | '/comunidades'
     | '/contato'
     | '/desafios'
     | '/espaco'
     | '/experiencias'
+    | '/explorar'
     | '/login'
+    | '/notificacoes'
     | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
@@ -222,12 +232,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/buscar'
     | '/cadastro'
     | '/contato'
     | '/espaco'
     | '/experiencias'
+    | '/explorar'
     | '/login'
+    | '/notificacoes'
     | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
@@ -242,14 +253,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/buscar'
     | '/cadastro'
     | '/comunidades'
     | '/contato'
     | '/desafios'
     | '/espaco'
     | '/experiencias'
+    | '/explorar'
     | '/login'
+    | '/notificacoes'
     | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
@@ -265,14 +277,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BuscarRoute: typeof BuscarRoute
   CadastroRoute: typeof CadastroRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
   DesafiosRoute: typeof DesafiosRouteWithChildren
   EspacoRoute: typeof EspacoRoute
   ExperienciasRoute: typeof ExperienciasRoute
+  ExplorarRoute: typeof ExplorarRoute
   LoginRoute: typeof LoginRoute
+  NotificacoesRoute: typeof NotificacoesRoute
   ReceitasRoute: typeof ReceitasRouteWithChildren
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SobreRoute: typeof SobreRoute
@@ -288,13 +301,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/buscar': {
-      id: '/buscar'
-      path: '/buscar'
-      fullPath: '/buscar'
-      preLoaderRoute: typeof BuscarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -339,11 +345,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExperienciasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explorar': {
+      id: '/explorar'
+      path: '/explorar'
+      fullPath: '/explorar'
+      preLoaderRoute: typeof ExplorarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notificacoes': {
+      id: '/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof NotificacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/receitas': {
@@ -468,14 +488,15 @@ const ReceitasRouteWithChildren = ReceitasRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BuscarRoute: BuscarRoute,
   CadastroRoute: CadastroRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
   DesafiosRoute: DesafiosRouteWithChildren,
   EspacoRoute: EspacoRoute,
   ExperienciasRoute: ExperienciasRoute,
+  ExplorarRoute: ExplorarRoute,
   LoginRoute: LoginRoute,
+  NotificacoesRoute: NotificacoesRoute,
   ReceitasRoute: ReceitasRouteWithChildren,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   SobreRoute: SobreRoute,

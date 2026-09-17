@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Compass, ChefHat, Sparkles, HelpCircle, Plus, Search } from "lucide-react";
+import { Compass } from "lucide-react";
 import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
@@ -27,128 +26,34 @@ export const Route = createFileRoute("/espaco")({
   component: EspacoDeHojePage,
 });
 
-type FilterTab = "tudo" | "receita" | "experiencia" | "pergunta";
-
 function EspacoDeHojePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { posts, hydrated } = useCommunity();
-  const [currentTab, setCurrentTab] = useState<FilterTab>("tudo");
-  const [searchQuery, setSearchQuery] = useState("");
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
-  const filteredBySearch = posts.filter((p) =>
-    searchQuery ? p.text.toLowerCase().includes(searchQuery.toLowerCase()) : true,
+  // Ordem: destaque (geral), receita, experiencia, pergunta
+  const destaque = posts.find((p) => p.type === "geral") || null;
+  const receita = posts.find((p) => p.type === "receita") || null;
+  const experiencia = posts.find((p) => p.type === "experiencia") || null;
+  const pergunta = posts.find((p) => p.type === "pergunta") || null;
+
+  // Add rest of the posts in case there are more
+  const rest = posts.filter(
+    (p) => p !== destaque && p !== receita && p !== experiencia && p !== pergunta,
   );
 
-  let displayedPosts = filteredBySearch;
-
-  if (currentTab === "tudo") {
-    // Ordem: destaque (geral), receita, experiencia, pergunta
-    const destaque = filteredBySearch.find((p) => p.type === "geral") || null;
-    const receita = filteredBySearch.find((p) => p.type === "receita") || null;
-    const experiencia = filteredBySearch.find((p) => p.type === "experiencia") || null;
-    const pergunta = filteredBySearch.find((p) => p.type === "pergunta") || null;
-
-    // Add rest of the posts in case there are more
-    const rest = filteredBySearch.filter(
-      (p) => p !== destaque && p !== receita && p !== experiencia && p !== pergunta,
-    );
-
-    displayedPosts = [destaque, receita, experiencia, pergunta, ...rest].filter(
-      Boolean,
-    ) as typeof posts;
-  } else {
-    displayedPosts = filteredBySearch.filter((p) => p.type === currentTab);
-  }
-
-  const tabs: {
-    id: FilterTab;
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-  }[] = [
-    { id: "tudo", label: "Tudo no Espaço", icon: Compass },
-    { id: "receita", label: "Receitas", icon: ChefHat },
-    { id: "experiencia", label: "Experiências", icon: Sparkles },
-    { id: "pergunta", label: "Perguntas & Dúvidas", icon: HelpCircle },
-  ];
-
-  const getEmptyStateMessage = () => {
-    if (searchQuery) return "Não encontramos publicações para a sua busca.";
-    if (currentTab === "receita") return "Não encontramos receitas para este filtro ainda.";
-    if (currentTab === "experiencia")
-      return "A comunidade ainda não compartilhou experiências aqui.";
-    if (currentTab === "pergunta") return "Seja a primeira pessoa a abrir uma conversa.";
-    return "Nenhuma publicação encontrada nesta categoria ainda.";
-  };
+  const displayedPosts = [destaque, receita, experiencia, pergunta, ...rest].filter(
+    Boolean,
+  ) as typeof posts;
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {/* Cabeçalho do Espaço de Hoje */}
-        <div className="flex flex-col gap-6 border-b border-border/70 pb-8 mb-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground mb-2">
-                Espaço de Hoje
-              </h1>
-              <p className="text-base text-muted-foreground">
-                Veja o que a comunidade está preparando, aprendendo e compartilhando.
-              </p>
-            </div>
-
-            <ShareModal
-              triggerButton={
-                <button
-                  type="button"
-                  className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Compartilhar no Espaço de Hoje</span>
-                </button>
-              }
-            />
-          </div>
-
-          <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Pesquise por ingredientes, dúvidas, histórias..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-card border border-border rounded-full pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors shadow-sm"
-            />
-          </div>
-        </div>
-
         {/* Feed centralizado */}
         <div className="mx-auto w-full max-w-2xl space-y-6">
-          {/* Abas de Filtragem do Feed */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = currentTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setCurrentTab(tab.id)}
-                  className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition cursor-pointer shrink-0 ${
-                    isActive
-                      ? "bg-accent text-accent-foreground font-bold shadow-xs"
-                      : "bg-card border border-border text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Lista de Cards */}
           {!hydrated ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
@@ -164,7 +69,7 @@ function EspacoDeHojePage() {
             <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
               <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-base text-muted-foreground font-medium mb-6">
-                {getEmptyStateMessage()}
+                Nenhuma publicação encontrada nesta categoria ainda.
               </p>
               <ShareModal
                 triggerButton={

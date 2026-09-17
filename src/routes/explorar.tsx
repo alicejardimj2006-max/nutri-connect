@@ -6,10 +6,10 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
 
-export const Route = createFileRoute("/buscar")({
+export const Route = createFileRoute("/explorar")({
   head: () => ({
     meta: [
-      { title: "Busca e Descoberta — NutriConnect" },
+      { title: "Explorar — NutriConnect" },
       {
         name: "description",
         content:
@@ -17,12 +17,12 @@ export const Route = createFileRoute("/buscar")({
       },
     ],
   }),
-  component: BuscarPage,
+  component: ExplorarPage,
 });
 
 type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidades";
 
-function BuscarPage() {
+function ExplorarPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { posts, challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
