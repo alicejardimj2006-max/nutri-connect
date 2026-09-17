@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Compass, ChefHat, Sparkles, HelpCircle, Plus, Search } from "lucide-react";
 import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
-import { PostCard, WeeklyThemeCard } from "@/components/community-cards";
+import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 
 export const Route = createFileRoute("/espaco")({
@@ -31,7 +31,7 @@ type FilterTab = "tudo" | "receita" | "experiencia" | "pergunta";
 
 function EspacoDeHojePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
-  const { posts, weeklyTheme, challenges, hydrated } = useCommunity();
+  const { posts, hydrated } = useCommunity();
   const [currentTab, setCurrentTab] = useState<FilterTab>("tudo");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -124,117 +124,57 @@ function EspacoDeHojePage() {
           </div>
         </div>
 
-        {/* Layout de duas colunas */}
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* Coluna Principal */}
-          <div className="flex-1 w-full min-w-0 space-y-6">
-            {/* Abas de Filtragem do Feed */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = currentTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setCurrentTab(tab.id)}
-                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition cursor-pointer shrink-0 ${
-                      isActive
-                        ? "bg-accent text-accent-foreground font-bold shadow-xs"
-                        : "bg-card border border-border text-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Lista de Cards */}
-            {!hydrated ? (
-              <div className="py-12 text-center text-sm text-muted-foreground">
-                Carregando o Espaço de Hoje…
-              </div>
-            ) : displayedPosts.length > 0 ? (
-              <div className="space-y-8">
-                {displayedPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
-                <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-base text-muted-foreground font-medium mb-6">
-                  {getEmptyStateMessage()}
-                </p>
-                <ShareModal
-                  triggerButton={
-                    <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
-                      Fazer primeira publicação
-                    </button>
-                  }
-                />
-              </div>
-            )}
+        {/* Feed centralizado */}
+        <div className="mx-auto w-full max-w-2xl space-y-6">
+          {/* Abas de Filtragem do Feed */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = currentTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setCurrentTab(tab.id)}
+                  className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition cursor-pointer shrink-0 ${
+                    isActive
+                      ? "bg-accent text-accent-foreground font-bold shadow-xs"
+                      : "bg-card border border-border text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Barra Lateral: Tema da Semana e Desafios */}
-          <aside className="lg:w-[380px] shrink-0 space-y-8 flex flex-col">
-            {/* Widget do Tema da Semana */}
-            {weeklyTheme && (
-              <div className="rounded-3xl bg-secondary/30 border border-border overflow-hidden">
-                <WeeklyThemeCard theme={weeklyTheme} compact={true} />
-              </div>
-            )}
-
-            {/* Widget de Desafio Destaque */}
-            {challenges.length > 0 && (
-              <div className="rounded-3xl border border-border bg-card p-6 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-primary-soft rounded-bl-full -z-10 opacity-50" />
-                <h3 className="text-base font-bold font-display text-foreground mb-1">
-                  Quer dar um pequeno passo hoje?
-                </h3>
-                <p className="text-sm text-muted-foreground mb-5">
-                  A constância constrói a sua jornada. Participe com a comunidade.
-                </p>
-
-                <div className="rounded-2xl bg-secondary/50 p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{challenges[0].badgeIcon}</span>
-                    <span className="font-bold text-sm text-foreground">{challenges[0].title}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {challenges[0].description}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground font-medium">
-                      👥 {challenges[0].participants.length} participando
-                    </span>
-                    <Link
-                      to="/desafios"
-                      className="text-xs font-bold text-accent hover:underline bg-accent-soft/30 px-3 py-1.5 rounded-full"
-                    >
-                      Ver desafio
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Dica da Comunidade */}
-            <div className="rounded-3xl border border-primary/20 bg-primary-soft/20 p-6 text-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">🌱</span>
-                <span className="font-bold text-primary">Descubra seu ritmo</span>
-              </div>
-              <p className="text-muted-foreground leading-relaxed text-sm">
-                O Espaço de Hoje não é uma lista de tarefas, é uma janela para o que está
-                acontecendo agora. Inspire-se nas histórias, teste uma nova receita ou apenas apoie
-                quem está começando.
-              </p>
+          {/* Lista de Cards */}
+          {!hydrated ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              Carregando o Espaço de Hoje…
             </div>
-          </aside>
+          ) : displayedPosts.length > 0 ? (
+            <div className="space-y-8">
+              {displayedPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
+              <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <p className="text-base text-muted-foreground font-medium mb-6">
+                {getEmptyStateMessage()}
+              </p>
+              <ShareModal
+                triggerButton={
+                  <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
+                    Fazer primeira publicação
+                  </button>
+                }
+              />
+            </div>
+          )}
         </div>
       </main>
 

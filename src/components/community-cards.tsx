@@ -8,8 +8,10 @@ import {
   ArrowRight,
   Send,
   HelpCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
@@ -25,6 +27,57 @@ import {
   formatDate,
   initials,
 } from "@/lib/community";
+
+/** Limita a altura de um bloco de conteúdo, com opção de "Ver mais" quando ele estoura o limite. */
+function ExpandableContent({
+  children,
+  maxHeight = 220,
+  className = "",
+}: {
+  children: React.ReactNode;
+  maxHeight?: number;
+  className?: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el) setOverflowing(el.scrollHeight > maxHeight + 4);
+  }, [maxHeight]);
+
+  return (
+    <div className={className}>
+      <div
+        className="relative overflow-hidden transition-[max-height] duration-300 ease-in-out"
+        style={{ maxHeight: expanded ? contentRef.current?.scrollHeight : maxHeight }}
+      >
+        <div ref={contentRef}>{children}</div>
+        {!expanded && overflowing && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-card to-transparent" />
+        )}
+      </div>
+      {overflowing && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-2 flex items-center gap-1 text-xs font-bold text-accent hover:underline cursor-pointer"
+        >
+          {expanded ? (
+            <>
+              Ver menos <ChevronUp className="h-3.5 w-3.5" />
+            </>
+          ) : (
+            <>
+              Ver mais <ChevronDown className="h-3.5 w-3.5" />
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
 
 interface PostCardProps {
   post: Post;
@@ -264,48 +317,51 @@ export function PostCard({ post }: PostCardProps) {
         )}
 
         <h3 className="text-2xl font-extrabold font-display text-foreground mb-3">{post.title}</h3>
-        <p className="text-base text-foreground/80 leading-relaxed mb-6">{post.text}</p>
 
-        {post.recipeData && (
-          <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-2">
-            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-foreground mb-4 pb-4 border-b border-border/50">
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-accent" /> {post.recipeData.prepTime}
-              </span>
-              <span>·</span>
-              <span>{post.recipeData.servings}</span>
-              <span>·</span>
-              <span className="text-primary">{post.recipeData.difficulty}</span>
-            </div>
+        <ExpandableContent maxHeight={260}>
+          <p className="text-base text-foreground/80 leading-relaxed mb-6">{post.text}</p>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                  Ingredientes
-                </h4>
-                <ul className="space-y-2 text-sm text-foreground">
-                  {post.recipeData.ingredients.map((ing, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-accent font-bold">•</span> <span>{ing}</span>
-                    </li>
-                  ))}
-                </ul>
+          {post.recipeData && (
+            <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-2">
+              <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-foreground mb-4 pb-4 border-b border-border/50">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-accent" /> {post.recipeData.prepTime}
+                </span>
+                <span>·</span>
+                <span>{post.recipeData.servings}</span>
+                <span>·</span>
+                <span className="text-primary">{post.recipeData.difficulty}</span>
               </div>
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                  Preparo
-                </h4>
-                <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
-                  {post.recipeData.steps.map((step, i) => (
-                    <li key={i} className="leading-relaxed">
-                      <span className="text-foreground/90">{step}</span>
-                    </li>
-                  ))}
-                </ol>
+
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                    Ingredientes
+                  </h4>
+                  <ul className="space-y-2 text-sm text-foreground">
+                    {post.recipeData.ingredients.map((ing, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span> <span>{ing}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                    Preparo
+                  </h4>
+                  <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
+                    {post.recipeData.steps.map((step, i) => (
+                      <li key={i} className="leading-relaxed">
+                        <span className="text-foreground/90">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </ExpandableContent>
 
         {renderActions(false, true)}
         {renderCommentsSection()}
@@ -326,9 +382,11 @@ export function PostCard({ post }: PostCardProps) {
         {post.title && (
           <h3 className="text-xl font-bold font-display text-foreground mb-2">{post.title}</h3>
         )}
-        <p className="text-base text-foreground/90 leading-relaxed mb-4 whitespace-pre-line text-pretty">
-          {post.text}
-        </p>
+        <ExpandableContent maxHeight={200} className="mb-4">
+          <p className="text-base text-foreground/90 leading-relaxed whitespace-pre-line text-pretty">
+            {post.text}
+          </p>
+        </ExpandableContent>
 
         {displayImage && (
           <div className="mb-4 overflow-hidden rounded-2xl shadow-sm aspect-[16/9]">
@@ -361,7 +419,9 @@ export function PostCard({ post }: PostCardProps) {
           {post.title || post.text}
         </h3>
         {post.title && (
-          <p className="text-base text-foreground/80 leading-relaxed mb-4">{post.text}</p>
+          <ExpandableContent maxHeight={200} className="mb-4">
+            <p className="text-base text-foreground/80 leading-relaxed">{post.text}</p>
+          </ExpandableContent>
         )}
 
         {renderActions(true)}
@@ -377,9 +437,11 @@ export function PostCard({ post }: PostCardProps) {
       {post.title && (
         <h3 className="text-lg font-bold font-display text-foreground mb-2">{post.title}</h3>
       )}
-      <p className="text-base text-foreground/90 leading-relaxed mb-4 whitespace-pre-line text-pretty">
-        {post.text}
-      </p>
+      <ExpandableContent maxHeight={200} className="mb-4">
+        <p className="text-base text-foreground/90 leading-relaxed whitespace-pre-line text-pretty">
+          {post.text}
+        </p>
+      </ExpandableContent>
       {displayImage && (
         <div className="mb-4 overflow-hidden rounded-2xl shadow-sm aspect-[16/9]">
           <img
