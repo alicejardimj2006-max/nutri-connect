@@ -368,14 +368,37 @@ function PublicProfilePage() {
 
                   {myChallenges.length > 0 ? (
                     <div className="space-y-3">
-                      {myChallenges.map((c) => (
-                        <div key={c.id} className="rounded-xl bg-secondary/50 p-3 text-xs">
-                          <div className="flex items-center gap-1.5 font-bold text-foreground">
-                            <span>{c.badgeIcon}</span> {c.title}
-                          </div>
-                          <p className="text-[11px] text-muted-foreground mt-1">{c.description}</p>
-                        </div>
-                      ))}
+                      {myChallenges.map((c) => {
+                        const completed = (c.progress?.[userId] || []).length;
+                        const total = c.steps.length;
+                        const isDone = c.completedBy.includes(userId);
+                        return (
+                          <Link
+                            key={c.id}
+                            to="/desafios/$challengeId"
+                            params={{ challengeId: c.id }}
+                            className="block rounded-xl bg-secondary/50 p-3 text-xs hover:bg-secondary transition"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 font-bold text-foreground">
+                                <span>{c.badgeIcon}</span> {c.title}
+                              </div>
+                              {isDone && <Award className="h-3.5 w-3.5 text-primary shrink-0" />}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              {c.description}
+                            </p>
+                            {total > 0 && (
+                              <div className="h-1.5 w-full rounded-full bg-card overflow-hidden mt-2">
+                                <div
+                                  className="h-full rounded-full bg-primary transition-all"
+                                  style={{ width: `${Math.round((completed / total) * 100)}%` }}
+                                />
+                              </div>
+                            )}
+                          </Link>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-4 text-xs text-muted-foreground">

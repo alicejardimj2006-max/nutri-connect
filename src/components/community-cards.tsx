@@ -10,6 +10,7 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronUp,
+  Award,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -605,6 +606,9 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
   const currentUserId = user?.id || "guest";
   const participants = challenge?.participants || [];
   const isJoined = participants.includes(currentUserId);
+  const isCompleted = (challenge?.completedBy || []).includes(currentUserId);
+  const totalSteps = challenge?.steps?.length || 0;
+  const completedSteps = (challenge?.progress?.[currentUserId] || []).length;
 
   const handleJoin = () => {
     if (!user) {
@@ -644,48 +648,76 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
             <div className="absolute top-3 right-3 rounded-full bg-card/90 px-2.5 py-0.5 text-[11px] font-bold text-foreground backdrop-blur-sm shadow-xs">
               {challenge.duration || "Semana"}
             </div>
+            {isCompleted && (
+              <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-xs">
+                <Award className="h-3 w-3" /> Concluído
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-between gap-2 p-5 pb-2">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-xl shadow-xs">
               {challenge.badgeIcon || "🎯"}
             </span>
-            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-              {challenge.duration || "Semana"}
-            </span>
+            <div className="flex items-center gap-2">
+              {isCompleted && (
+                <span className="flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-[10px] font-bold text-primary">
+                  <Award className="h-3 w-3" /> Concluído
+                </span>
+              )}
+              <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                {challenge.duration || "Semana"}
+              </span>
+            </div>
           </div>
         )}
 
         <div className={`px-5 ${challengeImage ? "pt-4" : "pt-2"}`}>
-          <h3 className="text-base font-bold text-foreground font-display">{challenge.title}</h3>
-          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          <Link
+            to="/desafios/$challengeId"
+            params={{ challengeId: challenge.id }}
+            className="text-base font-bold text-foreground font-display hover:text-accent transition"
+          >
+            {challenge.title}
+          </Link>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed line-clamp-2">
             {challenge.description}
           </p>
         </div>
 
-        {challenge.steps && challenge.steps.length > 0 && (
-          <div className="mt-4 space-y-1.5 px-5">
-            <p className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
-              Passos sugeridos:
-            </p>
-            <ul className="space-y-1 text-xs text-foreground/90">
-              {challenge.steps.map((s, i) => (
-                <li key={i} className="flex items-start gap-1.5">
-                  <span className="text-accent font-bold">•</span>
-                  <span>{s}</span>
-                </li>
-              ))}
-            </ul>
+        {isJoined && totalSteps > 0 && (
+          <div className="mt-4 px-5">
+            <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground mb-1">
+              <span>Seu progresso</span>
+              <span>
+                {completedSteps}/{totalSteps} passos
+              </span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0}%` }}
+              />
+            </div>
           </div>
         )}
       </div>
 
-      <div className="mt-5 border-t border-border/60 pt-3 flex items-center justify-between px-5 pb-5">
-        <span className="text-xs text-muted-foreground">👥 {participants.length} participando</span>
+      <div className="mt-5 border-t border-border/60 pt-3 px-5 pb-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">👥 {participants.length} participando</span>
+          <Link
+            to="/desafios/$challengeId"
+            params={{ challengeId: challenge.id }}
+            className="text-xs font-semibold text-accent hover:underline"
+          >
+            Ver desafio
+          </Link>
+        </div>
         <button
           type="button"
           onClick={handleJoin}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold transition cursor-pointer ${
+          className={`w-full rounded-full px-4 py-1.5 text-xs font-semibold transition cursor-pointer ${
             isJoined
               ? "bg-primary-soft text-primary font-bold"
               : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-xs"

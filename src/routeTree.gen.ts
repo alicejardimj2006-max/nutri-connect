@@ -24,6 +24,8 @@ import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
+import { Route as DesafiosIndexRouteImport } from './routes/desafios.index'
+import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$challengeId'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
@@ -103,6 +105,16 @@ const ComunidadesSlugRoute = ComunidadesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ComunidadesRoute,
 } as any)
+const DesafiosIndexRoute = DesafiosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DesafiosRoute,
+} as any)
+const DesafiosChallengeIdRoute = DesafiosChallengeIdRouteImport.update({
+  id: '/$challengeId',
+  path: '/$challengeId',
+  getParentRoute: () => DesafiosRoute,
+} as any)
 const PerfilUserIdRoute = PerfilUserIdRouteImport.update({
   id: '/perfil/$userId',
   path: '/perfil/$userId',
@@ -125,7 +137,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
-  '/desafios': typeof DesafiosRoute
+  '/desafios': typeof DesafiosRouteWithChildren
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/login': typeof LoginRoute
@@ -134,17 +146,18 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
+  '/desafios/': typeof DesafiosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/buscar': typeof BuscarRoute
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
-  '/desafios': typeof DesafiosRoute
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/login': typeof LoginRoute
@@ -153,10 +166,12 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades': typeof ComunidadesIndexRoute
+  '/desafios': typeof DesafiosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -165,7 +180,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
-  '/desafios': typeof DesafiosRoute
+  '/desafios': typeof DesafiosRouteWithChildren
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/login': typeof LoginRoute
@@ -174,10 +189,12 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
+  '/desafios/': typeof DesafiosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -196,17 +213,18 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/tema-da-semana'
     | '/comunidades/$slug'
+    | '/desafios/$challengeId'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/receitas/$id'
     | '/comunidades/'
+    | '/desafios/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/buscar'
     | '/cadastro'
     | '/contato'
-    | '/desafios'
     | '/espaco'
     | '/experiencias'
     | '/login'
@@ -215,10 +233,12 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/tema-da-semana'
     | '/comunidades/$slug'
+    | '/desafios/$challengeId'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/receitas/$id'
     | '/comunidades'
+    | '/desafios'
   id:
     | '__root__'
     | '/'
@@ -235,10 +255,12 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/tema-da-semana'
     | '/comunidades/$slug'
+    | '/desafios/$challengeId'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/receitas/$id'
     | '/comunidades/'
+    | '/desafios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -247,7 +269,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
-  DesafiosRoute: typeof DesafiosRoute
+  DesafiosRoute: typeof DesafiosRouteWithChildren
   EspacoRoute: typeof EspacoRoute
   ExperienciasRoute: typeof ExperienciasRoute
   LoginRoute: typeof LoginRoute
@@ -366,6 +388,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesSlugRouteImport
       parentRoute: typeof ComunidadesRoute
     }
+    '/desafios/': {
+      id: '/desafios/'
+      path: '/'
+      fullPath: '/desafios/'
+      preLoaderRoute: typeof DesafiosIndexRouteImport
+      parentRoute: typeof DesafiosRoute
+    }
+    '/desafios/$challengeId': {
+      id: '/desafios/$challengeId'
+      path: '/$challengeId'
+      fullPath: '/desafios/$challengeId'
+      preLoaderRoute: typeof DesafiosChallengeIdRouteImport
+      parentRoute: typeof DesafiosRoute
+    }
     '/perfil/$userId': {
       id: '/perfil/$userId'
       path: '/perfil/$userId'
@@ -404,6 +440,20 @@ const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
   ComunidadesRouteChildren,
 )
 
+interface DesafiosRouteChildren {
+  DesafiosChallengeIdRoute: typeof DesafiosChallengeIdRoute
+  DesafiosIndexRoute: typeof DesafiosIndexRoute
+}
+
+const DesafiosRouteChildren: DesafiosRouteChildren = {
+  DesafiosChallengeIdRoute: DesafiosChallengeIdRoute,
+  DesafiosIndexRoute: DesafiosIndexRoute,
+}
+
+const DesafiosRouteWithChildren = DesafiosRoute._addFileChildren(
+  DesafiosRouteChildren,
+)
+
 interface ReceitasRouteChildren {
   ReceitasIdRoute: typeof ReceitasIdRoute
 }
@@ -422,7 +472,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
-  DesafiosRoute: DesafiosRoute,
+  DesafiosRoute: DesafiosRouteWithChildren,
   EspacoRoute: EspacoRoute,
   ExperienciasRoute: ExperienciasRoute,
   LoginRoute: LoginRoute,

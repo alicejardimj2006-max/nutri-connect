@@ -91,18 +91,44 @@ export interface WeeklyTheme {
   featuredRecipeIds: string[];
 }
 
+export interface ChallengeTip {
+  id: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface Challenge {
   id: string;
   title: string;
   description: string;
   category: string;
   badgeIcon: string;
+  badgeLabel: string;
   duration: string;
   participants: string[];
   completedBy: string[];
   steps: string[];
+  tips: string[];
+  communityTips: ChallengeTip[];
+  /** userId -> índices dos passos concluídos */
+  progress: Record<string, number[]>;
   themeId?: string;
 }
+
+export interface ChallengeBadgeTier {
+  count: number;
+  icon: string;
+  label: string;
+}
+
+/** Distintivos conquistados conforme a quantidade de desafios concluídos. */
+export const CHALLENGE_BADGE_TIERS: ChallengeBadgeTier[] = [
+  { count: 1, icon: "🥉", label: "Primeiro Passo" },
+  { count: 3, icon: "🥈", label: "Constância em Construção" },
+  { count: 5, icon: "🥇", label: "Mestre dos Hábitos" },
+];
 
 export interface CommunityState {
   communities: Community[];
@@ -153,6 +179,24 @@ export function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "")
     .slice(0, 60);
+}
+
+/** Preenche campos novos com padrões seguros em desafios salvos antes desta versão. */
+function normalizeChallenge(c: Partial<Challenge> & Pick<Challenge, "id" | "title">): Challenge {
+  return {
+    description: "",
+    category: "",
+    badgeIcon: "🎯",
+    badgeLabel: "Conquista",
+    duration: "",
+    participants: [],
+    completedBy: [],
+    steps: [],
+    tips: [],
+    communityTips: [],
+    progress: {},
+    ...c,
+  };
 }
 
 function id() {
@@ -413,6 +457,7 @@ function seed(): CommunityState {
         "Monte ao menos uma refeição no dia contendo 3 cores diferentes de vegetais ou frutas in natura.",
       category: "Diversidade & Cores",
       badgeIcon: "🥗",
+      badgeLabel: "Colorido & Fresco",
       duration: "7 dias",
       participants: [PAC_ID, PAC_CARLOS_ID, "user-demo-4", "user-demo-5"],
       completedBy: [PAC_ID],
@@ -421,6 +466,25 @@ function seed(): CommunityState {
         "Inclua na refeição do almoço ou jantar",
         "Compartilhe sua combinação no Espaço de Hoje",
       ],
+      tips: [
+        "Use a feira da semana como inspiração: compre o que estiver colorido e na estação.",
+        "Vale misturar cru e cozido — uma salada crocante com um legume assado, por exemplo.",
+        "Tire uma foto do prato antes de comer, é uma ótima forma de perceber o quanto você já variou.",
+      ],
+      communityTips: [
+        {
+          id: "ctip-1",
+          authorId: PAC_CARLOS_ID,
+          authorName: "Carlos Eduardo",
+          text: "Beterraba ralada crua deixa qualquer prato mais vivo e é super rápida de preparar.",
+          createdAt: iso(86400000 * 1),
+        },
+      ],
+      progress: {
+        [PAC_ID]: [0, 1, 2],
+        [PAC_CARLOS_ID]: [0, 1],
+        "user-demo-4": [0],
+      },
       themeId: "tema-alimentos-frescos",
     },
     {
@@ -430,6 +494,7 @@ function seed(): CommunityState {
         "Prepare 3 refeições completas em casa durante esta semana para se reconectar com a cozinha.",
       category: "Culinária & Presença",
       badgeIcon: "🍳",
+      badgeLabel: "Cozinha Ativa",
       duration: "Semana atual",
       participants: [PAC_ID, "user-demo-6"],
       completedBy: [],
@@ -438,6 +503,15 @@ function seed(): CommunityState {
         "Escolha receitas simples de até 30 minutos",
         "Aproveite para reservar uma porção para o dia seguinte",
       ],
+      tips: [
+        "Deixe os ingredientes básicos (arroz, feijão, legumes) já lavados e cortados no domingo.",
+        "Repita uma receita que já deu certo antes — o objetivo é constância, não novidade.",
+      ],
+      communityTips: [],
+      progress: {
+        [PAC_ID]: [0],
+        "user-demo-6": [0, 1],
+      },
     },
     {
       id: "desafio-agua-consciente",
@@ -446,6 +520,7 @@ function seed(): CommunityState {
         "Mantenha uma garrafa d'água por perto e faça pausas conscientes para beber água ao longo do dia.",
       category: "Hábitos Básicos",
       badgeIcon: "💧",
+      badgeLabel: "Sempre Hidratado",
       duration: "Hábito contínuo",
       participants: [PAC_ID, PAC_CARLOS_ID, "user-demo-7", "user-demo-8", "user-demo-9"],
       completedBy: [PAC_ID, PAC_CARLOS_ID],
@@ -454,6 +529,25 @@ function seed(): CommunityState {
         "Leve sua garrafinha para o trabalho ou estudo",
         "Observe como seu foco e disposição melhoram",
       ],
+      tips: [
+        "Coloque um lembrete no celular a cada 2 horas até o hábito ficar automático.",
+        "Garrafas com marcação de horário ajudam bastante nos primeiros dias.",
+      ],
+      communityTips: [
+        {
+          id: "ctip-2",
+          authorId: "user-demo-7",
+          authorName: "Beatriz Nunes",
+          text: "Adicionar rodelas de limão ou hortelã na água ajudou muito a criar o hábito.",
+          createdAt: iso(86400000 * 2),
+        },
+      ],
+      progress: {
+        [PAC_ID]: [0, 1, 2],
+        [PAC_CARLOS_ID]: [0, 1, 2],
+        "user-demo-7": [0, 1],
+        "user-demo-8": [0],
+      },
     },
   ];
 
@@ -481,7 +575,10 @@ export function loadState(): CommunityState {
       profiles:
         parsed.profiles && parsed.profiles.length > 0 ? parsed.profiles : defaultSeed.profiles,
       weeklyTheme: parsed.weeklyTheme ?? defaultSeed.weeklyTheme,
-      challenges: parsed.challenges ?? defaultSeed.challenges,
+      challenges:
+        parsed.challenges && parsed.challenges.length > 0
+          ? parsed.challenges.map((c) => normalizeChallenge(c))
+          : defaultSeed.challenges,
     };
     return state;
   } catch {
@@ -576,13 +673,91 @@ export function toggleJoinChallenge(challengeId: string, userId: string) {
     challenges: s.challenges.map((c) => {
       if (c.id !== challengeId) return c;
       const joined = c.participants.includes(userId);
-      return {
-        ...c,
-        participants: joined
-          ? c.participants.filter((u) => u !== userId)
-          : [...c.participants, userId],
-      };
+      if (joined) {
+        // Ao sair, o progresso e a conclusão deste desafio são zerados
+        const progress = { ...(c.progress || {}) };
+        delete progress[userId];
+        return {
+          ...c,
+          participants: c.participants.filter((u) => u !== userId),
+          completedBy: c.completedBy.filter((u) => u !== userId),
+          progress,
+        };
+      }
+      return { ...c, participants: [...c.participants, userId] };
     }),
+  }));
+}
+
+// Ações Comunitárias: Marcar/desmarcar um passo do desafio (passo a passo)
+export function toggleChallengeStep(challengeId: string, userId: string, stepIndex: number) {
+  update((s) => ({
+    ...s,
+    challenges: s.challenges.map((c) => {
+      if (c.id !== challengeId) return c;
+      const progress = { ...(c.progress || {}) };
+      const current = progress[userId] || [];
+      const hasStep = current.includes(stepIndex);
+      const nextCompletedSteps = hasStep
+        ? current.filter((i) => i !== stepIndex)
+        : [...current, stepIndex];
+      progress[userId] = nextCompletedSteps;
+
+      const allStepsDone = c.steps.length > 0 && nextCompletedSteps.length === c.steps.length;
+      const wasCompleted = c.completedBy.includes(userId);
+      let completedBy = c.completedBy;
+      if (allStepsDone && !wasCompleted) completedBy = [...c.completedBy, userId];
+      if (!allStepsDone && wasCompleted) completedBy = c.completedBy.filter((u) => u !== userId);
+
+      const participants = c.participants.includes(userId)
+        ? c.participants
+        : [...c.participants, userId];
+
+      return { ...c, progress, completedBy, participants };
+    }),
+  }));
+}
+
+// Ações Comunitárias: Enviar uma dica para um desafio
+export function addChallengeTip(challengeId: string, actor: Actor, text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error("A dica não pode estar vazia.");
+  }
+
+  update((s) => ({
+    ...s,
+    challenges: s.challenges.map((c) =>
+      c.id === challengeId
+        ? {
+            ...c,
+            communityTips: [
+              ...(c.communityTips || []),
+              {
+                id: id(),
+                authorId: actor.id,
+                authorName: actor.name,
+                text: trimmed,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+          }
+        : c,
+    ),
+  }));
+}
+
+/** Quantos desafios este usuário já concluiu (todos os passos marcados). */
+export function getCompletedChallengeCount(userId: string, challenges: Challenge[]) {
+  return challenges.filter((c) => c.completedBy.includes(userId)).length;
+}
+
+/** Distintivos do usuário, com indicação de quais já foram conquistados. */
+export function getEarnedBadges(userId: string, challenges: Challenge[]) {
+  const completedCount = getCompletedChallengeCount(userId, challenges);
+  return CHALLENGE_BADGE_TIERS.map((tier) => ({
+    ...tier,
+    achieved: completedCount >= tier.count,
   }));
 }
 
