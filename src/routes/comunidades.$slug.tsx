@@ -2,6 +2,8 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { PostCardFrame } from "@/components/post-card-frame";
+import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
@@ -277,8 +279,9 @@ function PostCard({
   const liked = !!actor && post.likes.includes(actor.id);
 
   return (
-    <article
-      className={`rounded-2xl border bg-card p-5 shadow-card ${post.pinned ? "border-accent/50" : ""}`}
+    <PostCardFrame
+      size="sm"
+      className={`rounded-2xl border bg-card shadow-card ${post.pinned ? "border-accent/50" : ""}`}
     >
       {post.pinned && (
         <p className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
@@ -322,14 +325,14 @@ function PostCard({
         )}
       </div>
 
-      <p className="mt-3 whitespace-pre-line text-sm text-foreground">{post.text}</p>
       {post.image && (
-        <img
+        <PostImage
           src={post.image}
           alt="Foto compartilhada na publicação"
-          className="mt-3 max-h-96 w-full rounded-xl object-cover"
+          className="mt-3 w-full rounded-xl"
         />
       )}
+      <p className="mt-3 whitespace-pre-line text-justify hyphens-auto text-sm leading-relaxed text-foreground">{post.text}</p>
 
       <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
         <button
@@ -401,6 +404,6 @@ function PostCard({
           </form>
         )}
       </div>
-    </article>
+    </PostCardFrame>
   );
 }

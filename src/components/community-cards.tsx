@@ -8,12 +8,12 @@ import {
   ArrowRight,
   Send,
   HelpCircle,
-  ChevronDown,
-  ChevronUp,
   Award,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { PostCardFrame } from "@/components/post-card-frame";
+import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
@@ -28,57 +28,6 @@ import {
   formatDate,
   initials,
 } from "@/lib/community";
-
-/** Limita a altura de um bloco de conteúdo, com opção de "Ver mais" quando ele estoura o limite. */
-function ExpandableContent({
-  children,
-  maxHeight = 220,
-  className = "",
-}: {
-  children: React.ReactNode;
-  maxHeight?: number;
-  className?: string;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const [overflowing, setOverflowing] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = contentRef.current;
-    if (el) setOverflowing(el.scrollHeight > maxHeight + 4);
-  }, [maxHeight]);
-
-  return (
-    <div className={className}>
-      <div
-        className="relative overflow-hidden transition-[max-height] duration-300 ease-in-out"
-        style={{ maxHeight: expanded ? contentRef.current?.scrollHeight : maxHeight }}
-      >
-        <div ref={contentRef}>{children}</div>
-        {!expanded && overflowing && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-card to-transparent" />
-        )}
-      </div>
-      {overflowing && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2 flex items-center gap-1 text-xs font-bold text-accent hover:underline cursor-pointer"
-        >
-          {expanded ? (
-            <>
-              Ver menos <ChevronUp className="h-3.5 w-3.5" />
-            </>
-          ) : (
-            <>
-              Ver mais <ChevronDown className="h-3.5 w-3.5" />
-            </>
-          )}
-        </button>
-      )}
-    </div>
-  );
-}
 
 interface PostCardProps {
   post: Post;
@@ -237,69 +186,82 @@ export function PostCard({ post }: PostCardProps) {
       </div>
     );
 
-  const renderActions = (isQuestion = false, isRecipe = false) => (
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border/50">
-      <div className="flex items-center gap-2">
+  const renderActions = (isQuestion = false, isRecipe = false) => {
+    const chip =
+      "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium transition";
+    return (
+      <div className="mt-4 flex flex-nowrap items-center gap-1.5 border-t border-border/50 pt-3">
         {!isQuestion && (
           <button
             type="button"
             onClick={handleSupport}
-            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition shadow-xs ${
+            className={`${chip} ${
               hasSupported
-                ? "bg-accent-soft text-accent border border-accent/20"
-                : "bg-secondary text-foreground hover:bg-muted border border-transparent"
+                ? "border-accent/20 bg-accent-soft text-accent"
+                : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
-            <Heart className={`h-4 w-4 ${hasSupported ? "fill-accent text-accent" : ""}`} />
+            <Heart className={`h-3.5 w-3.5 ${hasSupported ? "fill-accent text-accent" : ""}`} />
             <span>{hasSupported ? "Apoiado" : "Apoiar"}</span>
-            {supportCount > 0 && <span className="opacity-80 ml-1">({supportCount})</span>}
+            {supportCount > 0 && <span className="opacity-70">({supportCount})</span>}
           </button>
         )}
 
         <button
           type="button"
           onClick={() => setShowComments((v) => !v)}
-          className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition shadow-xs ${
+          className={`${chip} ${
             isQuestion
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-secondary text-foreground hover:bg-muted border border-transparent"
+              ? "border-primary/20 bg-primary-soft text-primary hover:bg-primary/20"
+              : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
           }`}
         >
-          <MessageSquare className="h-4 w-4" />
+          <MessageSquare className="h-3.5 w-3.5" />
           <span>Conversa</span>
-          <span className="opacity-80 ml-1">({post.comments?.length || 0})</span>
+          <span className="opacity-70">({post.comments?.length || 0})</span>
         </button>
-      </div>
 
-      {isRecipe && (
-        <div className="flex flex-col items-end">
+        {isRecipe && (
           <button
             type="button"
             onClick={handlePrepared}
-            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold transition shadow-xs ${
+            title={
+              preparedCount > 0
+                ? `${preparedCount} ${preparedCount === 1 ? "pessoa já preparou" : "pessoas já prepararam"}`
+                : undefined
+            }
+            className={`${chip} ml-auto ${
               hasPrepared
-                ? "bg-primary text-primary-foreground"
-                : "bg-primary-soft text-primary hover:bg-primary/20 border border-primary/20"
+                ? "border-primary/20 bg-primary-soft text-primary"
+                : "border-transparent text-muted-foreground hover:bg-primary-soft hover:text-primary"
             }`}
           >
-            <ChefHat className="h-4 w-4" />
+            <ChefHat className="h-3.5 w-3.5" />
             <span>{hasPrepared ? "Eu preparei!" : "Eu preparei"}</span>
+            {preparedCount > 0 && <span className="opacity-70">({preparedCount})</span>}
           </button>
-          {preparedCount > 0 && (
-            <span className="text-[10px] text-muted-foreground font-medium mt-1">
-              💚 {preparedCount}{" "}
-              {preparedCount === 1 ? "pessoa já preparou" : "pessoas já prepararam"}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    );
+  };
+
+  const frameClass =
+    "rounded-3xl border border-border/80 bg-card shadow-sm transition hover:shadow-md";
+  const footer = (isQuestion = false, isRecipe = false) => (
+    <>
+      {renderActions(isQuestion, isRecipe)}
+      {renderCommentsSection()}
+    </>
   );
 
   // --- RECEITA ---
   if (post.type === "receita") {
     return (
-      <article className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm overflow-hidden flex flex-col transition hover:shadow-md">
+      <PostCardFrame
+        className={frameClass}
+        forceExpanded={showComments}
+        footer={footer(false, true)}
+      >
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
           <ChefHat className="h-4 w-4" /> Receita Comunitária
         </div>
@@ -307,155 +269,137 @@ export function PostCard({ post }: PostCardProps) {
         {renderAuthorInfo()}
 
         {displayImage && (
-          <div className="my-4 -mx-6 h-64 sm:h-80 overflow-hidden">
-            <img
-              src={displayImage}
-              alt="Receita"
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
+          <PostImage
+            src={displayImage}
+            alt="Receita"
+            className="my-4 -mx-6 w-[calc(100%+3rem)] max-w-none"
+          />
         )}
 
-        <h3 className="text-2xl font-extrabold font-display text-foreground mb-3">{post.title}</h3>
+        <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
+          {post.title}
+        </h3>
 
-        <ExpandableContent maxHeight={260}>
-          <p className="text-base text-foreground/80 leading-relaxed mb-6">{post.text}</p>
+        <p className="text-sm text-foreground/85 leading-relaxed text-justify hyphens-auto mb-5">
+          {post.text}
+        </p>
 
-          {post.recipeData && (
-            <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-2">
-              <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-foreground mb-4 pb-4 border-b border-border/50">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-accent" /> {post.recipeData.prepTime}
-                </span>
-                <span>·</span>
-                <span>{post.recipeData.servings}</span>
-                <span>·</span>
-                <span className="text-primary">{post.recipeData.difficulty}</span>
+        {post.recipeData && (
+          <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-2">
+            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-foreground mb-4 pb-4 border-b border-border/50">
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4 text-accent" /> {post.recipeData.prepTime}
+              </span>
+              <span>·</span>
+              <span>{post.recipeData.servings}</span>
+              <span>·</span>
+              <span className="text-primary">{post.recipeData.difficulty}</span>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                  Ingredientes
+                </h4>
+                <ul className="space-y-2 text-sm text-foreground">
+                  {post.recipeData.ingredients.map((ing, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-accent font-bold">•</span> <span>{ing}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Ingredientes
-                  </h4>
-                  <ul className="space-y-2 text-sm text-foreground">
-                    {post.recipeData.ingredients.map((ing, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-accent font-bold">•</span> <span>{ing}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Preparo
-                  </h4>
-                  <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
-                    {post.recipeData.steps.map((step, i) => (
-                      <li key={i} className="leading-relaxed">
-                        <span className="text-foreground/90">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                  Preparo
+                </h4>
+                <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
+                  {post.recipeData.steps.map((step, i) => (
+                    <li key={i} className="leading-relaxed">
+                      <span className="text-foreground/90">{step}</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
-          )}
-        </ExpandableContent>
-
-        {renderActions(false, true)}
-        {renderCommentsSection()}
-      </article>
+          </div>
+        )}
+      </PostCardFrame>
     );
   }
 
   // --- EXPERIÊNCIA ---
   if (post.type === "experiencia") {
     return (
-      <article className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm transition hover:shadow-md">
+      <PostCardFrame className={frameClass} forceExpanded={showComments} footer={footer()}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-primary">
           <Sparkles className="h-4 w-4" /> História da Comunidade
         </div>
 
         {renderAuthorInfo()}
 
-        {post.title && (
-          <h3 className="text-xl font-bold font-display text-foreground mb-2">{post.title}</h3>
-        )}
-        <ExpandableContent maxHeight={200} className="mb-4">
-          <p className="text-base text-foreground/90 leading-relaxed whitespace-pre-line text-pretty">
-            {post.text}
-          </p>
-        </ExpandableContent>
-
         {displayImage && (
-          <div className="mb-4 overflow-hidden rounded-2xl shadow-sm aspect-[16/9]">
-            <img
-              src={displayImage}
-              alt="Experiência"
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
+          <PostImage
+            src={displayImage}
+            alt="Experiência"
+            className="mb-4 w-full rounded-2xl shadow-sm"
+          />
         )}
 
-        {renderActions()}
-        {renderCommentsSection()}
-      </article>
+        {post.title && (
+          <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
+            {post.title}
+          </h3>
+        )}
+        <p className="mb-4 text-sm text-foreground/90 leading-relaxed text-justify hyphens-auto whitespace-pre-line">
+          {post.text}
+        </p>
+      </PostCardFrame>
     );
   }
 
   // --- PERGUNTA ---
   if (post.type === "pergunta") {
     return (
-      <article className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm transition hover:shadow-md">
+      <PostCardFrame className={frameClass} forceExpanded={showComments} footer={footer(true)}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
           <HelpCircle className="h-4 w-4" /> Dúvida
         </div>
 
         {renderAuthorInfo()}
 
-        <h3 className="text-xl sm:text-2xl font-bold font-display text-foreground mb-3 text-pretty leading-snug">
+        <h3 className="text-base sm:text-lg font-bold font-display text-foreground mb-2 leading-snug">
           {post.title || post.text}
         </h3>
         {post.title && (
-          <ExpandableContent maxHeight={200} className="mb-4">
-            <p className="text-base text-foreground/80 leading-relaxed">{post.text}</p>
-          </ExpandableContent>
+          <p className="mb-4 text-sm text-foreground/85 leading-relaxed text-justify hyphens-auto">
+            {post.text}
+          </p>
         )}
-
-        {renderActions(true)}
-        {renderCommentsSection()}
-      </article>
+      </PostCardFrame>
     );
   }
 
   // --- GERAL (Fallback) ---
   return (
-    <article className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm transition hover:shadow-md">
+    <PostCardFrame className={frameClass} forceExpanded={showComments} footer={footer()}>
       {renderAuthorInfo()}
-      {post.title && (
-        <h3 className="text-lg font-bold font-display text-foreground mb-2">{post.title}</h3>
-      )}
-      <ExpandableContent maxHeight={200} className="mb-4">
-        <p className="text-base text-foreground/90 leading-relaxed whitespace-pre-line text-pretty">
-          {post.text}
-        </p>
-      </ExpandableContent>
       {displayImage && (
-        <div className="mb-4 overflow-hidden rounded-2xl shadow-sm aspect-[16/9]">
-          <img
-            src={displayImage}
-            alt="Postagem"
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
+        <PostImage
+          src={displayImage}
+          alt="Postagem"
+          className="mb-4 w-full rounded-2xl shadow-sm"
+        />
       )}
-      {renderActions()}
-      {renderCommentsSection()}
-    </article>
+      {post.title && (
+        <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
+          {post.title}
+        </h3>
+      )}
+      <p className="mb-4 text-sm text-foreground/90 leading-relaxed text-justify hyphens-auto whitespace-pre-line">
+        {post.text}
+      </p>
+    </PostCardFrame>
   );
 }
 
@@ -705,7 +649,9 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
 
       <div className="mt-5 border-t border-border/60 pt-3 px-5 pb-5 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">👥 {participants.length} participando</span>
+          <span className="text-xs text-muted-foreground">
+            👥 {participants.length} participando
+          </span>
           <Link
             to="/desafios/$challengeId"
             params={{ challengeId: challenge.id }}

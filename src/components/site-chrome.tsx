@@ -8,7 +8,7 @@ export function SiteHeader() {
 
   return (
     <>
-    <header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs">
+    <header data-site-header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs">
       {/* Cabeçalho mobile */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
         <Link
@@ -131,6 +131,7 @@ export function SiteHeader() {
     {/* Barra de navegação inferior estilo app — atalhos essenciais no mobile */}
     {user && (
       <nav
+        data-site-bottom-nav
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
