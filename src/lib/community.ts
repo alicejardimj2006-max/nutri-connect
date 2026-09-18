@@ -61,10 +61,13 @@ export interface Community {
   createdAt: string;
 }
 
+export type ProfileRole = "paciente" | "profissional";
+
 export interface PublicProfile {
   userId: string;
   name: string;
   bio: string;
+  role?: ProfileRole;
 }
 
 export interface PollOption {
@@ -407,16 +410,25 @@ function seed(): CommunityState {
       userId: MARIA_ID,
       name: "Maria Lorena",
       bio: "Apaixonada por descomplicar a cozinha e criar relações pacíficas com o prato.",
+      role: "profissional",
     },
     {
       userId: PEDRO_ID,
       name: "Pedro Costa",
       bio: "Focado em alimentação para o dia a dia moderno, rotina ativa e planejamento realista para quem não tem tempo a perder.",
+      role: "profissional",
     },
     {
       userId: PAC_ID,
       name: "Ana Prado",
       bio: "Em busca de mais calma à mesa, testando receitas simples e construindo novos hábitos passo a passo.",
+      role: "paciente",
+    },
+    {
+      userId: PAC_CARLOS_ID,
+      name: "Carlos Eduardo",
+      bio: "Testando receitas práticas para a semana e trocando ideias com a comunidade.",
+      role: "paciente",
     },
   ];
 
@@ -965,4 +977,26 @@ export function getChallenges(): Challenge[] {
 
 export function getCommunityPosts(): Post[] {
   return loadState().posts || [];
+}
+
+/** Papel público de um autor (paciente por padrão, quando não há perfil cadastrado). */
+export function getAuthorRole(authorId: string, profiles: PublicProfile[]): ProfileRole {
+  return profiles.find((p) => p.userId === authorId)?.role ?? "paciente";
+}
+
+/**
+ * IDs de "amigos": pessoas com quem o usuário compartilha ao menos uma
+ * comunidade. É a relação de conexão já existente no app (participação em
+ * comunidades), usada como proxy até existir um sistema de amizade dedicado.
+ */
+export function getFriendIds(userId: string, communities: Community[]): Set<string> {
+  const friendIds = new Set<string>();
+  for (const community of communities) {
+    const isMember = community.members.some((m) => m.userId === userId);
+    if (!isMember) continue;
+    for (const member of community.members) {
+      if (member.userId !== userId) friendIds.add(member.userId);
+    }
+  }
+  return friendIds;
 }
