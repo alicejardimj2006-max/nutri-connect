@@ -174,6 +174,16 @@ export interface Challenge {
   /** userId -> índices dos passos concluídos */
   progress: Record<string, number[]>;
   themeId?: string;
+  /** Posição na trilha Duolingo (menor = mais cedo na trilha). */
+  order?: number;
+  /** ID do desafio que precisa ser concluído para desbloquear este. */
+  requiredChallengeId?: string;
+  /** ID da comunidade associada ao desafio (para aba "Das Minhas Comunidades"). */
+  communityId?: string;
+  /** ID do profissional que criou o desafio (para aba "Populares"). */
+  createdByProfessionalId?: string;
+  /** Nome do profissional que criou o desafio. */
+  createdByProfessionalName?: string;
 }
 
 export interface ChallengeBadgeTier {
@@ -577,6 +587,45 @@ function seed(): CommunityState {
 
   const challenges: Challenge[] = [
     {
+      id: "desafio-agua-consciente",
+      title: "Hidratação Sem Complicação",
+      description:
+        "Mantenha uma garrafa d'água por perto e faça pausas conscientes para beber água ao longo do dia.",
+      category: "Hábitos Básicos",
+      badgeIcon: "💧",
+      badgeLabel: "Sempre Hidratado",
+      duration: "Hábito contínuo",
+      order: 1,
+      createdByProfessionalId: MARIA_ID,
+      createdByProfessionalName: "Maria Lorena",
+      participants: [PAC_ID, PAC_CARLOS_ID, "user-demo-7", "user-demo-8", "user-demo-9", "user-demo-10", "user-demo-11", "user-demo-12", "user-demo-13", "user-demo-14", "user-demo-15"],
+      completedBy: [PAC_ID, PAC_CARLOS_ID],
+      steps: [
+        "Comece o dia com um copo d'água ao acordar",
+        "Leve sua garrafinha para o trabalho ou estudo",
+        "Observe como seu foco e disposição melhoram",
+      ],
+      tips: [
+        "Coloque um lembrete no celular a cada 2 horas até o hábito ficar automático.",
+        "Garrafas com marcação de horário ajudam bastante nos primeiros dias.",
+      ],
+      communityTips: [
+        {
+          id: "ctip-2",
+          authorId: "user-demo-7",
+          authorName: "Beatriz Nunes",
+          text: "Adicionar rodelas de limão ou hortelã na água ajudou muito a criar o hábito.",
+          createdAt: iso(86400000 * 2),
+        },
+      ],
+      progress: {
+        [PAC_ID]: [0, 1, 2],
+        [PAC_CARLOS_ID]: [0, 1, 2],
+        "user-demo-7": [0, 1],
+        "user-demo-8": [0],
+      },
+    },
+    {
       id: "desafio-3-frescos",
       title: "Desafio dos 3 Alimentos Frescos",
       description:
@@ -585,6 +634,11 @@ function seed(): CommunityState {
       badgeIcon: "🥗",
       badgeLabel: "Colorido & Fresco",
       duration: "7 dias",
+      order: 2,
+      requiredChallengeId: "desafio-agua-consciente",
+      communityId: "c-educacao",
+      createdByProfessionalId: MARIA_ID,
+      createdByProfessionalName: "Maria Lorena",
       participants: [PAC_ID, PAC_CARLOS_ID, "user-demo-4", "user-demo-5"],
       completedBy: [PAC_ID],
       steps: [
@@ -622,6 +676,11 @@ function seed(): CommunityState {
       badgeIcon: "🍳",
       badgeLabel: "Cozinha Ativa",
       duration: "Semana atual",
+      order: 3,
+      requiredChallengeId: "desafio-3-frescos",
+      communityId: "c-cozinha",
+      createdByProfessionalId: PEDRO_ID,
+      createdByProfessionalName: "Pedro Costa",
       participants: [PAC_ID, "user-demo-6"],
       completedBy: [],
       steps: [
@@ -640,39 +699,167 @@ function seed(): CommunityState {
       },
     },
     {
-      id: "desafio-agua-consciente",
-      title: "Hidratação Sem Complicação",
+      id: "desafio-mastigar-devagar",
+      title: "Comer com Calma e Presença",
       description:
-        "Mantenha uma garrafa d'água por perto e faça pausas conscientes para beber água ao longo do dia.",
-      category: "Hábitos Básicos",
-      badgeIcon: "💧",
-      badgeLabel: "Sempre Hidratado",
-      duration: "Hábito contínuo",
-      participants: [PAC_ID, PAC_CARLOS_ID, "user-demo-7", "user-demo-8", "user-demo-9"],
-      completedBy: [PAC_ID, PAC_CARLOS_ID],
+        "Pratique comer pelo menos uma refeição por dia sem distrações, mastigando devagar e prestando atenção nos sabores.",
+      category: "Mindful Eating",
+      badgeIcon: "🧘",
+      badgeLabel: "Presença à Mesa",
+      duration: "5 dias",
+      order: 4,
+      requiredChallengeId: "desafio-cozinhar-3x",
+      communityId: "c-relacao",
+      createdByProfessionalId: HELENA_ID,
+      createdByProfessionalName: "Helena Souza",
+      participants: [PAC_BEA_ID, PAC_ID, "user-demo-16", "user-demo-17", "user-demo-18", "user-demo-19", "user-demo-20", "user-demo-21", "user-demo-22", "user-demo-23", "user-demo-24", "user-demo-25"],
+      completedBy: [PAC_BEA_ID],
       steps: [
-        "Comece o dia com um copo d'água ao acordar",
-        "Leve sua garrafinha para o trabalho ou estudo",
-        "Observe como seu foco e disposição melhoram",
+        "Desligue o celular e a TV antes de se sentar para comer",
+        "Mastigue cada garfada pelo menos 15 vezes",
+        "Ao final da refeição, observe: estava com fome? Se sentiu satisfeito?",
+        "Repita por 5 dias consecutivos",
       ],
       tips: [
-        "Coloque um lembrete no celular a cada 2 horas até o hábito ficar automático.",
-        "Garrafas com marcação de horário ajudam bastante nos primeiros dias.",
+        "Se for difícil no início, comece com apenas uma refeição por dia.",
+        "Coloque os talheres na mesa entre uma garfada e outra.",
       ],
       communityTips: [
         {
-          id: "ctip-2",
-          authorId: "user-demo-7",
-          authorName: "Beatriz Nunes",
-          text: "Adicionar rodelas de limão ou hortelã na água ajudou muito a criar o hábito.",
-          createdAt: iso(86400000 * 2),
+          id: "ctip-3",
+          authorId: PAC_BEA_ID,
+          authorName: "Beatriz Lima",
+          text: "Comecei almoçando sem o celular. No terceiro dia já percebi muito mais os sabores!",
+          createdAt: iso(86400000 * 3),
         },
       ],
       progress: {
-        [PAC_ID]: [0, 1, 2],
-        [PAC_CARLOS_ID]: [0, 1, 2],
-        "user-demo-7": [0, 1],
-        "user-demo-8": [0],
+        [PAC_BEA_ID]: [0, 1, 2, 3],
+        [PAC_ID]: [0, 1],
+        "user-demo-16": [0],
+      },
+    },
+    {
+      id: "desafio-preparo-semana",
+      title: "Planejamento de Marmitas da Semana",
+      description:
+        "Separe 2 horas no domingo para deixar marmitas prontas para 3 dias da semana.",
+      category: "Organização",
+      badgeIcon: "📦",
+      badgeLabel: "Preparador(a) da Semana",
+      duration: "1 semana",
+      order: 5,
+      requiredChallengeId: "desafio-mastigar-devagar",
+      communityId: "c-cozinha",
+      createdByProfessionalId: PEDRO_ID,
+      createdByProfessionalName: "Pedro Costa",
+      participants: [PAC_CARLOS_ID, PAC_ID, "user-demo-26", "user-demo-27", "user-demo-28", "user-demo-29", "user-demo-30", "user-demo-31", "user-demo-32", "user-demo-33"],
+      completedBy: [],
+      steps: [
+        "Escolha 2 proteínas, 2 acompanhamentos e 2 saladas para a semana",
+        "Faça as compras com uma lista pronta (sem improvisar)",
+        "Reserve 2 horas no domingo para o preparo em lote",
+        "Armazene em potes de vidro separados por dia",
+      ],
+      tips: [
+        "Cozinhar ouvindo música ou podcast torna o preparo mais leve.",
+        "Congele metade das porções para não enjoar da mesma refeição.",
+      ],
+      communityTips: [],
+      progress: {
+        [PAC_CARLOS_ID]: [0, 1],
+        [PAC_ID]: [0],
+      },
+    },
+    {
+      id: "desafio-rotulo-consciente",
+      title: "Leitura de Rótulos sem Paranoia",
+      description:
+        "Aprenda a ler rótulos de 3 alimentos que você consome com frequência, sem neura — apenas com curiosidade.",
+      category: "Educação Alimentar",
+      badgeIcon: "🏷️",
+      badgeLabel: "Leitor(a) Consciente",
+      duration: "3 dias",
+      order: 6,
+      requiredChallengeId: "desafio-preparo-semana",
+      communityId: "c-educacao",
+      createdByProfessionalId: MARIA_ID,
+      createdByProfessionalName: "Maria Lorena",
+      participants: [PAC_ID, "user-demo-34", "user-demo-35", "user-demo-36", "user-demo-37", "user-demo-38", "user-demo-39"],
+      completedBy: [],
+      steps: [
+        "Escolha 3 produtos que você come ou bebe frequentemente",
+        "Leia a lista de ingredientes (o primeiro é o que tem mais!)",
+        "Compare 2 marcas do mesmo produto e perceba as diferenças",
+      ],
+      tips: [
+        "Não se assuste com nomes químicos — muitos são apenas vitaminas adicionadas.",
+        "O número de ingredientes costuma indicar o nível de processamento.",
+      ],
+      communityTips: [],
+      progress: {
+        [PAC_ID]: [0],
+      },
+    },
+    {
+      id: "desafio-fruta-lanche",
+      title: "Troque um Lanche por Fruta",
+      description:
+        "Durante 5 dias, substitua ao menos um lanche ultraprocessado do dia por uma fruta fresca.",
+      category: "Pequenas Trocas",
+      badgeIcon: "🍎",
+      badgeLabel: "Troca Saudável",
+      duration: "5 dias",
+      order: 7,
+      requiredChallengeId: "desafio-rotulo-consciente",
+      createdByProfessionalId: PEDRO_ID,
+      createdByProfessionalName: "Pedro Costa",
+      participants: [PAC_CARLOS_ID, "user-demo-40", "user-demo-41", "user-demo-42", "user-demo-43"],
+      completedBy: [],
+      steps: [
+        "Identifique o lanche ultraprocessado que você mais consome",
+        "Compre 3 frutas diferentes para ter opções",
+        "Substitua o lanche por uma fruta, 1 vez por dia, durante 5 dias",
+        "Anote como se sentiu após cada troca",
+      ],
+      tips: [
+        "Frutas da estação são mais baratas e saborosas.",
+        "Deixe a fruta lavada e cortada na geladeira para facilitar.",
+      ],
+      communityTips: [],
+      progress: {
+        [PAC_CARLOS_ID]: [0],
+      },
+    },
+    {
+      id: "desafio-gratidao-mesa",
+      title: "Gratidão à Mesa",
+      description:
+        "Por 7 dias, antes de cada refeição principal, faça uma pausa de 10 segundos para agradecer pela comida.",
+      category: "Bem-estar Emocional",
+      badgeIcon: "🙏",
+      badgeLabel: "Gratidão Nutritiva",
+      duration: "7 dias",
+      order: 8,
+      requiredChallengeId: "desafio-fruta-lanche",
+      communityId: "c-relacao",
+      createdByProfessionalId: HELENA_ID,
+      createdByProfessionalName: "Helena Souza",
+      participants: [PAC_BEA_ID, "user-demo-44", "user-demo-45", "user-demo-46", "user-demo-47", "user-demo-48", "user-demo-49", "user-demo-50", "user-demo-51"],
+      completedBy: [],
+      steps: [
+        "Antes de comer, olhe para o prato por 10 segundos",
+        "Pense em uma coisa boa sobre aquela refeição (sabor, companhia, esforço)",
+        "Registre o que sentiu em um caderno ou no celular",
+        "Mantenha por 7 dias seguidos",
+      ],
+      tips: [
+        "Pode ser um agradecimento silencioso — não precisa dizer em voz alta.",
+        "Se estiver acompanhado, convide a pessoa a fazer junto.",
+      ],
+      communityTips: [],
+      progress: {
+        [PAC_BEA_ID]: [0, 1],
       },
     },
   ];
@@ -1186,3 +1373,78 @@ export function getFriendIds(userId: string, communities: Community[]): Set<stri
   }
   return friendIds;
 }
+
+// ── Gamificação: XP, Nível e Ofensiva ──────────────────────────────────
+
+const XP_PER_CHALLENGE = 100;
+const XP_PER_STEP = 15;
+
+/** XP total do usuário baseado em desafios concluídos e passos completados. */
+export function getUserXP(userId: string, challenges: Challenge[]): number {
+  let xp = 0;
+  for (const c of challenges) {
+    if (c.completedBy.includes(userId)) {
+      xp += XP_PER_CHALLENGE;
+    }
+    const steps = c.progress[userId];
+    if (steps) {
+      xp += steps.length * XP_PER_STEP;
+    }
+  }
+  return xp;
+}
+
+/** Nível do usuário baseado no XP acumulado. */
+export function getUserLevel(xp: number): { level: number; label: string; xpForNext: number; xpInLevel: number } {
+  const levels = [
+    { threshold: 0, label: "Semente" },
+    { threshold: 150, label: "Broto" },
+    { threshold: 400, label: "Folha" },
+    { threshold: 700, label: "Flor" },
+    { threshold: 1100, label: "Fruto" },
+    { threshold: 1600, label: "Árvore" },
+    { threshold: 2200, label: "Floresta" },
+  ];
+  let current = levels[0];
+  let next = levels[1];
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (xp >= levels[i].threshold) {
+      current = levels[i];
+      next = levels[i + 1] || { threshold: current.threshold + 500, label: "Mestre" };
+      break;
+    }
+  }
+  const level = levels.indexOf(current) + 1;
+  const xpInLevel = xp - current.threshold;
+  const xpForNext = next.threshold - current.threshold;
+  return { level, label: current.label, xpForNext, xpInLevel };
+}
+
+/** Ofensiva (streak) simplificada baseada em desafios concluídos. */
+export function getUserStreak(userId: string, challenges: Challenge[]): number {
+  const completedCount = challenges.filter((c) => c.completedBy.includes(userId)).length;
+  // Streak simplificado: 1 dia por desafio concluído, mínimo 1 se participa de algo
+  if (completedCount > 0) return Math.min(completedCount * 2 + 1, 30);
+  const participatingCount = challenges.filter((c) => c.participants.includes(userId)).length;
+  return participatingCount > 0 ? 1 : 0;
+}
+
+/** Retorna desafios da trilha ordenados por `order`. */
+export function getTrailChallenges(challenges: Challenge[]): Challenge[] {
+  return challenges
+    .filter((c) => c.order != null)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
+/** Verifica se um desafio está desbloqueado para o usuário. */
+export function isChallengeUnlocked(
+  challenge: Challenge,
+  userId: string,
+  challenges: Challenge[],
+): boolean {
+  if (!challenge.requiredChallengeId) return true;
+  const required = challenges.find((c) => c.id === challenge.requiredChallengeId);
+  if (!required) return true;
+  return required.completedBy.includes(userId);
+}
+
