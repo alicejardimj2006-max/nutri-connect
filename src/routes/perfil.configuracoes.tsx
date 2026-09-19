@@ -49,14 +49,32 @@ function ConfiguracoesPage() {
 
   useEffect(() => {
     if (user) {
-      getPrivacySettings().then((res) => {
-        setSettings(res);
-        setLoading(false);
-      });
+      getPrivacySettings()
+        .then((res) => {
+          setSettings(res);
+        })
+        .catch((err) => {
+          console.error("Erro ao carregar configurações de privacidade", err);
+          toast.error("Falha ao carregar configurações de privacidade.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }, [user]);
 
-  if (!hydrated || !user || loading) return <AuthGateLoading />;
+  if (!hydrated || !user) return <AuthGateLoading />;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 sm:px-6 py-8 flex items-center justify-center">
+          <p className="text-muted-foreground animate-pulse">Carregando configurações...</p>
+        </main>
+      </div>
+    );
+  }
 
   const handleSignOut = async () => {
     await signOut();

@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type PrivacyProfileVisibility = "public" | "private";
+export type PrivacyProfileVisibility = "public" | "private" | "friends";
 export type PrivacyDiscoverability = "everyone" | "contacts_only" | "nobody";
-export type PrivacyMessageAllowance = "everyone" | "nobody";
+export type PrivacyMessageAllowance = "everyone" | "friends" | "nobody";
 
 export interface PrivacySettings {
   user_id: string;
@@ -13,13 +13,14 @@ export interface PrivacySettings {
   use_location_for_features: boolean;
 }
 
-export type PrivacyRequestType = "portability" | "deletion" | "rectification" | "objection";
+export type PrivacyRequestType =
+  "access" | "correction" | "portability" | "deletion" | "consent_revoke" | "information" | "other";
 
 export interface PrivacyRequest {
   id: string;
   user_id: string;
   type: PrivacyRequestType;
-  status: "pending" | "in_progress" | "completed" | "rejected";
+  status: "submitted" | "received" | "in_review" | "completed" | "rejected" | "cancelled";
   created_at: string;
 }
 

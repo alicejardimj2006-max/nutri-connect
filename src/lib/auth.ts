@@ -20,48 +20,50 @@ export async function getUser(): Promise<AuthUser | null> {
   } = await supabase.auth.getSession();
 
   if (sessionError) {
-    console.error("Erro ao obter sessão:", sessionError);
-    return null;
+    throw new Error("Erro ao obter sessão: " + sessionError.message);
   }
 
   if (!session) {
     return null;
   }
 
-  // Try to get profile from DB
+  // Obter profile
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", session.user.id)
     .single();
 
-  if (profileError && profileError.code !== "PGRST116") {
-    // PGRST116 is "Row not found", which can happen initially before trigger or insert finishes.
-    // If it's a real error, we shouldn't swallow it.
-    console.error("Erro ao carregar profile:", profileError);
+  if (profileError) {
+    if (profileError.code === "PGRST116") {
+      throw new Error("PROFILE_MISSING");
+    }
+    throw new Error("Erro de banco ao carregar profile: " + profileError.message);
   }
 
+  // Obter private_profile
   const { data: privateData, error: privError } = await supabase
     .from("private_profiles")
     .select("*")
     .eq("user_id", session.user.id)
     .single();
 
-  if (privError && privError.code !== "PGRST116") {
-    console.error("Erro ao carregar private_profile:", privError);
+  if (privError) {
+    if (privError.code === "PGRST116") {
+      throw new Error("PRIVATE_PROFILE_MISSING");
+    }
+    throw new Error("Erro de banco ao carregar private_profile: " + privError.message);
   }
-
-  const metadataName = session.user.user_metadata?.display_name;
 
   return {
     id: session.user.id,
-    name: profile?.display_name || metadataName || session.user.email?.split("@")[0] || "Usuário",
+    name: profile.display_name,
     email: session.user.email || "",
-    role: profile?.role || "user",
-    bio: profile?.bio || "",
-    phone: privateData?.phone || "",
-    cpf: privateData?.cpf || "",
-    birthDate: privateData?.birth_date || "",
+    role: profile.role,
+    bio: profile.bio || "",
+    phone: privateData.phone || "",
+    cpf: privateData.cpf || "",
+    birthDate: privateData.birth_date || "",
     journeyGoal: session.user.user_metadata?.journeyGoal || "",
     goal: session.user.user_metadata?.goal || "",
   };
@@ -105,7 +107,6 @@ export async function registerUser(data: {
   });
 
   if (authError) {
-    console.error("Supabase Signup Error:", authError);
     if (authError.message.includes("rate limit")) {
       throw new Error("Limite de cadastros atingido pelo provedor. Tente novamente mais tarde.");
     }
@@ -114,7 +115,22 @@ export async function registerUser(data: {
 
   if (!authData.user) throw new Error("Erro desconhecido ao criar usuário");
 
-  return getUser();
+  if (!authData.session) {
+    // Requires email confirmation or session not established
+    return null;
+  }
+
+  try {
+    const user = await getUser();
+    return user;
+  } catch (err: any) {
+    if (err.message === "PROFILE_MISSING" || err.message === "PRIVATE_PROFILE_MISSING") {
+      throw new Error(
+        "Falha crítica: O perfil não foi gerado automaticamente pelo banco de dados.",
+      );
+    }
+    throw err;
+  }
 }
 
 export async function loginUser(email: string, password?: string) {
