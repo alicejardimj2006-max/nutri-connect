@@ -227,3 +227,14 @@
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 }
+
+/* Fontes escolhidas em Configurações → Personalização. Fora de @layer para vencer os utilitários. */
+body {
+  font-family: var(--user-font-sans, var(--font-sans));
+}
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--user-font-display, var(--font-display));
+}

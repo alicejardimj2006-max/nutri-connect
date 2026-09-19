@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { APPEARANCE_INIT_SCRIPT, initAppearance } from "../lib/appearance";
 
 function NotFoundComponent() {
   return (
@@ -101,11 +102,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&family=Nunito:wght@400;600;700&family=Lora:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
+    // Aplica o tema salvo antes da primeira pintura, para não piscar o tema padrão.
+    scripts: [{ children: APPEARANCE_INIT_SCRIPT }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -129,6 +132,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => initAppearance(), []);
 
   return (
     <QueryClientProvider client={queryClient}>

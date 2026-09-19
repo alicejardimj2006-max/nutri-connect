@@ -1,17 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Heart,
-  Info,
-  LogOut,
-  Mail,
-  MessageCircle,
-  Palette,
-  UserCog,
-} from "lucide-react";
+import { ArrowLeft, Heart, Info, LogOut, Mail, MessageCircle, UserCog } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AppearancePanel } from "@/components/appearance-panel";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { signOut } from "@/lib/auth";
 
@@ -71,8 +62,8 @@ function ConfiguracoesPage() {
 
         <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">Configurações</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Aparência, conta e informações sobre o NutriConnect. Para mudar seu nome, bio ou jornada,
-          use{" "}
+          Personalização, conta e informações sobre o NutriConnect. Para mudar seu nome, bio ou
+          jornada, use{" "}
           <Link
             to="/perfil/editar"
             className="font-semibold text-accent hover:underline underline-offset-2"
@@ -83,16 +74,8 @@ function ConfiguracoesPage() {
         </p>
 
         <div className="space-y-5">
-          {/* Aparência */}
-          <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs flex items-center justify-between gap-4">
-            <SectionTitle
-              icon={Palette}
-              tone="bg-chart-4/15 text-chart-4"
-              title="Aparência"
-              hint="Tema claro ou escuro"
-            />
-            <ThemeToggle />
-          </section>
+          {/* Personalização: cada pessoa monta o próprio estilo */}
+          <AppearancePanel />
 
           {/* Conta */}
           <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
