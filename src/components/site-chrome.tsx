@@ -1,14 +1,56 @@
-import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Leaf, Search, Bell, Home, Users, Award, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { ShareModal } from "@/components/share-modal";
 
+const SCROLL_STEP = 8;
+
+/**
+ * true quando o usuário rola para baixo (recolher); false ao rolar para cima ou perto do topo.
+ * Reinicia a cada troca de página.
+ */
+function useHideOnScroll(pathname: string) {
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    setHidden(false);
+    let lastY = window.scrollY;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (y < 64) setHidden(false);
+      else if (delta > SCROLL_STEP) setHidden(true);
+      else if (delta < -SCROLL_STEP) setHidden(false);
+      if (Math.abs(delta) > SCROLL_STEP) lastY = y;
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [pathname]);
+
+  return hidden;
+}
+
 export function SiteHeader() {
   const { user } = useAuth();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const hidden = useHideOnScroll(pathname);
 
   return (
     <>
-    <header data-site-header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs">
+    <header
+      data-site-header
+      data-hidden={hidden}
+      className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs max-lg:transition-transform max-lg:duration-300 max-lg:data-[hidden=true]:-translate-y-[calc(100%+0.5rem)]"
+    >
       {/* Cabeçalho mobile */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
         <Link
@@ -54,7 +96,7 @@ export function SiteHeader() {
               activeProps={{ className: "text-accent" }}
             >
               <Users className="h-4 w-4" />
-              Grupos
+              Comunidades
             </Link>
             <Link
               to="/desafios"
@@ -128,12 +170,28 @@ export function SiteHeader() {
       </div>
     </header>
 
+    {/* Logo flutuante: fica fixo no celular enquanto a barra superior está recolhida */}
+    <Link
+      to="/"
+      aria-label="NutriConnect — página inicial"
+      aria-hidden={!hidden}
+      tabIndex={hidden ? 0 : -1}
+      className={`fixed left-1/2 top-3 z-40 -translate-x-1/2 rounded-full border border-border/60 bg-background/75 px-4 py-1.5 shadow-lg backdrop-blur-md transition-all duration-300 lg:hidden ${
+        hidden ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+      }`}
+    >
+      <span className="font-display text-base font-bold leading-none tracking-tight text-foreground">
+        Nutri<span className="text-accent">Connect</span>
+      </span>
+    </Link>
+
     {/* Barra de navegação inferior estilo app — atalhos essenciais no mobile */}
     {user && (
       <nav
         data-site-bottom-nav
+        data-hidden={hidden}
         aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="transition-transform duration-300 data-[hidden=true]:translate-y-[calc(100%+1rem)] fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         <Link
           to="/espaco"
@@ -150,7 +208,7 @@ export function SiteHeader() {
           activeProps={{ className: "text-accent" }}
         >
           <Users className="h-5 w-5" />
-          <span>Grupos</span>
+          <span>Comunidades</span>
         </Link>
 
         <div className="flex flex-1 items-center justify-center">

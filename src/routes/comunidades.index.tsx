@@ -1,16 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { MessageCircle, Plus, Users } from "lucide-react";
-import { toast } from "sonner";
+import { MessageCircle, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
-import {
-  CATEGORIES,
-  createCommunity,
-  toggleMembership,
-  type Actor,
-  type Community,
-} from "@/lib/community";
+import { CATEGORIES, type Community } from "@/lib/community";
 
 export const Route = createFileRoute("/comunidades/")({
   head: () => ({
@@ -23,7 +16,7 @@ export const Route = createFileRoute("/comunidades/")({
       { property: "og:title", content: "Comunidades — NutriConnect" },
       {
         property: "og:description",
-        content: "Feed de publicações e grupos temáticos no NutriConnect.",
+        content: "Feed de publicações e comunidades temáticas no NutriConnect.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -33,13 +26,9 @@ export const Route = createFileRoute("/comunidades/")({
 });
 
 function ComunidadesPage() {
-  const { user } = useAuth();
   const { communities, posts, hydrated } = useCommunity();
   const [category, setCategory] = useState<string>("Todas");
   const [searchTerm, setSearchTerm] = useState("");
-  const [creating, setCreating] = useState(false);
-
-  const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
 
   const filtered = useMemo(() => {
     return communities.filter((c) => {
@@ -59,38 +48,17 @@ function ComunidadesPage() {
   }, [communities, category, searchTerm]);
 
   const featured = useMemo(() => communities.slice(0, 3), [communities]);
+  const showFeatured = !searchTerm && category === "Todas" && featured.length > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-sm font-medium text-accent">Rede de cuidado</p>
-          <h1 className="mt-1 text-3xl font-bold font-display text-primary md:text-4xl">
-            Comunidades
-          </h1>
-          <p className="mt-2 max-w-2xl text-base text-muted-foreground">
-            Encontre um grupo que combine com a sua jornada. Participe de grupos específicos para
-            conversar, aprender e construir hábitos junto com outras pessoas.
-          </p>
-        </div>
-        <button
-          onClick={() => setCreating((v) => !v)}
-          className="inline-flex items-center gap-2 self-start rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-        >
-          <Plus className="h-4 w-4" />
-          Criar comunidade
-        </button>
-      </header>
-
-      {creating && <CreateForm actor={actor} onDone={() => setCreating(false)} />}
-
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
       {/* Comunidades em destaque */}
-      {!searchTerm && category === "Todas" && featured.length > 0 && (
-        <section className="mt-12">
+      {showFeatured && (
+        <section>
           <h2 className="text-xl font-bold font-display text-foreground mb-6">
             Comunidades em destaque
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((c) => (
               <CommunityCard key={c.id} community={c} />
             ))}
@@ -98,8 +66,10 @@ function ComunidadesPage() {
         </section>
       )}
 
-      <div className="mt-12 border-t border-border pt-12 grid gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="space-y-6">
+      <div
+        className={`grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)] ${showFeatured ? "mt-12 border-t border-border pt-12" : ""}`}
+      >
+        <aside className="min-w-0 space-y-6">
           <div className="rounded-2xl border bg-card p-5 shadow-card">
             <h2 className="text-sm font-semibold text-foreground mb-4">Buscar</h2>
             <input
@@ -131,7 +101,7 @@ function ComunidadesPage() {
           </div>
         </aside>
 
-        <section className="grid gap-5 sm:grid-cols-2">
+        <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
           {filtered.map((c) => (
             <CommunityCard key={c.id} community={c} />
           ))}
@@ -154,6 +124,7 @@ function ComunidadesPage() {
 function CommunityCard({ community: c }: { community: Community }) {
   const { posts } = useCommunity();
   const { user } = useAuth();
+  const isMember = !!user && c.members.some((m) => m.userId === user.id);
 
   let coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
   if (!c.coverImage) {
@@ -163,10 +134,24 @@ function CommunityCard({ community: c }: { community: Community }) {
   }
 
   return (
-    <article className="flex flex-col rounded-3xl border border-border bg-card shadow-card overflow-hidden transition hover:shadow-lg">
+    <Link
+      to="/comunidades/$slug"
+      params={{ slug: c.slug }}
+      className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    >
       <div className="h-32 w-full relative">
         <img src={coverImage} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        {isMember && (
+          <span
+            role="img"
+            aria-label="Você participa desta comunidade"
+            title="Você participa desta comunidade"
+            className="absolute top-3 right-3 grid h-7 w-7 place-items-center rounded-full bg-card/90 text-accent shadow-xs backdrop-blur-sm"
+          >
+            <UserCheck className="h-4 w-4" />
+          </span>
+        )}
         <div className="absolute top-3 left-3">
           <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider">
             {c.category}
@@ -174,7 +159,9 @@ function CommunityCard({ community: c }: { community: Community }) {
         </div>
       </div>
       <div className="p-5 flex flex-col flex-1">
-        <h3 className="text-xl font-bold text-foreground font-display leading-tight">{c.name}</h3>
+        <h3 className="text-xl font-bold text-foreground font-display leading-tight transition-colors group-hover:text-accent">
+          {c.name}
+        </h3>
         <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
 
         <div className="mt-5 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
@@ -186,146 +173,7 @@ function CommunityCard({ community: c }: { community: Community }) {
             {posts.filter((p) => p.communityId === c.id).length} publicações
           </span>
         </div>
-
-        <div className="mt-5 flex gap-2">
-          {user && (
-            <button
-              onClick={() => {
-                toggleMembership(c.id, { id: user.id, name: user.name });
-              }}
-              className={`flex-1 rounded-full px-4 py-2 text-[13px] font-semibold transition shadow-soft ${
-                c.members.some((m) => m.userId === user.id)
-                  ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
-                  : "bg-primary-soft text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20"
-              }`}
-            >
-              {c.members.some((m) => m.userId === user.id) ? "Você participa" : "Participar"}
-            </button>
-          )}
-          <Link
-            to="/comunidades/$slug"
-            params={{ slug: c.slug }}
-            className={`text-center rounded-full bg-accent px-4 py-2 text-[13px] font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 ${
-              !user ? "flex-1" : ""
-            }`}
-          >
-            Ver comunidade
-          </Link>
-        </div>
       </div>
-    </article>
-  );
-}
-
-function CreateForm({ actor, onDone }: { actor: Actor | null; onDone: () => void }) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [objective, setObjective] = useState("");
-  const [coverImage, setCoverImage] = useState("");
-  const [category, setCategory] = useState<string>(CATEGORIES[0]);
-
-  if (!actor) {
-    return (
-      <div className="mt-6 rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
-        Entre na sua conta para criar uma nova comunidade.{" "}
-        <Link to="/login" className="font-semibold text-accent hover:underline">
-          Fazer login
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!name.trim() || !description.trim()) {
-          toast.error("Preencha o nome e a descrição da comunidade.");
-          return;
-        }
-        createCommunity({
-          name: name.trim(),
-          description: description.trim(),
-          objective: objective.trim(),
-          coverImage: coverImage.trim(),
-          category,
-          actor,
-        });
-        toast.success("Comunidade criada com sucesso!");
-        onDone();
-      }}
-      className="mt-6 rounded-2xl border bg-card p-5 shadow-card"
-    >
-      <h2 className="text-base font-semibold text-foreground">Nova comunidade</h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Sua comunidade é criada e ativada na hora.
-      </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">Nome</span>
-          <input
-            className="input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ex: Café da manhã sem pressa"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">Categoria</span>
-          <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">Descrição</span>
-          <textarea
-            rows={3}
-            className="textarea"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Sobre o que a comunidade conversa?"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">Objetivo</span>
-          <textarea
-            rows={3}
-            className="textarea"
-            value={objective}
-            onChange={(e) => setObjective(e.target.value)}
-            placeholder="Qual o objetivo prático desta comunidade?"
-          />
-        </label>
-      </div>
-      <div className="mt-4 block">
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">
-            Imagem/Capa (opcional)
-          </span>
-          <input
-            className="input"
-            value={coverImage}
-            onChange={(e) => setCoverImage(e.target.value)}
-            placeholder="URL da imagem (ex: /images/communities/group.jpg)"
-          />
-        </label>
-      </div>
-      <div className="mt-4 flex gap-3">
-        <button className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
-          Criar comunidade
-        </button>
-        <button
-          type="button"
-          onClick={onDone}
-          className="rounded-full border px-5 py-2.5 text-sm font-semibold text-foreground"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
+    </Link>
   );
 }

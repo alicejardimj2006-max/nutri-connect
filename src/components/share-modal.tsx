@@ -12,9 +12,17 @@ import {
   Tag,
   Layers,
   Send,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { createCommunityPost, initials, RECIPE_CATEGORIES, type PostType } from "@/lib/community";
+import {
+  CATEGORIES,
+  createCommunity,
+  createCommunityPost,
+  initials,
+  RECIPE_CATEGORIES,
+  type PostType,
+} from "@/lib/community";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const THEMES = {
@@ -81,6 +89,13 @@ const TYPE_OPTIONS: {
   { id: "pergunta", label: "Pergunta", icon: HelpCircle, theme: "sage" },
 ];
 
+const COMMUNITY_OPTION = {
+  id: "comunidade",
+  label: "Comunidade",
+  icon: Users,
+  theme: "olive",
+} as const;
+
 /** Um "recorte" independente preso ao mural — não uma linha de formulário. */
 function PinnedCard({
   icon: Icon,
@@ -134,6 +149,11 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
   const [tagsInput, setTagsInput] = useState("");
   const [image, setImage] = useState<string | undefined>(undefined);
 
+  // Modo "Comunidade": reaproveita título (nome), texto (descrição) e foto (capa)
+  const [isCommunity, setIsCommunity] = useState(false);
+  const [communityCategory, setCommunityCategory] = useState<string>(CATEGORIES[0]);
+  const [objective, setObjective] = useState("");
+
   // Campos específicos de receita
   const [prepTime, setPrepTime] = useState("20 min");
   const [servings, setServings] = useState("2 porções");
@@ -150,6 +170,9 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     setIngredientsText("");
     setStepsText("");
     setType("experiencia");
+    setIsCommunity(false);
+    setObjective("");
+    setCommunityCategory(CATEGORIES[0]);
     setPrepTime("20 min");
     setServings("2 porções");
     setDifficulty("Fácil");
@@ -168,6 +191,24 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     e.preventDefault();
     if (!user) {
       toast.error("Você precisa estar conectado para compartilhar.");
+      return;
+    }
+    if (isCommunity) {
+      if (!title.trim() || !text.trim()) {
+        toast.error("Preencha o nome e a descrição da comunidade.");
+        return;
+      }
+      createCommunity({
+        name: title.trim(),
+        description: text.trim(),
+        objective: objective.trim(),
+        coverImage: image ?? "",
+        category: communityCategory,
+        actor: { id: user.id, name: user.name },
+      });
+      toast.success("Comunidade criada com sucesso!");
+      setOpen(false);
+      resetForm();
       return;
     }
     if (!text.trim() && !title.trim()) {
@@ -246,8 +287,10 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       <DialogContent className="w-[95vw] max-w-6xl h-[92vh] max-h-[880px] gap-0 rounded-[2.5rem] border-border/50 p-0 overflow-hidden bg-gradient-to-br from-[color-mix(in_oklab,var(--color-primary)_20%,var(--color-background))] via-[color-mix(in_oklab,var(--color-accent)_14%,var(--color-background))] to-[color-mix(in_oklab,var(--color-chart-4)_20%,var(--color-background))]">
         {/* Padrão de pontos sutil para textura, sem lavar as cores do mural */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:22px_22px]" />
-        
-        <DialogTitle className="sr-only">Nova publicação para a comunidade</DialogTitle>
+
+        <DialogTitle className="sr-only">
+          {isCommunity ? "Nova comunidade" : "Nova publicação para a comunidade"}
+        </DialogTitle>
 
         <form
           onSubmit={handleSubmit}
@@ -260,10 +303,12 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             </span>
             <div>
               <p className="text-2xl sm:text-3xl font-extrabold font-display text-foreground leading-tight">
-                O que você quer compartilhar hoje?
+                {isCommunity ? "Vamos criar uma comunidade?" : "O que você quer compartilhar hoje?"}
               </p>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                Cada ideia é um recorte no mural — sem cobranças, sem comparações.
+                {isCommunity
+                  ? "Sua comunidade é criada e ativada na hora."
+                  : "Cada ideia é um recorte no mural — sem cobranças, sem comparações."}
               </p>
             </div>
           </div>
@@ -274,20 +319,28 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             <PinnedCard
               icon={Layers}
               theme="sage"
-              label="Tipo de publicação"
+              label="O que criar"
               rotate="-rotate-1"
               className="sm:col-span-2"
             >
-              <div className="grid grid-cols-3 gap-2.5">
-                {TYPE_OPTIONS.map((opt) => {
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                {[...TYPE_OPTIONS, COMMUNITY_OPTION].map((opt) => {
                   const Icon = opt.icon;
                   const t = THEMES[opt.theme];
-                  const active = type === opt.id;
+                  const active =
+                    opt.id === "comunidade" ? isCommunity : !isCommunity && type === opt.id;
                   return (
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => setType(opt.id)}
+                      onClick={() => {
+                        if (opt.id === "comunidade") {
+                          setIsCommunity(true);
+                        } else {
+                          setIsCommunity(false);
+                          setType(opt.id);
+                        }
+                      }}
                       className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-200 cursor-pointer ${
                         active
                           ? `${t.active} scale-[1.04] font-bold`
@@ -312,8 +365,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             <PinnedCard
               icon={Type}
               theme="olive"
-              label="Título"
-              hint="Opcional, mas acolhedor"
+              label={isCommunity ? "Nome da comunidade" : "Título"}
+              hint={isCommunity ? "Como ela vai aparecer para todos" : "Opcional, mas acolhedor"}
               rotate="rotate-1"
               className="sm:col-span-2"
             >
@@ -321,12 +374,15 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                required={isCommunity}
                 placeholder={
-                  type === "receita"
-                    ? "Ex: Panqueca de banana com 3 ingredientes"
-                    : type === "experiencia"
-                      ? "Ex: O que aprendi cozinhando minhas refeições da semana"
-                      : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
+                  isCommunity
+                    ? "Ex: Café da manhã sem pressa"
+                    : type === "receita"
+                      ? "Ex: Panqueca de banana com 3 ingredientes"
+                      : type === "experiencia"
+                        ? "Ex: O que aprendi cozinhando minhas refeições da semana"
+                        : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
                 }
                 className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
               />
@@ -336,7 +392,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             <PinnedCard
               icon={ImagePlus}
               theme="sand"
-              label="Foto"
+              label={isCommunity ? "Capa" : "Foto"}
               hint="Opcional"
               rotate="rotate-2"
               className="sm:col-span-2"
@@ -371,7 +427,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4 bg-card py-7 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground cursor-pointer"
                 >
                   <ImagePlus className="h-6 w-6 text-chart-4" />
-                  <span>Adicionar uma foto</span>
+                  <span>{isCommunity ? "Adicionar uma capa" : "Adicionar uma foto"}</span>
                 </button>
               )}
             </PinnedCard>
@@ -380,8 +436,10 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             <PinnedCard
               icon={AlignLeft}
               theme="primary"
-              label="Relato ou descrição"
-              hint="O coração da sua publicação"
+              label={isCommunity ? "Descrição" : "Relato ou descrição"}
+              hint={
+                isCommunity ? "Sobre o que a comunidade conversa?" : "O coração da sua publicação"
+              }
               rotate="-rotate-2"
               className="sm:col-span-2"
             >
@@ -389,14 +447,18 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 rows={5}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Compartilhe como foi sua experiência, dicas ou reflexões..."
+                placeholder={
+                  isCommunity
+                    ? "Explique o tema e para quem é esta comunidade..."
+                    : "Compartilhe como foi sua experiência, dicas ou reflexões..."
+                }
                 className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary transition resize-none"
                 required
               />
             </PinnedCard>
 
             {/* Campos específicos de receita */}
-            {type === "receita" && (
+            {!isCommunity && type === "receita" && (
               <PinnedCard
                 icon={ChefHat}
                 theme="accent"
@@ -496,23 +558,64 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               </PinnedCard>
             )}
 
-            {/* Tags */}
-            <PinnedCard
-              icon={Tag}
-              theme="warning"
-              label="Tags"
-              hint="Separadas por vírgula"
-              rotate="rotate-2"
-              className="sm:col-span-2 lg:col-span-2"
-            >
-              <input
-                type="text"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="Café da manhã, Fibras, Praticidade"
-                className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-warning transition"
-              />
-            </PinnedCard>
+            {isCommunity ? (
+              <>
+                <PinnedCard
+                  icon={Layers}
+                  theme="warning"
+                  label="Categoria"
+                  hint="Ajuda as pessoas a encontrarem a comunidade"
+                  rotate="rotate-2"
+                  className="sm:col-span-2 lg:col-span-2"
+                >
+                  <select
+                    value={communityCategory}
+                    onChange={(e) => setCommunityCategory(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-warning transition"
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </PinnedCard>
+
+                <PinnedCard
+                  icon={Sparkles}
+                  theme="accent"
+                  label="Objetivo"
+                  hint="Opcional"
+                  rotate="-rotate-1"
+                  className="sm:col-span-2 lg:col-span-2"
+                >
+                  <textarea
+                    rows={3}
+                    value={objective}
+                    onChange={(e) => setObjective(e.target.value)}
+                    placeholder="Qual o objetivo prático desta comunidade?"
+                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-accent transition resize-none"
+                  />
+                </PinnedCard>
+              </>
+            ) : (
+              <PinnedCard
+                icon={Tag}
+                theme="warning"
+                label="Tags"
+                hint="Separadas por vírgula"
+                rotate="rotate-2"
+                className="sm:col-span-2 lg:col-span-2"
+              >
+                <input
+                  type="text"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  placeholder="Café da manhã, Fibras, Praticidade"
+                  className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-warning transition"
+                />
+              </PinnedCard>
+            )}
 
             {/* Ação: o próprio "publicar" é um recorte do mural */}
             <div
@@ -520,14 +623,14 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             >
               <span className="absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] bg-card shadow-sm" />
               <p className="text-sm font-bold text-accent-foreground">
-                Pronto para compartilhar? 🌱
+                {isCommunity ? "Pronto para criar? 🌱" : "Pronto para compartilhar? 🌱"}
               </p>
               <button
                 type="submit"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-accent shadow-soft transition-transform hover:scale-[1.04] cursor-pointer"
               >
                 <Send className="h-4 w-4" />
-                <span>Publicar no Espaço de Hoje</span>
+                <span>{isCommunity ? "Criar comunidade" : "Publicar no Espaço de Hoje"}</span>
               </button>
               <button
                 type="button"

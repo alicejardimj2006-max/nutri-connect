@@ -87,7 +87,7 @@ function CommunityFeed() {
   if (community.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
       <Link
         to="/comunidades"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground mb-4"
@@ -130,6 +130,13 @@ function CommunityFeed() {
               <p className="text-base text-muted-foreground leading-relaxed">
                 {community.description}
               </p>
+
+              {community.objective && (
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  <span className="font-semibold text-foreground">Objetivo: </span>
+                  {community.objective}
+                </p>
+              )}
 
               <div className="mt-6 flex flex-wrap items-center gap-4">
                 <Link
@@ -332,7 +339,9 @@ function PostCard({
           className="mt-3 w-full rounded-xl"
         />
       )}
-      <p className="mt-3 whitespace-pre-line text-justify hyphens-auto text-sm leading-relaxed text-foreground">{post.text}</p>
+      <p className="mt-3 whitespace-pre-line text-justify hyphens-auto text-sm leading-relaxed text-foreground">
+        {post.text}
+      </p>
 
       <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
         <button

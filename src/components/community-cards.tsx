@@ -14,6 +14,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PostCardFrame } from "@/components/post-card-frame";
 import { PostImage } from "@/components/post-image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
@@ -142,105 +149,126 @@ export function PostCard({ post }: PostCardProps) {
     </div>
   );
 
-  const renderCommentsSection = () =>
-    showComments && (
-      <div className="mt-4 border-t border-border/60 pt-4 space-y-4 animate-in slide-in-from-top-2 duration-300">
-        {post.comments && post.comments.length > 0 ? (
-          <div className="space-y-3">
-            {post.comments.map((c) => (
+  const renderCommentsDialog = () => (
+    <Dialog open={showComments} onOpenChange={setShowComments}>
+      <DialogContent className="flex max-h-[85dvh] w-[calc(100vw-2rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:rounded-2xl">
+        <DialogHeader className="shrink-0 space-y-1 border-b border-border/60 px-5 py-4 pr-12 text-left">
+          <DialogTitle className="text-base font-bold font-display">Conversa</DialogTitle>
+          <DialogDescription className="truncate text-xs">
+            {post.authorName}
+            {(post.title || post.text) && ` · ${post.title || post.text}`}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
+          {post.comments && post.comments.length > 0 ? (
+            post.comments.map((c) => (
               <div key={c.id} className="rounded-2xl bg-secondary/40 p-3.5 text-sm">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-foreground flex items-center gap-1 text-xs">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-xs font-bold text-foreground">
                     {c.authorName}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     {formatDate(c.createdAt)}
                   </span>
                 </div>
-                <p className="text-foreground/90 leading-relaxed text-xs">{c.text}</p>
+                <p className="text-xs leading-relaxed text-foreground/90">{c.text}</p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4 bg-secondary/20 rounded-2xl">
-            Seja a primeira pessoa a conversar.
-          </p>
-        )}
+            ))
+          ) : (
+            <p className="rounded-2xl bg-secondary/20 py-6 text-center text-sm text-muted-foreground">
+              Seja a primeira pessoa a conversar.
+            </p>
+          )}
+        </div>
 
-        <form onSubmit={handleAddComment} className="flex gap-2">
+        <form
+          onSubmit={handleAddComment}
+          className="flex shrink-0 gap-2 border-t border-border/60 px-5 py-3"
+        >
           <input
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Deixe uma palavra ou dúvida..."
-            className="flex-1 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent transition-colors shadow-sm"
+            className="flex-1 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-accent"
           />
           <button
             type="submit"
             disabled={!commentText.trim()}
-            className="rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-accent-foreground hover:bg-accent/90 disabled:opacity-50 transition shadow-sm"
+            aria-label="Enviar comentário"
+            className="rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-accent-foreground shadow-sm transition hover:bg-accent/90 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </button>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+
+  const renderActions = (isQuestion = false, isRecipe = false) => {
+    // Rótulos fixos: só o ícone muda de estado, para nada se mover ao clicar.
+    const action = (opts: {
+      label: string;
+      count: number;
+      icon: React.ReactNode;
+      onClick: () => void;
+      active?: boolean;
+      activeClass: string;
+      className?: string;
+      title?: string;
+    }) => (
+      <div className={`flex w-16 shrink-0 flex-col items-center gap-0.5 ${opts.className ?? ""}`}>
+        <button
+          type="button"
+          onClick={opts.onClick}
+          aria-label={opts.label}
+          aria-pressed={opts.active}
+          title={opts.title}
+          className={`grid h-8 w-8 place-items-center rounded-full transition ${
+            opts.active
+              ? opts.activeClass
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+          }`}
+        >
+          {opts.icon}
+        </button>
+        <span className="whitespace-nowrap text-[10px] leading-none tabular-nums text-muted-foreground">
+          {opts.label} {opts.count}
+        </span>
       </div>
     );
 
-  const renderActions = (isQuestion = false, isRecipe = false) => {
-    const chip =
-      "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium transition";
     return (
-      <div className="mt-4 flex flex-nowrap items-center gap-1.5 border-t border-border/50 pt-3">
-        {!isQuestion && (
-          <button
-            type="button"
-            onClick={handleSupport}
-            className={`${chip} ${
-              hasSupported
-                ? "border-accent/20 bg-accent-soft text-accent"
-                : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Heart className={`h-3.5 w-3.5 ${hasSupported ? "fill-accent text-accent" : ""}`} />
-            <span>{hasSupported ? "Apoiado" : "Apoiar"}</span>
-            {supportCount > 0 && <span className="opacity-70">({supportCount})</span>}
-          </button>
-        )}
+      <div className="mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
+        {isRecipe &&
+          action({
+            label: "Preparei",
+            count: preparedCount,
+            icon: <ChefHat className="h-4 w-4" />,
+            onClick: handlePrepared,
+            active: hasPrepared,
+            activeClass: "bg-primary-soft text-primary",
+          })}
 
-        <button
-          type="button"
-          onClick={() => setShowComments((v) => !v)}
-          className={`${chip} ${
-            isQuestion
-              ? "border-primary/20 bg-primary-soft text-primary hover:bg-primary/20"
-              : "border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
-          }`}
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>Conversa</span>
-          <span className="opacity-70">({post.comments?.length || 0})</span>
-        </button>
+        {action({
+          label: "Conversa",
+          count: post.comments?.length || 0,
+          icon: <MessageSquare className="h-4 w-4" />,
+          onClick: () => setShowComments((v) => !v),
+          active: showComments,
+          activeClass: "bg-primary-soft text-primary",
+        })}
 
-        {isRecipe && (
-          <button
-            type="button"
-            onClick={handlePrepared}
-            title={
-              preparedCount > 0
-                ? `${preparedCount} ${preparedCount === 1 ? "pessoa já preparou" : "pessoas já prepararam"}`
-                : undefined
-            }
-            className={`${chip} ml-auto ${
-              hasPrepared
-                ? "border-primary/20 bg-primary-soft text-primary"
-                : "border-transparent text-muted-foreground hover:bg-primary-soft hover:text-primary"
-            }`}
-          >
-            <ChefHat className="h-3.5 w-3.5" />
-            <span>{hasPrepared ? "Eu preparei!" : "Eu preparei"}</span>
-            {preparedCount > 0 && <span className="opacity-70">({preparedCount})</span>}
-          </button>
-        )}
+        {!isQuestion &&
+          action({
+            label: "Apoiar",
+            count: supportCount,
+            icon: <Heart className={`h-4 w-4 ${hasSupported ? "fill-accent" : ""}`} />,
+            onClick: handleSupport,
+            active: hasSupported,
+            activeClass: "bg-accent-soft text-accent",
+          })}
       </div>
     );
   };
@@ -250,18 +278,14 @@ export function PostCard({ post }: PostCardProps) {
   const footer = (isQuestion = false, isRecipe = false) => (
     <>
       {renderActions(isQuestion, isRecipe)}
-      {renderCommentsSection()}
+      {renderCommentsDialog()}
     </>
   );
 
   // --- RECEITA ---
   if (post.type === "receita") {
     return (
-      <PostCardFrame
-        className={frameClass}
-        forceExpanded={showComments}
-        footer={footer(false, true)}
-      >
+      <PostCardFrame className={frameClass} footer={footer(false, true)}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
           <ChefHat className="h-4 w-4" /> Receita Comunitária
         </div>
@@ -331,7 +355,7 @@ export function PostCard({ post }: PostCardProps) {
   // --- EXPERIÊNCIA ---
   if (post.type === "experiencia") {
     return (
-      <PostCardFrame className={frameClass} forceExpanded={showComments} footer={footer()}>
+      <PostCardFrame className={frameClass} footer={footer()}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-primary">
           <Sparkles className="h-4 w-4" /> História da Comunidade
         </div>
@@ -361,7 +385,7 @@ export function PostCard({ post }: PostCardProps) {
   // --- PERGUNTA ---
   if (post.type === "pergunta") {
     return (
-      <PostCardFrame className={frameClass} forceExpanded={showComments} footer={footer(true)}>
+      <PostCardFrame className={frameClass} footer={footer(true)}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
           <HelpCircle className="h-4 w-4" /> Dúvida
         </div>
@@ -382,7 +406,7 @@ export function PostCard({ post }: PostCardProps) {
 
   // --- GERAL (Fallback) ---
   return (
-    <PostCardFrame className={frameClass} forceExpanded={showComments} footer={footer()}>
+    <PostCardFrame className={frameClass} footer={footer()}>
       {renderAuthorInfo()}
       {displayImage && (
         <PostImage

@@ -24,8 +24,6 @@ interface PostCardFrameProps {
   size?: keyof typeof PADDING;
   /** Sempre visível, abaixo do "Ver mais" (ex.: ações da publicação). */
   footer?: React.ReactNode;
-  /** Mantém o cartão expandido e esconde o botão (ex.: comentários abertos). */
-  forceExpanded?: boolean;
   /** Conteúdo da publicação, limitado à altura da tela enquanto não expandido. */
   children: React.ReactNode;
 }
@@ -38,7 +36,6 @@ export function PostCardFrame({
   className = "",
   size = "md",
   footer,
-  forceExpanded = false,
   children,
 }: PostCardFrameProps) {
   const { user } = useAuth();
@@ -89,7 +86,7 @@ export function PostCardFrame({
     // A barra inferior só existe com usuário logado, então a medição refaz quando ele muda.
   }, [userId]);
 
-  const isExpanded = expanded || forceExpanded;
+  const isExpanded = expanded;
   const clamped = !isExpanded && overflowing;
   const pad = PADDING[size];
 
@@ -97,7 +94,7 @@ export function PostCardFrame({
     <article
       ref={articleRef}
       style={isExpanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
-      className={`flex flex-col overflow-hidden ${className}`}
+      className={`flex min-w-0 flex-col overflow-hidden ${className}`}
     >
       <div ref={regionRef} className={`relative min-h-0 overflow-hidden ${pad.top}`}>
         <div ref={innerRef} className="flow-root">
@@ -108,7 +105,7 @@ export function PostCardFrame({
         )}
       </div>
 
-      {!forceExpanded && overflowing && (
+      {overflowing && (
         <div ref={toggleRef} className={`shrink-0 ${pad.toggle}`}>
           <button
             type="button"
