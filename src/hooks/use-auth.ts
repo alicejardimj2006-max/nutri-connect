@@ -1,31 +1,48 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { getUser, type AuthUser } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useAuth() {
   const [user, setUserState] = useState<AuthUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setUserState(getUser());
-    setHydrated(true);
-    const onChange = () => setUserState(getUser());
-    window.addEventListener("auth-change", onChange);
-    window.addEventListener("storage", onChange);
+    let mounted = true;
+
+    async function loadUser() {
+      try {
+        const u = await getUser();
+        if (mounted) {
+          setUserState(u);
+          setHydrated(true);
+        }
+      } catch (e) {
+        if (mounted) setHydrated(true);
+      }
+    }
+
+    loadUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (mounted) {
+        loadUser();
+      }
+    });
+
+    const onCustomChange = () => loadUser();
+    window.addEventListener("auth-change", onCustomChange);
+
     return () => {
-      window.removeEventListener("auth-change", onChange);
-      window.removeEventListener("storage", onChange);
+      mounted = false;
+      subscription.unsubscribe();
+      window.removeEventListener("auth-change", onCustomChange);
     };
   }, []);
 
   return { user, hydrated };
 }
 
-/**
- * Gate for pages that belong to the social network: the whole app is only
- * reachable after login, so this redirects to /login as soon as we know
- * (post-hydration) that there is no signed-in user.
- */
 export function useRequireAuth() {
   const { user, hydrated } = useAuth();
   const navigate = useNavigate();

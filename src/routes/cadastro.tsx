@@ -22,15 +22,18 @@ function Cadastro() {
     conf: "",
   });
   const [selectedGoal, setSelectedGoal] = useState<string>(JOURNEY_GOALS[0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const upd = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanNome = form.nome.trim();
     const cleanEmail = form.email.trim();
     const cleanTel = form.tel.trim();
+    const cleanCpf = form.cpf.trim();
+    const cleanBirth = form.nasc.trim();
     const cleanSenha = form.senha;
     const cleanConf = form.conf;
 
@@ -38,25 +41,34 @@ function Cadastro() {
     if (!cleanEmail) return toast.error("Preencha seu e-mail.");
     if (!/\S+@\S+\.\S+/.test(cleanEmail)) return toast.error("E-mail inválido.");
     if (!cleanTel) return toast.error("Preencha seu telefone.");
+    if (!cleanBirth) return toast.error("Preencha sua data de nascimento.");
     if (!cleanSenha) return toast.error("Preencha sua senha.");
     if (cleanSenha.length < 6) return toast.error("A senha deve ter ao menos 6 caracteres.");
     if (cleanSenha !== cleanConf) return toast.error("As senhas não coincidem.");
 
+    setIsSubmitting(true);
     try {
-      registerUser({
+      await registerUser({
         name: cleanNome,
         email: cleanEmail,
         phone: cleanTel,
-        cpf: form.cpf,
-        birthDate: form.nasc,
+        cpf: cleanCpf,
+        birthDate: cleanBirth,
         password: cleanSenha,
         goal: selectedGoal,
         journeyGoal: selectedGoal,
       });
-      toast.success("Conta criada com sucesso! Bem-vindo à comunidade.");
-      navigate({ to: "/espaco" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao criar conta.");
+
+      toast.success("Conta criada! Bem-vindo(a) ao NutriConnect.");
+      
+      // Delay navigation slightly to allow session to settle
+      setTimeout(() => {
+        navigate({ to: "/explorar" });
+      }, 500);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao criar conta.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

@@ -13,19 +13,26 @@ function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail) return toast.error("Preencha seu e-mail.");
     if (!password) return toast.error("Preencha sua senha.");
 
+    setIsSubmitting(true);
     try {
-      loginUser(cleanEmail, password);
+      await loginUser(cleanEmail, password);
       toast.success("Bem-vindo(a) de volta à sua jornada!");
-      navigate({ to: "/espaco" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao fazer login.");
+      
+      setTimeout(() => {
+        navigate({ to: "/explorar" });
+      }, 500);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao fazer login.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   return (
