@@ -194,11 +194,13 @@ ALTER TABLE public.appeals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.verification_requests ENABLE ROW LEVEL SECURITY;
 
--- Profiles: Public can read, users can update their own
+-- Profiles: Public can read, users can update/insert their own
 CREATE POLICY "Profiles are readable by everyone" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- Private Profiles: Users can read/update own, privacy admins can read
+-- Private Profiles: Users can read/update/insert own, privacy admins can read
+CREATE POLICY "Users can insert own private data" ON public.private_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can access own private data" ON public.private_profiles FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own private data" ON public.private_profiles FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Privacy Admins can access private data" ON public.private_profiles FOR SELECT USING (
@@ -243,8 +245,7 @@ CREATE POLICY "Moderators manage appeals" ON public.appeals FOR ALL USING (
 CREATE POLICY "Admins read audit logs" ON public.audit_logs FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
--- Allow system to insert audit logs via service_role bypassing RLS, or grant insert to authenticated if handled carefully.
-CREATE POLICY "Anyone can insert audit logs" ON public.audit_logs FOR INSERT WITH CHECK (true);
+-- Audit logs can only be inserted by service_role (backend). No client insert policy.
 
 -- Functions and Triggers for updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
@@ -254,6 +255,21 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Prevent users from changing their own role
+CREATE OR REPLACE FUNCTION public.prevent_role_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF auth.role() = 'authenticated' AND NEW.role IS DISTINCT FROM OLD.role THEN
+    IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin') THEN
+      NEW.role = OLD.role;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER enforce_role_security BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION prevent_role_change();
 
 CREATE TRIGGER set_updated_at_profiles BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 CREATE TRIGGER set_updated_at_private_profiles BEFORE UPDATE ON public.private_profiles FOR EACH ROW EXECUTE FUNCTION handle_updated_at();

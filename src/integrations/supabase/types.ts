@@ -14,7 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          id: string
+          display_name: string
+          username: string
+          avatar_url: string | null
+          bio: string | null
+          role: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          display_name: string
+          username: string
+          avatar_url?: string | null
+          bio?: string | null
+          role?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          display_name?: string
+          username?: string
+          avatar_url?: string | null
+          bio?: string | null
+          role?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      private_profiles: {
+        Row: {
+          user_id: string
+          full_name: string
+          cpf: string | null
+          birth_date: string | null
+          phone: string | null
+          email: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          user_id: string
+          full_name: string
+          cpf?: string | null
+          birth_date?: string | null
+          phone?: string | null
+          email: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          user_id?: string
+          full_name?: string
+          cpf?: string | null
+          birth_date?: string | null
+          phone?: string | null
+          email?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      privacy_settings: {
+        Row: {
+          user_id: string
+          profile_visibility: string | null
+          discoverability: string | null
+          message_allowance: string | null
+          show_location: boolean | null
+          use_location_for_features: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          user_id: string
+          profile_visibility?: string | null
+          discoverability?: string | null
+          message_allowance?: string | null
+          show_location?: boolean | null
+          use_location_for_features?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          user_id?: string
+          profile_visibility?: string | null
+          discoverability?: string | null
+          message_allowance?: string | null
+          show_location?: boolean | null
+          use_location_for_features?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      privacy_requests: {
+        Row: {
+          id: string
+          user_id: string | null
+          type: string
+          status: string | null
+          internal_notes: string | null
+          response: string | null
+          protocol: string | null
+          created_at: string | null
+          updated_at: string | null
+          processed_at: string | null
+          processed_by: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          type: string
+          status?: string | null
+          internal_notes?: string | null
+          response?: string | null
+          protocol?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          type?: string
+          status?: string | null
+          internal_notes?: string | null
+          response?: string | null
+          protocol?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+        }
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          actor_id: string | null
+          action: string
+          target_type: string | null
+          target_id: string | null
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          actor_id?: string | null
+          action: string
+          target_type?: string | null
+          target_id?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          actor_id?: string | null
+          action?: string
+          target_type?: string | null
+          target_id?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never

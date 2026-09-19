@@ -4,12 +4,12 @@ import { toast } from "sonner";
 import { ArrowLeft, Heart, User } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { updateCurrentUser } from "@/lib/auth";
-import { JOURNEY_GOALS, loadState, upsertProfile } from "@/lib/community";
+import { JOURNEY_GOALS } from "@/lib/community";
 import { Field } from "./login";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/perfil/editar")({
-  head: () => ({ meta: [{ title: "Editar perfil — NutriConnect" }] }),
+  head: () => ({ meta: [{ title: "Editar perfil • NutriConnect" }] }),
   component: EditProfilePage,
 });
 
@@ -21,42 +21,93 @@ function EditProfilePage() {
   const [bio, setBio] = useState("");
   const [phone, setPhone] = useState("");
   const [goal, setGoal] = useState<string>(JOURNEY_GOALS[0]);
+  const [saving, setSaving] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    setName(user.name);
-    // A bio pública (que pode ter sido definida na verificação profissional) tem prioridade.
-    const publicBio = loadState().profiles.find((p) => p.userId === user.id)?.bio;
-    setBio(user.bio || publicBio || "");
-    setPhone(user.phone || "");
-    setGoal(user.journeyGoal || user.goal || JOURNEY_GOALS[0]);
+    
+    // Fetch profile and private_profile from Supabase
+    async function loadData() {
+      try {
+        const { data: pubData } = await supabase
+          .from("profiles")
+          .select("display_name, bio")
+          .eq("id", user.id)
+          .single();
+          
+        const { data: privData } = await supabase
+          .from("private_profiles")
+          .select("phone")
+          .eq("user_id", user.id)
+          .single();
+          
+        setName(pubData?.display_name || user.name || "");
+        setBio(pubData?.bio || "");
+        setPhone(privData?.phone || "");
+        // Goal não está no schema oficial do backend ainda, então mantemos o fallback do metadata (temporário)
+        setGoal(user.user_metadata?.journeyGoal || user.user_metadata?.goal || JOURNEY_GOALS[0]);
+      } catch (err) {
+        console.error("Erro ao carregar perfil:", err);
+      } finally {
+        setLoadingData(false);
+      }
+    }
+    loadData();
   }, [user]);
 
-  if (!hydrated || !user) return <AuthGateLoading />;
+  if (!hydrated || !user || loadingData) return <AuthGateLoading />;
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanName = name.trim();
     if (!cleanName) {
       toast.error("O nome não pode ficar em branco.");
       return;
     }
-    updateCurrentUser({
-      name: cleanName,
-      bio: bio.trim(),
-      phone: phone.trim(),
-      goal,
-      journeyGoal: goal,
-    });
+    
+    setSaving(true);
+    
+    try {
+      // Atualiza tabela pública
+      const { error: pubError } = await supabase
+        .from("profiles")
+        .update({
+          display_name: cleanName,
+          bio: bio.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", user.id);
+        
+      if (pubError) throw pubError;
+      
+      // Atualiza tabela privada
+      const { error: privError } = await supabase
+        .from("private_profiles")
+        .update({
+          phone: phone.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq("user_id", user.id);
+        
+      if (privError) throw privError;
+      
+      // Atualiza metadados JWT (opcional, para persistir 'goal')
+      await supabase.auth.updateUser({
+        data: {
+          journeyGoal: goal,
+          name: cleanName
+        }
+      });
 
-    // Mantém o perfil público (nome e bio mostrados a todos) em sincronia.
-    const publicProfile = loadState().profiles.find((p) => p.userId === user.id);
-    if (publicProfile) {
-      upsertProfile({ ...publicProfile, name: cleanName, bio: bio.trim() || publicProfile.bio });
+      toast.success("Perfil atualizado!");
+      navigate({ to: "/perfil/$userId", params: { userId: user.id } });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Erro ao salvar perfil");
+    } finally {
+      setSaving(false);
     }
-
-    toast.success("Perfil atualizado!");
-    navigate({ to: "/perfil/$userId", params: { userId: user.id } });
   };
 
   return (
