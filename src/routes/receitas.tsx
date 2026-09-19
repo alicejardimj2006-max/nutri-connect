@@ -247,6 +247,7 @@ function ReceitasPage() {
           </div>
         )}
       </main>
+
     </div>
   );
 }

@@ -23,10 +23,7 @@ export const Route = createFileRoute("/sobre")({
           "Conheça a história da NutriConnect, nossa missão de humanizar e conectar pessoas em torno da alimentação através de uma rede social acolhedora.",
       },
       { property: "og:title", content: "Sobre Nós — NutriConnect" },
-      {
-        property: "og:description",
-        content: "Uma rede social sobre alimentação, humanizada e conectada.",
-      },
+      { property: "og:description", content: "Uma rede social sobre alimentação, humanizada e conectada." },
     ],
   }),
   component: Sobre,
@@ -294,6 +291,7 @@ function Sobre() {
           </div>
         </section>
       </main>
+
     </div>
   );
 }

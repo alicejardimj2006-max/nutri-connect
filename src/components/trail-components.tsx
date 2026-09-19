@@ -106,9 +106,7 @@ export function StreakBadge({ streak }: StreakBadgeProps) {
       <div className="text-3xl animate-pulse drop-shadow-sm">🔥</div>
       <div>
         <div className="text-lg font-black text-orange-500 leading-none">{streak} dias</div>
-        <div className="text-[11px] font-bold text-orange-500/70 uppercase tracking-widest mt-0.5">
-          Ofensiva
-        </div>
+        <div className="text-[11px] font-bold text-orange-500/70 uppercase tracking-widest mt-0.5">Ofensiva</div>
       </div>
     </div>
   );
@@ -128,14 +126,7 @@ interface TrailHeaderProps {
 }
 
 export function TrailHeader({
-  xp,
-  level,
-  label,
-  xpInLevel,
-  xpForNext,
-  streak,
-  completedLessons,
-  totalLessons,
+  xp, level, label, xpInLevel, xpForNext, streak, completedLessons, totalLessons,
 }: TrailHeaderProps) {
   return (
     <div className="rounded-[2rem] border-2 border-border bg-card p-6 sm:p-8 shadow-sm mb-8">
@@ -149,12 +140,8 @@ export function TrailHeader({
           <div className="flex items-center gap-3 rounded-2xl border-2 border-sky-500/20 bg-sky-500/10 px-4 py-3 shrink-0">
             <div className="text-3xl drop-shadow-sm">📘</div>
             <div>
-              <div className="text-lg font-black text-sky-500 leading-none">
-                {completedLessons}/{totalLessons}
-              </div>
-              <div className="text-[11px] font-bold text-sky-500/70 uppercase tracking-widest mt-0.5">
-                Lições
-              </div>
+              <div className="text-lg font-black text-sky-500 leading-none">{completedLessons}/{totalLessons}</div>
+              <div className="text-[11px] font-bold text-sky-500/70 uppercase tracking-widest mt-0.5">Lições</div>
             </div>
           </div>
         </div>
@@ -171,11 +158,7 @@ interface LearningTrailMapProps {
   onStartLesson: (lesson: Lesson, unitTitle: string) => void;
 }
 
-export function LearningTrailMap({
-  units,
-  completedLessons,
-  onStartLesson,
-}: LearningTrailMapProps) {
+export function LearningTrailMap({ units, completedLessons, onStartLesson }: LearningTrailMapProps) {
   let globalLessonIndex = 0;
 
   return (
@@ -187,14 +170,12 @@ export function LearningTrailMap({
         {units.map((unit, unitIndex) => {
           const theme = THEMES[unitIndex % THEMES.length];
           const allLessonsCompleted = unit.lessons.every((l) => completedLessons.includes(l.id));
-          const completedInUnit = unit.lessons.filter((l) =>
-            completedLessons.includes(l.id),
-          ).length;
-
+          const completedInUnit = unit.lessons.filter((l) => completedLessons.includes(l.id)).length;
+          
           let isUnitLocked = false;
           if (unit.requiredUnitId) {
-            const reqUnit = units.find((u) => u.id === unit.requiredUnitId);
-            if (reqUnit && !reqUnit.lessons.every((l) => completedLessons.includes(l.id))) {
+            const reqUnit = units.find(u => u.id === unit.requiredUnitId);
+            if (reqUnit && !reqUnit.lessons.every(l => completedLessons.includes(l.id))) {
               isUnitLocked = true;
             }
           }
@@ -220,19 +201,15 @@ export function LearningTrailMap({
                     const previousLessonsCompleted = unit.lessons
                       .slice(0, lessonIndex)
                       .every((l) => completedLessons.includes(l.id));
-
+                    
                     const isActive = !isCompleted && previousLessonsCompleted;
                     const isLocked = !isCompleted && !isActive;
-
-                    const staggerClass =
-                      STAGGER_CLASSES[globalLessonIndex % STAGGER_CLASSES.length];
+                    
+                    const staggerClass = STAGGER_CLASSES[globalLessonIndex % STAGGER_CLASSES.length];
                     globalLessonIndex++;
 
                     return (
-                      <div
-                        key={lesson.id}
-                        className={`transition-all duration-500 ${staggerClass}`}
-                      >
+                      <div key={lesson.id} className={`transition-all duration-500 ${staggerClass}`}>
                         <LessonNode
                           lesson={lesson}
                           status={isCompleted ? "completed" : isActive ? "active" : "locked"}
@@ -252,9 +229,7 @@ export function LearningTrailMap({
         <div className="text-center py-16 relative flex flex-col items-center">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-amber-500/20 blur-3xl rounded-full" />
           <div className="text-7xl mb-4 animate-bounce relative z-10 drop-shadow-xl">🏆</div>
-          <h3 className="text-3xl font-black text-amber-500 font-display relative z-10 drop-shadow-sm">
-            Mestre da Nutrição
-          </h3>
+          <h3 className="text-3xl font-black text-amber-500 font-display relative z-10 drop-shadow-sm">Mestre da Nutrição</h3>
           <p className="text-sm font-bold text-muted-foreground relative z-10 mt-2 uppercase tracking-widest">
             Sua jornada te transformou
           </p>
@@ -268,7 +243,7 @@ export function LearningTrailMap({
 
 interface UnitHeaderProps {
   unit: Unit;
-  theme: (typeof THEMES)[0];
+  theme: typeof THEMES[0];
   completedCount: number;
   totalCount: number;
   isCompleted: boolean;
@@ -294,9 +269,7 @@ function UnitHeader({
           <Lock className="w-8 h-8 text-muted-foreground" />
         </div>
         <div>
-          <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-            Unidade {unitNumber}
-          </span>
+          <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Unidade {unitNumber}</span>
           <h2 className="text-xl font-black text-muted-foreground mt-1">{unit.title}</h2>
         </div>
       </div>
@@ -304,9 +277,7 @@ function UnitHeader({
   }
 
   return (
-    <div
-      className={`w-full max-w-lg rounded-[2rem] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg border-b-8 active:border-b-4 transition-all duration-200 ${theme.bg} ${theme.border}`}
-    >
+    <div className={`w-full max-w-lg rounded-[2rem] p-6 sm:p-8 text-white relative overflow-hidden shadow-lg border-b-8 active:border-b-4 transition-all duration-200 ${theme.bg} ${theme.border}`}>
       {/* Grafismos de Fundo */}
       <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/20 rounded-full blur-2xl" />
       <div className="absolute -left-8 -bottom-8 w-40 h-40 bg-black/10 rounded-full blur-3xl" />
@@ -320,11 +291,7 @@ function UnitHeader({
         <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center justify-between font-black uppercase tracking-widest text-white/80 text-[10px] sm:text-xs mb-1">
             <span>Unidade {unitNumber}</span>
-            {isCompleted && (
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Concluída
-              </span>
-            )}
+            {isCompleted && <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Concluída</span>}
           </div>
           <h2 className="text-2xl sm:text-3xl font-black font-display leading-none mb-2 drop-shadow-sm">
             {unit.title}
@@ -336,16 +303,14 @@ function UnitHeader({
           {/* Barra de Progresso Branca/Transparente */}
           <div className="mt-4 flex items-center gap-3">
             <div className="h-3 flex-1 bg-black/20 rounded-full overflow-hidden relative border border-white/10">
-              <div
-                className="absolute top-0 bottom-0 left-0 bg-white transition-all duration-500 rounded-full"
-                style={{ width: `${progressPct}%` }}
+              <div 
+                className="absolute top-0 bottom-0 left-0 bg-white transition-all duration-500 rounded-full" 
+                style={{ width: `${progressPct}%` }} 
               >
-                <div className="absolute top-0.5 left-1 right-1 h-1 bg-white/50 rounded-full" />
+                 <div className="absolute top-0.5 left-1 right-1 h-1 bg-white/50 rounded-full" />
               </div>
             </div>
-            <span className="text-xs font-black tabular-nums">
-              {completedCount}/{totalCount}
-            </span>
+            <span className="text-xs font-black tabular-nums">{completedCount}/{totalCount}</span>
           </div>
         </div>
       </div>
@@ -358,7 +323,7 @@ function UnitHeader({
 interface LessonNodeProps {
   lesson: Lesson;
   status: "completed" | "active" | "locked";
-  theme: (typeof THEMES)[0];
+  theme: typeof THEMES[0];
   onStart: () => void;
 }
 
@@ -368,8 +333,8 @@ function LessonNode({ lesson, status, theme, onStart }: LessonNodeProps) {
   const isLocked = status === "locked";
 
   return (
-    <div
-      className={`relative flex flex-col items-center group ${isLocked ? "cursor-not-allowed" : "cursor-pointer"}`}
+    <div 
+      className={`relative flex flex-col items-center group ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       onClick={!isLocked ? onStart : undefined}
     >
       {/* Tooltip "Começar!" pulando acima do botão ativo */}
@@ -381,27 +346,23 @@ function LessonNode({ lesson, status, theme, onStart }: LessonNodeProps) {
       )}
 
       {/* Círculo do Botão 3D */}
-      <div
+      <div 
         className={`
           relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-3xl sm:text-4xl transition-all duration-200
           border-b-8 active:border-b-0 active:translate-y-2
-          ${isCompleted ? `${theme.bg} ${theme.border} text-white` : ""}
-          ${isActive ? `${theme.bg} ${theme.border} text-white shadow-2xl ${theme.shadow} ${theme.ring} ring-8 animate-pulse` : ""}
-          ${isLocked ? "bg-secondary border-secondary-hover border-b-8 text-muted-foreground/50" : ""}
+          ${isCompleted ? `${theme.bg} ${theme.border} text-white` : ''}
+          ${isActive ? `${theme.bg} ${theme.border} text-white shadow-2xl ${theme.shadow} ${theme.ring} ring-8 animate-pulse` : ''}
+          ${isLocked ? 'bg-secondary border-secondary-hover border-b-8 text-muted-foreground/50' : ''}
         `}
       >
-        {isCompleted ? (
-          <Star className="fill-current w-10 h-10 sm:w-12 sm:h-12 drop-shadow-sm" />
-        ) : isLocked ? (
-          <Lock className="w-8 h-8 sm:w-10 sm:h-10" />
-        ) : (
-          <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-sm" />
-        )}
-
-        {/* Reflexo de luz na parte superior do botão ativo/completado */}
-        {(isCompleted || isActive) && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 sm:w-12 h-2 sm:h-3 bg-white/30 rounded-full" />
-        )}
+        {isCompleted ? <Star className="fill-current w-10 h-10 sm:w-12 sm:h-12 drop-shadow-sm" /> :
+         isLocked ? <Lock className="w-8 h-8 sm:w-10 sm:h-10" /> :
+         <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 drop-shadow-sm" />}
+         
+         {/* Reflexo de luz na parte superior do botão ativo/completado */}
+         {(isCompleted || isActive) && (
+           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 sm:w-12 h-2 sm:h-3 bg-white/30 rounded-full" />
+         )}
       </div>
 
       {/* Coroa/Selo Flutuante se estiver concluído */}
@@ -412,16 +373,10 @@ function LessonNode({ lesson, status, theme, onStart }: LessonNodeProps) {
       )}
 
       {/* Título da Lição e Recompensas abaixo do botão */}
-      <div
-        className={`mt-4 text-center w-36 sm:w-40 transition-opacity ${isLocked ? "opacity-50" : "opacity-100"}`}
-      >
-        <span className="text-xs sm:text-sm font-black block leading-tight text-foreground drop-shadow-xs">
-          {lesson.title}
-        </span>
+      <div className={`mt-4 text-center w-36 sm:w-40 transition-opacity ${isLocked ? 'opacity-50' : 'opacity-100'}`}>
+        <span className="text-xs sm:text-sm font-black block leading-tight text-foreground drop-shadow-xs">{lesson.title}</span>
         {status !== "locked" && (
-          <span
-            className={`text-[10px] sm:text-[11px] font-bold mt-1 inline-flex items-center gap-1 ${theme.text}`}
-          >
+          <span className={`text-[10px] sm:text-[11px] font-bold mt-1 inline-flex items-center gap-1 ${theme.text}`}>
             {lesson.xpReward} XP
           </span>
         )}
@@ -468,8 +423,7 @@ export function CommunityChallengeGroup({
             {community.name}
           </Link>
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
-            {community.members.length} membros · {challenges.length} desafio
-            {challenges.length !== 1 ? "s" : ""}
+            {community.members.length} membros · {challenges.length} desafio{challenges.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -492,9 +446,7 @@ export function CommunityChallengeGroup({
                   : "border-border hover:border-accent/40"
               }`}
             >
-              <span
-                className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl text-2xl ${isCompleted ? "bg-primary border-2 border-primary-hover shadow-inner" : "bg-secondary border-2 border-border"}`}
-              >
+              <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl text-2xl ${isCompleted ? 'bg-primary border-2 border-primary-hover shadow-inner' : 'bg-secondary border-2 border-border'}`}>
                 {isCompleted ? <CheckCircle2 className="h-6 w-6 text-white" /> : c.badgeIcon}
               </span>
               <div className="flex-1 min-w-0">

@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+// Frontend auth stored in localStorage.
+// Ready for future API/DB integration.
 
 export interface AuthUser {
   id: string;
@@ -10,74 +11,55 @@ export interface AuthUser {
   bio?: string;
   goal?: string;
   journeyGoal?: string;
-  role?: string;
 }
 
-export async function getUser(): Promise<AuthUser | null> {
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
+export interface StoredAccount extends AuthUser {
+  password?: string;
+}
 
-  if (sessionError) {
-    throw new Error("Erro ao obter sessão: " + sessionError.message);
-  }
+const AUTH_KEY = "nutriconnect_auth";
+const USERS_DB_KEY = "nutriconnect_users_db";
 
-  if (!session) {
+export function getUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
+  } catch {
     return null;
   }
-
-  // Obter profile
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", session.user.id)
-    .single();
-
-  if (profileError) {
-    if (profileError.code === "PGRST116") {
-      throw new Error("PROFILE_MISSING");
-    }
-    throw new Error("Erro de banco ao carregar profile: " + profileError.message);
-  }
-
-  // Obter private_profile
-  const { data: privateData, error: privError } = await supabase
-    .from("private_profiles")
-    .select("*")
-    .eq("user_id", session.user.id)
-    .single();
-
-  if (privError) {
-    if (privError.code === "PGRST116") {
-      throw new Error("PRIVATE_PROFILE_MISSING");
-    }
-    throw new Error("Erro de banco ao carregar private_profile: " + privError.message);
-  }
-
-  return {
-    id: session.user.id,
-    name: profile.display_name,
-    email: session.user.email || "",
-    role: profile.role,
-    bio: profile.bio || "",
-    phone: privateData.phone || "",
-    cpf: privateData.cpf || "",
-    birthDate: privateData.birth_date || "",
-    journeyGoal: session.user.user_metadata?.journeyGoal || "",
-    goal: session.user.user_metadata?.goal || "",
-  };
 }
 
-export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error("Erro ao fazer logout:", error);
-    throw error;
+export function setUser(user: AuthUser) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+  window.dispatchEvent(new Event("auth-change"));
+}
+
+export function signOut() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(AUTH_KEY);
+  window.dispatchEvent(new Event("auth-change"));
+}
+
+export function getStoredUsers(): Record<string, StoredAccount> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(USERS_DB_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
   }
 }
 
-export async function registerUser(data: {
+export function saveStoredUser(account: StoredAccount) {
+  if (typeof window === "undefined") return;
+  const users = getStoredUsers();
+  users[account.email.toLowerCase().trim()] = account;
+  localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+}
+
+export function registerUser(data: {
   name: string;
   email: string;
   phone?: string;
@@ -86,116 +68,84 @@ export async function registerUser(data: {
   password?: string;
   goal?: string;
   journeyGoal?: string;
-}) {
+}): AuthUser {
   const cleanEmail = data.email.toLowerCase().trim();
-  if (!data.password) throw new Error("Senha obrigatória");
 
-  // Attempt Supabase Auth Sign Up
-  // The Postgres trigger 'on_auth_user_created' handles inserting into profiles and private_profiles
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  const existingUsers = getStoredUsers();
+  if (existingUsers[cleanEmail]) {
+    throw new Error("E-mail já cadastrado");
+  }
+
+  const id =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+
+  const newUser: StoredAccount = {
+    id,
+    name: data.name.trim(),
     email: cleanEmail,
+    phone: data.phone?.trim() || "",
+    cpf: data.cpf?.trim() || "",
+    birthDate: data.birthDate || "",
     password: data.password,
-    options: {
-      data: {
-        display_name: data.name.trim(),
-        journeyGoal: data.goal || data.journeyGoal || "",
-        phone: data.phone || null,
-        cpf: data.cpf || null,
-        birthDate: data.birthDate || null,
-      },
-    },
-  });
+    goal: data.goal || "Comer melhor e com prazer",
+    journeyGoal: data.journeyGoal || data.goal || "Comer melhor e com prazer",
+  };
 
-  if (authError) {
-    if (authError.message.includes("rate limit")) {
-      throw new Error("Limite de cadastros atingido pelo provedor. Tente novamente mais tarde.");
-    }
-    throw new Error(authError.message);
-  }
-
-  if (!authData.user) throw new Error("Erro desconhecido ao criar usuário");
-
-  if (!authData.session) {
-    // Requires email confirmation or session not established
-    return null;
-  }
-
-  try {
-    const user = await getUser();
-    return user;
-  } catch (err: any) {
-    if (err.message === "PROFILE_MISSING" || err.message === "PRIVATE_PROFILE_MISSING") {
-      throw new Error(
-        "Falha crítica: O perfil não foi gerado automaticamente pelo banco de dados.",
-      );
-    }
-    throw err;
-  }
+  saveStoredUser(newUser);
+  setUser(newUser);
+  return newUser;
 }
 
-export async function loginUser(email: string, password?: string) {
+export function loginUser(email: string, password?: string): AuthUser {
   const cleanEmail = email.toLowerCase().trim();
-  if (!password) throw new Error("Senha obrigatória.");
+  const users = getStoredUsers();
+  const existing = users[cleanEmail];
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: cleanEmail,
-    password,
-  });
-
-  if (error) {
-    console.error("Supabase Login Error:", error);
-    throw new Error(
-      error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : error.message,
-    );
+  if (!existing) {
+    throw new Error("E-mail não encontrado. Verifique ou crie sua conta.");
   }
 
-  return getUser();
+  if (existing.password !== password) {
+    throw new Error("Senha incorreta.");
+  }
+
+  const activeUser: AuthUser = {
+    ...existing,
+  };
+
+  setUser(activeUser);
+  return activeUser;
 }
 
-export async function updateCurrentUser(updates: Partial<AuthUser>) {
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
+export function updateCurrentUser(updates: Partial<AuthUser>): AuthUser | null {
+  const current = getUser();
+  if (!current) return null;
 
-  if (sessionError || !session) {
-    throw new Error("Erro de sessão: Sessão não encontrada ou expirada.");
+  const updated: AuthUser = {
+    ...current,
+    ...updates,
+  };
+
+  setUser(updated);
+
+  // Sync with stored users database
+  const users = getStoredUsers();
+  const key = current.email.toLowerCase().trim();
+  const existing = users[key] || {};
+  users[key] = {
+    ...existing,
+    ...updated,
+  };
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
   }
 
-  if (updates.name !== undefined || updates.bio !== undefined) {
-    const { error: pError } = await supabase
-      .from("profiles")
-      .update({
-        display_name: updates.name,
-        bio: updates.bio,
-      })
-      .eq("id", session.user.id);
+  return updated;
+}
 
-    if (pError) throw new Error(`Erro ao atualizar perfil público: ${pError.message}`);
-  }
-
-  if (updates.cpf !== undefined || updates.phone !== undefined || updates.birthDate !== undefined) {
-    const { error: prError } = await supabase
-      .from("private_profiles")
-      .update({
-        cpf: updates.cpf,
-        phone: updates.phone,
-        birth_date: updates.birthDate,
-      })
-      .eq("user_id", session.user.id);
-
-    if (prError) throw new Error(`Erro ao atualizar perfil privado: ${prError.message}`);
-  }
-
-  // Update Auth JWT metadata for goal
-  if (updates.goal !== undefined || updates.journeyGoal !== undefined) {
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        journeyGoal: updates.journeyGoal || updates.goal || "",
-      },
-    });
-    if (authError) throw new Error(`Erro ao atualizar metadados da conta: ${authError.message}`);
-  }
-
-  return getUser();
+export function mockLogin(email: string): AuthUser {
+  return loginUser(email);
 }

@@ -598,19 +598,7 @@ function seed(): CommunityState {
       order: 1,
       createdByProfessionalId: MARIA_ID,
       createdByProfessionalName: "Maria Lorena",
-      participants: [
-        PAC_ID,
-        PAC_CARLOS_ID,
-        "user-demo-7",
-        "user-demo-8",
-        "user-demo-9",
-        "user-demo-10",
-        "user-demo-11",
-        "user-demo-12",
-        "user-demo-13",
-        "user-demo-14",
-        "user-demo-15",
-      ],
+      participants: [PAC_ID, PAC_CARLOS_ID, "user-demo-7", "user-demo-8", "user-demo-9", "user-demo-10", "user-demo-11", "user-demo-12", "user-demo-13", "user-demo-14", "user-demo-15"],
       completedBy: [PAC_ID, PAC_CARLOS_ID],
       steps: [
         "Comece o dia com um copo d'água ao acordar",
@@ -724,20 +712,7 @@ function seed(): CommunityState {
       communityId: "c-relacao",
       createdByProfessionalId: HELENA_ID,
       createdByProfessionalName: "Helena Souza",
-      participants: [
-        PAC_BEA_ID,
-        PAC_ID,
-        "user-demo-16",
-        "user-demo-17",
-        "user-demo-18",
-        "user-demo-19",
-        "user-demo-20",
-        "user-demo-21",
-        "user-demo-22",
-        "user-demo-23",
-        "user-demo-24",
-        "user-demo-25",
-      ],
+      participants: [PAC_BEA_ID, PAC_ID, "user-demo-16", "user-demo-17", "user-demo-18", "user-demo-19", "user-demo-20", "user-demo-21", "user-demo-22", "user-demo-23", "user-demo-24", "user-demo-25"],
       completedBy: [PAC_BEA_ID],
       steps: [
         "Desligue o celular e a TV antes de se sentar para comer",
@@ -767,7 +742,8 @@ function seed(): CommunityState {
     {
       id: "desafio-preparo-semana",
       title: "Planejamento de Marmitas da Semana",
-      description: "Separe 2 horas no domingo para deixar marmitas prontas para 3 dias da semana.",
+      description:
+        "Separe 2 horas no domingo para deixar marmitas prontas para 3 dias da semana.",
       category: "Organização",
       badgeIcon: "📦",
       badgeLabel: "Preparador(a) da Semana",
@@ -777,18 +753,7 @@ function seed(): CommunityState {
       communityId: "c-cozinha",
       createdByProfessionalId: PEDRO_ID,
       createdByProfessionalName: "Pedro Costa",
-      participants: [
-        PAC_CARLOS_ID,
-        PAC_ID,
-        "user-demo-26",
-        "user-demo-27",
-        "user-demo-28",
-        "user-demo-29",
-        "user-demo-30",
-        "user-demo-31",
-        "user-demo-32",
-        "user-demo-33",
-      ],
+      participants: [PAC_CARLOS_ID, PAC_ID, "user-demo-26", "user-demo-27", "user-demo-28", "user-demo-29", "user-demo-30", "user-demo-31", "user-demo-32", "user-demo-33"],
       completedBy: [],
       steps: [
         "Escolha 2 proteínas, 2 acompanhamentos e 2 saladas para a semana",
@@ -820,15 +785,7 @@ function seed(): CommunityState {
       communityId: "c-educacao",
       createdByProfessionalId: MARIA_ID,
       createdByProfessionalName: "Maria Lorena",
-      participants: [
-        PAC_ID,
-        "user-demo-34",
-        "user-demo-35",
-        "user-demo-36",
-        "user-demo-37",
-        "user-demo-38",
-        "user-demo-39",
-      ],
+      participants: [PAC_ID, "user-demo-34", "user-demo-35", "user-demo-36", "user-demo-37", "user-demo-38", "user-demo-39"],
       completedBy: [],
       steps: [
         "Escolha 3 produtos que você come ou bebe frequentemente",
@@ -888,17 +845,7 @@ function seed(): CommunityState {
       communityId: "c-relacao",
       createdByProfessionalId: HELENA_ID,
       createdByProfessionalName: "Helena Souza",
-      participants: [
-        PAC_BEA_ID,
-        "user-demo-44",
-        "user-demo-45",
-        "user-demo-46",
-        "user-demo-47",
-        "user-demo-48",
-        "user-demo-49",
-        "user-demo-50",
-        "user-demo-51",
-      ],
+      participants: [PAC_BEA_ID, "user-demo-44", "user-demo-45", "user-demo-46", "user-demo-47", "user-demo-48", "user-demo-49", "user-demo-50", "user-demo-51"],
       completedBy: [],
       steps: [
         "Antes de comer, olhe para o prato por 10 segundos",
@@ -1448,12 +1395,7 @@ export function getUserXP(userId: string, challenges: Challenge[]): number {
 }
 
 /** Nível do usuário baseado no XP acumulado. */
-export function getUserLevel(xp: number): {
-  level: number;
-  label: string;
-  xpForNext: number;
-  xpInLevel: number;
-} {
+export function getUserLevel(xp: number): { level: number; label: string; xpForNext: number; xpInLevel: number } {
   const levels = [
     { threshold: 0, label: "Semente" },
     { threshold: 150, label: "Broto" },
@@ -1489,7 +1431,9 @@ export function getUserStreak(userId: string, challenges: Challenge[]): number {
 
 /** Retorna desafios da trilha ordenados por `order`. */
 export function getTrailChallenges(challenges: Challenge[]): Challenge[] {
-  return challenges.filter((c) => c.order != null).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return challenges
+    .filter((c) => c.order != null)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 /** Verifica se um desafio está desbloqueado para o usuário. */
@@ -1503,3 +1447,4 @@ export function isChallengeUnlocked(
   if (!required) return true;
   return required.completedBy.includes(userId);
 }
+

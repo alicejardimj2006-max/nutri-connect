@@ -1,6 +1,4 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import {
   ChefHat,
   Award,
@@ -63,70 +61,37 @@ function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
   const { user, hydrated: authHydrated } = useRequireAuth();
   const state = useCommunity();
-  const { posts, communities, challenges, hydrated } = state;
+  const { profiles, posts, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
 
-  const [dbProfile, setDbProfile] = useState<any>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
-  useEffect(() => {
-    async function loadProfile() {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-        if (data) {
-          setDbProfile(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingProfile(false);
-      }
-    }
-    loadProfile();
-  }, [userId]);
-
-  if (!authHydrated || !user || !hydrated || loadingProfile) return <AuthGateLoading />;
-
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    signOut();
     toast.success("Você saiu da sua conta.");
     navigate({ to: "/login" });
   };
 
   const isSelf = user?.id === userId;
 
+  const stored = profiles.find((p) => p.userId === userId);
   const fromPost = posts.find((p) => p.authorId === userId);
 
-  const profile = dbProfile
-    ? {
-        userId: dbProfile.id,
-        name: dbProfile.display_name || dbProfile.username || "Usuário",
-        bio:
-          dbProfile.bio ||
-          (isSelf ? "Este perfil ainda não tem biografia." : "Membro da comunidade NutriConnect."),
-        role: dbProfile.role,
-      }
-    : isSelf && user
+  const profile =
+    stored ??
+    (isSelf && user
       ? {
           userId,
           name: user.name,
           bio: user.bio || "Este perfil ainda não tem biografia.",
-          role: null,
         }
       : fromPost
         ? {
             userId,
             name: fromPost.authorName,
             bio: "Membro da comunidade NutriConnect.",
-            role: null,
           }
-        : null;
-
-  const isProfessional = profile?.role === "professional" || profile?.role === "profissional";
+        : null);
 
   const myPosts = posts
     .filter((p) => p.authorId === userId)
@@ -139,6 +104,7 @@ function PublicProfilePage() {
   const administered = getAdministeredCommunity(userId, communities);
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
+  const isProfessional = stored?.role === "profissional";
   const professionalInfo = getProfessionalInfo(profiles, userId);
   const inviteCount =
     isSelf && isProfessional && user ? getProfessionalInvites(user.id, state).length : 0;
