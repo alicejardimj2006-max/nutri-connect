@@ -194,7 +194,6 @@ function EspacoDeHojePage() {
           )}
         </div>
       </main>
-
     </div>
   );
 }

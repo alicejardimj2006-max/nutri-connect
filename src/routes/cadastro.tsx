@@ -60,7 +60,7 @@ function Cadastro() {
       });
 
       toast.success("Conta criada! Bem-vindo(a) ao NutriConnect.");
-      
+
       // Delay navigation slightly to allow session to settle
       setTimeout(() => {
         navigate({ to: "/explorar" });

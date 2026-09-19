@@ -25,7 +25,7 @@ function Login() {
     try {
       await loginUser(cleanEmail, password);
       toast.success("Bem-vindo(a) de volta à sua jornada!");
-      
+
       setTimeout(() => {
         navigate({ to: "/explorar" });
       }, 500);
@@ -36,7 +36,10 @@ function Login() {
     }
   };
   return (
-    <AuthLayout title="Bem-vindo de volta" subtitle="Entre na sua conta para continuar sua jornada.">
+    <AuthLayout
+      title="Bem-vindo de volta"
+      subtitle="Entre na sua conta para continuar sua jornada."
+    >
       <form onSubmit={submit} className="space-y-5">
         <Field label="E-mail">
           <input

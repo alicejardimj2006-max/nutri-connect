@@ -18,17 +18,17 @@ import {
   Palette,
   LogOut,
   Ban,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { signOut } from "@/lib/auth";
-import { 
-  getPrivacySettings, 
-  updatePrivacySettings, 
-  requestDataExport, 
+import {
+  getPrivacySettings,
+  updatePrivacySettings,
+  requestDataExport,
   requestAccountDeletion,
-  submitPrivacyRequest
+  submitPrivacyRequest,
 } from "@/lib/privacy";
 
 export const Route = createFileRoute("/perfil/configuracoes")({
@@ -42,7 +42,9 @@ function ConfiguracoesPage() {
 
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'geral' | 'privacidade' | 'dados' | 'seguranca'>('geral');
+  const [activeTab, setActiveTab] = useState<"geral" | "privacidade" | "dados" | "seguranca">(
+    "geral",
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -82,7 +84,12 @@ function ConfiguracoesPage() {
   };
 
   const handleDeletion = async () => {
-    if (!confirm("ATENÇÃO: Isso registrará uma solicitação irreversível de exclusão de conta e apagará seus dados. Deseja continuar?")) return;
+    if (
+      !confirm(
+        "ATENÇÃO: Isso registrará uma solicitação irreversível de exclusão de conta e apagará seus dados. Deseja continuar?",
+      )
+    )
+      return;
     try {
       setIsDeleting(true);
       await requestAccountDeletion();
@@ -101,7 +108,9 @@ function ConfiguracoesPage() {
         className="flex items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition hover:bg-secondary/50"
       >
         <div className="flex items-center gap-4">
-          <div className="bg-chart-4/15 text-chart-4 p-3 rounded-xl"><Palette className="w-5 h-5"/></div>
+          <div className="bg-chart-4/15 text-chart-4 p-3 rounded-xl">
+            <Palette className="w-5 h-5" />
+          </div>
           <div>
             <h3 className="font-bold text-foreground">Personalização</h3>
             <p className="text-xs text-muted-foreground">Cores, fontes e tema visual</p>
@@ -112,7 +121,9 @@ function ConfiguracoesPage() {
 
       <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
         <div className="flex items-center gap-4 mb-4">
-          <div className="bg-primary-soft text-primary p-3 rounded-xl"><UserCog className="w-5 h-5"/></div>
+          <div className="bg-primary-soft text-primary p-3 rounded-xl">
+            <UserCog className="w-5 h-5" />
+          </div>
           <div>
             <h3 className="font-bold text-foreground">Conta</h3>
             <p className="text-xs text-muted-foreground">Acesso e credenciais</p>
@@ -126,7 +137,7 @@ function ConfiguracoesPage() {
           onClick={handleSignOut}
           className="w-full flex items-center justify-center gap-2 border border-destructive/40 text-destructive font-bold py-3 rounded-xl hover:bg-destructive/10 transition"
         >
-          <LogOut className="w-4 h-4"/> Sair da conta
+          <LogOut className="w-4 h-4" /> Sair da conta
         </button>
       </section>
     </div>
@@ -135,35 +146,37 @@ function ConfiguracoesPage() {
   const renderPrivacidade = () => (
     <div className="space-y-6">
       <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><Eye className="w-5 h-5 text-accent"/> Visibilidade do Perfil</h3>
-        
+        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+          <Eye className="w-5 h-5 text-accent" /> Visibilidade do Perfil
+        </h3>
+
         <label className="flex items-center justify-between py-3 border-b border-border">
           <div>
-            <p className="text-sm font-bold">Quem pode ver meu perfil</p>
-            <p className="text-xs text-muted-foreground">Define se pessoas não logadas podem te ver.</p>
+            <p className="text-sm font-bold">Quem pode ver meu perfil?</p>
           </div>
-          <select 
-            value={settings?.profile_visibility}
-            onChange={(e) => handleUpdate('profile_visibility', e.target.value)}
+          <select
+            value={settings?.profile_visibility || "public"}
+            onChange={(e) => handleUpdate("profile_visibility", e.target.value)}
             className="bg-secondary text-sm font-medium rounded-lg px-3 py-2 border-0 outline-none"
           >
             <option value="public">Todos (Público)</option>
             <option value="private">Privado</option>
-            <option value="friends">Apenas amigos</option>
           </select>
         </label>
 
         <label className="flex items-center justify-between py-3 border-b border-border">
           <div>
-            <p className="text-sm font-bold">Quem pode me enviar mensagens</p>
+            <p className="text-sm font-bold">Quem pode me enviar mensagens?</p>
+            <p className="text-xs text-muted-foreground">
+              O chat direto ainda não está disponível.
+            </p>
           </div>
-          <select 
-            value={settings?.message_allowance}
-            onChange={(e) => handleUpdate('message_allowance', e.target.value)}
+          <select
+            value={settings?.message_allowance || "everyone"}
+            onChange={(e) => handleUpdate("message_allowance", e.target.value)}
             className="bg-secondary text-sm font-medium rounded-lg px-3 py-2 border-0 outline-none"
           >
             <option value="everyone">Qualquer pessoa</option>
-            <option value="friends">Apenas amigos</option>
             <option value="nobody">Ninguém</option>
           </select>
         </label>
@@ -173,9 +186,9 @@ function ConfiguracoesPage() {
             <p className="text-sm font-bold">Permitir que me encontrem</p>
             <p className="text-xs text-muted-foreground">Nas buscas da plataforma.</p>
           </div>
-          <select 
+          <select
             value={settings?.discoverability}
-            onChange={(e) => handleUpdate('discoverability', e.target.value)}
+            onChange={(e) => handleUpdate("discoverability", e.target.value)}
             className="bg-secondary text-sm font-medium rounded-lg px-3 py-2 border-0 outline-none"
           >
             <option value="everyone">Sim, todos</option>
@@ -186,29 +199,35 @@ function ConfiguracoesPage() {
       </section>
 
       <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
-        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><MapPin className="w-5 h-5 text-blue-500"/> Localização</h3>
+        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-blue-500" /> Localização
+        </h3>
         <label className="flex items-center justify-between py-3 border-b border-border cursor-pointer">
           <div>
             <p className="text-sm font-bold">Usar localização (Interno)</p>
-            <p className="text-xs text-muted-foreground max-w-[200px] sm:max-w-xs">Usado apenas para recomendar comunidades locais.</p>
+            <p className="text-xs text-muted-foreground max-w-[200px] sm:max-w-xs">
+              Preparado para futuras recomendações (ainda inativo).
+            </p>
           </div>
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             checked={settings?.use_location_for_features}
-            onChange={(e) => handleUpdate('use_location_for_features', e.target.checked)}
-            className="w-5 h-5 accent-primary" 
+            onChange={(e) => handleUpdate("use_location_for_features", e.target.checked)}
+            className="w-5 h-5 accent-primary"
           />
         </label>
         <label className="flex items-center justify-between py-3 cursor-pointer">
           <div>
             <p className="text-sm font-bold">Mostrar localização publicamente</p>
-            <p className="text-xs text-muted-foreground">Exibe cidade/estado no seu perfil.</p>
+            <p className="text-xs text-muted-foreground">
+              Exibirá cidade/estado no seu perfil no futuro.
+            </p>
           </div>
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             checked={settings?.show_location}
-            onChange={(e) => handleUpdate('show_location', e.target.checked)}
-            className="w-5 h-5 accent-primary" 
+            onChange={(e) => handleUpdate("show_location", e.target.checked)}
+            className="w-5 h-5 accent-primary"
           />
         </label>
       </section>
@@ -219,28 +238,41 @@ function ConfiguracoesPage() {
     <div className="space-y-6">
       <div className="bg-primary-soft/30 border border-primary/20 rounded-2xl p-5 text-sm text-foreground/90 leading-relaxed shadow-sm">
         <h3 className="font-black text-primary flex items-center gap-2 mb-2">
-          <Database className="w-5 h-5"/> Centro de Dados (LGPD)
+          <Database className="w-5 h-5" /> Centro de Dados (LGPD)
         </h3>
-        <p>A Lei Geral de Proteção de Dados garante que você tenha total controle sobre suas informações. Nesta área você pode exercer seus direitos como titular.</p>
+        <p>
+          A Lei Geral de Proteção de Dados garante que você tenha total controle sobre suas
+          informações. Nesta área você pode exercer seus direitos como titular.
+        </p>
       </div>
 
       <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-4">
           <div>
             <h4 className="font-bold text-sm">Baixar meus dados</h4>
-            <p className="text-xs text-muted-foreground mt-1">Solicita um pacote ZIP com seus posts, dados cadastrais e preferências.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Registra uma solicitação para a equipe enviar seus dados (em breve).
+            </p>
           </div>
-          <button onClick={handleExport} className="shrink-0 bg-secondary text-foreground hover:bg-secondary/80 font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
-            <Download className="w-4 h-4"/> Exportar
+          <button
+            onClick={handleExport}
+            className="shrink-0 bg-secondary text-foreground hover:bg-secondary/80 font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" /> Solicitar
           </button>
         </div>
 
         <div className="flex items-center justify-between border-b border-border pb-4">
           <div>
             <h4 className="font-bold text-sm">Atualizar dados privados</h4>
-            <p className="text-xs text-muted-foreground mt-1">Edite CPF, telefone e data de nascimento na página de Perfil.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Edite CPF, telefone e data de nascimento na página de Perfil.
+            </p>
           </div>
-          <Link to="/perfil/editar" className="shrink-0 bg-secondary text-foreground hover:bg-secondary/80 font-bold px-4 py-2 rounded-xl text-sm transition">
+          <Link
+            to="/perfil/editar"
+            className="shrink-0 bg-secondary text-foreground hover:bg-secondary/80 font-bold px-4 py-2 rounded-xl text-sm transition"
+          >
             Editar
           </Link>
         </div>
@@ -248,46 +280,92 @@ function ConfiguracoesPage() {
         <div className="pt-2">
           <div className="bg-destructive/5 rounded-xl border border-destructive/20 p-4">
             <h4 className="font-bold text-sm text-destructive flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4"/> Excluir Conta
+              <AlertTriangle className="w-4 h-4" /> Solicitar Exclusão da Conta
             </h4>
             <p className="text-xs text-muted-foreground mb-4">
-              A exclusão da conta é permanente. Todos os seus posts, comentários e conexões sociais serão perdidos. Dados exigidos por obrigações legais (como registros de IP) serão mantidos anonimizados pelo prazo estipulado em lei.
+              Isto fará uma solicitação para exclusão da sua conta. Até a funcionalidade automática
+              ser concluída, sua conta passará por revisão manual antes da exclusão definitiva.
             </p>
-            <button 
-              onClick={handleDeletion} 
+            <button
+              onClick={handleDeletion}
               disabled={isDeleting}
               className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold px-6 py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Trash2 className="w-4 h-4"/> {isDeleting ? "Processando..." : "Excluir Definitivamente"}
+              <Trash2 className="w-4 h-4" /> {isDeleting ? "Processando..." : "Solicitar Exclusão"}
             </button>
           </div>
         </div>
       </section>
+
+      {requests.length > 0 && (
+        <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm space-y-4">
+          <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+            <Database className="w-5 h-5 text-accent" /> Histórico de Solicitações
+          </h3>
+          <div className="space-y-3">
+            {requests.map((req) => (
+              <div
+                key={req.id}
+                className="text-sm p-3 border border-border rounded-lg bg-secondary/20"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <strong className="text-foreground">
+                    {req.type === "portability"
+                      ? "Exportação"
+                      : req.type === "deletion"
+                        ? "Exclusão"
+                        : req.type}
+                  </strong>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground bg-secondary px-2 py-1 rounded">
+                    {req.status}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground flex justify-between">
+                  <span>ID: {req.id.slice(0, 8)}...</span>
+                  <span>{new Date(req.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 
   const renderSeguranca = () => (
     <div className="space-y-6">
       <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm space-y-4">
-        <h3 className="font-bold text-foreground flex items-center gap-2"><Lock className="w-5 h-5 text-amber-500"/> Controles de Segurança</h3>
-        
-        <Link to="/desafios" className="flex items-center justify-between py-3 border-b border-border">
+        <h3 className="font-bold text-foreground flex items-center gap-2">
+          <Lock className="w-5 h-5 text-amber-500" /> Controles de Segurança
+        </h3>
+
+        <Link
+          to="/desafios"
+          className="flex items-center justify-between py-3 border-b border-border"
+        >
           <div>
             <p className="text-sm font-bold">Minhas Denúncias</p>
-            <p className="text-xs text-muted-foreground">Acompanhe as denúncias que você realizou.</p>
+            <p className="text-xs text-muted-foreground">
+              Acompanhe as denúncias que você realizou.
+            </p>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground" />
         </Link>
-        
-        <Link to="/desafios" className="flex items-center justify-between py-3 border-b border-border">
+
+        <Link
+          to="/desafios"
+          className="flex items-center justify-between py-3 border-b border-border"
+        >
           <div>
-            <p className="text-sm font-bold text-destructive flex items-center gap-2"><Ban className="w-4 h-4"/> Contas Bloqueadas</p>
+            <p className="text-sm font-bold text-destructive flex items-center gap-2">
+              <Ban className="w-4 h-4" /> Contas Bloqueadas
+            </p>
             <p className="text-xs text-muted-foreground">Gerencie pessoas que você bloqueou.</p>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground" />
         </Link>
       </section>
-      
+
       <p className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest font-bold">
         Sessão ativa criptografada
       </p>
@@ -307,7 +385,9 @@ function ConfiguracoesPage() {
           <span>Voltar para o perfil</span>
         </Link>
 
-        <h1 className="text-3xl font-extrabold font-display text-foreground mb-2">Configurações e Privacidade</h1>
+        <h1 className="text-3xl font-extrabold font-display text-foreground mb-2">
+          Configurações e Privacidade
+        </h1>
         <p className="text-sm text-muted-foreground mb-8">
           Gerencie sua experiência, segurança e dados pessoais na plataforma.
         </p>
@@ -315,15 +395,15 @@ function ConfiguracoesPage() {
         {/* Tab Navigation */}
         <div className="flex overflow-x-auto pb-2 mb-6 gap-2 no-scrollbar border-b border-border">
           {[
-            { id: 'geral', label: 'Geral', icon: <UserCog className="w-4 h-4"/> },
-            { id: 'privacidade', label: 'Privacidade', icon: <ShieldAlert className="w-4 h-4"/> },
-            { id: 'dados', label: 'Dados (LGPD)', icon: <Database className="w-4 h-4"/> },
-            { id: 'seguranca', label: 'Segurança', icon: <Lock className="w-4 h-4"/> },
-          ].map(tab => (
+            { id: "geral", label: "Geral", icon: <UserCog className="w-4 h-4" /> },
+            { id: "privacidade", label: "Privacidade", icon: <ShieldAlert className="w-4 h-4" /> },
+            { id: "dados", label: "Dados (LGPD)", icon: <Database className="w-4 h-4" /> },
+            { id: "seguranca", label: "Segurança", icon: <Lock className="w-4 h-4" /> },
+          ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'bg-card border-t border-l border-r border-border text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? "bg-card border-t border-l border-r border-border text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
             >
               {tab.icon} {tab.label}
             </button>
@@ -332,14 +412,15 @@ function ConfiguracoesPage() {
 
         {/* Tab Content */}
         <div className="min-h-[300px]">
-          {activeTab === 'geral' && renderGeral()}
-          {activeTab === 'privacidade' && renderPrivacidade()}
-          {activeTab === 'dados' && renderDados()}
-          {activeTab === 'seguranca' && renderSeguranca()}
+          {activeTab === "geral" && renderGeral()}
+          {activeTab === "privacidade" && renderPrivacidade()}
+          {activeTab === "dados" && renderDados()}
+          {activeTab === "seguranca" && renderSeguranca()}
         </div>
-        
+
         <div className="mt-12 text-center text-[10px] text-muted-foreground pb-8">
-          NutriConnect &copy; {new Date().getFullYear()} • Plataforma adequada ao ECA Digital e LGPD.
+          NutriConnect &copy; {new Date().getFullYear()} • Plataforma adequada ao ECA Digital e
+          LGPD.
         </div>
       </main>
     </div>

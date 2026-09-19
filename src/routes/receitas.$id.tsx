@@ -366,7 +366,6 @@ function ReceitaDetalhePage() {
           </div>
         </section>
       </main>
-
     </div>
   );
 }

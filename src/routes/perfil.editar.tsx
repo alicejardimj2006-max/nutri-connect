@@ -26,7 +26,7 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     // Fetch profile and private_profile from Supabase
     async function loadData() {
       try {
@@ -35,13 +35,13 @@ function EditProfilePage() {
           .select("display_name, bio")
           .eq("id", user.id)
           .single();
-          
+
         const { data: privData } = await supabase
           .from("private_profiles")
           .select("phone")
           .eq("user_id", user.id)
           .single();
-          
+
         setName(pubData?.display_name || user.name || "");
         setBio(pubData?.bio || "");
         setPhone(privData?.phone || "");
@@ -65,9 +65,9 @@ function EditProfilePage() {
       toast.error("O nome não pode ficar em branco.");
       return;
     }
-    
+
     setSaving(true);
-    
+
     try {
       // Atualiza tabela pública
       const { error: pubError } = await supabase
@@ -75,29 +75,29 @@ function EditProfilePage() {
         .update({
           display_name: cleanName,
           bio: bio.trim(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
-        
+
       if (pubError) throw pubError;
-      
+
       // Atualiza tabela privada
       const { error: privError } = await supabase
         .from("private_profiles")
         .update({
           phone: phone.trim(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id);
-        
+
       if (privError) throw privError;
-      
+
       // Atualiza metadados JWT (opcional, para persistir 'goal')
       await supabase.auth.updateUser({
         data: {
           journeyGoal: goal,
-          name: cleanName
-        }
+          name: cleanName,
+        },
       });
 
       toast.success("Perfil atualizado!");

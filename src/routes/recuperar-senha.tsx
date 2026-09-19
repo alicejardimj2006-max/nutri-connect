@@ -27,7 +27,7 @@ function Recuperar() {
     });
 
     // Fallback verificando hash na URL
-    if (window.location.hash.includes('type=recovery')) {
+    if (window.location.hash.includes("type=recovery")) {
       setStep(3);
     }
 
@@ -39,7 +39,7 @@ function Recuperar() {
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return toast.error("Informe o seu e-mail cadastrado.");
-    
+
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/recuperar-senha`,
@@ -62,7 +62,7 @@ function Recuperar() {
     e.preventDefault();
     if (novaSenha !== conf) return toast.error("As senhas não coincidem.");
     if (novaSenha.length < 6) return toast.error("A senha deve ter no mínimo 6 caracteres.");
-    
+
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: novaSenha });
     setLoading(false);
@@ -147,7 +147,8 @@ function Recuperar() {
         <div className="space-y-4 text-center py-4">
           <Mail className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-2" />
           <p className="text-sm text-muted-foreground">
-            Enviamos um link de recuperação para o seu e-mail. Por favor, verifique sua caixa de entrada e clique no link para redefinir sua senha.
+            Enviamos um link de recuperação para o seu e-mail. Por favor, verifique sua caixa de
+            entrada e clique no link para redefinir sua senha.
           </p>
           <div className="pt-4 flex flex-col gap-2 justify-center items-center text-xs">
             <button

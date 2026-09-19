@@ -259,7 +259,6 @@ function TemaDaSemanaPage() {
           </div>
         )}
       </main>
-
     </div>
   );
 }

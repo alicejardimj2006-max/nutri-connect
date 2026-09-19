@@ -99,7 +99,6 @@ function ExperienciasPage() {
           </div>
         )}
       </main>
-
     </div>
   );
 }

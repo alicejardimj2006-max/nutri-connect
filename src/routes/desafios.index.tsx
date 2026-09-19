@@ -11,12 +11,7 @@ import {
   PopularBadge,
 } from "@/components/trail-components";
 import { LessonModal } from "@/components/lesson-modal";
-import {
-  getEarnedBadges,
-  getUserXP,
-  getUserLevel,
-  getUserStreak,
-} from "@/lib/community";
+import { getEarnedBadges, getUserXP, getUserLevel, getUserStreak } from "@/lib/community";
 import {
   NUTRITION_UNITS as UNITS,
   loadTrailProgress,
@@ -95,10 +90,7 @@ function DesafiosIndexPage() {
     [currentUserId, challenges],
   );
 
-  const totalLessons = useMemo(
-    () => UNITS.reduce((sum, u) => sum + u.lessons.length, 0),
-    [],
-  );
+  const totalLessons = useMemo(() => UNITS.reduce((sum, u) => sum + u.lessons.length, 0), []);
 
   // Populares: desafios com createdByProfessionalId, ordenados por participantes
   const popularChallenges = useMemo(
@@ -155,8 +147,8 @@ function DesafiosIndexPage() {
             Desafios & Aprendizado
           </h1>
           <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-            Aprenda sobre nutrição no seu ritmo com lições interativas, participe de
-            desafios práticos e cresça junto com a comunidade.
+            Aprenda sobre nutrição no seu ritmo com lições interativas, participe de desafios
+            práticos e cresça junto com a comunidade.
           </p>
         </div>
 
@@ -181,7 +173,8 @@ function DesafiosIndexPage() {
             </h2>
             <span className="text-[10px] text-muted-foreground font-medium">
               {trailProgress.completedLessons.length} lições ·{" "}
-              {challenges.filter((c) => c.completedBy.includes(currentUserId)).length} desafios concluídos
+              {challenges.filter((c) => c.completedBy.includes(currentUserId)).length} desafios
+              concluídos
             </span>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -231,9 +224,7 @@ function DesafiosIndexPage() {
 
         {/* Conteúdo da aba ativa */}
         {!hydrated ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">
-            Carregando…
-          </div>
+          <div className="py-12 text-center text-sm text-muted-foreground">Carregando…</div>
         ) : (
           <>
             {/* ── ABA: Minha Trilha (Lições Educativas) ── */}
@@ -244,20 +235,28 @@ function DesafiosIndexPage() {
                   {/* Luzes de fundo */}
                   <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
                   <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
-                  
+
                   <div className="space-y-2 relative z-10 text-white text-center sm:text-left">
                     <h2 className="text-2xl sm:text-3xl font-black font-display drop-shadow-sm">
                       Aprenda Nutrição Brincando!
                     </h2>
                     <p className="text-sm sm:text-base font-medium text-white/90 leading-relaxed max-w-xl drop-shadow-sm">
-                      Nossos Nutri-Amigos estão te esperando. Complete lições, ganhe XP, suba de nível e descubra como uma alimentação saudável pode ser divertida e sem neuras.
+                      Nossos Nutri-Amigos estão te esperando. Complete lições, ganhe XP, suba de
+                      nível e descubra como uma alimentação saudável pode ser divertida e sem
+                      neuras.
                     </p>
                   </div>
-                  
+
                   <div className="text-6xl sm:text-7xl flex -space-x-4 relative z-10 drop-shadow-2xl justify-center">
-                    <div className="bg-white/20 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center backdrop-blur-md border-2 border-white/30 transform rotate-[-10deg]">👩🏽‍⚕️</div>
-                    <div className="bg-white/20 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center backdrop-blur-md border-2 border-white/30 transform rotate-[10deg] translate-y-4 shadow-xl">🥑</div>
-                    <div className="bg-white/20 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center backdrop-blur-md border-2 border-white/30 transform rotate-[-5deg] shadow-xl">🍎</div>
+                    <div className="bg-white/20 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center backdrop-blur-md border-2 border-white/30 transform rotate-[-10deg]">
+                      👩🏽‍⚕️
+                    </div>
+                    <div className="bg-white/20 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center backdrop-blur-md border-2 border-white/30 transform rotate-[10deg] translate-y-4 shadow-xl">
+                      🥑
+                    </div>
+                    <div className="bg-white/20 rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center backdrop-blur-md border-2 border-white/30 transform rotate-[-5deg] shadow-xl">
+                      🍎
+                    </div>
                   </div>
                 </div>
 

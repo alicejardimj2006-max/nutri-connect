@@ -105,24 +105,26 @@ function PublicProfilePage() {
     ? {
         userId: dbProfile.id,
         name: dbProfile.display_name || dbProfile.username || "Usuário",
-        bio: dbProfile.bio || (isSelf ? "Este perfil ainda não tem biografia." : "Membro da comunidade NutriConnect."),
-        role: dbProfile.role
+        bio:
+          dbProfile.bio ||
+          (isSelf ? "Este perfil ainda não tem biografia." : "Membro da comunidade NutriConnect."),
+        role: dbProfile.role,
       }
-    : (isSelf && user
+    : isSelf && user
       ? {
           userId,
           name: user.name,
           bio: user.bio || "Este perfil ainda não tem biografia.",
-          role: null
+          role: null,
         }
       : fromPost
         ? {
             userId,
             name: fromPost.authorName,
             bio: "Membro da comunidade NutriConnect.",
-            role: null
+            role: null,
           }
-        : null);
+        : null;
 
   const isProfessional = profile?.role === "professional" || profile?.role === "profissional";
 

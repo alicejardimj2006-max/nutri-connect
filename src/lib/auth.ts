@@ -11,25 +11,23 @@ export interface AuthUser {
   goal?: string;
   journeyGoal?: string;
   role?: string;
-  phone?: string;
-  cpf?: string;
-  birthDate?: string;
-  goal?: string;
-  journeyGoal?: string;
 }
 
 export async function getUser(): Promise<AuthUser | null> {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
   if (sessionError) {
     console.error("Erro ao obter sessão:", sessionError);
     return null;
   }
-  
+
   if (!session) {
     return null;
   }
-  
+
   // Try to get profile from DB
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -37,7 +35,7 @@ export async function getUser(): Promise<AuthUser | null> {
     .eq("id", session.user.id)
     .single();
 
-  if (profileError && profileError.code !== 'PGRST116') {
+  if (profileError && profileError.code !== "PGRST116") {
     // PGRST116 is "Row not found", which can happen initially before trigger or insert finishes.
     // If it's a real error, we shouldn't swallow it.
     console.error("Erro ao carregar profile:", profileError);
@@ -49,7 +47,7 @@ export async function getUser(): Promise<AuthUser | null> {
     .eq("user_id", session.user.id)
     .single();
 
-  if (privError && privError.code !== 'PGRST116') {
+  if (privError && privError.code !== "PGRST116") {
     console.error("Erro ao carregar private_profile:", privError);
   }
 
@@ -91,15 +89,19 @@ export async function registerUser(data: {
   if (!data.password) throw new Error("Senha obrigatória");
 
   // Attempt Supabase Auth Sign Up
+  // The Postgres trigger 'on_auth_user_created' handles inserting into profiles and private_profiles
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: cleanEmail,
     password: data.password,
     options: {
       data: {
         display_name: data.name.trim(),
-        journeyGoal: data.goal || data.journeyGoal || ""
-      }
-    }
+        journeyGoal: data.goal || data.journeyGoal || "",
+        phone: data.phone || null,
+        cpf: data.cpf || null,
+        birthDate: data.birthDate || null,
+      },
+    },
   });
 
   if (authError) {
@@ -111,26 +113,6 @@ export async function registerUser(data: {
   }
 
   if (!authData.user) throw new Error("Erro desconhecido ao criar usuário");
-
-  // Insert profiles
-  const { error: pError } = await supabase.from("profiles").upsert({
-    id: authData.user.id,
-    display_name: data.name.trim(),
-    username: cleanEmail.split("@")[0] + Math.floor(Math.random() * 1000),
-  });
-
-  if (pError) console.error("Erro ao criar perfil público:", pError);
-
-  const { error: prError } = await supabase.from("private_profiles").upsert({
-    user_id: authData.user.id,
-    email: cleanEmail,
-    full_name: data.name.trim(),
-    cpf: data.cpf || null,
-    phone: data.phone || null,
-    birth_date: data.birthDate || null,
-  });
-  
-  if (prError) console.error("Erro ao criar perfil privado:", prError);
 
   return getUser();
 }
@@ -146,40 +128,57 @@ export async function loginUser(email: string, password?: string) {
 
   if (error) {
     console.error("Supabase Login Error:", error);
-    throw new Error(error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message);
+    throw new Error(
+      error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : error.message,
+    );
   }
 
   return getUser();
 }
 
 export async function updateCurrentUser(updates: Partial<AuthUser>) {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
   if (sessionError || !session) {
-    console.error("Erro de sessão ao atualizar usuário:", sessionError);
-    return null;
+    throw new Error("Erro de sessão: Sessão não encontrada ou expirada.");
   }
 
-  try {
-    if (updates.name !== undefined || updates.bio !== undefined || updates.role !== undefined) {
-      const { error: pError } = await supabase.from("profiles").update({
+  if (updates.name !== undefined || updates.bio !== undefined) {
+    const { error: pError } = await supabase
+      .from("profiles")
+      .update({
         display_name: updates.name,
         bio: updates.bio,
-        role: updates.role,
-      }).eq("id", session.user.id);
-      if (pError) console.error("Erro ao atualizar profiles:", pError);
-    }
+      })
+      .eq("id", session.user.id);
 
-    if (updates.cpf !== undefined || updates.phone !== undefined || updates.birthDate !== undefined) {
-      const { error: prError } = await supabase.from("private_profiles").update({
+    if (pError) throw new Error(`Erro ao atualizar perfil público: ${pError.message}`);
+  }
+
+  if (updates.cpf !== undefined || updates.phone !== undefined || updates.birthDate !== undefined) {
+    const { error: prError } = await supabase
+      .from("private_profiles")
+      .update({
         cpf: updates.cpf,
         phone: updates.phone,
         birth_date: updates.birthDate,
-      }).eq("user_id", session.user.id);
-      if (prError) console.error("Erro ao atualizar private_profiles:", prError);
-    }
-  } catch (e) {
-    console.error("Could not update DB profiles", e);
+      })
+      .eq("user_id", session.user.id);
+
+    if (prError) throw new Error(`Erro ao atualizar perfil privado: ${prError.message}`);
+  }
+
+  // Update Auth JWT metadata for goal
+  if (updates.goal !== undefined || updates.journeyGoal !== undefined) {
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        journeyGoal: updates.journeyGoal || updates.goal || "",
+      },
+    });
+    if (authError) throw new Error(`Erro ao atualizar metadados da conta: ${authError.message}`);
   }
 
   return getUser();

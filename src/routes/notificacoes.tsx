@@ -39,7 +39,6 @@ function NotificacoesPage() {
           </div>
         </div>
       </main>
-
     </div>
   );
 }
