@@ -1,8 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowLeft, Heart, Info, LogOut, Mail, MessageCircle, UserCog } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Heart,
+  Info,
+  LogOut,
+  Mail,
+  MessageCircle,
+  Palette,
+  UserCog,
+} from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import { AppearancePanel } from "@/components/appearance-panel";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { signOut } from "@/lib/auth";
 
@@ -74,8 +83,19 @@ function ConfiguracoesPage() {
         </p>
 
         <div className="space-y-5">
-          {/* Personalização: cada pessoa monta o próprio estilo */}
-          <AppearancePanel />
+          {/* Personalização: abre numa página própria, para não ocupar espaço aqui */}
+          <Link
+            to="/perfil/personalizacao"
+            className="flex items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-xs transition hover:bg-secondary/50 sm:p-6"
+          >
+            <SectionTitle
+              icon={Palette}
+              tone="bg-chart-4/15 text-chart-4"
+              title="Personalização"
+              hint="Cores, fontes, formas e mais. Monte o seu estilo."
+            />
+            <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+          </Link>
 
           {/* Conta */}
           <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">

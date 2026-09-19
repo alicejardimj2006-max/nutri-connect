@@ -33,6 +33,7 @@ import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$chal
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
 import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
+import { Route as PerfilPersonalizacaoRouteImport } from './routes/perfil.personalizacao'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -155,6 +156,11 @@ const PerfilEditarRoute = PerfilEditarRouteImport.update({
   path: '/perfil/editar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilPersonalizacaoRoute = PerfilPersonalizacaoRouteImport.update({
+  id: '/perfil/personalizacao',
+  path: '/perfil/personalizacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasIdRoute = ReceitasIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/perfil/editar': typeof PerfilEditarRoute
+  '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
   '/desafios/': typeof DesafiosIndexRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/perfil/editar': typeof PerfilEditarRoute
+  '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades': typeof ComunidadesIndexRoute
   '/desafios': typeof DesafiosIndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/perfil/editar': typeof PerfilEditarRoute
+  '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
   '/desafios/': typeof DesafiosIndexRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/perfil/editar'
+    | '/perfil/personalizacao'
     | '/receitas/$id'
     | '/comunidades/'
     | '/desafios/'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/perfil/editar'
+    | '/perfil/personalizacao'
     | '/receitas/$id'
     | '/comunidades'
     | '/desafios'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/perfil/editar'
+    | '/perfil/personalizacao'
     | '/receitas/$id'
     | '/comunidades/'
     | '/desafios/'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   PerfilUserIdRoute: typeof PerfilUserIdRoute
   PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRoute
   PerfilEditarRoute: typeof PerfilEditarRoute
+  PerfilPersonalizacaoRoute: typeof PerfilPersonalizacaoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perfil/personalizacao': {
+      id: '/perfil/personalizacao'
+      path: '/perfil/personalizacao'
+      fullPath: '/perfil/personalizacao'
+      preLoaderRoute: typeof PerfilPersonalizacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receitas/$id': {
       id: '/receitas/$id'
       path: '/$id'
@@ -587,6 +607,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilUserIdRoute: PerfilUserIdRoute,
   PerfilConfiguracoesRoute: PerfilConfiguracoesRoute,
   PerfilEditarRoute: PerfilEditarRoute,
+  PerfilPersonalizacaoRoute: PerfilPersonalizacaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

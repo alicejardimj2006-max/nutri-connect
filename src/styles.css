@@ -238,3 +238,34 @@ h3,
 .font-display {
   font-family: var(--user-font-display, var(--font-display));
 }
+
+/* Opções de Configurações → Personalização que não são variáveis (fora de @layer para vencer os utilitários). */
+html[data-shadows="none"] [class*="shadow"] {
+  box-shadow: none !important;
+}
+html[data-shadows="strong"]
+  :is(
+    [class*="shadow-xs"],
+    [class*="shadow-sm"],
+    [class*="shadow-md"],
+    [class*="shadow-soft"],
+    [class*="shadow-card"]
+  ) {
+  box-shadow: 0 10px 28px -12px rgb(0 0 0 / 0.4) !important;
+}
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* O logo mantém a fonte original: a personalização de fontes não o afeta (só a cor, via tema). */
+.font-logo-serif {
+  font-family: "Libre Baskerville", ui-serif, Georgia, serif;
+}
+.font-logo-sans {
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+}

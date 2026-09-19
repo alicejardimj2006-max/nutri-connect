@@ -63,7 +63,7 @@ export function SiteHeader() {
         </Link>
 
         <Link to="/" className="flex items-center">
-          <span className="text-lg font-bold tracking-tight leading-none text-foreground font-display">
+          <span className="text-lg font-bold tracking-tight leading-none text-foreground font-logo-serif">
             Nutri<span className="text-accent">Connect</span>
           </span>
         </Link>
@@ -115,7 +115,7 @@ export function SiteHeader() {
           to="/"
           className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center"
         >
-          <span className="text-lg font-bold tracking-tight leading-none text-foreground font-display">
+          <span className="text-lg font-bold tracking-tight leading-none text-foreground font-logo-serif">
             Nutri<span className="text-accent">Connect</span>
           </span>
         </Link>
@@ -180,7 +180,7 @@ export function SiteHeader() {
         hidden ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
       }`}
     >
-      <span className="font-display text-base font-bold leading-none tracking-tight text-foreground">
+      <span className="font-logo-serif text-base font-bold leading-none tracking-tight text-foreground">
         Nutri<span className="text-accent">Connect</span>
       </span>
     </Link>
