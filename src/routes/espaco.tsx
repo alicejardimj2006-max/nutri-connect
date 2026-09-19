@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Compass } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard } from "@/components/community-cards";
@@ -195,7 +195,6 @@ function EspacoDeHojePage() {
         </div>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

@@ -5,6 +5,7 @@ const EMPTY: CommunityState = {
   communities: [],
   posts: [],
   profiles: [],
+  verifications: [],
   weeklyTheme: {
     id: "tema-alimentos-frescos",
     title: "Cozinha de Verdade: Menos Rótulos, Mais Frescor",

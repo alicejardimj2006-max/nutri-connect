@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ContatoRouteImport } from './routes/contato'
+import { Route as ConvitesRouteImport } from './routes/convites'
 import { Route as DesafiosRouteImport } from './routes/desafios'
 import { Route as EspacoRouteImport } from './routes/espaco'
 import { Route as ExperienciasRouteImport } from './routes/experiencias'
@@ -23,17 +25,24 @@ import { Route as ReceitasRouteImport } from './routes/receitas'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
+import { Route as VerificacaoRouteImport } from './routes/verificacao'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
 import { Route as DesafiosIndexRouteImport } from './routes/desafios.index'
 import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$challengeId'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
+import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -49,6 +58,11 @@ const ComunidadesRoute = ComunidadesRouteImport.update({
 const ContatoRoute = ContatoRouteImport.update({
   id: '/contato',
   path: '/contato',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConvitesRoute = ConvitesRouteImport.update({
+  id: '/convites',
+  path: '/convites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DesafiosRoute = DesafiosRouteImport.update({
@@ -101,6 +115,11 @@ const TemaDaSemanaRoute = TemaDaSemanaRouteImport.update({
   path: '/tema-da-semana',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerificacaoRoute = VerificacaoRouteImport.update({
+  id: '/verificacao',
+  path: '/verificacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComunidadesIndexRoute = ComunidadesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -131,6 +150,11 @@ const PerfilConfiguracoesRoute = PerfilConfiguracoesRouteImport.update({
   path: '/perfil/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilEditarRoute = PerfilEditarRouteImport.update({
+  id: '/perfil/editar',
+  path: '/perfil/editar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasIdRoute = ReceitasIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -139,9 +163,11 @@ const ReceitasIdRoute = ReceitasIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/convites': typeof ConvitesRoute
   '/desafios': typeof DesafiosRouteWithChildren
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
@@ -152,18 +178,22 @@ export interface FileRoutesByFullPath {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/verificacao': typeof VerificacaoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
+  '/perfil/editar': typeof PerfilEditarRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
   '/desafios/': typeof DesafiosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
+  '/convites': typeof ConvitesRoute
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
@@ -173,10 +203,12 @@ export interface FileRoutesByTo {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/verificacao': typeof VerificacaoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
+  '/perfil/editar': typeof PerfilEditarRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades': typeof ComunidadesIndexRoute
   '/desafios': typeof DesafiosIndexRoute
@@ -184,9 +216,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/convites': typeof ConvitesRoute
   '/desafios': typeof DesafiosRouteWithChildren
   '/espaco': typeof EspacoRoute
   '/experiencias': typeof ExperienciasRoute
@@ -197,10 +231,12 @@ export interface FileRoutesById {
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/verificacao': typeof VerificacaoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
+  '/perfil/editar': typeof PerfilEditarRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
   '/desafios/': typeof DesafiosIndexRoute
@@ -209,9 +245,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/cadastro'
     | '/comunidades'
     | '/contato'
+    | '/convites'
     | '/desafios'
     | '/espaco'
     | '/experiencias'
@@ -222,18 +260,22 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/verificacao'
     | '/comunidades/$slug'
     | '/desafios/$challengeId'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
+    | '/perfil/editar'
     | '/receitas/$id'
     | '/comunidades/'
     | '/desafios/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/cadastro'
     | '/contato'
+    | '/convites'
     | '/espaco'
     | '/experiencias'
     | '/explorar'
@@ -243,19 +285,23 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/verificacao'
     | '/comunidades/$slug'
     | '/desafios/$challengeId'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
+    | '/perfil/editar'
     | '/receitas/$id'
     | '/comunidades'
     | '/desafios'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/cadastro'
     | '/comunidades'
     | '/contato'
+    | '/convites'
     | '/desafios'
     | '/espaco'
     | '/experiencias'
@@ -266,10 +312,12 @@ export interface FileRouteTypes {
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/verificacao'
     | '/comunidades/$slug'
     | '/desafios/$challengeId'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
+    | '/perfil/editar'
     | '/receitas/$id'
     | '/comunidades/'
     | '/desafios/'
@@ -277,9 +325,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   CadastroRoute: typeof CadastroRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
+  ConvitesRoute: typeof ConvitesRoute
   DesafiosRoute: typeof DesafiosRouteWithChildren
   EspacoRoute: typeof EspacoRoute
   ExperienciasRoute: typeof ExperienciasRoute
@@ -290,8 +340,10 @@ export interface RootRouteChildren {
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SobreRoute: typeof SobreRoute
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
+  VerificacaoRoute: typeof VerificacaoRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
   PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRoute
+  PerfilEditarRoute: typeof PerfilEditarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -301,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -322,6 +381,13 @@ declare module '@tanstack/react-router' {
       path: '/contato'
       fullPath: '/contato'
       preLoaderRoute: typeof ContatoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/convites': {
+      id: '/convites'
+      path: '/convites'
+      fullPath: '/convites'
+      preLoaderRoute: typeof ConvitesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/desafios': {
@@ -394,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TemaDaSemanaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verificacao': {
+      id: '/verificacao'
+      path: '/verificacao'
+      fullPath: '/verificacao'
+      preLoaderRoute: typeof VerificacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/comunidades/': {
       id: '/comunidades/'
       path: '/'
@@ -434,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil/configuracoes'
       fullPath: '/perfil/configuracoes'
       preLoaderRoute: typeof PerfilConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil/editar': {
+      id: '/perfil/editar'
+      path: '/perfil/editar'
+      fullPath: '/perfil/editar'
+      preLoaderRoute: typeof PerfilEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/receitas/$id': {
@@ -488,9 +568,11 @@ const ReceitasRouteWithChildren = ReceitasRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   CadastroRoute: CadastroRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
+  ConvitesRoute: ConvitesRoute,
   DesafiosRoute: DesafiosRouteWithChildren,
   EspacoRoute: EspacoRoute,
   ExperienciasRoute: ExperienciasRoute,
@@ -501,8 +583,10 @@ const rootRouteChildren: RootRouteChildren = {
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   SobreRoute: SobreRoute,
   TemaDaSemanaRoute: TemaDaSemanaRoute,
+  VerificacaoRoute: VerificacaoRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,
   PerfilConfiguracoesRoute: PerfilConfiguracoesRoute,
+  PerfilEditarRoute: PerfilEditarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

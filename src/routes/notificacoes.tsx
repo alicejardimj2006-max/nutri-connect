@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/notificacoes")({
@@ -40,7 +40,6 @@ function NotificacoesPage() {
         </div>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

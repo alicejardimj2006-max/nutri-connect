@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/desafios")({
@@ -17,7 +17,6 @@ function DesafiosLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <SiteFooter />
     </div>
   );
 }

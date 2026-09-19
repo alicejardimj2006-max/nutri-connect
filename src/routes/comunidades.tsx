@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { AuthGateLoading, SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/comunidades")({
@@ -17,7 +17,6 @@ function ComunidadesLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <SiteFooter />
     </div>
   );
 }

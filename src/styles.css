@@ -145,6 +145,12 @@
   * {
     border-color: var(--color-border);
   }
+  /* Textos corridos dos cards ficam justificados. Vive no layer base com :where() (especificidade
+     zero) para que utilitários como text-center e text-left continuem podendo sobrescrever. */
+  :where(article, [class*="bg-card"]):not(footer) :is(p, li, dd) {
+    text-align: justify;
+    hyphens: auto;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -212,4 +218,12 @@
 .textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent);
+}
+
+/* Fora de @layer de propósito: precisa vencer utilitários como py-8. Sem rodapé, no celular a
+   barra de navegação inferior é fixa e não pode cobrir o fim da página. */
+@media (max-width: 1023px) {
+  body:has([data-site-bottom-nav]) main {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
 }

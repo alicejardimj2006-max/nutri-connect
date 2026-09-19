@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { MessageCircle, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { AdminPerson } from "@/components/person-chip";
 import { useCommunity } from "@/hooks/use-community";
+import { getProfessionalInfo } from "@/lib/community-admin";
 import { CATEGORIES, type Community } from "@/lib/community";
 
 export const Route = createFileRoute("/comunidades/")({
@@ -26,7 +28,13 @@ export const Route = createFileRoute("/comunidades/")({
 });
 
 function ComunidadesPage() {
-  const { communities, posts, hydrated } = useCommunity();
+  const { user } = useAuth();
+  const { communities: allCommunities, posts, hydrated } = useCommunity();
+  // Comunidades pendentes ainda não existem publicamente: só quem as criou as vê.
+  const communities = useMemo(
+    () => allCommunities.filter((c) => c.status !== "pendente" || c.adminUserId === user?.id),
+    [allCommunities, user?.id],
+  );
   const [category, setCategory] = useState<string>("Todas");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -121,10 +129,16 @@ function ComunidadesPage() {
   );
 }
 
+const STATUS_LABEL = {
+  pendente: "Aguardando profissional",
+  suspensa: "Suspensa",
+} as const;
+
 function CommunityCard({ community: c }: { community: Community }) {
-  const { posts } = useCommunity();
+  const { posts, profiles } = useCommunity();
   const { user } = useAuth();
   const isMember = !!user && c.members.some((m) => m.userId === user.id);
+  const pro = c.professionalId ? getProfessionalInfo(profiles, c.professionalId) : undefined;
 
   let coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
   if (!c.coverImage) {
@@ -134,13 +148,10 @@ function CommunityCard({ community: c }: { community: Community }) {
   }
 
   return (
-    <Link
-      to="/comunidades/$slug"
-      params={{ slug: c.slug }}
-      className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-    >
+    // O card inteiro é clicável (link esticado no título); os admins são links próprios acima dele.
+    <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card transition hover:shadow-lg focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
       <div className="h-32 w-full relative">
-        <img src={coverImage} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+        <img src={coverImage} alt="" className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         {isMember && (
           <span
@@ -157,14 +168,46 @@ function CommunityCard({ community: c }: { community: Community }) {
             {c.category}
           </span>
         </div>
+        {c.status !== "ativa" && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-warning px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-warning-foreground shadow-xs">
+            {STATUS_LABEL[c.status]}
+          </span>
+        )}
       </div>
       <div className="p-5 flex flex-col flex-1">
         <h3 className="text-xl font-bold text-foreground font-display leading-tight transition-colors group-hover:text-accent">
-          {c.name}
+          <Link
+            to="/comunidades/$slug"
+            params={{ slug: c.slug }}
+            className="outline-none after:absolute after:inset-0 after:content-['']"
+          >
+            {c.name}
+          </Link>
         </h3>
         <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">{c.description}</p>
 
-        <div className="mt-5 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
+        <div className="mt-5 space-y-2.5 border-t border-border/60 pt-4">
+          <AdminPerson
+            raised
+            label="Admin usuário"
+            userId={c.adminUserId}
+            name={c.adminUserName}
+            vacantText="Aguardando indicação"
+          />
+          <AdminPerson
+            raised
+            label="Admin profissional"
+            detail={
+              pro ? `${pro.profession} · ${pro.council} ${pro.registration}/${pro.uf}` : undefined
+            }
+            userId={c.professionalId}
+            name={c.professionalName}
+            verified
+            vacantText="Aguardando profissional"
+          />
+        </div>
+
+        <div className="mt-4 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
           <span className="inline-flex items-center gap-1">
             <Users className="h-4 w-4 text-accent" /> {c.members.length} membros
           </span>
@@ -174,6 +217,6 @@ function CommunityCard({ community: c }: { community: Community }) {
           </span>
         </div>
       </div>
-    </Link>
+    </article>
   );
 }

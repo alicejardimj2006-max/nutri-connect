@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { SiteHeader } from "@/components/site-chrome";
 import {
   Mail,
   Phone,
@@ -247,7 +247,6 @@ function Contato() {
         </section>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

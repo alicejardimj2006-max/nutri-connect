@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { SiteHeader } from "@/components/site-chrome";
 import {
   Heart,
   ShieldCheck,
@@ -292,7 +292,6 @@ function Sobre() {
         </section>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

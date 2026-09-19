@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
@@ -108,6 +108,22 @@ function ExplorarPage() {
               className="w-full rounded-full border border-border bg-card pl-12 pr-4 py-3.5 text-sm text-foreground outline-none focus:border-accent shadow-card"
               autoFocus
             />
+          </div>
+
+          {/* Atalhos (antes no rodapé) */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Link
+              to="/receitas"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
+            >
+              <ChefHat className="h-3.5 w-3.5 text-accent" /> Receitas Comunitárias
+            </Link>
+            <Link
+              to="/tema-da-semana"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-accent" /> Tema da Semana
+            </Link>
           </div>
 
           {/* Abas */}
@@ -251,8 +267,6 @@ function ExplorarPage() {
             )}
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import {
   MessageSquare,
   Award,
 } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
@@ -260,7 +260,6 @@ function TemaDaSemanaPage() {
         )}
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Leaf, Search, Bell, Home, Users, Award, Plus } from "lucide-react";
+import { Search, Bell, Home, Users, Award, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { ShareModal } from "@/components/share-modal";
 
@@ -248,88 +248,6 @@ export function SiteHeader() {
       </nav>
     )}
     </>
-  );
-}
-
-export function SiteFooter() {
-  return (
-    <footer className="border-t border-border bg-card/60 text-foreground pb-20 lg:pb-0">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-xs">
-              <Leaf className="h-4 w-4" />
-            </span>
-            <span className="font-bold font-display text-lg">NutriConnect</span>
-          </div>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Sua alimentação. Sua jornada. Uma rede viva para descobrir, compartilhar, aprender e
-            construir hábitos melhores juntos.
-          </p>
-        </div>
-        <div>
-          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">
-            Explorar
-          </h4>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li>
-              <Link to="/espaco" className="hover:text-accent transition">
-                Espaço de Hoje
-              </Link>
-            </li>
-            <li>
-              <Link to="/tema-da-semana" className="hover:text-accent transition">
-                Tema da Semana
-              </Link>
-            </li>
-            <li>
-              <Link to="/receitas" className="hover:text-accent transition">
-                Receitas Comunitárias
-              </Link>
-            </li>
-            <li>
-              <Link to="/desafios" className="hover:text-accent transition">
-                Desafios de Hábitos
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">
-            Comunidade
-          </h4>
-          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li>
-              <Link to="/sobre" className="hover:text-accent transition">
-                Nosso Manifesto
-              </Link>
-            </li>
-            <li>
-              <Link to="/contato" className="hover:text-accent transition">
-                Fale Conosco
-              </Link>
-            </li>
-            <li>
-              <span className="text-xs text-muted-foreground/80">
-                Cuidado sem julgamento corporal
-              </span>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-sm font-semibold text-primary font-display uppercase tracking-wider">
-            Compromisso
-          </h4>
-          <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-            Incentivamos a conexão saudável com a alimentação, sem culpa e sem julgamento
-            corporal.
-          </p>
-          <div className="mt-4 text-xs text-muted-foreground">
-            © {new Date().getFullYear()} NutriConnect. Sua caminhada, no seu ritmo.
-          </div>
-        </div>
-      </div>
-    </footer>
   );
 }
 

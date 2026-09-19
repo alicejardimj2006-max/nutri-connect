@@ -1,54 +1,54 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, User, Heart, Palette, LogOut } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import {
+  ArrowLeft,
+  Heart,
+  Info,
+  LogOut,
+  Mail,
+  MessageCircle,
+  Palette,
+  UserCog,
+} from "lucide-react";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { signOut, updateCurrentUser } from "@/lib/auth";
-import { JOURNEY_GOALS } from "@/lib/community";
-import { Field } from "./login";
+import { signOut } from "@/lib/auth";
 
 export const Route = createFileRoute("/perfil/configuracoes")({
   head: () => ({ meta: [{ title: "Configurações — NutriConnect" }] }),
   component: ConfiguracoesPage,
 });
 
+function SectionTitle({
+  icon: Icon,
+  tone,
+  title,
+  hint,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  tone: string;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className={`grid h-9 w-9 place-items-center rounded-xl ${tone}`}>
+        <Icon className="h-4 w-4" />
+      </span>
+      <div>
+        <p className="text-sm font-bold font-display text-foreground">{title}</p>
+        <p className="text-[11px] text-muted-foreground">{hint}</p>
+      </div>
+    </div>
+  );
+}
+
 function ConfiguracoesPage() {
   const { user, hydrated } = useRequireAuth();
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [phone, setPhone] = useState("");
-  const [goal, setGoal] = useState<string>(JOURNEY_GOALS[0]);
-
-  useEffect(() => {
-    if (!user) return;
-    setName(user.name);
-    setBio(user.bio || "");
-    setPhone(user.phone || "");
-    setGoal(user.journeyGoal || user.goal || JOURNEY_GOALS[0]);
-  }, [user]);
-
   if (!hydrated || !user) return <AuthGateLoading />;
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanName = name.trim();
-    if (!cleanName) {
-      toast.error("O nome não pode ficar em branco.");
-      return;
-    }
-    updateCurrentUser({
-      name: cleanName,
-      bio: bio.trim(),
-      phone: phone.trim(),
-      goal,
-      journeyGoal: goal,
-    });
-    toast.success("Configurações salvas com sucesso!");
-  };
 
   const handleSignOut = () => {
     signOut();
@@ -71,132 +71,94 @@ function ConfiguracoesPage() {
 
         <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">Configurações</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Gerencie suas informações, sua jornada e a aparência do NutriConnect.
+          Aparência, conta e informações sobre o NutriConnect. Para mudar seu nome, bio ou jornada,
+          use{" "}
+          <Link
+            to="/perfil/editar"
+            className="font-semibold text-accent hover:underline underline-offset-2"
+          >
+            Editar perfil
+          </Link>
+          .
         </p>
 
-        <form onSubmit={handleSave} className="space-y-5">
-          {/* Perfil */}
-          <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
-            <div className="flex items-center gap-2.5 mb-4">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-soft text-primary">
-                <User className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-sm font-bold font-display text-foreground">Meu perfil</p>
-                <p className="text-[11px] text-muted-foreground">Nome, bio e contato</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Field label="Nome completo">
-                <input
-                  className="input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Como gostaria de ser chamado(a)?"
-                />
-              </Field>
-              <Field label="Bio">
-                <textarea
-                  rows={3}
-                  className="textarea"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Fale um pouco sobre a sua jornada alimentar..."
-                />
-              </Field>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Telefone">
-                  <input
-                    className="input"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="(11) 99999-9999"
-                  />
-                </Field>
-                <Field label="E-mail">
-                  <input
-                    className="input opacity-60"
-                    value={user.email}
-                    disabled
-                    title="O e-mail não pode ser alterado"
-                  />
-                </Field>
-              </div>
-            </div>
-          </section>
-
-          {/* Jornada */}
-          <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
-            <div className="flex items-center gap-2.5 mb-4">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent-soft text-accent">
-                <Heart className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-sm font-bold font-display text-foreground">Minha jornada</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Qual o foco da sua caminhada alimentar?
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {JOURNEY_GOALS.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGoal(g)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer ${
-                    goal === g
-                      ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                      : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-          </section>
-
+        <div className="space-y-5">
           {/* Aparência */}
           <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-chart-4/15 text-chart-4">
-                <Palette className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-sm font-bold font-display text-foreground">Aparência</p>
-                <p className="text-[11px] text-muted-foreground">Tema claro ou escuro</p>
-              </div>
-            </div>
+            <SectionTitle
+              icon={Palette}
+              tone="bg-chart-4/15 text-chart-4"
+              title="Aparência"
+              hint="Tema claro ou escuro"
+            />
             <ThemeToggle />
           </section>
 
-          <button
-            type="submit"
-            className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer"
-          >
-            Salvar alterações
-          </button>
-        </form>
+          {/* Conta */}
+          <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
+            <SectionTitle
+              icon={UserCog}
+              tone="bg-primary-soft text-primary"
+              title="Conta"
+              hint="Acesso e segurança"
+            />
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-secondary/40 px-3 py-2.5 text-sm text-foreground">
+              <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{user.email}</span>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-bold text-foreground">Sair da conta</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Você será desconectado e voltará para a tela de login.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border border-destructive/40 px-5 py-2.5 text-sm font-semibold text-destructive transition hover:bg-destructive/10"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sair</span>
+              </button>
+            </div>
+          </section>
 
-        {/* Sair da conta */}
-        <section className="mt-8 rounded-2xl border border-destructive/30 bg-destructive/5 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold text-foreground">Sair da conta</p>
-            <p className="text-[11px] text-muted-foreground">
-              Você será desconectado e voltará para a tela de login.
+          {/* Sobre — antes ficava no rodapé */}
+          <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
+            <SectionTitle
+              icon={Info}
+              tone="bg-accent-soft text-accent"
+              title="Sobre o NutriConnect"
+              hint="Nossa proposta e como falar com a gente"
+            />
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Sua alimentação. Sua jornada. Uma rede viva para descobrir, compartilhar, aprender e
+              construir hábitos melhores juntos. Incentivamos a conexão saudável com a alimentação,
+              sem culpa e sem julgamento corporal.
             </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-destructive/40 px-5 py-2.5 text-sm font-semibold text-destructive transition hover:bg-destructive/10 cursor-pointer shrink-0"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Sair</span>
-          </button>
-        </section>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <Link
+                to="/sobre"
+                className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+              >
+                <Heart className="h-4 w-4 text-accent" />
+                Nosso Manifesto
+              </Link>
+              <Link
+                to="/contato"
+                className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+              >
+                <MessageCircle className="h-4 w-4 text-accent" />
+                Fale Conosco
+              </Link>
+            </div>
+            <p className="mt-4 text-[11px] text-muted-foreground">
+              © {new Date().getFullYear()} NutriConnect. Sua caminhada, no seu ritmo.
+            </p>
+          </section>
+        </div>
       </main>
-      <SiteFooter />
     </div>
   );
 }

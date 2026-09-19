@@ -11,7 +11,7 @@ import {
   Send,
   Sparkles,
 } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { togglePrepared, toggleSupport, addComment, formatDate, initials } from "@/lib/community";
@@ -56,7 +56,6 @@ function ReceitaDetalhePage() {
         <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-16 text-center text-sm text-muted-foreground">
           Carregando receita…
         </main>
-        <SiteFooter />
       </div>
     );
   }
@@ -82,7 +81,6 @@ function ReceitaDetalhePage() {
             </Link>
           </div>
         </main>
-        <SiteFooter />
       </div>
     );
   }
@@ -369,7 +367,6 @@ function ReceitaDetalhePage() {
         </section>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

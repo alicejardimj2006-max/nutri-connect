@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles, Plus, Heart, MessageSquare } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard } from "@/components/community-cards";
@@ -100,7 +100,6 @@ function ExperienciasPage() {
         )}
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

@@ -47,6 +47,13 @@ export interface Post {
   recipeData?: RecipeData;
 }
 
+/**
+ * pendente: criada, aguardando um profissional aceitar ser admin (ainda não existe publicamente).
+ * ativa: tem admin usuário e admin profissional.
+ * suspensa: já foi ativa, mas perdeu um dos dois admins.
+ */
+export type CommunityStatus = "pendente" | "ativa" | "suspensa";
+
 export interface Community {
   id: string;
   slug: string;
@@ -55,19 +62,68 @@ export interface Community {
   category: string;
   objective?: string;
   coverImage?: string;
+  /** Quem criou a comunidade (histórico); a administração atual está nos campos abaixo. */
   createdById: string;
   createdByName: string;
+  /** Admin usuário (uma pessoa por comunidade, e cada pessoa administra uma comunidade por vez). */
+  adminUserId?: string;
+  adminUserName?: string;
+  /** Admin profissional: sempre um profissional verificado. */
+  professionalId?: string;
+  professionalName?: string;
+  /** Profissionais que já deixaram a administração desta comunidade (não são convidados de volta). */
+  formerProfessionalIds?: string[];
+  status: CommunityStatus;
   members: CommunityMember[];
   createdAt: string;
 }
 
 export type ProfileRole = "paciente" | "profissional";
 
+/** Dados de um profissional já verificado pela plataforma. */
+export interface ProfessionalInfo {
+  profession: string;
+  council: string;
+  registration: string;
+  uf: string;
+  /** Áreas de atuação, no vocabulário de CATEGORIES (usadas para indicar comunidades). */
+  specialties: string[];
+  verifiedAt: string;
+}
+
 export interface PublicProfile {
   userId: string;
   name: string;
   bio: string;
   role?: ProfileRole;
+  /** Presente quando role === "profissional" (perfil profissional verificado). */
+  professional?: ProfessionalInfo;
+}
+
+export type VerificationStatus = "em_analise" | "aprovado" | "recusado";
+
+/** Pedido de verificação de perfil profissional, analisado pelos administradores da plataforma. */
+export interface VerificationRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  fullName: string;
+  profession: string;
+  council: string;
+  registration: string;
+  uf: string;
+  specialties: string[];
+  bio?: string;
+  publicLookupUrl?: string;
+  /** Foto da carteira/registro profissional (data URL). */
+  documentImage: string;
+  /** Selfie segurando o documento (data URL). */
+  selfieImage: string;
+  status: VerificationStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedById?: string;
+  rejectionReason?: string;
 }
 
 export interface PollOption {
@@ -137,6 +193,7 @@ export interface CommunityState {
   communities: Community[];
   posts: Post[];
   profiles: PublicProfile[];
+  verifications: VerificationRequest[];
   weeklyTheme: WeeklyTheme;
   challenges: Challenge[];
 }
@@ -212,6 +269,8 @@ const MARIA_ID = "seed-maria";
 const PAC_ID = "seed-paciente-ana";
 const PEDRO_ID = "seed-pedro";
 const PAC_CARLOS_ID = "seed-paciente-carlos";
+const PAC_BEA_ID = "seed-paciente-beatriz";
+const HELENA_ID = "seed-helena";
 
 function seed(): CommunityState {
   const now = Date.now();
@@ -225,8 +284,13 @@ function seed(): CommunityState {
       description:
         "Um espaço para aprender sobre alimentos, rótulos e escolhas possíveis — sem culpa e sem regras rígidas.",
       category: "Educação alimentar",
-      createdById: MARIA_ID,
-      createdByName: "Maria Lorena",
+      createdById: PAC_ID,
+      createdByName: "Ana Prado",
+      adminUserId: PAC_ID,
+      adminUserName: "Ana Prado",
+      professionalId: MARIA_ID,
+      professionalName: "Maria Lorena",
+      status: "ativa",
       members: [
         { userId: MARIA_ID, name: "Maria Lorena", joinedAt: iso(86400000 * 20) },
         { userId: PAC_ID, name: "Ana Prado", joinedAt: iso(86400000 * 12) },
@@ -239,9 +303,17 @@ function seed(): CommunityState {
       name: "Relação saudável com a comida",
       description: "Conversas acolhedoras sobre comer com atenção, fome emocional e autocuidado.",
       category: "Relação com a comida",
-      createdById: MARIA_ID,
-      createdByName: "Maria Lorena",
-      members: [{ userId: MARIA_ID, name: "Maria Lorena", joinedAt: iso(86400000 * 15) }],
+      createdById: PAC_BEA_ID,
+      createdByName: "Beatriz Lima",
+      adminUserId: PAC_BEA_ID,
+      adminUserName: "Beatriz Lima",
+      professionalId: HELENA_ID,
+      professionalName: "Helena Souza",
+      status: "ativa",
+      members: [
+        { userId: HELENA_ID, name: "Helena Souza", joinedAt: iso(86400000 * 15) },
+        { userId: PAC_BEA_ID, name: "Beatriz Lima", joinedAt: iso(86400000 * 15) },
+      ],
       createdAt: iso(86400000 * 15),
     },
     {
@@ -251,11 +323,17 @@ function seed(): CommunityState {
       description:
         "Receitas simples, preparo da semana e trocas de ideias sobre o que colocar no prato com praticidade.",
       category: "Cozinha do dia a dia",
-      createdById: PAC_ID,
-      createdByName: "Ana Prado",
+      createdById: PAC_CARLOS_ID,
+      createdByName: "Carlos Eduardo",
+      adminUserId: PAC_CARLOS_ID,
+      adminUserName: "Carlos Eduardo",
+      professionalId: PEDRO_ID,
+      professionalName: "Pedro Costa",
+      status: "ativa",
       members: [
-        { userId: PAC_ID, name: "Ana Prado", joinedAt: iso(86400000 * 3) },
-        { userId: PAC_CARLOS_ID, name: "Carlos Eduardo", joinedAt: iso(86400000 * 2) },
+        { userId: PAC_CARLOS_ID, name: "Carlos Eduardo", joinedAt: iso(86400000 * 3) },
+        { userId: PEDRO_ID, name: "Pedro Costa", joinedAt: iso(86400000 * 3) },
+        { userId: PAC_ID, name: "Ana Prado", joinedAt: iso(86400000 * 2) },
       ],
       createdAt: iso(86400000 * 3),
     },
@@ -411,12 +489,42 @@ function seed(): CommunityState {
       name: "Maria Lorena",
       bio: "Apaixonada por descomplicar a cozinha e criar relações pacíficas com o prato.",
       role: "profissional",
+      professional: {
+        profession: "Nutricionista",
+        council: "CRN",
+        registration: "12345",
+        uf: "SP",
+        specialties: ["Educação alimentar", "Alimentação em família"],
+        verifiedAt: iso(86400000 * 60),
+      },
     },
     {
       userId: PEDRO_ID,
       name: "Pedro Costa",
       bio: "Focado em alimentação para o dia a dia moderno, rotina ativa e planejamento realista para quem não tem tempo a perder.",
       role: "profissional",
+      professional: {
+        profession: "Nutricionista",
+        council: "CRN",
+        registration: "23456",
+        uf: "RJ",
+        specialties: ["Cozinha do dia a dia", "Saúde e condições clínicas"],
+        verifiedAt: iso(86400000 * 45),
+      },
+    },
+    {
+      userId: HELENA_ID,
+      name: "Helena Souza",
+      bio: "Psicóloga com foco em comportamento alimentar, fome emocional e uma relação mais gentil com a comida.",
+      role: "profissional",
+      professional: {
+        profession: "Psicóloga",
+        council: "CRP",
+        registration: "06/54321",
+        uf: "SP",
+        specialties: ["Relação com a comida", "Bem-estar e sono"],
+        verifiedAt: iso(86400000 * 30),
+      },
     },
     {
       userId: PAC_ID,
@@ -428,6 +536,12 @@ function seed(): CommunityState {
       userId: PAC_CARLOS_ID,
       name: "Carlos Eduardo",
       bio: "Testando receitas práticas para a semana e trocando ideias com a comunidade.",
+      role: "paciente",
+    },
+    {
+      userId: PAC_BEA_ID,
+      name: "Beatriz Lima",
+      bio: "Aprendendo a comer com atenção e a escutar os sinais do corpo, sem culpa.",
       role: "paciente",
     },
   ];
@@ -563,7 +677,50 @@ function seed(): CommunityState {
     },
   ];
 
-  return { communities, posts, profiles, weeklyTheme, challenges };
+  return { communities, posts, profiles, verifications: [], weeklyTheme, challenges };
+}
+
+/** Garante que perfis do seed (inclusive os novos) existam e que profissionais tenham seus dados. */
+function mergeSeedProfiles(
+  stored: PublicProfile[] | undefined,
+  seedProfiles: PublicProfile[],
+): PublicProfile[] {
+  if (!stored || stored.length === 0) return seedProfiles;
+  const merged = stored.map((p) => {
+    const seeded = seedProfiles.find((sp) => sp.userId === p.userId);
+    return p.role === "profissional" && !p.professional && seeded?.professional
+      ? { ...p, professional: seeded.professional }
+      : p;
+  });
+  const missing = seedProfiles.filter((sp) => !stored.some((p) => p.userId === sp.userId));
+  return [...merged, ...missing];
+}
+
+/** Migra comunidades salvas antes do modelo de admins (usuário + profissional). */
+function normalizeCommunity(c: Community, seedCommunities: Community[]): Community {
+  if (c.status) return c;
+  const seeded = seedCommunities.find((sc) => sc.id === c.id);
+  if (seeded) {
+    const seedAdmins = seeded.members.filter(
+      (m) => m.userId === seeded.adminUserId || m.userId === seeded.professionalId,
+    );
+    return {
+      ...c,
+      createdById: seeded.createdById,
+      createdByName: seeded.createdByName,
+      adminUserId: seeded.adminUserId,
+      adminUserName: seeded.adminUserName,
+      professionalId: seeded.professionalId,
+      professionalName: seeded.professionalName,
+      status: "ativa",
+      members: [
+        ...c.members,
+        ...seedAdmins.filter((admin) => !c.members.some((m) => m.userId === admin.userId)),
+      ],
+    };
+  }
+  // Sem profissional: fica suspensa até um profissional aceitar ser admin profissional.
+  return { ...c, adminUserId: c.createdById, adminUserName: c.createdByName, status: "suspensa" };
 }
 
 export function loadState(): CommunityState {
@@ -581,11 +738,11 @@ export function loadState(): CommunityState {
     const state: CommunityState = {
       communities:
         parsed.communities && parsed.communities.length > 0
-          ? parsed.communities
+          ? parsed.communities.map((c) => normalizeCommunity(c, defaultSeed.communities))
           : defaultSeed.communities,
       posts: parsed.posts && parsed.posts.length > 0 ? parsed.posts : defaultSeed.posts,
-      profiles:
-        parsed.profiles && parsed.profiles.length > 0 ? parsed.profiles : defaultSeed.profiles,
+      profiles: mergeSeedProfiles(parsed.profiles, defaultSeed.profiles),
+      verifications: parsed.verifications ?? [],
       weeklyTheme: parsed.weeklyTheme ?? defaultSeed.weeklyTheme,
       challenges:
         parsed.challenges && parsed.challenges.length > 0
@@ -877,6 +1034,15 @@ export function createCommunity(input: {
   coverImage?: string;
   actor: Actor;
 }) {
+  const current = loadState();
+  if (current.profiles.find((p) => p.userId === input.actor.id)?.role === "profissional") {
+    throw new Error(
+      "Apenas usuários criam comunidades. Profissionais entram como admin profissional por convite.",
+    );
+  }
+  if (isCommunityAdmin(input.actor.id, current.communities)) {
+    throw new Error("Você já administra uma comunidade. Cada pessoa administra uma por vez.");
+  }
   const community: Community = {
     id: id(),
     slug: slugify(input.name) || id(),
@@ -887,6 +1053,9 @@ export function createCommunity(input: {
     coverImage: input.coverImage,
     createdById: input.actor.id,
     createdByName: input.actor.name,
+    adminUserId: input.actor.id,
+    adminUserName: input.actor.name,
+    status: "pendente",
     members: [
       {
         userId: input.actor.id,
@@ -905,6 +1074,8 @@ export function toggleMembership(communityId: string, actor: Actor) {
     ...s,
     communities: s.communities.map((c) => {
       if (c.id !== communityId) return c;
+      // Admins não saem por aqui: usam o fluxo de deixar a administração.
+      if (c.adminUserId === actor.id || c.professionalId === actor.id) return c;
       const isMember = c.members.some((m) => m.userId === actor.id);
       return {
         ...c,
@@ -977,6 +1148,21 @@ export function getChallenges(): Challenge[] {
 
 export function getCommunityPosts(): Post[] {
   return loadState().posts || [];
+}
+
+/** true se a pessoa já é admin (usuário ou profissional) de alguma comunidade. */
+export function isCommunityAdmin(userId: string, communities: Community[]): boolean {
+  return communities.some((c) => c.adminUserId === userId || c.professionalId === userId);
+}
+
+const SEED_AVATARS: Record<string, string> = {
+  [MARIA_ID]: "/images/professionals/prof-1.jpg",
+  [PEDRO_ID]: "/images/professionals/prof-2.jpg",
+};
+
+/** Foto de perfil: a enviada pela pessoa ou a de exemplo, quando existir. */
+export function getAvatarSrc(userId: string, explicit?: string): string | undefined {
+  return explicit ?? SEED_AVATARS[userId];
 }
 
 /** Papel público de um autor (paciente por padrão, quando não há perfil cadastrado). */

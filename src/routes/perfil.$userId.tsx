@@ -9,12 +9,23 @@ import {
   MoreVertical,
   Settings,
   LogOut,
+  BadgeCheck,
+  Inbox,
+  ShieldCheck,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { initials } from "@/lib/community";
+import {
+  getAdministeredCommunity,
+  getProfessionalInfo,
+  getProfessionalInvites,
+  isPlatformAdmin,
+} from "@/lib/community-admin";
+import { VerifiedBadge } from "@/components/person-chip";
 import { signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
@@ -49,7 +60,8 @@ export const Route = createFileRoute("/perfil/$userId")({
 function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
   const { user, hydrated: authHydrated } = useRequireAuth();
-  const { profiles, posts, communities, challenges, hydrated } = useCommunity();
+  const state = useCommunity();
+  const { profiles, posts, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
 
   if (!authHydrated || !user) return <AuthGateLoading />;
@@ -88,7 +100,14 @@ function PublicProfilePage() {
     (p) => p.type === "receita" && (p.preparedBy || []).includes(userId),
   );
   const myChallenges = challenges.filter((c) => c.participants.includes(userId));
-  const createdCommunities = communities.filter((c) => c.createdById === userId);
+  // Comunidade que a pessoa administra (uma por vez); pendentes só aparecem para ela mesma.
+  const administered = getAdministeredCommunity(userId, communities);
+  const administeredCommunities =
+    administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
+  const isProfessional = stored?.role === "profissional";
+  const professionalInfo = getProfessionalInfo(profiles, userId);
+  const inviteCount =
+    isSelf && isProfessional && user ? getProfessionalInvites(user.id, state).length : 0;
 
   const userGoals =
     isSelf && user
@@ -135,10 +154,30 @@ function PublicProfilePage() {
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground">
+                    <h1 className="flex items-center gap-2 text-2xl sm:text-3xl font-extrabold font-display text-foreground">
                       {profile.name}
+                      {isProfessional && <VerifiedBadge className="h-5 w-5 sm:h-6 sm:w-6" />}
                     </h1>
+                    {isProfessional && professionalInfo && (
+                      <p className="mt-1 text-xs sm:text-sm font-semibold text-accent">
+                        Profissional verificado · {professionalInfo.profession} ·{" "}
+                        {professionalInfo.council} {professionalInfo.registration}/
+                        {professionalInfo.uf}
+                      </p>
+                    )}
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{profile.bio}</p>
+                    {isProfessional && professionalInfo && (
+                      <ul className="mt-2 flex flex-wrap gap-1.5">
+                        {professionalInfo.specialties.map((sp) => (
+                          <li
+                            key={sp}
+                            className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
+                          >
+                            {sp}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {isSelf && user && (
                       <p className="text-xs text-muted-foreground mt-1">
                         📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
@@ -147,7 +186,14 @@ function PublicProfilePage() {
                   </div>
 
                   {isSelf && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        to="/perfil/editar"
+                        className="flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        <span>Editar perfil</span>
+                      </Link>
                       <ShareModal
                         triggerButton={
                           <button
@@ -170,7 +216,7 @@ function PublicProfilePage() {
                             <MoreVertical className="h-4 w-4" />
                           </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuContent align="end" className="w-64">
                           <DropdownMenuItem asChild>
                             <Link
                               to="/perfil/configuracoes"
@@ -180,6 +226,39 @@ function PublicProfilePage() {
                               <span>Configurações</span>
                             </Link>
                           </DropdownMenuItem>
+                          {!isProfessional && (
+                            <DropdownMenuItem asChild>
+                              <Link
+                                to="/verificacao"
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <BadgeCheck className="h-4 w-4" />
+                                <span>Verificação profissional</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          {isProfessional && (
+                            <DropdownMenuItem asChild>
+                              <Link
+                                to="/convites"
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <Inbox className="h-4 w-4" />
+                                <span>
+                                  Convites de comunidades
+                                  {inviteCount > 0 ? ` (${inviteCount})` : ""}
+                                </span>
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          {isPlatformAdmin(user) && (
+                            <DropdownMenuItem asChild>
+                              <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                                <ShieldCheck className="h-4 w-4" />
+                                <span>Painel da plataforma</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={handleSignOut}
@@ -419,13 +498,13 @@ function PublicProfilePage() {
                   )}
                 </div>
 
-                {createdCommunities.length > 0 && (
+                {administeredCommunities.length > 0 && (
                   <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
                     <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3">
-                      Comunidades que criou
+                      Comunidade que administra
                     </h3>
                     <ul className="flex flex-wrap gap-2">
-                      {createdCommunities.map((c) => (
+                      {administeredCommunities.map((c) => (
                         <li key={c.id}>
                           <Link
                             to="/comunidades/$slug"
@@ -444,7 +523,6 @@ function PublicProfilePage() {
           </>
         )}
       </main>
-      <SiteFooter />
     </div>
   );
 }

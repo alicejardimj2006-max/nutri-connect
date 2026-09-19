@@ -15,11 +15,13 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useCommunity } from "@/hooks/use-community";
 import {
   CATEGORIES,
   createCommunity,
   createCommunityPost,
   initials,
+  isCommunityAdmin,
   RECIPE_CATEGORIES,
   type PostType,
 } from "@/lib/community";
@@ -140,7 +142,17 @@ function PinnedCard({
 
 export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode }) {
   const { user } = useAuth();
+  const { communities, profiles } = useCommunity();
   const [open, setOpen] = useState(false);
+
+  // Só usuários criam comunidades, e cada pessoa administra uma por vez.
+  const isProfessional = profiles.find((p) => p.userId === user?.id)?.role === "profissional";
+  const alreadyAdmin = !!user && isCommunityAdmin(user.id, communities);
+  const communityBlockReason = isProfessional
+    ? "Profissionais não criam comunidades: recebem convites para ser admin profissional."
+    : alreadyAdmin
+      ? "Você já administra uma comunidade. Cada pessoa administra uma por vez."
+      : null;
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [type, setType] = useState<PostType>("experiencia");
@@ -198,15 +210,22 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         toast.error("Preencha o nome e a descrição da comunidade.");
         return;
       }
-      createCommunity({
-        name: title.trim(),
-        description: text.trim(),
-        objective: objective.trim(),
-        coverImage: image ?? "",
-        category: communityCategory,
-        actor: { id: user.id, name: user.name },
-      });
-      toast.success("Comunidade criada com sucesso!");
+      try {
+        createCommunity({
+          name: title.trim(),
+          description: text.trim(),
+          objective: objective.trim(),
+          coverImage: image ?? "",
+          category: communityCategory,
+          actor: { id: user.id, name: user.name },
+        });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Não foi possível criar a comunidade.");
+        return;
+      }
+      toast.success(
+        "Comunidade enviada! Ela passa a existir quando um profissional aceitar ser o admin profissional.",
+      );
       setOpen(false);
       resetForm();
       return;
@@ -329,10 +348,13 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   const t = THEMES[opt.theme];
                   const active =
                     opt.id === "comunidade" ? isCommunity : !isCommunity && type === opt.id;
+                  const blocked = opt.id === "comunidade" && !!communityBlockReason;
                   return (
                     <button
                       key={opt.id}
                       type="button"
+                      disabled={blocked}
+                      title={blocked ? (communityBlockReason ?? undefined) : undefined}
                       onClick={() => {
                         if (opt.id === "comunidade") {
                           setIsCommunity(true);
@@ -341,7 +363,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                           setType(opt.id);
                         }
                       }}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-200 cursor-pointer ${
+                      className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                         active
                           ? `${t.active} scale-[1.04] font-bold`
                           : "border-border bg-card text-muted-foreground hover:bg-secondary"
@@ -359,6 +381,11 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   );
                 })}
               </div>
+              {communityBlockReason && (
+                <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">
+                  {communityBlockReason}
+                </p>
+              )}
             </PinnedCard>
 
             {/* Título */}

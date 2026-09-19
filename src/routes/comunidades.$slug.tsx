@@ -1,11 +1,24 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { AdminPerson } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { getProfessionalInfo, isPlatformAdmin, leaveAsAdmin } from "@/lib/community-admin";
 import {
   addComment,
   createPost,
@@ -17,6 +30,7 @@ import {
   toggleMembership,
   togglePin,
   type Actor,
+  type Community,
   type Post,
 } from "@/lib/community";
 
@@ -43,10 +57,15 @@ export const Route = createFileRoute("/comunidades/$slug")({
 function CommunityFeed() {
   const { slug } = useParams({ from: "/comunidades/$slug" });
   const { user } = useAuth();
-  const { communities, posts, hydrated } = useCommunity();
+  const { communities, posts, profiles, hydrated } = useCommunity();
   const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
 
   const community = communities.find((c) => c.slug === slug);
+  // Comunidade pendente ainda não existe publicamente: só quem a criou (ou a plataforma) a vê.
+  const hiddenPending =
+    community?.status === "pendente" &&
+    community.adminUserId !== actor?.id &&
+    !isPlatformAdmin(user);
   const feed = useMemo(
     () =>
       posts
@@ -63,7 +82,7 @@ function CommunityFeed() {
     );
   }
 
-  if (!community) {
+  if (!community || hiddenPending) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-2xl font-bold text-primary">Comunidade não encontrada</h1>
@@ -77,9 +96,14 @@ function CommunityFeed() {
     );
   }
 
-  const isModerator = !!actor && community.createdById === actor.id;
+  const isAdminUser = !!actor && community.adminUserId === actor.id;
+  const isAdminPro = !!actor && community.professionalId === actor.id;
+  const isModerator = isAdminUser || isAdminPro;
   const isMember = !!actor && community.members.some((m) => m.userId === actor.id);
-  const canPost = !!actor && (isMember || isModerator);
+  const canPost = !!actor && (isMember || isModerator) && community.status === "ativa";
+  const pro = community.professionalId
+    ? getProfessionalInfo(profiles, community.professionalId)
+    : undefined;
 
   let coverImage = "/images/communities/friends-dinner.jpg";
   if (community.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
@@ -109,17 +133,15 @@ function CommunityFeed() {
               </h1>
             </div>
 
-            {actor && !isModerator && (
-              <button
-                onClick={() => toggleMembership(community.id, actor)}
-                className={`hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition ${
-                  isMember
-                    ? "bg-white/20 text-white hover:bg-white/30 backdrop-blur-md border border-white/30"
-                    : "bg-accent text-accent-foreground hover:bg-accent/90"
-                }`}
-              >
-                {isMember ? "Sair da comunidade" : "Participar"}
-              </button>
+            {actor && (
+              <MembershipAction
+                variant="cover"
+                community={community}
+                actor={actor}
+                isMember={isMember}
+                isAdmin={isModerator}
+                isPro={isAdminPro}
+              />
             )}
           </div>
         </div>
@@ -138,22 +160,25 @@ function CommunityFeed() {
                 </p>
               )}
 
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Link
-                  to="/perfil/$userId"
-                  params={{ userId: community.createdById }}
-                  className="flex items-center gap-3 rounded-xl bg-secondary/50 px-3 py-2 border border-border/50 transition hover:bg-secondary"
-                >
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                    {initials(community.createdByName)}
-                  </span>
-                  <span className="text-sm">
-                    <span className="flex items-center gap-1 font-semibold text-foreground">
-                      {community.createdByName}
-                    </span>
-                    <span className="text-xs text-muted-foreground">Criador da comunidade</span>
-                  </span>
-                </Link>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <AdminPerson
+                  label="Admin usuário"
+                  userId={community.adminUserId}
+                  name={community.adminUserName}
+                  vacantText="Aguardando indicação"
+                />
+                <AdminPerson
+                  label="Admin profissional"
+                  detail={
+                    pro
+                      ? `${pro.profession} · ${pro.council} ${pro.registration}/${pro.uf}`
+                      : undefined
+                  }
+                  userId={community.professionalId}
+                  name={community.professionalName}
+                  verified
+                  vacantText="Aguardando profissional"
+                />
               </div>
             </div>
 
@@ -162,22 +187,35 @@ function CommunityFeed() {
                 <Users className="h-4 w-4 text-accent" /> {community.members.length} membros
               </span>
 
-              {actor && !isModerator && (
-                <button
-                  onClick={() => toggleMembership(community.id, actor)}
-                  className={`sm:hidden w-full rounded-full px-5 py-2.5 text-sm font-bold transition ${
-                    isMember
-                      ? "border border-border bg-secondary text-foreground hover:bg-muted"
-                      : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-soft"
-                  }`}
-                >
-                  {isMember ? "Sair da comunidade" : "Participar"}
-                </button>
+              {actor && (
+                <MembershipAction
+                  variant="inline"
+                  community={community}
+                  actor={actor}
+                  isMember={isMember}
+                  isAdmin={isModerator}
+                  isPro={isAdminPro}
+                />
               )}
             </div>
           </div>
         </div>
       </header>
+
+      {community.status !== "ativa" && (
+        <p className="mt-6 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm text-foreground">
+          {community.status === "pendente"
+            ? "Sua comunidade está aguardando um profissional aceitar ser o admin profissional. Ela passa a existir para todos assim que isso acontecer."
+            : `Comunidade suspensa: ${[
+                !community.adminUserId &&
+                  "falta o admin usuário (a plataforma indicará entre os membros mais engajados)",
+                !community.professionalId &&
+                  "falta o admin profissional (profissionais indicados já foram convidados)",
+              ]
+                .filter(Boolean)
+                .join(" e ")}. As publicações voltam quando a administração estiver completa.`}
+        </p>
+      )}
 
       {canPost ? (
         <Composer communityId={community.id} actor={actor} />
@@ -190,6 +228,8 @@ function CommunityFeed() {
               </Link>{" "}
               para participar e publicar nesta comunidade.
             </>
+          ) : community.status !== "ativa" ? (
+            "As publicações estão pausadas enquanto a comunidade não estiver ativa."
           ) : (
             "Participe da comunidade para publicar."
           )}
@@ -207,6 +247,81 @@ function CommunityFeed() {
         )}
       </section>
     </div>
+  );
+}
+
+function MembershipAction({
+  variant,
+  community,
+  actor,
+  isMember,
+  isAdmin,
+  isPro,
+}: {
+  variant: "cover" | "inline";
+  community: Community;
+  actor: Actor;
+  isMember: boolean;
+  isAdmin: boolean;
+  isPro: boolean;
+}) {
+  const navigate = useNavigate();
+  const cover = variant === "cover";
+  const base = cover
+    ? "hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition"
+    : "sm:hidden w-full rounded-full px-5 py-2.5 text-sm font-bold transition";
+  const secondary = cover
+    ? "bg-white/20 text-white hover:bg-white/30 backdrop-blur-md border border-white/30"
+    : "border border-border bg-secondary text-foreground hover:bg-muted";
+  const primary = cover
+    ? "bg-accent text-accent-foreground hover:bg-accent/90"
+    : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-soft";
+
+  if (isAdmin) {
+    const consequence = isPro
+      ? "A comunidade ficará suspensa até que outro profissional verificado aceite o convite para ser admin profissional."
+      : community.status === "pendente"
+        ? "Como ela ainda não foi ativada, será cancelada."
+        : "A comunidade ficará suspensa até a plataforma indicar um novo admin usuário entre os membros mais engajados.";
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button type="button" className={`${base} ${secondary}`}>
+            Deixar a administração
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deixar a administração?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você deixará de ser admin e sairá da comunidade. {consequence}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar como admin</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                leaveAsAdmin(community.id, actor);
+                toast.success("Você deixou a administração da comunidade.");
+                navigate({ to: "/comunidades" });
+              }}
+            >
+              Deixar a administração
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => toggleMembership(community.id, actor)}
+      className={`${base} ${isMember ? secondary : primary}`}
+    >
+      {isMember ? "Sair da comunidade" : "Participar"}
+    </button>
   );
 }
 

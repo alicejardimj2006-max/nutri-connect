@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChefHat, Clock, Plus, Search, Filter, Sparkles, Heart } from "lucide-react";
-import { AuthGateLoading, SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useCommunity } from "@/hooks/use-community";
 import { RECIPE_CATEGORIES, togglePrepared, toggleSupport } from "@/lib/community";
 import { useRequireAuth } from "@/hooks/use-auth";
@@ -248,7 +248,6 @@ function ReceitasPage() {
         )}
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

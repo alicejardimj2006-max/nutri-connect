@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { VerifiedBadge } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
 import { PostImage } from "@/components/post-image";
 import {
@@ -33,6 +34,7 @@ import {
   voteThemePoll,
   toggleJoinChallenge,
   formatDate,
+  getAvatarSrc,
   initials,
 } from "@/lib/community";
 
@@ -42,7 +44,7 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
-  const { communities } = useCommunity();
+  const { communities, profiles } = useCommunity();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
 
@@ -98,11 +100,9 @@ export function PostCard({ post }: PostCardProps) {
     else if (post.id === "p-exp-1") displayImage = "/images/experiences/cooking.jpg";
   }
 
-  let avatarImage = post.authorAvatar;
-  if (!avatarImage) {
-    if (post.authorId === "seed-maria") avatarImage = "/images/professionals/prof-1.jpg";
-    else if (post.authorId === "seed-pedro") avatarImage = "/images/professionals/prof-2.jpg";
-  }
+  const avatarImage = getAvatarSrc(post.authorId, post.authorAvatar);
+  const authorIsProfessional =
+    profiles.find((p) => p.userId === post.authorId)?.role === "profissional";
 
   const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
 
@@ -130,6 +130,7 @@ export function PostCard({ post }: PostCardProps) {
             >
               {post.authorName}
             </Link>
+            {authorIsProfessional && <VerifiedBadge />}
           </div>
           <p className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-1">
             {formatDate(post.createdAt)}
