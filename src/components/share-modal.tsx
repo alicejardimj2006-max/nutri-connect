@@ -146,9 +146,14 @@ function ScaledPreview({ children }: { children: React.ReactNode }) {
   const innerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
   const [scale, setScale] = useState(0.7);
+  // No celular o feed já tem a largura da tela: o card aparece em tamanho normal, sem redução.
+  const [mobile, setMobile] = useState(() => window.innerWidth < 640);
 
   useLayoutEffect(() => {
-    const update = () => setScale(Math.min(0.7, (window.innerWidth - 48) / FEED_COLUMN_W));
+    const update = () => {
+      setMobile(window.innerWidth < 640);
+      setScale(Math.min(0.7, (window.innerWidth - 48) / FEED_COLUMN_W));
+    };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
@@ -162,6 +167,8 @@ function ScaledPreview({ children }: { children: React.ReactNode }) {
     setHeight(el.offsetHeight);
     return () => observer.disconnect();
   }, []);
+
+  if (mobile) return <div className="w-[calc(100vw-2rem)]">{children}</div>;
 
   return (
     <div style={{ width: FEED_COLUMN_W * scale, height: height * scale }}>
@@ -1036,7 +1043,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
 
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
           {/* Sem moldura: só o card, montado na largura do feed e reduzido */}
-          <DialogContent className="max-h-[94dvh] w-fit max-w-[calc(100vw-2rem)] gap-2 overflow-y-auto border-0 bg-transparent p-1 shadow-none sm:rounded-none [&>button.absolute]:hidden">
+          <DialogContent className="max-h-[94dvh] w-fit max-w-[calc(100vw-2rem)] gap-2 overflow-y-auto border-0 bg-transparent p-0 shadow-none sm:rounded-none sm:p-1 [&>button.absolute]:hidden">
             <div className="flex items-center justify-between gap-3 px-1 text-white">
               <DialogTitle className="text-sm font-bold">Pré-visualização</DialogTitle>
               <DialogDescription className="sr-only">

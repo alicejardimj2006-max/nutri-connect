@@ -1,99 +1,79 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { FlipHorizontal2, RotateCcw, RotateCw, Undo2 } from "lucide-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Aperture,
+  Crop,
+  Eye,
+  FlipHorizontal2,
+  FlipVertical2,
+  Palette,
+  Redo2,
+  RotateCcw,
+  RotateCw,
+  Sparkles,
+  Sun,
+  Undo2,
+  Zap,
+} from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import {
+  ASPECTS,
+  DEFAULT_EDITS,
+  LOOKS,
+  POST_IMAGE_W,
+  ZERO_ADJUSTMENTS,
+  autoEnhance,
+  clampOffsets,
+  drawHistogram,
+  frameSize,
+  renderEdits,
+  type ImageEdits,
+} from "@/lib/image-edit";
 
-export interface ImageEdits {
-  /** Quartos de volta no sentido horário (0–3). */
-  rotation: number;
-  flip: boolean;
-  zoom: number;
-  /** Deslocamento da imagem, como fração da largura/altura do recorte. */
-  offX: number;
-  offY: number;
-  aspect: string;
-  brightness: number;
-  contrast: number;
-  saturation: number;
-}
+export { DEFAULT_EDITS };
+export type { ImageEdits };
 
-export const DEFAULT_EDITS: ImageEdits = {
-  rotation: 0,
-  flip: false,
-  zoom: 1,
-  offX: 0,
-  offY: 0,
-  aspect: "original",
-  brightness: 100,
-  contrast: 100,
-  saturation: 100,
-};
+const PREVIEW_W = 900;
+const EXPORT_MAX_W = 1600;
+const THUMB_W = 88;
+const MAX_HISTORY = 60;
 
-const ASPECTS: { id: string; label: string; ratio: number | null }[] = [
-  { id: "original", label: "Original", ratio: null },
-  { id: "1:1", label: "1:1", ratio: 1 },
-  { id: "4:3", label: "4:3", ratio: 4 / 3 },
-  { id: "3:4", label: "3:4", ratio: 3 / 4 },
-  { id: "16:9", label: "16:9", ratio: 16 / 9 },
+type TabId = "crop" | "light" | "color" | "looks" | "detail";
+
+const TABS: {
+  id: TabId;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  keys: (keyof ImageEdits)[];
+}[] = [
+  {
+    id: "crop",
+    label: "Recortar",
+    icon: Crop,
+    keys: ["rotation", "straighten", "flipH", "flipV", "zoom", "offX", "offY", "aspect"],
+  },
+  {
+    id: "light",
+    label: "Luz",
+    icon: Sun,
+    keys: ["exposure", "contrast", "highlights", "shadows", "fade"],
+  },
+  {
+    id: "color",
+    label: "Cor",
+    icon: Palette,
+    keys: ["temperature", "tint", "saturation", "vibrance"],
+  },
+  { id: "looks", label: "Filtros", icon: Sparkles, keys: ["look", "lookAmount"] },
+  {
+    id: "detail",
+    label: "Detalhes",
+    icon: Aperture,
+    keys: ["sharpness", "blur", "vignette", "grain"],
+  },
 ];
 
-const PREVIEW_W = 720;
-const EXPORT_MAX_W = 1600;
-
-function geometry(img: HTMLImageElement, e: ImageEdits, outW: number) {
-  const quarter = e.rotation % 2 === 1;
-  const rw = quarter ? img.naturalHeight : img.naturalWidth;
-  const rh = quarter ? img.naturalWidth : img.naturalHeight;
-  const ratio = ASPECTS.find((a) => a.id === e.aspect)?.ratio ?? rw / rh;
-  const outH = Math.round(outW / ratio);
-  const base = Math.max(outW / rw, outH / rh) * e.zoom;
-  const limX = Math.max(0, (rw * base - outW) / 2) / outW;
-  const limY = Math.max(0, (rh * base - outH) / 2) / outH;
-  return { rw, outH, base, limX, limY };
-}
-
-const clamp = (v: number, lim: number) => Math.min(lim, Math.max(-lim, v));
-
-function draw(canvas: HTMLCanvasElement, img: HTMLImageElement, e: ImageEdits, outW: number) {
-  const { outH, base, limX, limY } = geometry(img, e, outW);
-  canvas.width = outW;
-  canvas.height = outH;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const b = e.brightness / 100;
-  const c = e.contrast / 100;
-  const s = e.saturation / 100;
-  const nativeFilter = typeof (ctx as { filter?: string }).filter === "string";
-
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, outW, outH);
-  ctx.save();
-  if (nativeFilter) ctx.filter = `brightness(${b}) contrast(${c}) saturate(${s})`;
-  ctx.translate(outW / 2 + clamp(e.offX, limX) * outW, outH / 2 + clamp(e.offY, limY) * outH);
-  ctx.scale(e.flip ? -1 : 1, 1);
-  ctx.rotate((e.rotation * Math.PI) / 2);
-  ctx.scale(base, base);
-  ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
-  ctx.restore();
-
-  // Safari não suporta ctx.filter: aplica os ajustes pixel a pixel.
-  if (!nativeFilter && (b !== 1 || c !== 1 || s !== 1)) {
-    const data = ctx.getImageData(0, 0, outW, outH);
-    const px = data.data;
-    for (let i = 0; i < px.length; i += 4) {
-      let r = px[i] * b;
-      let g = px[i + 1] * b;
-      let bl = px[i + 2] * b;
-      r = (r - 127.5) * c + 127.5;
-      g = (g - 127.5) * c + 127.5;
-      bl = (bl - 127.5) * c + 127.5;
-      const gray = 0.2126 * r + 0.7152 * g + 0.0722 * bl;
-      px[i] = gray + (r - gray) * s;
-      px[i + 1] = gray + (g - gray) * s;
-      px[i + 2] = gray + (bl - gray) * s;
-    }
-    ctx.putImageData(data, 0, 0);
-  }
-}
+const isDirty = (e: ImageEdits, keys: (keyof ImageEdits)[]) =>
+  keys.some((k) => e[k] !== DEFAULT_EDITS[k]);
 
 function Slider({
   label,
@@ -101,7 +81,8 @@ function Slider({
   min,
   max,
   step = 1,
-  suffix = "%",
+  unit = "",
+  neutral = 0,
   onChange,
 }: {
   label: string;
@@ -109,36 +90,48 @@ function Slider({
   min: number;
   max: number;
   step?: number;
-  suffix?: string;
+  unit?: string;
+  /** Valor "sem efeito": duplo clique no rótulo volta para ele. */
+  neutral?: number;
   onChange: (v: number) => void;
 }) {
+  const shown = step < 1 ? value.toFixed(1) : Math.round(value);
   return (
-    <label className="block">
-      <span className="mb-1 flex items-center justify-between text-xs font-medium text-foreground">
-        {label}
-        <span className="tabular-nums text-muted-foreground">
-          {Math.round(value)}
-          {suffix}
+    <div>
+      <div className="mb-1 flex items-center justify-between text-xs">
+        <button
+          type="button"
+          onDoubleClick={() => onChange(neutral)}
+          title="Duplo clique para zerar"
+          className="font-medium text-foreground cursor-pointer select-none"
+        >
+          {label}
+        </button>
+        <span
+          className={`tabular-nums ${value !== neutral ? "font-semibold text-primary" : "text-muted-foreground"}`}
+        >
+          {value > neutral && neutral === 0 ? "+" : ""}
+          {shown}
+          {unit}
         </span>
-      </span>
+      </div>
       <input
         type="range"
+        aria-label={label}
         min={min}
         max={max}
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        onDoubleClick={() => onChange(neutral)}
         className="w-full cursor-pointer accent-[var(--color-primary)]"
       />
-    </label>
+    </div>
   );
 }
 
-/** Largura da foto dentro de um card do feed (coluna de 42rem menos o padding do card), em px. */
-const POST_IMAGE_W = 624;
-
 const toolBtn =
-  "inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition hover:bg-secondary cursor-pointer";
+  "inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition hover:bg-secondary disabled:opacity-40 disabled:hover:bg-card cursor-pointer disabled:cursor-not-allowed";
 
 export function ImageEditor({
   open,
@@ -154,15 +147,38 @@ export function ImageEditor({
   onApply: (dataUrl: string, edits: ImageEdits) => void;
 }) {
   const [img, setImg] = useState<HTMLImageElement | null>(null);
-  const [edits, setEdits] = useState<ImageEdits>(initial ?? DEFAULT_EDITS);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
+  const [edits, setEdits] = useState<ImageEdits>({ ...DEFAULT_EDITS, ...initial });
+  const editsRef = useRef(edits);
+  editsRef.current = edits;
+  const [past, setPast] = useState<ImageEdits[]>([]);
+  const [future, setFuture] = useState<ImageEdits[]>([]);
+  const [tab, setTab] = useState<TabId>("crop");
+  const [comparing, setComparing] = useState(false);
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [frameScale, setFrameScale] = useState(1);
-  const pan = useRef<{ x: number; y: number } | null>(null);
-
-  // Cada vez que o editor abre, recomeça dos ajustes salvos (ou do padrão).
+  // No celular a foto ocupa todo o palco (a referência de altura do post deixaria ela minúscula).
+  const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
   useEffect(() => {
-    if (open) setEdits(initial ?? DEFAULT_EDITS);
+    const mq = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setMobile(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const histRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const pan = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const sliding = useRef(false);
+  const slideTimer = useRef<number | undefined>(undefined);
+
+  // Cada vez que o editor abre, recomeça dos ajustes salvos (ou do padrão), com histórico limpo.
+  useEffect(() => {
+    if (!open) return;
+    setEdits({ ...DEFAULT_EDITS, ...initial });
+    setPast([]);
+    setFuture([]);
+    setTab("crop");
   }, [open, initial]);
 
   useEffect(() => {
@@ -172,11 +188,33 @@ export function ImageEditor({
     image.src = src;
   }, [open, src]);
 
+  // Render principal + histograma. Ao comparar, mostra só o recorte, sem ajustes de cor.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!open || !img || !canvas) return;
-    draw(canvas, img, edits, PREVIEW_W);
-  }, [open, img, edits]);
+    const shown = comparing
+      ? { ...edits, ...ZERO_ADJUSTMENTS, look: "none", lookAmount: 0 }
+      : edits;
+    const hist = renderEdits(canvas, img, shown, PREVIEW_W, true);
+    if (hist && histRef.current) drawHistogram(histRef.current, hist);
+  }, [open, img, edits, comparing]);
+
+  // Miniaturas dos filtros (quadradas, independentes do recorte atual).
+  useEffect(() => {
+    if (!open || !img) return;
+    const canvas = document.createElement("canvas");
+    const next: Record<string, string> = {};
+    for (const look of LOOKS) {
+      renderEdits(
+        canvas,
+        img,
+        { ...DEFAULT_EDITS, aspect: "1:1", look: look.id, lookAmount: 100 },
+        THUMB_W * 2,
+      );
+      next[look.id] = canvas.toDataURL("image/jpeg", 0.8);
+    }
+    setThumbs(next);
+  }, [open, img]);
 
   // A área de ajuste reproduz a foto do post: mesma proporção de largura e altura máxima.
   useLayoutEffect(() => {
@@ -193,165 +231,454 @@ export function ImageEditor({
   const update = (patch: Partial<ImageEdits>) =>
     setEdits((prev) => {
       const next = { ...prev, ...patch };
-      if (img) {
-        const { limX, limY } = geometry(img, next, PREVIEW_W);
-        next.offX = clamp(next.offX, limX);
-        next.offY = clamp(next.offY, limY);
-      }
+      if (img) Object.assign(next, clampOffsets(img, next, PREVIEW_W));
       return next;
     });
 
+  const checkpoint = () => {
+    setPast((p) => [...p.slice(-(MAX_HISTORY - 1)), editsRef.current]);
+    setFuture([]);
+  };
+  /** Mudança pontual (botões): vira um passo no histórico. */
+  const change = (patch: Partial<ImageEdits>) => {
+    checkpoint();
+    update(patch);
+  };
+  /** Mudança contínua (sliders): agrupa o arrasto inteiro em um único passo. */
+  const slide = (patch: Partial<ImageEdits>) => {
+    if (!sliding.current) {
+      checkpoint();
+      sliding.current = true;
+    }
+    window.clearTimeout(slideTimer.current);
+    slideTimer.current = window.setTimeout(() => (sliding.current = false), 600);
+    update(patch);
+  };
+
+  const undo = () => {
+    const prev = past[past.length - 1];
+    if (!prev) return;
+    setFuture((f) => [editsRef.current, ...f]);
+    setPast((p) => p.slice(0, -1));
+    setEdits(prev);
+  };
+  const redo = () => {
+    const next = future[0];
+    if (!next) return;
+    setPast((p) => [...p, editsRef.current]);
+    setFuture((f) => f.slice(1));
+    setEdits(next);
+  };
+
+  const resetKeys = (keys: (keyof ImageEdits)[]) => {
+    const patch: Record<string, unknown> = {};
+    keys.forEach((k) => (patch[k] = DEFAULT_EDITS[k]));
+    change(patch as Partial<ImageEdits>);
+  };
+
+  /** Correção automática: analisa a foto sem os ajustes de luz atuais, para não acumular. */
+  const autoFix = () => {
+    if (!img) return;
+    const probe = document.createElement("canvas");
+    const hist = renderEdits(
+      probe,
+      img,
+      { ...edits, exposure: 0, contrast: 0, highlights: 0, shadows: 0, fade: 0, vibrance: 0 },
+      320,
+      true,
+    );
+    if (hist) change(autoEnhance(hist));
+  };
+
   const handleApply = () => {
     if (!img) return;
-    const { rw } = geometry(img, edits, 1);
+    const { rw } = frameSize(img, edits, 1);
     const canvas = document.createElement("canvas");
-    draw(canvas, img, edits, Math.min(EXPORT_MAX_W, Math.round(rw)));
-    onApply(canvas.toDataURL("image/jpeg", 0.9), edits);
+    renderEdits(canvas, img, edits, Math.min(EXPORT_MAX_W, Math.round(rw)));
+    onApply(canvas.toDataURL("image/jpeg", 0.92), edits);
   };
+
+  // Zoom com a roda do mouse sobre a imagem.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!open || !frame) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const z = editsRef.current.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06);
+      slide({ zoom: Math.min(4, Math.max(1, z)) });
+    };
+    frame.addEventListener("wheel", onWheel, { passive: false });
+    return () => frame.removeEventListener("wheel", onWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, img]);
+
+  const dirtyAny = useMemo(
+    () => isDirty(edits, Object.keys(DEFAULT_EDITS) as (keyof ImageEdits)[]),
+    [edits],
+  );
+
+  const num = (key: keyof ImageEdits) => edits[key] as number;
+  const adjSlider = (key: keyof ImageEdits, label: string, min = -100, max = 100) => (
+    <Slider
+      label={label}
+      value={num(key)}
+      min={min}
+      max={max}
+      onChange={(v) => slide({ [key]: v } as Partial<ImageEdits>)}
+    />
+  );
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <DialogContent className="max-h-[92vh] w-[95vw] max-w-4xl gap-0 overflow-y-auto rounded-3xl p-0">
-        <div className="grid gap-0 md:grid-cols-[1fr_320px]">
-          <div className="flex min-h-[260px] items-center justify-center bg-card p-4 sm:p-6">
-            {/* Fundo do post: aparece nas laterais quando a altura máxima limita a foto */}
-            <div
-              ref={frameRef}
-              className="flex w-full justify-center overflow-hidden rounded-2xl bg-secondary/40 shadow-inner"
-            >
-              <canvas
-                ref={canvasRef}
-                onPointerDown={(e) => {
-                  pan.current = { x: e.clientX, y: e.clientY };
-                  e.currentTarget.setPointerCapture(e.pointerId);
-                }}
-                onPointerMove={(e) => {
-                  if (!pan.current) return;
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const dx = (e.clientX - pan.current.x) / rect.width;
-                  const dy = (e.clientY - pan.current.y) / rect.height;
-                  pan.current = { x: e.clientX, y: e.clientY };
-                  update({ offX: edits.offX + dx, offY: edits.offY + dy });
-                }}
-                onPointerUp={() => (pan.current = null)}
-                onPointerCancel={() => (pan.current = null)}
-                style={{
-                  maxHeight: `calc(clamp(10rem, calc(100dvh - 32rem), 26rem) * ${frameScale})`,
-                }}
-                className="block max-w-full cursor-grab touch-none rounded-2xl bg-white active:cursor-grabbing"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 p-5 sm:p-6">
-            <div>
-              <DialogTitle className="text-lg font-bold font-display">Ajustar foto</DialogTitle>
-              <DialogDescription className="mt-1 text-xs">
-                Arraste a imagem para reposicionar. O recorte é exatamente o que aparece na
-                publicação. As mudanças só valem ao aplicar.
+      <DialogContent
+        onKeyDown={(e) => {
+          const mod = e.ctrlKey || e.metaKey;
+          if (!mod) return;
+          const k = e.key.toLowerCase();
+          if (k === "z" && !e.shiftKey) {
+            e.preventDefault();
+            undo();
+          } else if ((k === "z" && e.shiftKey) || k === "y") {
+            e.preventDefault();
+            redo();
+          }
+        }}
+        className="flex h-[94dvh] max-h-[94dvh] w-[96vw] max-w-6xl flex-col gap-0 overflow-hidden rounded-3xl p-0 md:h-[88dvh]"
+      >
+        <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,50%)_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_380px] md:grid-rows-1">
+          {/* ------------------------------ Palco ------------------------------ */}
+          <div className="flex min-h-0 flex-col bg-card">
+            <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 pr-14">
+              <DialogTitle className="mr-auto text-base font-bold font-display">
+                Editor de foto
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                Recorte, ajuste luz e cor, aplique filtros e detalhes. As mudanças só valem ao
+                aplicar.
               </DialogDescription>
+              <button
+                type="button"
+                className={toolBtn}
+                onClick={undo}
+                disabled={past.length === 0}
+                title="Desfazer (Ctrl+Z)"
+                aria-label="Desfazer"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                className={toolBtn}
+                onClick={redo}
+                disabled={future.length === 0}
+                title="Refazer (Ctrl+Shift+Z)"
+                aria-label="Refazer"
+              >
+                <Redo2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                className={toolBtn}
+                onPointerDown={() => setComparing(true)}
+                onPointerUp={() => setComparing(false)}
+                onPointerLeave={() => setComparing(false)}
+                onPointerCancel={() => setComparing(false)}
+                disabled={!dirtyAny}
+                title="Segure para ver sem os ajustes de cor"
+              >
+                <Eye className="h-3.5 w-3.5" /> Comparar
+              </button>
             </div>
 
-            <div>
-              <p className="mb-1.5 text-xs font-medium text-foreground">Enquadramento</p>
-              <div className="flex flex-wrap gap-1.5">
-                {ASPECTS.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() => update({ aspect: a.id })}
-                    className={`rounded-full border px-3 py-1 text-xs font-medium transition cursor-pointer ${
-                      edits.aspect === a.id
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card text-muted-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    {a.label}
-                  </button>
-                ))}
+            <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-secondary/30 p-2 md:p-6">
+              {/* Fundo do post: aparece nas laterais quando a altura máxima limita a foto */}
+              <div
+                ref={frameRef}
+                className={`flex w-full justify-center overflow-hidden rounded-2xl bg-secondary/60 shadow-inner ${mobile ? "h-full items-center" : ""}`}
+              >
+                <canvas
+                  ref={canvasRef}
+                  onPointerDown={(e) => {
+                    pan.current = { x: e.clientX, y: e.clientY, moved: false };
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                  }}
+                  onPointerMove={(e) => {
+                    const p = pan.current;
+                    if (!p) return;
+                    if (!p.moved) {
+                      p.moved = true;
+                      checkpoint();
+                    }
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const dx = (e.clientX - p.x) / rect.width;
+                    const dy = (e.clientY - p.y) / rect.height;
+                    p.x = e.clientX;
+                    p.y = e.clientY;
+                    update({ offX: editsRef.current.offX + dx, offY: editsRef.current.offY + dy });
+                  }}
+                  onPointerUp={() => (pan.current = null)}
+                  onPointerCancel={() => (pan.current = null)}
+                  style={{
+                    maxHeight: mobile
+                      ? "100%"
+                      : `calc(clamp(10rem, calc(100dvh - 32rem), 26rem) * ${frameScale})`,
+                  }}
+                  className="block max-w-full cursor-grab touch-none rounded-2xl bg-white active:cursor-grabbing"
+                />
               </div>
             </div>
+            <p className="hidden border-t border-border/60 px-4 py-2 text-[11px] text-muted-foreground md:block">
+              Arraste para reposicionar · role o mouse para dar zoom · duplo clique em um controle
+              para zerar
+            </p>
+          </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                className={toolBtn}
-                onClick={() => update({ rotation: (edits.rotation + 3) % 4 })}
-                title="Girar para a esquerda"
-              >
-                <RotateCcw className="h-3.5 w-3.5" /> Girar
-              </button>
-              <button
-                type="button"
-                className={toolBtn}
-                onClick={() => update({ rotation: (edits.rotation + 1) % 4 })}
-                title="Girar para a direita"
-              >
-                <RotateCw className="h-3.5 w-3.5" /> Girar
-              </button>
-              <button
-                type="button"
-                className={toolBtn}
-                onClick={() => update({ flip: !edits.flip })}
-                title="Espelhar"
-              >
-                <FlipHorizontal2 className="h-3.5 w-3.5" /> Espelhar
-              </button>
+          {/* ------------------------------ Painel ------------------------------ */}
+          <div className="flex min-h-0 flex-col border-t border-border/60 md:border-l md:border-t-0">
+            <div className="border-b border-border/60 p-3">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Histograma
+                </span>
+                <button
+                  type="button"
+                  onClick={autoFix}
+                  className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary transition hover:opacity-80 cursor-pointer"
+                >
+                  <Zap className="h-3 w-3" /> Melhorar automaticamente
+                </button>
+              </div>
+              <canvas ref={histRef} className="h-14 w-full rounded-lg bg-secondary/40" />
             </div>
 
-            <Slider
-              label="Zoom"
-              value={edits.zoom * 100}
-              min={100}
-              max={300}
-              onChange={(v) => update({ zoom: v / 100 })}
-            />
-            <Slider
-              label="Brilho"
-              value={edits.brightness}
-              min={50}
-              max={150}
-              onChange={(v) => update({ brightness: v })}
-            />
-            <Slider
-              label="Contraste"
-              value={edits.contrast}
-              min={50}
-              max={150}
-              onChange={(v) => update({ contrast: v })}
-            />
-            <Slider
-              label="Saturação"
-              value={edits.saturation}
-              min={0}
-              max={200}
-              onChange={(v) => update({ saturation: v })}
-            />
+            <div role="tablist" className="grid grid-cols-5 border-b border-border/60">
+              {TABS.map((t) => {
+                const Icon = t.icon;
+                const active = tab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setTab(t.id)}
+                    className={`relative flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-medium transition cursor-pointer ${
+                      active
+                        ? "bg-primary-soft text-primary"
+                        : "text-muted-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {t.label}
+                    {isDirty(edits, t.keys) && (
+                      <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
-            <button
-              type="button"
-              className={`${toolBtn} self-start`}
-              onClick={() => setEdits(DEFAULT_EDITS)}
-            >
-              <Undo2 className="h-3.5 w-3.5" /> Restaurar original
-            </button>
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+              {tab === "crop" && (
+                <>
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-foreground">Proporção</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {ASPECTS.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => change({ aspect: a.id })}
+                          title={
+                            a.id === "original"
+                              ? "O maior tamanho que uma foto ocupa no post"
+                              : a.id === "native"
+                                ? "Mantém a proporção da foto, sem cortes"
+                                : undefined
+                          }
+                          className={`rounded-full border px-3 py-1 text-xs font-medium transition cursor-pointer ${
+                            edits.aspect === a.id
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card text-muted-foreground hover:bg-secondary"
+                          }`}
+                        >
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <button
+                      type="button"
+                      className={toolBtn}
+                      onClick={() => change({ rotation: (edits.rotation + 3) % 4 })}
+                      title="Girar 90° para a esquerda"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className={toolBtn}
+                      onClick={() => change({ rotation: (edits.rotation + 1) % 4 })}
+                      title="Girar 90° para a direita"
+                    >
+                      <RotateCw className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className={toolBtn}
+                      onClick={() => change({ flipH: !edits.flipH })}
+                      title="Espelhar na horizontal"
+                    >
+                      <FlipHorizontal2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className={toolBtn}
+                      onClick={() => change({ flipV: !edits.flipV })}
+                      title="Espelhar na vertical"
+                    >
+                      <FlipVertical2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <Slider
+                    label="Endireitar"
+                    value={edits.straighten}
+                    min={-45}
+                    max={45}
+                    step={0.5}
+                    unit="°"
+                    onChange={(v) => slide({ straighten: v })}
+                  />
+                  <Slider
+                    label="Zoom"
+                    value={Math.round(edits.zoom * 100)}
+                    min={100}
+                    max={400}
+                    unit="%"
+                    neutral={100}
+                    onChange={(v) => slide({ zoom: v / 100 })}
+                  />
+                  <button
+                    type="button"
+                    className={toolBtn}
+                    onClick={() => change({ offX: 0, offY: 0 })}
+                    disabled={edits.offX === 0 && edits.offY === 0}
+                  >
+                    Centralizar imagem
+                  </button>
+                </>
+              )}
 
-            <div className="mt-auto flex justify-end gap-2 pt-2">
+              {tab === "light" && (
+                <>
+                  {adjSlider("exposure", "Exposição")}
+                  {adjSlider("contrast", "Contraste")}
+                  {adjSlider("highlights", "Realces")}
+                  {adjSlider("shadows", "Sombras")}
+                  {adjSlider("fade", "Desbotado", 0, 100)}
+                </>
+              )}
+
+              {tab === "color" && (
+                <>
+                  {adjSlider("temperature", "Temperatura")}
+                  {adjSlider("tint", "Matiz (verde ↔ magenta)")}
+                  {adjSlider("saturation", "Saturação")}
+                  {adjSlider("vibrance", "Vibração")}
+                </>
+              )}
+
+              {tab === "looks" && (
+                <>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {LOOKS.map((look) => {
+                      const active = edits.look === look.id;
+                      return (
+                        <button
+                          key={look.id}
+                          type="button"
+                          onClick={() => change({ look: look.id })}
+                          className={`group flex flex-col items-center gap-1 rounded-xl border-2 p-1 text-[11px] font-medium transition cursor-pointer ${
+                            active
+                              ? "border-primary text-primary"
+                              : "border-transparent text-muted-foreground hover:border-border"
+                          }`}
+                        >
+                          {thumbs[look.id] ? (
+                            <img
+                              src={thumbs[look.id]}
+                              alt=""
+                              className="aspect-square w-full rounded-lg object-cover"
+                            />
+                          ) : (
+                            <span className="aspect-square w-full rounded-lg bg-secondary" />
+                          )}
+                          {look.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {edits.look !== "none" && (
+                    <Slider
+                      label="Intensidade do filtro"
+                      value={edits.lookAmount}
+                      min={0}
+                      max={100}
+                      unit="%"
+                      neutral={100}
+                      onChange={(v) => slide({ lookAmount: v })}
+                    />
+                  )}
+                </>
+              )}
+
+              {tab === "detail" && (
+                <>
+                  {adjSlider("sharpness", "Nitidez", 0, 100)}
+                  {adjSlider("blur", "Desfoque", 0, 100)}
+                  {adjSlider("vignette", "Vinheta (escurecer ↔ clarear)")}
+                  {adjSlider("grain", "Granulação", 0, 100)}
+                </>
+              )}
+
+              {isDirty(edits, TABS.find((t) => t.id === tab)!.keys) && (
+                <button
+                  type="button"
+                  className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline cursor-pointer"
+                  onClick={() => resetKeys(TABS.find((t) => t.id === tab)!.keys)}
+                >
+                  Zerar esta aba
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-2 border-t border-border/60 p-3">
               <button
                 type="button"
-                onClick={onCancel}
-                className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary cursor-pointer"
+                onClick={() => change({ ...DEFAULT_EDITS })}
+                disabled={!dirtyAny}
+                className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
               >
-                Cancelar
+                Restaurar tudo
               </button>
-              <button
-                type="button"
-                onClick={handleApply}
-                disabled={!img}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
-              >
-                Aplicar
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApply}
+                  disabled={!img}
+                  className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
+                >
+                  Aplicar
+                </button>
+              </div>
             </div>
           </div>
         </div>
