@@ -138,6 +138,43 @@ function reorder(order: PostBlock[], block: PostBlock, target: PostBlock): PostB
   return normalizeBlockOrder(next, DEFAULT_ORDER);
 }
 
+/** Largura da coluna do feed (max-w-2xl), em px: o card da prévia é montado nela e depois reduzido. */
+const FEED_COLUMN_W = 672;
+
+/** Mostra o conteúdo na largura real do feed, reduzido por `scale` (mesmas regras e proporções, em tamanho menor). */
+function ScaledPreview({ children }: { children: React.ReactNode }) {
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+  const [scale, setScale] = useState(0.7);
+
+  useLayoutEffect(() => {
+    const update = () => setScale(Math.min(0.7, (window.innerWidth - 48) / FEED_COLUMN_W));
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setHeight(el.offsetHeight));
+    observer.observe(el);
+    setHeight(el.offsetHeight);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div style={{ width: FEED_COLUMN_W * scale, height: height * scale }}>
+      <div
+        ref={innerRef}
+        style={{ width: FEED_COLUMN_W, transform: `scale(${scale})`, transformOrigin: "top left" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /** Um "recorte" independente preso ao mural — não uma linha de formulário. */
 function PinnedCard({
   icon: Icon,
@@ -713,11 +750,11 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 onChange={handlePickImage}
               />
               {image ? (
-                <div className="relative overflow-hidden rounded-2xl border border-border">
+                <div className="relative mx-auto w-fit max-w-full overflow-hidden rounded-2xl border border-border">
                   <img
                     src={image}
                     alt="Prévia da imagem da publicação"
-                    className="block h-auto max-h-72 w-full object-contain"
+                    className="block h-auto max-h-72 w-auto max-w-full"
                   />
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button
@@ -998,8 +1035,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         )}
 
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          {/* Sem moldura: só o card, com a mesma largura (max-w-2xl) da coluna do feed */}
-          <DialogContent className="max-h-[94dvh] w-[calc(100vw-2rem)] max-w-2xl gap-2 overflow-y-auto border-0 bg-transparent p-1 shadow-none sm:rounded-none [&>button.absolute]:hidden">
+          {/* Sem moldura: só o card, montado na largura do feed e reduzido */}
+          <DialogContent className="max-h-[94dvh] w-fit max-w-[calc(100vw-2rem)] gap-2 overflow-y-auto border-0 bg-transparent p-1 shadow-none sm:rounded-none [&>button.absolute]:hidden">
             <div className="flex items-center justify-between gap-3 px-1 text-white">
               <DialogTitle className="text-sm font-bold">Pré-visualização</DialogTitle>
               <DialogDescription className="sr-only">
@@ -1026,7 +1063,9 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   }
                 }}
               >
-                <PostCard post={buildPreviewPost()} />
+                <ScaledPreview>
+                  <PostCard post={buildPreviewPost()} />
+                </ScaledPreview>
               </div>
             )}
           </DialogContent>

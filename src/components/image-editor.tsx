@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FlipHorizontal2, RotateCcw, RotateCw, Undo2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
@@ -134,6 +134,9 @@ function Slider({
   );
 }
 
+/** Largura da foto dentro de um card do feed (coluna de 42rem menos o padding do card), em px. */
+const POST_IMAGE_W = 624;
+
 const toolBtn =
   "inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition hover:bg-secondary cursor-pointer";
 
@@ -153,6 +156,8 @@ export function ImageEditor({
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [edits, setEdits] = useState<ImageEdits>(initial ?? DEFAULT_EDITS);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [frameScale, setFrameScale] = useState(1);
   const pan = useRef<{ x: number; y: number } | null>(null);
 
   // Cada vez que o editor abre, recomeça dos ajustes salvos (ou do padrão).
@@ -168,8 +173,21 @@ export function ImageEditor({
   }, [open, src]);
 
   useEffect(() => {
-    if (open && img && canvasRef.current) draw(canvasRef.current, img, edits, PREVIEW_W);
+    const canvas = canvasRef.current;
+    if (!open || !img || !canvas) return;
+    draw(canvas, img, edits, PREVIEW_W);
   }, [open, img, edits]);
+
+  // A área de ajuste reproduz a foto do post: mesma proporção de largura e altura máxima.
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!open || !frame) return;
+    const measure = () => setFrameScale(Math.min(1, frame.clientWidth / POST_IMAGE_W));
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame);
+    measure();
+    return () => observer.disconnect();
+  }, [open, img]);
 
   /** Aplica a mudança e mantém a imagem cobrindo todo o recorte. */
   const update = (patch: Partial<ImageEdits>) =>
@@ -195,8 +213,12 @@ export function ImageEditor({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="max-h-[92vh] w-[95vw] max-w-4xl gap-0 overflow-y-auto rounded-3xl p-0">
         <div className="grid gap-0 md:grid-cols-[1fr_320px]">
-          <div className="flex min-h-[260px] items-center justify-center bg-secondary/40 p-4 sm:p-6">
-            <div className="relative">
+          <div className="flex min-h-[260px] items-center justify-center bg-card p-4 sm:p-6">
+            {/* Fundo do post: aparece nas laterais quando a altura máxima limita a foto */}
+            <div
+              ref={frameRef}
+              className="flex w-full justify-center overflow-hidden rounded-2xl bg-secondary/40 shadow-inner"
+            >
               <canvas
                 ref={canvasRef}
                 onPointerDown={(e) => {
@@ -213,7 +235,10 @@ export function ImageEditor({
                 }}
                 onPointerUp={() => (pan.current = null)}
                 onPointerCancel={() => (pan.current = null)}
-                className="block max-h-[60vh] max-w-full cursor-grab touch-none rounded-2xl bg-white shadow-md active:cursor-grabbing"
+                style={{
+                  maxHeight: `calc(clamp(10rem, calc(100dvh - 32rem), 26rem) * ${frameScale})`,
+                }}
+                className="block max-w-full cursor-grab touch-none rounded-2xl bg-white active:cursor-grabbing"
               />
             </div>
           </div>

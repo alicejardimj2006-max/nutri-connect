@@ -305,7 +305,7 @@ export function PostCard({ post }: PostCardProps) {
             <PostImage
               src={displayImage}
               alt="Receita"
-              className="my-4 -mx-6 w-[calc(100%+3rem)] max-w-none"
+              className="my-4 w-full rounded-2xl shadow-sm"
             />
           ),
           title: (
