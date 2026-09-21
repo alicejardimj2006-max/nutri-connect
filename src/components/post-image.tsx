@@ -11,7 +11,7 @@ interface PostImageProps {
 
 /**
  * Imagem de publicação: preenche a largura do contêiner, cresce conforme a proporção
- * até uma altura máxima (sem altura mínima) e abre em tela cheia ao clicar.
+ * sem cortes (o enquadramento é o que a pessoa definiu no editor) e abre em tela cheia ao clicar.
  */
 export function PostImage({ src, alt, className = "" }: PostImageProps) {
   const [open, setOpen] = useState(false);
@@ -38,12 +38,7 @@ export function PostImage({ src, alt, className = "" }: PostImageProps) {
         aria-label={`Ampliar imagem: ${alt}`}
         className={`block cursor-zoom-in overflow-hidden p-0 ${className}`}
       >
-        <img
-          src={src}
-          alt={alt}
-          className="block h-auto max-h-[min(18rem,25dvh)] w-full object-cover"
-          loading="lazy"
-        />
+        <img src={src} alt={alt} className="block h-auto w-full" loading="lazy" />
       </button>
       {open &&
         createPortal(

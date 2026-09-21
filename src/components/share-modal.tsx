@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Sparkles,
@@ -12,6 +12,8 @@ import {
   Tag,
   Layers,
   Send,
+  SlidersHorizontal,
+  Eye,
   Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,10 +24,21 @@ import {
   createCommunityPost,
   initials,
   isCommunityAdmin,
+  normalizeBlockOrder,
+  type Post,
+  type PostBlock,
   RECIPE_CATEGORIES,
   type PostType,
 } from "@/lib/community";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ImageEditor, type ImageEdits } from "@/components/image-editor";
+import { PostCard } from "@/components/community-cards";
 
 const THEMES = {
   accent: {
@@ -98,6 +111,33 @@ const COMMUNITY_OPTION = {
   theme: "olive",
 } as const;
 
+interface SortProps {
+  block: PostBlock;
+  dragging: boolean;
+  onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerEnd: (e: React.PointerEvent<HTMLDivElement>) => void;
+}
+
+/** Ordem inicial dos campos do post (título sempre antes do texto). */
+/** Tempo mínimo segurando o card, no toque, para começar a arrastar. */
+const LONG_PRESS_MS = 350;
+
+const DEFAULT_ORDER: PostBlock[] = ["title", "image", "text", "recipe"];
+
+/** Move `block` para a posição de `target`, mantendo o título antes do texto. */
+function reorder(order: PostBlock[], block: PostBlock, target: PostBlock): PostBlock[] {
+  if (block === target) return order;
+  const next = order.filter((b) => b !== block);
+  next.splice(order.indexOf(target), 0, block);
+  if (block === "text" && next.indexOf("text") < next.indexOf("title")) {
+    // O texto nunca passa à frente do título: fica logo depois dele.
+    next.splice(next.indexOf("text"), 1);
+    next.splice(next.indexOf("title") + 1, 0, "text");
+  }
+  return normalizeBlockOrder(next, DEFAULT_ORDER);
+}
+
 /** Um "recorte" independente preso ao mural — não uma linha de formulário. */
 function PinnedCard({
   icon: Icon,
@@ -106,6 +146,8 @@ function PinnedCard({
   hint,
   rotate = "rotate-0",
   className = "",
+  order,
+  sort,
   children,
 }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -114,12 +156,29 @@ function PinnedCard({
   hint?: string;
   rotate?: string;
   className?: string;
+  /** Posição visual no mural (CSS order). */
+  order?: number;
+  /** Quando presente, o card pode ser arrastado (pela alça) para reordenar. */
+  sort?: SortProps;
   children: React.ReactNode;
 }) {
   const t = THEMES[theme];
   return (
     <div
-      className={`relative rounded-[1.75rem] border-2 ${t.border} bg-gradient-to-br ${t.wash} p-5 shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl ${rotate} ${className}`}
+      data-block={sort?.block}
+      style={order === undefined ? undefined : { order }}
+      onPointerDown={sort?.onPointerDown}
+      onPointerMove={sort?.onPointerMove}
+      onPointerUp={sort?.onPointerEnd}
+      onPointerCancel={sort?.onPointerEnd}
+      onContextMenu={sort ? (e) => e.preventDefault() : undefined}
+      className={`relative rounded-[1.75rem] border-2 ${t.border} bg-gradient-to-br ${t.wash} p-5 shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl ${rotate} ${className} ${
+        sort
+          ? sort.dragging
+            ? "z-30 cursor-grabbing select-none shadow-2xl"
+            : "cursor-grab [-webkit-touch-callout:none]"
+          : ""
+      }`}
     >
       <span
         className={`absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] ${t.tape} opacity-90 shadow-sm`}
@@ -160,9 +219,190 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
   const [text, setText] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [image, setImage] = useState<string | undefined>(undefined);
+  // Foto original + ajustes: permitem reabrir o editor sem perder qualidade.
+  const [imageOriginal, setImageOriginal] = useState<string | undefined>(undefined);
+  const [imageEdits, setImageEdits] = useState<ImageEdits | undefined>(undefined);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const [isCommunity, setIsCommunity] = useState(false);
+
+  // Ordem em que título, foto, texto e detalhes da receita aparecem na publicação
+  const [blockOrder, setBlockOrder] = useState<PostBlock[]>(DEFAULT_ORDER);
+  const formRef = useRef<HTMLFormElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [draggingBlock, setDraggingBlock] = useState<PostBlock | null>(null);
+  const drag = useRef<{
+    block: PostBlock;
+    el: HTMLElement;
+    sx: number;
+    sy: number;
+    gx: number;
+    gy: number;
+    px: number;
+    py: number;
+    active: boolean;
+    lastSwap: number;
+    timer?: number;
+  } | null>(null);
+  const snapshot = useRef<Map<HTMLElement, DOMRect> | null>(null);
+
+  /** Mantém o card arrastado sob o cursor, mesmo depois que o layout muda. */
+  const placeDragged = () => {
+    const d = drag.current;
+    if (!d?.active) return;
+    d.el.style.transform = "";
+    const r = d.el.getBoundingClientRect();
+    d.el.style.transform = `translate(${d.px - d.gx - r.left}px, ${d.py - d.gy - r.top}px) scale(1.03)`;
+  };
+
+  // Os outros cards deslizam até o novo lugar quando a ordem muda ("empurrados").
+  useLayoutEffect(() => {
+    const before = snapshot.current;
+    snapshot.current = null;
+    if (before) {
+      gridRef.current?.querySelectorAll<HTMLElement>("[data-block]").forEach((el) => {
+        const old = before.get(el);
+        if (!old || drag.current?.el === el) return;
+        el.getAnimations().forEach((a) => a.cancel());
+        const now = el.getBoundingClientRect();
+        const dx = old.left - now.left;
+        const dy = old.top - now.top;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+        el.animate(
+          [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
+          { duration: 300, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+        );
+      });
+    }
+    placeDragged();
+  }, [blockOrder]);
+
+  /** Guarda a posição atual (visual) dos cards antes de reordenar, para animar a troca. */
+  const captureRects = () => {
+    const rects = new Map<HTMLElement, DOMRect>();
+    gridRef.current
+      ?.querySelectorAll<HTMLElement>("[data-block]")
+      .forEach((el) => rects.set(el, el.getBoundingClientRect()));
+    snapshot.current = rects;
+  };
+
+  /** Inicia o arrasto: o card passa a seguir o cursor/dedo. */
+  const activateDrag = (d: NonNullable<typeof drag.current>) => {
+    const r = d.el.getBoundingClientRect();
+    d.gx = d.px - r.left;
+    d.gy = d.py - r.top;
+    d.active = true;
+    d.el.getAnimations().forEach((a) => a.cancel());
+    d.el.style.transition = "none";
+    setDraggingBlock(d.block);
+  };
+
+  // Depois do toque longo, o dedo arrasta o card em vez de rolar o modal.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const block = (e: TouchEvent) => {
+      if (drag.current?.active && e.cancelable) e.preventDefault();
+    };
+    grid.addEventListener("touchmove", block, { passive: false });
+    return () => grid.removeEventListener("touchmove", block);
+  }, [open]);
+
+  const sortFor = (block: PostBlock): SortProps | undefined =>
+    isCommunity
+      ? undefined
+      : {
+          block,
+          dragging: draggingBlock === block,
+          onPointerDown: (e) => {
+            if (e.button !== 0) return;
+            const target = e.target as HTMLElement;
+            if (target.closest("input, textarea, select, label, a, button")) return;
+            const d = {
+              block,
+              el: e.currentTarget,
+              sx: e.clientX,
+              sy: e.clientY,
+              gx: 0,
+              gy: 0,
+              px: e.clientX,
+              py: e.clientY,
+              active: false,
+              lastSwap: 0,
+              timer: undefined as number | undefined,
+            };
+            drag.current = d;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            // No toque, é preciso segurar o card por um instante (senão o gesto é rolagem).
+            if (e.pointerType === "touch") {
+              d.timer = window.setTimeout(() => {
+                if (drag.current !== d) return;
+                navigator.vibrate?.(15);
+                activateDrag(d);
+                placeDragged();
+              }, LONG_PRESS_MS);
+            }
+          },
+          onPointerMove: (e) => {
+            const d = drag.current;
+            if (!d || d.block !== block) return;
+            d.px = e.clientX;
+            d.py = e.clientY;
+            if (!d.active) {
+              const moved = Math.hypot(d.px - d.sx, d.py - d.sy);
+              if (e.pointerType === "touch") {
+                // Mexeu o dedo antes do tempo: é rolagem, não arrasto.
+                if (moved > 8) {
+                  window.clearTimeout(d.timer);
+                  drag.current = null;
+                }
+                return;
+              }
+              if (moved < 6) return;
+              activateDrag(d);
+            }
+            const form = formRef.current;
+            if (form) {
+              const fr = form.getBoundingClientRect();
+              if (d.py < fr.top + 60) form.scrollBy(0, -14);
+              else if (d.py > fr.bottom - 60) form.scrollBy(0, 14);
+            }
+            placeDragged();
+            if (Date.now() - d.lastSwap < 150) return;
+            const over = Array.from(
+              gridRef.current?.querySelectorAll<HTMLElement>("[data-block]") ?? [],
+            ).find((el) => {
+              if (el === d.el) return false;
+              const r = el.getBoundingClientRect();
+              return d.px >= r.left && d.px <= r.right && d.py >= r.top && d.py <= r.bottom;
+            });
+            if (over) {
+              d.lastSwap = Date.now();
+              captureRects();
+              setBlockOrder((o) => reorder(o, block, over.dataset.block as PostBlock));
+            }
+          },
+          onPointerEnd: () => {
+            const d = drag.current;
+            if (!d || d.block !== block) return;
+            window.clearTimeout(d.timer);
+            drag.current = null;
+            if (!d.active) return;
+            const el = d.el;
+            const from = el.style.transform;
+            el.style.transition = "";
+            el.style.transform = "";
+            el.animate([{ transform: from || "none" }, { transform: "translate(0, 0)" }], {
+              duration: 240,
+              easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            });
+            setDraggingBlock(null);
+          },
+        };
+  const orderOf = (block: PostBlock) => blockOrder.indexOf(block);
 
   // Modo "Comunidade": reaproveita título (nome), texto (descrição) e foto (capa)
-  const [isCommunity, setIsCommunity] = useState(false);
   const [communityCategory, setCommunityCategory] = useState<string>(CATEGORIES[0]);
   const [objective, setObjective] = useState("");
 
@@ -179,6 +419,11 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     setText("");
     setTagsInput("");
     setImage(undefined);
+    setImageOriginal(undefined);
+    setImageEdits(undefined);
+    setEditorOpen(false);
+    setPreviewOpen(false);
+    setBlockOrder(DEFAULT_ORDER);
     setIngredientsText("");
     setStepsText("");
     setType("experiencia");
@@ -194,10 +439,55 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setImage(String(reader.result));
+    reader.onload = () => {
+      const src = String(reader.result);
+      setImageOriginal(src);
+      setImageEdits(undefined);
+      setImage(src);
+      setEditorOpen(true);
+    };
     reader.readAsDataURL(file);
     e.target.value = "";
   };
+
+  const buildRecipeData = () => {
+    if (type !== "receita") return undefined;
+    const lines = (value: string) =>
+      value
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+    const ingredients = lines(ingredientsText);
+    const steps = lines(stepsText);
+    return {
+      prepTime,
+      servings,
+      difficulty,
+      category: recipeCategory,
+      ingredients: ingredients.length > 0 ? ingredients : ["Ingredientes a gosto"],
+      steps: steps.length > 0 ? steps : ["Misture com carinho e saboreie com calma."],
+    };
+  };
+
+  /** Post fictício com o que está no formulário, para a pré-visualização. */
+  const buildPreviewPost = (): Post => ({
+    id: "preview",
+    type,
+    authorId: user?.id ?? "guest",
+    authorName: user?.name ?? "Você",
+    title: title.trim() || undefined,
+    text: text.trim() || "Aqui vai aparecer o seu relato…",
+    image,
+    tags: [],
+    createdAt: new Date().toISOString(),
+    pinned: false,
+    likes: [],
+    supports: [],
+    preparedBy: [],
+    comments: [],
+    recipeData: buildRecipeData(),
+    blockOrder: normalizeBlockOrder(blockOrder, DEFAULT_ORDER),
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,26 +530,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       .map((t) => t.trim().replace(/^#/, ""))
       .filter(Boolean);
 
-    let recipeData;
-    if (type === "receita") {
-      const ingredients = ingredientsText
-        .split("\n")
-        .map((i) => i.trim())
-        .filter(Boolean);
-      const steps = stepsText
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      recipeData = {
-        prepTime,
-        servings,
-        difficulty,
-        category: recipeCategory,
-        ingredients: ingredients.length > 0 ? ingredients : ["Ingredientes a gosto"],
-        steps: steps.length > 0 ? steps : ["Misture com carinho e saboreie com calma."],
-      };
-    }
+    const recipeData = buildRecipeData();
 
     try {
       createCommunityPost({
@@ -273,6 +544,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         tags: tags.length > 0 ? tags : [type],
         image,
         recipeData,
+        blockOrder: normalizeBlockOrder(blockOrder, DEFAULT_ORDER),
       });
 
       toast.success("Publicado com sucesso no Espaço de Hoje!");
@@ -312,6 +584,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         </DialogTitle>
 
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
           className="relative z-10 h-full overflow-y-auto px-5 sm:px-10 py-8 sm:py-10"
         >
@@ -333,7 +606,10 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
           </div>
 
           {/* Mural de recortes coloridos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+          <div
+            ref={gridRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10"
+          >
             {/* Tipo */}
             <PinnedCard
               icon={Layers}
@@ -341,6 +617,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               label="O que criar"
               rotate="-rotate-1"
               className="sm:col-span-2"
+              order={-1}
             >
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                 {[...TYPE_OPTIONS, COMMUNITY_OPTION].map((opt) => {
@@ -396,6 +673,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               hint={isCommunity ? "Como ela vai aparecer para todos" : "Opcional, mas acolhedor"}
               rotate="rotate-1"
               className="sm:col-span-2"
+              order={orderOf("title")}
+              sort={sortFor("title")}
             >
               <input
                 type="text"
@@ -423,6 +702,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               hint="Opcional"
               rotate="rotate-2"
               className="sm:col-span-2"
+              order={orderOf("image")}
+              sort={sortFor("image")}
             >
               <input
                 ref={fileRef}
@@ -436,16 +717,29 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   <img
                     src={image}
                     alt="Prévia da imagem da publicação"
-                    className="max-h-56 w-full object-cover"
+                    className="block h-auto max-h-72 w-full object-contain"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setImage(undefined)}
-                    className="absolute top-3 right-3 grid h-8 w-8 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80 cursor-pointer"
-                    aria-label="Remover imagem"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditorOpen(true)}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-full bg-black/60 px-3 text-xs font-medium text-white transition hover:bg-black/80 cursor-pointer"
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" /> Ajustar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImage(undefined);
+                        setImageOriginal(undefined);
+                        setImageEdits(undefined);
+                      }}
+                      className="grid h-8 w-8 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80 cursor-pointer"
+                      aria-label="Remover imagem"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <button
@@ -469,6 +763,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               }
               rotate="-rotate-2"
               className="sm:col-span-2"
+              order={orderOf("text")}
+              sort={sortFor("text")}
             >
               <textarea
                 rows={5}
@@ -493,6 +789,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 hint="Ajude a comunidade a reproduzir"
                 rotate="rotate-1"
                 className="sm:col-span-2 lg:col-span-4"
+                order={orderOf("recipe")}
+                sort={sortFor("recipe")}
               >
                 <div className="space-y-3.5">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -594,6 +892,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   hint="Ajuda as pessoas a encontrarem a comunidade"
                   rotate="rotate-2"
                   className="sm:col-span-2 lg:col-span-2"
+                  order={10}
                 >
                   <select
                     value={communityCategory}
@@ -615,6 +914,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                   hint="Opcional"
                   rotate="-rotate-1"
                   className="sm:col-span-2 lg:col-span-2"
+                  order={10}
                 >
                   <textarea
                     rows={3}
@@ -633,6 +933,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 hint="Separadas por vírgula"
                 rotate="rotate-2"
                 className="sm:col-span-2 lg:col-span-2"
+                order={10}
               >
                 <input
                   type="text"
@@ -647,6 +948,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             {/* Ação: o próprio "publicar" é um recorte do mural */}
             <div
               className={`relative rounded-[1.75rem] border-2 border-accent bg-gradient-to-br from-accent to-[color-mix(in_oklab,var(--color-accent)_70%,black)] p-5 shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl -rotate-1 sm:col-span-2 lg:col-span-2 flex flex-col items-center justify-center text-center gap-3`}
+              style={{ order: 11 }}
             >
               <span className="absolute -top-2.5 left-9 h-5 w-11 -rotate-6 rounded-[3px] bg-card shadow-sm" />
               <p className="text-sm font-bold text-accent-foreground">
@@ -659,6 +961,16 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 <Send className="h-4 w-4" />
                 <span>{isCommunity ? "Criar comunidade" : "Publicar no Espaço de Hoje"}</span>
               </button>
+              {!isCommunity && (
+                <button
+                  type="button"
+                  onClick={() => setPreviewOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/70 px-5 py-2 text-xs font-bold text-accent-foreground transition hover:bg-white/15 cursor-pointer"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>Pré-visualizar</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleOpenChange(false)}
@@ -669,6 +981,56 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
             </div>
           </div>
         </form>
+
+        {/* Fora do <form>/mural: eventos dos diálogos não devem chegar aos cards */}
+        {imageOriginal && (
+          <ImageEditor
+            open={editorOpen}
+            src={imageOriginal}
+            initial={imageEdits}
+            onCancel={() => setEditorOpen(false)}
+            onApply={(dataUrl, edits) => {
+              setImage(dataUrl);
+              setImageEdits(edits);
+              setEditorOpen(false);
+            }}
+          />
+        )}
+
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          {/* Sem moldura: só o card, com a mesma largura (max-w-2xl) da coluna do feed */}
+          <DialogContent className="max-h-[94dvh] w-[calc(100vw-2rem)] max-w-2xl gap-2 overflow-y-auto border-0 bg-transparent p-1 shadow-none sm:rounded-none [&>button.absolute]:hidden">
+            <div className="flex items-center justify-between gap-3 px-1 text-white">
+              <DialogTitle className="text-sm font-bold">Pré-visualização</DialogTitle>
+              <DialogDescription className="sr-only">
+                Assim a publicação vai aparecer no feed.
+              </DialogDescription>
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(false)}
+                className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium transition hover:bg-white/25 cursor-pointer"
+              >
+                Fechar
+              </button>
+            </div>
+            {previewOpen && (
+              <div
+                className="select-none"
+                onClickCapture={(e) => {
+                  // Só o "Ver mais/Ver menos" funciona; links e ações não fazem nada na prévia.
+                  const target = e.target as HTMLElement;
+                  if (target.closest("[aria-expanded]")) return;
+                  if (target.closest("a, button")) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                }}
+              >
+                <PostCard post={buildPreviewPost()} />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

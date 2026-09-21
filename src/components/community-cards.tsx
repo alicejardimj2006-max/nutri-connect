@@ -10,7 +10,7 @@ import {
   HelpCircle,
   Award,
 } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { VerifiedBadge } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
@@ -26,6 +26,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
   type Post,
+  type PostBlock,
+  normalizeBlockOrder,
   type WeeklyTheme,
   type Challenge,
   toggleSupport,
@@ -274,6 +276,11 @@ export function PostCard({ post }: PostCardProps) {
     );
   };
 
+  const renderBlocks = (fallback: PostBlock[], blocks: Partial<Record<PostBlock, ReactNode>>) =>
+    normalizeBlockOrder(post.blockOrder, fallback).map((b) => (
+      <Fragment key={b}>{blocks[b]}</Fragment>
+    ));
+
   const frameClass =
     "rounded-3xl border border-border/80 bg-card shadow-sm transition hover:shadow-md";
   const footer = (isQuestion = false, isRecipe = false) => (
@@ -293,62 +300,65 @@ export function PostCard({ post }: PostCardProps) {
 
         {renderAuthorInfo()}
 
-        {displayImage && (
-          <PostImage
-            src={displayImage}
-            alt="Receita"
-            className="my-4 -mx-6 w-[calc(100%+3rem)] max-w-none"
-          />
-        )}
-
-        <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
-          {post.title}
-        </h3>
-
-        <p className="text-sm text-foreground/85 leading-relaxed text-justify hyphens-auto mb-5">
-          {post.text}
-        </p>
-
-        {post.recipeData && (
-          <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-2">
-            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-foreground mb-4 pb-4 border-b border-border/50">
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-accent" /> {post.recipeData.prepTime}
-              </span>
-              <span>·</span>
-              <span>{post.recipeData.servings}</span>
-              <span>·</span>
-              <span className="text-primary">{post.recipeData.difficulty}</span>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                  Ingredientes
-                </h4>
-                <ul className="space-y-2 text-sm text-foreground">
-                  {post.recipeData.ingredients.map((ing, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-accent font-bold">•</span> <span>{ing}</span>
-                    </li>
-                  ))}
-                </ul>
+        {renderBlocks(["image", "title", "text", "recipe"], {
+          image: displayImage && (
+            <PostImage
+              src={displayImage}
+              alt="Receita"
+              className="my-4 -mx-6 w-[calc(100%+3rem)] max-w-none"
+            />
+          ),
+          title: (
+            <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
+              {post.title}
+            </h3>
+          ),
+          text: (
+            <p className="text-sm text-foreground/85 leading-relaxed text-justify hyphens-auto mb-5">
+              {post.text}
+            </p>
+          ),
+          recipe: post.recipeData && (
+            <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-2">
+              <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-foreground mb-4 pb-4 border-b border-border/50">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-accent" /> {post.recipeData.prepTime}
+                </span>
+                <span>·</span>
+                <span>{post.recipeData.servings}</span>
+                <span>·</span>
+                <span className="text-primary">{post.recipeData.difficulty}</span>
               </div>
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                  Preparo
-                </h4>
-                <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
-                  {post.recipeData.steps.map((step, i) => (
-                    <li key={i} className="leading-relaxed">
-                      <span className="text-foreground/90">{step}</span>
-                    </li>
-                  ))}
-                </ol>
+
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                    Ingredientes
+                  </h4>
+                  <ul className="space-y-2 text-sm text-foreground">
+                    {post.recipeData.ingredients.map((ing, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span> <span>{ing}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                    Preparo
+                  </h4>
+                  <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
+                    {post.recipeData.steps.map((step, i) => (
+                      <li key={i} className="leading-relaxed">
+                        <span className="text-foreground/90">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          ),
+        })}
       </PostCardFrame>
     );
   }
@@ -363,22 +373,25 @@ export function PostCard({ post }: PostCardProps) {
 
         {renderAuthorInfo()}
 
-        {displayImage && (
-          <PostImage
-            src={displayImage}
-            alt="Experiência"
-            className="mb-4 w-full rounded-2xl shadow-sm"
-          />
-        )}
-
-        {post.title && (
-          <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
-            {post.title}
-          </h3>
-        )}
-        <p className="mb-4 text-sm text-foreground/90 leading-relaxed text-justify hyphens-auto whitespace-pre-line">
-          {post.text}
-        </p>
+        {renderBlocks(["image", "title", "text"], {
+          image: displayImage && (
+            <PostImage
+              src={displayImage}
+              alt="Experiência"
+              className="mb-4 w-full rounded-2xl shadow-sm"
+            />
+          ),
+          title: post.title && (
+            <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
+              {post.title}
+            </h3>
+          ),
+          text: (
+            <p className="mb-4 text-sm text-foreground/90 leading-relaxed text-justify hyphens-auto whitespace-pre-line">
+              {post.text}
+            </p>
+          ),
+        })}
       </PostCardFrame>
     );
   }
@@ -393,14 +406,18 @@ export function PostCard({ post }: PostCardProps) {
 
         {renderAuthorInfo()}
 
-        <h3 className="text-base sm:text-lg font-bold font-display text-foreground mb-2 leading-snug">
-          {post.title || post.text}
-        </h3>
-        {post.title && (
-          <p className="mb-4 text-sm text-foreground/85 leading-relaxed text-justify hyphens-auto">
-            {post.text}
-          </p>
-        )}
+        {renderBlocks(["title", "text"], {
+          title: (
+            <h3 className="text-base sm:text-lg font-bold font-display text-foreground mb-2 leading-snug">
+              {post.title || post.text}
+            </h3>
+          ),
+          text: post.title && (
+            <p className="mb-4 text-sm text-foreground/85 leading-relaxed text-justify hyphens-auto">
+              {post.text}
+            </p>
+          ),
+        })}
       </PostCardFrame>
     );
   }
@@ -409,21 +426,25 @@ export function PostCard({ post }: PostCardProps) {
   return (
     <PostCardFrame className={frameClass} footer={footer()}>
       {renderAuthorInfo()}
-      {displayImage && (
-        <PostImage
-          src={displayImage}
-          alt="Postagem"
-          className="mb-4 w-full rounded-2xl shadow-sm"
-        />
-      )}
-      {post.title && (
-        <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
-          {post.title}
-        </h3>
-      )}
-      <p className="mb-4 text-sm text-foreground/90 leading-relaxed text-justify hyphens-auto whitespace-pre-line">
-        {post.text}
-      </p>
+      {renderBlocks(["image", "title", "text"], {
+        image: displayImage && (
+          <PostImage
+            src={displayImage}
+            alt="Postagem"
+            className="mb-4 w-full rounded-2xl shadow-sm"
+          />
+        ),
+        title: post.title && (
+          <h3 className="text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">
+            {post.title}
+          </h3>
+        ),
+        text: (
+          <p className="mb-4 text-sm text-foreground/90 leading-relaxed text-justify hyphens-auto whitespace-pre-line">
+            {post.text}
+          </p>
+        ),
+      })}
     </PostCardFrame>
   );
 }
