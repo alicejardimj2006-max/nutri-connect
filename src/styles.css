@@ -269,3 +269,166 @@ html[data-motion="reduce"] *::after {
 .font-logo-sans {
   font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ───────────────────────── Trilha: animações (prefixo nc-) ─────────────────────────
+   A opção "reduzir movimento" (html[data-motion="reduce"]) e prefers-reduced-motion as suavizam. */
+@keyframes nc-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes nc-hop {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  15% { transform: translateY(0) scale(1.08, 0.9); }
+  45% { transform: translateY(-26px) scale(0.95, 1.06); }
+  75% { transform: translateY(0) scale(1.06, 0.93); }
+}
+@keyframes nc-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-7px) rotate(-4deg); }
+  40% { transform: translateX(7px) rotate(4deg); }
+  60% { transform: translateX(-5px) rotate(-2deg); }
+  80% { transform: translateX(5px) rotate(2deg); }
+}
+@keyframes nc-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+@keyframes nc-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  94% { transform: scaleY(0.08); }
+}
+@keyframes nc-wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-28deg); }
+  75% { transform: rotate(18deg); }
+}
+@keyframes nc-talk {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.15); }
+}
+@keyframes nc-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes nc-rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes nc-drift {
+  from { transform: translateX(-30vw); }
+  to { transform: translateX(130vw); }
+}
+@keyframes nc-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.6) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+}
+@keyframes nc-shine {
+  0% { background-position: -140% 0; }
+  100% { background-position: 240% 0; }
+}
+@keyframes nc-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(250 204 21 / 0.55), 0 8px 0 0 #b45309; }
+  50% { box-shadow: 0 0 0 14px rgb(250 204 21 / 0), 0 8px 0 0 #b45309; }
+}
+@keyframes nc-ring {
+  0% { transform: scale(0.85); opacity: 0.8; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes nc-flutter {
+  0% { transform: translate(0, 0) rotate(-6deg); }
+  25% { transform: translate(40px, -26px) rotate(8deg); }
+  50% { transform: translate(90px, 4px) rotate(-4deg); }
+  75% { transform: translate(40px, 30px) rotate(10deg); }
+  100% { transform: translate(0, 0) rotate(-6deg); }
+}
+@keyframes nc-fall {
+  0% { transform: translateY(-12%) rotate(0deg); opacity: 0; }
+  10%, 90% { opacity: 0.9; }
+  100% { transform: translateY(112%) rotate(360deg); opacity: 0; }
+}
+@keyframes nc-flap {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.35); }
+}
+@keyframes nc-flame {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50% { transform: scale(1.18) rotate(3deg); }
+}
+@keyframes nc-wobble {
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  50% { transform: rotate(3deg) scale(1.05); }
+}
+@keyframes nc-water {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-24px); }
+}
+@keyframes nc-fill {
+  from { background-position: 0 0; }
+  to { background-position: 40px 0; }
+}
+
+.nc-bob { animation: nc-bob 2.6s ease-in-out infinite; }
+.nc-bob-fast { animation: nc-bob 1.3s ease-in-out infinite; }
+.nc-hop { animation: nc-hop 0.9s ease-out; }
+.nc-hop-loop { animation: nc-hop 1.4s ease-out infinite; }
+.nc-shake { animation: nc-shake 0.6s ease-in-out; }
+.nc-sway { animation: nc-sway 5s ease-in-out infinite; transform-origin: 50% 100%; }
+.nc-blink { animation: nc-blink 4.2s infinite; transform-box: fill-box; transform-origin: center; }
+.nc-wave { animation: nc-wave 1.3s ease-in-out infinite; transform-box: fill-box; transform-origin: 20% 90%; }
+.nc-talk { animation: nc-talk 0.32s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.nc-pop { animation: nc-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.nc-rise { animation: nc-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.nc-twinkle { animation: nc-twinkle 2.4s ease-in-out infinite; }
+.nc-flutter { animation: nc-flutter 9s ease-in-out infinite; }
+.nc-flap { animation: nc-flap 0.22s linear infinite; }
+.nc-flame { animation: nc-flame 0.9s ease-in-out infinite; }
+.nc-wobble { animation: nc-wobble 3.2s ease-in-out infinite; }
+.nc-ring { animation: nc-ring 1.8s ease-out infinite; }
+.nc-drift { animation: nc-drift 80s linear infinite; }
+.nc-fall { animation: nc-fall 9s linear infinite; }
+.nc-glow { animation: nc-glow 2s ease-in-out infinite; }
+
+/* Reflexo dourado que varre a parada concluída */
+.nc-gold-shine {
+  background-image: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.75) 48%, transparent 66%);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: nc-shine 3.2s ease-in-out infinite;
+}
+
+/* Barra de progresso com listras em movimento */
+.nc-stripes {
+  background-image: linear-gradient(
+    45deg,
+    rgb(255 255 255 / 0.22) 25%, transparent 25%, transparent 50%,
+    rgb(255 255 255 / 0.22) 50%, rgb(255 255 255 / 0.22) 75%, transparent 75%
+  );
+  background-size: 20px 20px;
+  animation: nc-fill 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="nc-"] {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Nutri Nina 3D */
+@keyframes nc-breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.006, 1.014); }
+}
+@keyframes nc-tablet-idle {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(-3deg) translateY(-2px); }
+}
+@keyframes nc-tablet-present {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-9deg) translateY(-4px); }
+  60% { transform: rotate(4deg); }
+}
+.nc-breathe { animation: nc-breathe 3.8s ease-in-out infinite; }
+.nc-tablet { animation: nc-tablet-idle 5s ease-in-out infinite; }
+.nc-tablet-talk { animation: nc-tablet-present 1.8s ease-in-out infinite; }

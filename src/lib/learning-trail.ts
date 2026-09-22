@@ -1,643 +1,514 @@
-export type Character = {
-  name: string;
-  avatar: string; // Emoji para o avatar
+// Trilha de Aprendizado: montagem do conteúdo, progresso, pontuação e conquistas.
+import { BASE_UNITS } from "./trail-content-base";
+import { STOP_EXTRAS } from "./trail-content-levels";
+import { ADULT_EXTRAS } from "./trail-content-adult";
+import { KID_TRAILS } from "./trail-content-kids";
+import {
+  LEVEL_META,
+  type Activity,
+  type Level,
+  type LevelNumber,
+  type SceneId,
+  type ProfileKind,
+  type Stop,
+  type StopProgress,
+  type Trail,
+  type TrailProgress,
+  type Unit,
+} from "./trail-types";
+
+export * from "./trail-types";
+
+/* --------------------------------- Conteúdo --------------------------------- */
+
+const SCENES: Record<string, SceneId> = {
+  "unit-1": "meadow",
+  "unit-2": "orchard",
+  "unit-3": "kitchen",
+  "unit-4": "lake",
 };
 
-export const CHARACTERS = {
-  nina: { name: "Nutri Nina", avatar: "👩🏽‍⚕️" },
-  lipe: { name: "Lipe Abacate", avatar: "🥑" },
-  tito: { name: "Tito Brócolis", avatar: "🥦" },
-  mila: { name: "Mila Maçã", avatar: "🍎" },
+/** Ícone (lucide) de cada parada adulta. */
+const STOP_ICON_KEYS: Record<string, string> = {
+  "lesson-1-1": "Beef",
+  "lesson-1-2": "Apple",
+  "lesson-1-3": "Droplets",
+  "lesson-2-1": "Factory",
+  "lesson-2-2": "Search",
+  "lesson-2-3": "ClipboardList",
+  "lesson-3-1": "UtensilsCrossed",
+  "lesson-3-2": "Sprout",
+  "lesson-3-3": "ShoppingBasket",
+  "lesson-4-1": "HeartHandshake",
+  "lesson-4-2": "Brain",
+  "lesson-4-3": "Smile",
 };
 
-export type ActivityType = "dialogue" | "quiz" | "true_false";
+/** Monta o conteúdo adulto: cartão de explicação + atividades base + atividades extras, em cada nível. */
+const ADULT_UNITS: Unit[] = BASE_UNITS.map((unit) => ({
+  id: unit.id,
+  title: unit.title,
+  icon: unit.icon,
+  description: unit.description,
+  requiredUnitId: unit.requiredUnitId,
+  scene: SCENES[unit.id] ?? "meadow",
+  stops: unit.lessons.map((lesson): Stop => {
+    const extras = STOP_EXTRAS[lesson.id];
+    const adult = ADULT_EXTRAS[lesson.id];
+    const build = (n: LevelNumber, activities: Activity[]): Level => ({
+      id: `${lesson.id}-l${n}`,
+      level: n,
+      activities,
+    });
+    const withIds = (n: LevelNumber, drafts: object[], tag = ""): Activity[] =>
+      drafts.map((d, i) => ({ ...d, id: `${lesson.id}-l${n}-${tag}${i + 1}` }) as Activity);
+    return {
+      id: lesson.id,
+      title: lesson.title,
+      icon: extras?.icon ?? "📘",
+      iconKey: STOP_ICON_KEYS[lesson.id],
+      summary: extras?.summary ?? "",
+      levels: [
+        build(1, [
+          ...withIds(1, adult ? [adult.concepts[0]] : [], "c"),
+          ...lesson.activities,
+          ...withIds(1, extras?.level1Extra ?? [], "x"),
+        ]),
+        build(2, [
+          ...withIds(2, adult ? [adult.concepts[1]] : [], "c"),
+          ...withIds(2, extras?.level2 ?? []),
+          ...withIds(2, adult?.extra2 ?? [], "x"),
+        ]),
+        build(3, [
+          ...withIds(3, adult ? [adult.concepts[2]] : [], "c"),
+          ...withIds(3, extras?.level3 ?? []),
+          ...withIds(3, adult?.extra3 ?? [], "x"),
+        ]),
+      ],
+    };
+  }),
+}));
 
-export interface BaseActivity {
-  id: string;
-  type: ActivityType;
-}
+const adultUnit = (id: string) => ADULT_UNITS.find((u) => u.id === id)!;
 
-export interface DialogueActivity extends BaseActivity {
-  type: "dialogue";
-  character: Character;
-  text: string;
-}
+/** Cada trilha é um grande tema; as unidades de uma trilha se encadeiam entre si. */
+const chain = (units: Unit[]): Unit[] =>
+  units.map((u) => ({
+    ...u,
+    requiredUnitId: units.some((o) => o.id === u.requiredUnitId) ? u.requiredUnitId : undefined,
+  }));
 
-export interface QuizActivity extends BaseActivity {
-  type: "quiz";
-  character?: Character;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-}
+export const ADULT_TRAILS: Trail[] = [
+  {
+    id: "nutrientes",
+    kind: "adult",
+    title: "Fundamentos da Nutrição",
+    tagline: "Nutrientes e hidratação",
+    description:
+      "Macronutrientes, vitaminas, minerais, água e fibras: a base para entender o que o corpo precisa.",
+    icon: "🧬",
+    guide: "nina",
+    scene: "meadow",
+    units: chain([adultUnit("unit-1")]),
+  },
+  {
+    id: "escolhas",
+    kind: "adult",
+    title: "Alimentos e Escolhas",
+    tagline: "Rótulos, prato e rotina",
+    description:
+      "Do grau de processamento ao prato equilibrado: como ler rótulos, temperar e planejar a semana.",
+    icon: "🛒",
+    guide: "nina",
+    scene: "kitchen",
+    units: chain([adultUnit("unit-2"), adultUnit("unit-3")]),
+  },
+  {
+    id: "bem-estar",
+    kind: "adult",
+    title: "Mente e Bem-estar",
+    tagline: "Comportamento alimentar",
+    description:
+      "Fome emocional, atenção plena e uma relação mais leve com a comida, sem culpa.",
+    icon: "🧠",
+    guide: "nina",
+    scene: "lake",
+    units: chain([adultUnit("unit-4")]),
+  },
+];
 
-export interface TrueFalseActivity extends BaseActivity {
-  type: "true_false";
-  character?: Character;
-  statement: string;
-  isTrue: boolean;
-  explanation: string;
-}
+export const TRAILS_BY_KIND: Record<ProfileKind, Trail[]> = {
+  adult: ADULT_TRAILS,
+  kid: KID_TRAILS,
+};
 
-export type Activity = DialogueActivity | QuizActivity | TrueFalseActivity;
+export const getTrails = (kind: ProfileKind) => TRAILS_BY_KIND[kind];
+export const getUnits = (kind: ProfileKind) => getTrails(kind).flatMap((t) => t.units);
+export const getStops = (kind: ProfileKind) => getUnits(kind).flatMap((u) => u.stops);
 
-export interface Lesson {
-  id: string;
-  title: string;
-  activities: Activity[];
-  xpReward: number;
-  minPassScore: number; // Porcentagem mínima para passar (ex: 0.7 para 70%)
-}
+const EVERY_TRAIL = [...ADULT_TRAILS, ...KID_TRAILS];
+export const ALL_STOPS: Stop[] = EVERY_TRAIL.flatMap((t) => t.units.flatMap((u) => u.stops));
 
-export interface Unit {
-  id: string;
-  title: string;
-  icon: string;
-  description: string;
-  lessons: Lesson[];
-  requiredUnitId?: string;
-}
+export const findTrailOfStop = (stopId: string) =>
+  EVERY_TRAIL.find((t) => t.units.some((u) => u.stops.some((s) => s.id === stopId)));
+export const findUnitOfStop = (stopId: string) =>
+  EVERY_TRAIL.flatMap((t) => t.units).find((u) => u.stops.some((s) => s.id === stopId));
 
-export interface TrailProgress {
-  completedLessons: string[];
-  lessonScores: Record<string, number>;
-  totalXP: number;
-}
+export const DAILY_GOAL_XP = 50;
+
+/* -------------------------------- Progresso -------------------------------- */
 
 export const TRAIL_CHANGE_EVENT = "trail-change";
-const STORAGE_KEY = "nutriconnect_trail_v1";
+const LEGACY_KEY = "nutriconnect_trail_v2";
+
+/** O progresso é guardado por conta e por perfil (adulto ou infantil). */
+let scope = "guest:adult";
+export function setTrailScope(userId: string, profileId: string) {
+  scope = `${userId}:${profileId}`;
+}
+const storageKey = () => `nutriconnect_trail_v3:${scope}`;
+
+const dayKey = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const daysBetween = (a: string, b: string) => {
+  const [ya, ma, da] = a.split("-").map(Number);
+  const [yb, mb, db] = b.split("-").map(Number);
+  return Math.round((Date.UTC(yb, mb - 1, db) - Date.UTC(ya, ma - 1, da)) / 86_400_000);
+};
+
+export const emptyProgress = (): TrailProgress => ({
+  stops: {},
+  totalXP: 0,
+  streak: 0,
+  lastActiveDay: null,
+  daily: { day: dayKey(), xp: 0 },
+  achievements: [],
+  perfectLevels: 0,
+  bestCombo: 0,
+});
+
+/** O perfil adulto herda o progresso salvo antes de existirem perfis (formato v2, sem escopo). */
+function migrateLegacy(): TrailProgress | null {
+  if (!scope.endsWith(":adult")) return null;
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY);
+    return raw ? { ...emptyProgress(), ...(JSON.parse(raw) as TrailProgress) } : null;
+  } catch {
+    return null;
+  }
+}
 
 export function loadTrailProgress(): TrailProgress {
-  if (typeof window === "undefined") {
-    return { completedLessons: [], lessonScores: {}, totalXP: 0 };
+  if (typeof window === "undefined") return emptyProgress();
+  try {
+    const raw = localStorage.getItem(storageKey());
+    if (raw) return { ...emptyProgress(), ...(JSON.parse(raw) as TrailProgress) };
+  } catch (e) {
+    console.error("Erro ao ler progresso da trilha", e);
   }
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error("Erro ao ler progresso da trilha", e);
-    }
-  }
-  return { completedLessons: [], lessonScores: {}, totalXP: 0 };
+  return migrateLegacy() ?? emptyProgress();
 }
 
 export function saveTrailProgress(progress: TrailProgress): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  localStorage.setItem(storageKey(), JSON.stringify(progress));
   window.dispatchEvent(new Event(TRAIL_CHANGE_EVENT));
 }
 
-export function completeLesson(
-  lessonId: string,
-  correctCount: number,
-  totalQuestions: number,
-  xpReward: number
-): void {
+export const getStopProgress = (progress: TrailProgress, stopId: string): StopProgress =>
+  progress.stops[stopId] ?? { done: 0, stars: [0, 0, 0] };
+
+/** A parada está dourada quando os 3 níveis foram concluídos. */
+export const isStopGold = (progress: TrailProgress, stopId: string) =>
+  getStopProgress(progress, stopId).done === 3;
+
+export const isUnitGold = (progress: TrailProgress, unit: Unit) =>
+  unit.stops.every((s) => isStopGold(progress, s.id));
+
+/** A unidade abre quando a anterior teve todas as paradas com ao menos o nível 1. */
+export function isUnitUnlocked(unit: Unit, progress: TrailProgress, units: Unit[]) {
+  if (!unit.requiredUnitId) return true;
+  const required = units.find((u) => u.id === unit.requiredUnitId);
+  if (!required) return true;
+  return required.stops.every((s) => getStopProgress(progress, s.id).done >= 1);
+}
+
+/** Uma parada abre quando a anterior da mesma unidade teve ao menos o nível 1 concluído. */
+export function isStopUnlocked(
+  unit: Unit,
+  stopIndex: number,
+  progress: TrailProgress,
+  units: Unit[],
+) {
+  if (!isUnitUnlocked(unit, progress, units)) return false;
+  if (stopIndex === 0) return true;
+  return getStopProgress(progress, unit.stops[stopIndex - 1].id).done >= 1;
+}
+
+/** Um nível abre depois que o anterior da mesma parada foi concluído. */
+export const isLevelUnlocked = (progress: TrailProgress, stopId: string, level: LevelNumber) =>
+  getStopProgress(progress, stopId).done >= level - 1;
+
+/** Parada atual: a primeira aberta ainda sem nenhum nível; senão, a primeira ainda não dourada. */
+export function getCurrentStopId(progress: TrailProgress, units: Unit[]): string | null {
+  for (const unit of units) {
+    for (let i = 0; i < unit.stops.length; i++) {
+      const stop = unit.stops[i];
+      if (isStopUnlocked(unit, i, progress, units) && getStopProgress(progress, stop.id).done === 0) {
+        return stop.id;
+      }
+    }
+  }
+  for (const unit of units) {
+    for (let i = 0; i < unit.stops.length; i++) {
+      const stop = unit.stops[i];
+      if (isStopUnlocked(unit, i, progress, units) && !isStopGold(progress, stop.id)) return stop.id;
+    }
+  }
+  return null;
+}
+
+export function getTrailTotals(progress: TrailProgress, kind: ProfileKind) {
+  const stopsOfKind = getStops(kind);
+  let levels = 0;
+  let stars = 0;
+  let gold = 0;
+  for (const stop of stopsOfKind) {
+    const p = getStopProgress(progress, stop.id);
+    levels += p.done;
+    stars += p.stars.reduce((a, b) => a + b, 0);
+    if (p.done === 3) gold++;
+  }
+  const totalLevels = stopsOfKind.length * 3;
+  return {
+    levels,
+    stars,
+    gold,
+    totalLevels,
+    totalStops: stopsOfKind.length,
+    maxStars: totalLevels * 3,
+  };
+}
+
+/** Resumo de uma trilha (um grande tema) para os cartões de escolha. */
+export function getTrailSummary(progress: TrailProgress, trail: Trail) {
+  const stops = trail.units.flatMap((u) => u.stops);
+  const levels = stops.reduce((sum, s) => sum + getStopProgress(progress, s.id).done, 0);
+  const gold = stops.filter((s) => isStopGold(progress, s.id)).length;
+  return {
+    stops: stops.length,
+    levels,
+    totalLevels: stops.length * 3,
+    gold,
+    pct: stops.length > 0 ? Math.round((levels / (stops.length * 3)) * 100) : 0,
+  };
+}
+
+export function getDailyXP(progress: TrailProgress) {
+  return progress.daily.day === dayKey() ? progress.daily.xp : 0;
+}
+
+/** A ofensiva só vale se a última atividade foi hoje ou ontem. */
+export function getActiveStreak(progress: TrailProgress) {
+  if (!progress.lastActiveDay) return 0;
+  return daysBetween(progress.lastActiveDay, dayKey()) <= 1 ? progress.streak : 0;
+}
+
+/* ------------------------------- Conquistas ------------------------------- */
+
+export interface AchievementDef {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  check: (p: TrailProgress, kind: ProfileKind) => boolean;
+}
+
+export const ACHIEVEMENTS: AchievementDef[] = [
+  {
+    id: "first-step",
+    title: "Primeiro Passo",
+    description: "Conclua seu primeiro nível.",
+    icon: "👣",
+    check: (p, k) => getTrailTotals(p, k).levels >= 1,
+  },
+  {
+    id: "streak-3",
+    title: "Pegando o Ritmo",
+    description: "Estude 3 dias seguidos.",
+    icon: "🔥",
+    check: (p) => p.streak >= 3,
+  },
+  {
+    id: "streak-7",
+    title: "Semana de Ouro",
+    description: "Estude 7 dias seguidos.",
+    icon: "📅",
+    check: (p) => p.streak >= 7,
+  },
+  {
+    id: "perfect",
+    title: "Sem Errar!",
+    description: "Conclua um nível sem nenhum erro.",
+    icon: "🎯",
+    check: (p) => p.perfectLevels >= 1,
+  },
+  {
+    id: "impeccable",
+    title: "Impecável",
+    description: "Conclua 5 níveis sem nenhum erro.",
+    icon: "💎",
+    check: (p) => p.perfectLevels >= 5,
+  },
+  {
+    id: "combo-5",
+    title: "Combo em Chamas",
+    description: "Acerte 5 respostas seguidas em um nível.",
+    icon: "⚡",
+    check: (p) => p.bestCombo >= 5,
+  },
+  {
+    id: "first-gold",
+    title: "Parada Dourada",
+    description: "Deixe uma parada dourada concluindo os 3 níveis.",
+    icon: "🏅",
+    check: (p, k) => getTrailTotals(p, k).gold >= 1,
+  },
+  {
+    id: "unit-gold",
+    title: "Unidade Reluzente",
+    description: "Deixe todas as paradas de uma unidade douradas.",
+    icon: "👑",
+    check: (p, k) => getUnits(k).some((u) => isUnitGold(p, u)),
+  },
+  {
+    id: "xp-500",
+    title: "Colecionador de XP",
+    description: "Some 500 XP na trilha.",
+    icon: "✨",
+    check: (p) => p.totalXP >= 500,
+  },
+  {
+    id: "explorer",
+    title: "Explorador",
+    description: "Conclua o nível 1 de todas as paradas.",
+    icon: "🧭",
+    check: (p, k) => getStops(k).every((s) => getStopProgress(p, s.id).done >= 1),
+  },
+  {
+    id: "master",
+    title: "Mestre da Nutrição",
+    description: "Deixe todas as paradas da trilha douradas.",
+    icon: "🏆",
+    check: (p, k) => getStops(k).every((s) => isStopGold(p, s.id)),
+  },
+];
+
+/* -------------------------------- Pontuação -------------------------------- */
+
+export interface LevelResult {
+  /** Acertos na primeira tentativa. */
+  correct: number;
+  total: number;
+  mistakes: number;
+  maxCombo: number;
+}
+
+/** Estrelas: 3 = sem erros, 2 = pelo menos 80%, 1 = passou. */
+export function starsFor(correct: number, total: number): number {
+  if (total === 0) return 3;
+  const ratio = correct / total;
+  return ratio >= 1 ? 3 : ratio >= 0.8 ? 2 : 1;
+}
+
+export interface LevelReward {
+  stars: number;
+  previousStars: number;
+  firstTime: boolean;
+  xp: { base: number; combo: number; perfect: number; practice: number };
+  totalGained: number;
+  becameGold: boolean;
+  becameUnitGold: boolean;
+  streak: number;
+  streakIncreased: boolean;
+  dailyXP: number;
+  dailyGoalReached: boolean;
+  newAchievements: AchievementDef[];
+}
+
+/**
+ * Registra a conclusão de um nível.
+ * Primeira vez: XP base + bônus de combo (2 por acerto seguido, até 10) + bônus de perfeição (10).
+ * Repetição: 10 XP de prática + 15 por estrela ganha a mais.
+ */
+export function completeLevel(
+  stopId: string,
+  level: LevelNumber,
+  result: LevelResult,
+): LevelReward {
   const progress = loadTrailProgress();
+  const unit = findUnitOfStop(stopId);
+  const kind: ProfileKind = findTrailOfStop(stopId)?.kind ?? "adult";
+  const stop = getStopProgress(progress, stopId);
+  const stars = starsFor(result.correct, result.total);
+  const previousStars = stop.stars[level - 1];
+  const firstTime = stop.done < level;
+  const wasGold = stop.done === 3;
+  const wasUnitGold = unit ? isUnitGold(progress, unit) : false;
 
-  if (!progress.completedLessons.includes(lessonId)) {
-    progress.completedLessons.push(lessonId);
-    progress.totalXP += xpReward;
+  const xp = { base: 0, combo: 0, perfect: 0, practice: 0 };
+  if (firstTime) {
+    xp.base = LEVEL_META[level].xp;
+    xp.combo = Math.min(result.maxCombo, 10) * 2;
+    xp.perfect = stars === 3 ? 10 : 0;
+  } else {
+    xp.practice = 10 + Math.max(0, stars - previousStars) * 15;
   }
+  const totalGained = xp.base + xp.combo + xp.perfect + xp.practice;
 
-  const currentScore = progress.lessonScores[lessonId] || 0;
-  if (correctCount > currentScore) {
-    progress.lessonScores[lessonId] = correctCount;
+  const nextStars = [...stop.stars] as [number, number, number];
+  nextStars[level - 1] = Math.max(previousStars, stars);
+  progress.stops[stopId] = {
+    done: Math.max(stop.done, level) as 0 | 1 | 2 | 3,
+    stars: nextStars,
+  };
+
+  progress.totalXP += totalGained;
+  progress.bestCombo = Math.max(progress.bestCombo, result.maxCombo);
+  if (stars === 3 && firstTime) progress.perfectLevels += 1;
+
+  // Ofensiva diária e meta do dia
+  const today = dayKey();
+  let streakIncreased = false;
+  if (progress.lastActiveDay !== today) {
+    const gap = progress.lastActiveDay ? daysBetween(progress.lastActiveDay, today) : null;
+    progress.streak = gap === 1 ? progress.streak + 1 : 1;
+    progress.lastActiveDay = today;
+    streakIncreased = true;
   }
+  const dailyBefore = progress.daily.day === today ? progress.daily.xp : 0;
+  progress.daily = { day: today, xp: dailyBefore + totalGained };
+
+  const newAchievements = ACHIEVEMENTS.filter(
+    (a) => !progress.achievements.includes(a.id) && a.check(progress, kind),
+  );
+  progress.achievements.push(...newAchievements.map((a) => a.id));
 
   saveTrailProgress(progress);
+
+  return {
+    stars,
+    previousStars,
+    firstTime,
+    xp,
+    totalGained,
+    becameGold: !wasGold && level === 3,
+    becameUnitGold: !!unit && !wasUnitGold && isUnitGold(progress, unit),
+    streak: progress.streak,
+    streakIncreased,
+    dailyXP: progress.daily.xp,
+    dailyGoalReached: dailyBefore < DAILY_GOAL_XP && progress.daily.xp >= DAILY_GOAL_XP,
+    newAchievements,
+  };
 }
-
-export function isLessonCompleted(lessonId: string): boolean {
-  const progress = loadTrailProgress();
-  return progress.completedLessons.includes(lessonId);
-}
-
-export function isUnitUnlocked(unit: Unit, units: Unit[]): boolean {
-  if (!unit.requiredUnitId) return true;
-
-  const requiredUnit = units.find((u) => u.id === unit.requiredUnitId);
-  if (!requiredUnit) return true;
-
-  const progress = loadTrailProgress();
-  return requiredUnit.lessons.every((lesson) =>
-    progress.completedLessons.includes(lesson.id)
-  );
-}
-
-export function getTrailXP(): number {
-  return loadTrailProgress().totalXP;
-}
-
-export const NUTRITION_UNITS: Unit[] = [
-  {
-    id: "unit-1",
-    title: "Bases da Alimentação",
-    icon: "🌱",
-    description: "Conheça os Nutri-Amigos e descubra o poder dos alimentos.",
-    lessons: [
-      {
-        id: "lesson-1-1",
-        title: "O que são Macronutrientes?",
-        xpReward: 50,
-        minPassScore: 0.65,
-        activities: [
-          {
-            id: "l1-1-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Olá! Eu sou a Nutri Nina. Que bom ter você aqui! Vamos embarcar numa jornada incrível para conhecer os alimentos.",
-          },
-          {
-            id: "l1-1-2",
-            type: "dialogue",
-            character: CHARACTERS.lipe,
-            text: "E aí! Eu sou o Lipe Abacate. Sabia que nosso corpo é como um carro de corrida? Ele precisa de combustível e boas peças para acelerar!",
-          },
-          {
-            id: "l1-1-3",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Exatamente! E os **Macronutrientes** são as peças e a gasolina do corpo. Eles se dividem em três grandes grupos: Carboidratos, Proteínas e Gorduras.",
-          },
-          {
-            id: "l1-1-4",
-            type: "quiz",
-            character: CHARACTERS.tito,
-            question: "Qual desses grupos funciona como a 'gasolina rápida' do nosso corpo, dando energia imediata para o cérebro e músculos?",
-            options: ["Proteínas", "Gorduras", "Carboidratos", "Fibras"],
-            correctIndex: 2,
-            explanation: "Isso mesmo! Os Carboidratos são a principal fonte de energia. Pães, massas, raízes e frutas são cheios deles.",
-          },
-          {
-            id: "l1-1-5",
-            type: "true_false",
-            character: CHARACTERS.lipe,
-            statement: "As gorduras são as grandes vilãs da saúde e não servem para nada no nosso corpo.",
-            isTrue: false,
-            explanation: "As gorduras são super importantes! Elas protegem nossos órgãos e ajudam a absorver vitaminas essenciais.",
-          },
-          {
-            id: "l1-1-6",
-            type: "quiz",
-            character: CHARACTERS.nina,
-            question: "E as proteínas? Elas agem como os 'tijolinhos' do nosso corpo. Qual a função delas?",
-            options: [
-              "Adoçar o sangue",
-              "Construir e reparar tecidos como músculos e pele",
-              "Substituir a água do corpo",
-              "Causar sono após o almoço"
-            ],
-            correctIndex: 1,
-            explanation: "Exato! Carnes, ovos e leguminosas (como o feijão) são ricos em proteínas, os tijolos de construção do seu corpo.",
-          }
-        ],
-      },
-      {
-        id: "lesson-1-2",
-        title: "Pequenos Gigantes: Vitaminas",
-        xpReward: 50,
-        minPassScore: 0.65,
-        activities: [
-          {
-            id: "l1-2-1",
-            type: "dialogue",
-            character: CHARACTERS.mila,
-            text: "Oi! Sou a Mila Maçã. Já falamos dos 'Macros', agora vamos falar dos 'Micros': Vitaminas e Minerais. Eles não dão energia, mas...",
-          },
-          {
-            id: "l1-2-2",
-            type: "dialogue",
-            character: CHARACTERS.mila,
-            text: "...são as ferramentas que regulam todo o funcionamento da máquina. Como o óleo do motor e o sistema elétrico do carro!",
-          },
-          {
-            id: "l1-2-3",
-            type: "true_false",
-            character: CHARACTERS.nina,
-            statement: "Uma alimentação muito colorida não faz diferença; o importante é comer pouco.",
-            isTrue: false,
-            explanation: "Cores diferentes nos alimentos significam diferentes vitaminas e minerais! Quanto mais colorido, mais rico.",
-          },
-          {
-            id: "l1-2-4",
-            type: "quiz",
-            character: CHARACTERS.tito,
-            question: "Sabe a vitamina C? Aquela famosa contra resfriados. Onde ela é encontrada em grande quantidade?",
-            options: ["Carnes vermelhas", "Frutas cítricas (laranja, acerola)", "Óleo de soja", "Arroz branco"],
-            correctIndex: 1,
-            explanation: "Perfeito! Frutas cítricas são excelentes fontes de Vitamina C, que fortalece a imunidade.",
-          },
-          {
-            id: "l1-2-5",
-            type: "quiz",
-            character: CHARACTERS.lipe,
-            question: "E para ter ossos fortes, qual é o mineral mais famoso que precisamos?",
-            options: ["Sódio", "Zinco", "Cálcio", "Magnésio"],
-            correctIndex: 2,
-            explanation: "Isso! O cálcio, muito presente no leite, queijos e até em vegetais verde-escuros, forma a estrutura dos nossos ossos.",
-          }
-        ]
-      },
-      {
-        id: "lesson-1-3",
-        title: "Água e Fibras",
-        xpReward: 50,
-        minPassScore: 0.65,
-        activities: [
-          {
-            id: "l1-3-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Você sabia que cerca de 60% a 70% do seu corpo é água? É muita coisa! E existe algo que ajuda seu intestino a funcionar perfeitamente: as fibras.",
-          },
-          {
-            id: "l1-3-2",
-            type: "true_false",
-            character: CHARACTERS.tito,
-            statement: "Podemos substituir o consumo de água por refrigerantes ou sucos adoçados, pois tudo é líquido.",
-            isTrue: false,
-            explanation: "Não! Bebidas açucaradas não hidratam com a mesma eficiência e trazem excesso de calorias. A água pura é insubstituível.",
-          },
-          {
-            id: "l1-3-3",
-            type: "quiz",
-            character: CHARACTERS.mila,
-            question: "O que as FIBRAS, encontradas em frutas e verduras, fazem no nosso corpo?",
-            options: [
-              "Formam uma vassourinha que limpa o intestino e dá saciedade.",
-              "Viram açúcar muito rápido no sangue.",
-              "Prejudicam a absorção de nutrientes.",
-              "Fazem os cabelos crescerem vermelhos."
-            ],
-            correctIndex: 0,
-            explanation: "Perfeito! Além de ajudar no banheiro, as fibras fazem a gente se sentir cheio (saciado) por mais tempo.",
-          },
-          {
-            id: "l1-3-4",
-            type: "true_false",
-            character: CHARACTERS.lipe,
-            statement: "Comer a fruta com casca sempre que possível ajuda a aumentar a ingestão de fibras.",
-            isTrue: true,
-            explanation: "Isso mesmo! A casca e o bagaço são onde mora a maior parte das fibras (como na maçã e na pera).",
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: "unit-2",
-    title: "Entendendo os Alimentos",
-    icon: "🔍",
-    description: "Torne-se um detetive de rótulos e descubra o que realmente está na comida.",
-    requiredUnitId: "unit-1",
-    lessons: [
-      {
-        id: "lesson-2-1",
-        title: "Processados e Ultraprocessados",
-        xpReward: 60,
-        minPassScore: 0.65,
-        activities: [
-          {
-            id: "l2-1-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Vamos falar sobre a jornada da comida. Imagine uma espiga de milho. Ela é um alimento In Natura (direto da natureza).",
-          },
-          {
-            id: "l2-1-2",
-            type: "dialogue",
-            character: CHARACTERS.lipe,
-            text: "Se você cozinhar o milho em lata com sal, vira um alimento Processado. Mas se for um 'salgadinho de milho' de pacote...",
-          },
-          {
-            id: "l2-1-3",
-            type: "quiz",
-            character: CHARACTERS.tito,
-            question: "O salgadinho de milho, cheio de corantes, conservantes e aromas de laboratório, é classificado como:",
-            options: ["In Natura", "Minimamente Processado", "Ultraprocessado", "Processado Leve"],
-            correctIndex: 2,
-            explanation: "Exato! Ultraprocessados são invenções industriais cheias de aditivos que enganam nosso paladar e nos fazem comer demais.",
-          },
-          {
-            id: "l2-1-4",
-            type: "true_false",
-            character: CHARACTERS.nina,
-            statement: "O objetivo para ser saudável é nunca mais colocar um alimento ultraprocessado na boca pelo resto da vida.",
-            isTrue: false,
-            explanation: "O segredo é o equilíbrio! Descascar mais e desembalar menos na maior parte do tempo, mas comer um salgadinho ocasionalmente não vai arruinar sua saúde.",
-          }
-        ]
-      },
-      {
-        id: "lesson-2-2",
-        title: "Lendo a Lista de Ingredientes",
-        xpReward: 60,
-        minPassScore: 0.70,
-        activities: [
-          {
-            id: "l2-2-1",
-            type: "dialogue",
-            character: CHARACTERS.mila,
-            text: "A lista de ingredientes de um produto esconde um segredo mágico de como ela é ordenada. Quer descobrir?",
-          },
-          {
-            id: "l2-2-2",
-            type: "quiz",
-            character: CHARACTERS.nina,
-            question: "A ordem dos ingredientes no rótulo de um produto é organizada do...",
-            options: [
-              "...menor quantidade para a maior.",
-              "...mais saudável para o menos saudável.",
-              "...maior quantidade para a menor (o que tem mais aparece primeiro).",
-              "...em ordem alfabética."
-            ],
-            correctIndex: 2,
-            explanation: "Se o primeiro ingrediente é AÇÚCAR, significa que o produto é feito principalmente de açúcar!",
-          },
-          {
-            id: "l2-2-3",
-            type: "true_false",
-            character: CHARACTERS.lipe,
-            statement: "O açúcar adicionado só aparece com o nome de 'Açúcar' nas embalagens. Fica fácil de achar.",
-            isTrue: false,
-            explanation: "A indústria usa disfarces: xarope de milho, maltodextrina, açúcar invertido, glicose... Fique de olho de detetive!",
-          },
-          {
-            id: "l2-2-4",
-            type: "quiz",
-            character: CHARACTERS.tito,
-            question: "Entre um pão que o primeiro ingrediente é 'Farinha de trigo enriquecida' e outro que é 'Farinha de trigo integral', qual tem mais fibras?",
-            options: ["O primeiro (farinha enriquecida).", "O segundo (farinha integral).", "Ambos têm a mesma quantidade.", "Nenhum deles tem fibra."],
-            correctIndex: 1,
-            explanation: "O pão integral verdadeiro sempre deve ter a farinha integral como o primeiro ou segundo ingrediente da lista.",
-          }
-        ]
-      },
-      {
-        id: "lesson-2-3",
-        title: "A Tabela Nutricional",
-        xpReward: 60,
-        minPassScore: 0.70,
-        activities: [
-          {
-            id: "l2-3-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Sabe aquela tabelinha preta e branca no verso do pacote? Ela é sua melhor amiga para escolhas rápidas.",
-          },
-          {
-            id: "l2-3-2",
-            type: "quiz",
-            character: CHARACTERS.lipe,
-            question: "A primeira coisa que você DEVE olhar ao ler uma tabela nutricional é:",
-            options: [
-              "A porção (para qual quantidade aqueles números servem).",
-              "As calorias.",
-              "A quantidade de ferro.",
-              "Se tem glúten."
-            ],
-            correctIndex: 0,
-            explanation: "Cuidado com as pegadinhas! Às vezes um pacote parece ter poucas calorias, mas a tabela está calculada para apenas 2 biscoitos (sendo que o pacote vem 20).",
-          },
-          {
-            id: "l2-3-3",
-            type: "true_false",
-            character: CHARACTERS.tito,
-            statement: "Se algo diz '0% de gordura trans', quer dizer que você pode comer pacotes inteiros sem preocupação.",
-            isTrue: false,
-            explanation: "Mesmo sem gordura trans, produtos podem ser riquíssimos em açúcar ou sódio. Sempre observe o quadro geral.",
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: "unit-3",
-    title: "Montando Seu Prato",
-    icon: "🍽️",
-    description: "Da teoria à prática! Descubra como montar pratos saborosos e equilibrados no dia a dia.",
-    requiredUnitId: "unit-2",
-    lessons: [
-      {
-        id: "lesson-3-1",
-        title: "O Prato Equilibrado",
-        xpReward: 75,
-        minPassScore: 0.65,
-        activities: [
-          {
-            id: "l3-1-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "O método do 'Prato Equilibrado' é uma regra visual simples para almoço e jantar que dispensa balança.",
-          },
-          {
-            id: "l3-1-2",
-            type: "quiz",
-            character: CHARACTERS.mila,
-            question: "No modelo ideal do prato equilibrado, METADE (50%) do prato deveria ser preenchida com:",
-            options: [
-              "Carboidratos (arroz, macarrão, batata)",
-              "Proteínas (carnes, ovos)",
-              "Vegetais e Saladas (verduras, legumes frescos)",
-              "Sobremesa"
-            ],
-            correctIndex: 2,
-            explanation: "Isso! Os vegetais enchem o prato de vitaminas, fibras e dão volume e saciedade com poucas calorias.",
-          },
-          {
-            id: "l3-1-3",
-            type: "true_false",
-            character: CHARACTERS.tito,
-            statement: "Não se pode colocar Arroz e Batata no mesmo prato, pois são carboidratos brigando por espaço.",
-            isTrue: false,
-            explanation: "Pode sim! O importante é a quantidade. Se usar dois carboidratos, é só diminuir um pouco de cada para caber na cota de 25% (um quarto) do prato.",
-          }
-        ]
-      },
-      {
-        id: "lesson-3-2",
-        title: "O Poder dos Temperos",
-        xpReward: 75,
-        minPassScore: 0.70,
-        activities: [
-          {
-            id: "l3-2-1",
-            type: "dialogue",
-            character: CHARACTERS.lipe,
-            text: "Comer saudável não significa comer frango seco sem sal. A culinária é mágica e os temperos naturais salvam o sabor!",
-          },
-          {
-            id: "l3-2-2",
-            type: "quiz",
-            character: CHARACTERS.nina,
-            question: "Qual dessas opções é a melhor escolha para dar sabor às refeições do dia a dia cuidando da saúde?",
-            options: [
-              "Cubos de caldo pronto sabor carne/galinha (altamente processados).",
-              "Tempero caseiro de alho, cebola e ervas frescas/secas (orégano, manjericão, cúrcuma).",
-              "Muito sal refinado puro.",
-              "Margarina em grande quantidade."
-            ],
-            correctIndex: 1,
-            explanation: "Isso! Temperos naturais como alho, cebola, páprica, açafrão, orégano trazem muito sabor e ainda são anti-inflamatórios.",
-          },
-          {
-            id: "l3-2-3",
-            type: "true_false",
-            character: CHARACTERS.mila,
-            statement: "Adicionar limão por cima dos vegetais escuros (como espinafre ou couve) e no feijão aumenta a absorção do ferro.",
-            isTrue: true,
-            explanation: "Verdadeiríssimo! A vitamina C do limão ajuda o corpo a capturar melhor o ferro de origem vegetal (ferro não-heme).",
-          }
-        ]
-      },
-      {
-        id: "lesson-3-3",
-        title: "Planejamento Descomplicado",
-        xpReward: 75,
-        minPassScore: 0.70,
-        activities: [
-          {
-            id: "l3-3-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Deixar para decidir o que comer quando já está com muita fome é a receita certa para acabar pedindo fast food.",
-          },
-          {
-            id: "l3-3-2",
-            type: "quiz",
-            character: CHARACTERS.lipe,
-            question: "Qual hábito simples de planejamento previne que vegetais estraguem na gaveta da geladeira?",
-            options: [
-              "Esconder eles no fundo da gaveta e não olhar.",
-              "Higienizar e secar as saladas no fim de semana, guardando em potes para pegar fácil durante a semana.",
-              "Lavar cada folha só na hora exata de comer todos os dias.",
-              "Comprar o triplo do necessário no mercado."
-            ],
-            correctIndex: 1,
-            explanation: "Perfeito! A tática de lavar as folhas e picar legumes antes reduz a preguiça nos dias de cansaço e garante a salada na mesa.",
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: "unit-4",
-    title: "Paz com a Comida",
-    icon: "💚",
-    description: "Acolhimento, mindful eating e o fim da cultura da restrição.",
-    requiredUnitId: "unit-3",
-    lessons: [
-      {
-        id: "lesson-4-1",
-        title: "Fome Física vs. Emocional",
-        xpReward: 100,
-        minPassScore: 0.65,
-        activities: [
-          {
-            id: "l4-1-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Às vezes a vontade de comer não vem do estômago vazio, mas sim do coração cheio (de ansiedade, tristeza ou tédio). E está tudo bem!",
-          },
-          {
-            id: "l4-1-2",
-            type: "quiz",
-            character: CHARACTERS.nina,
-            question: "Qual característica descreve melhor a FOME EMOCIONAL?",
-            options: [
-              "Aparece aos poucos, aceita qualquer comida (arroz e feijão servem) e quando saciada te faz parar de comer.",
-              "Aparece de repente, é urgente, exige algo específico (ex: chocolate) e pode não passar mesmo depois do estômago cheio.",
-              "Só acontece de manhã cedo ao acordar.",
-              "Sempre avisa fazendo o estômago roncar bem alto."
-            ],
-            correctIndex: 1,
-            explanation: "Exato! Identificar o tipo de fome é o primeiro passo. A emocional é urgente e direcionada a alimentos de conforto.",
-          },
-          {
-            id: "l4-1-3",
-            type: "true_false",
-            character: CHARACTERS.tito,
-            statement: "Comer por emoção é um crime contra a dieta e você deve se sentir extremamente culpado toda vez que acontecer.",
-            isTrue: false,
-            explanation: "A comida conforta, isso é biológico e humano! Apenas não deixe que seja sua ÚNICA ferramenta para lidar com as emoções.",
-          }
-        ]
-      },
-      {
-        id: "lesson-4-2",
-        title: "Atenção Plena (Mindful Eating)",
-        xpReward: 100,
-        minPassScore: 0.70,
-        activities: [
-          {
-            id: "l4-2-1",
-            type: "dialogue",
-            character: CHARACTERS.mila,
-            text: "Se você comer olhando pro celular no sofá, seu cérebro nem vai registrar que você comeu. A saciedade não vai vir completa.",
-          },
-          {
-            id: "l4-2-2",
-            type: "quiz",
-            character: CHARACTERS.lipe,
-            question: "O que é uma boa prática de 'Atenção Plena' ao comer?",
-            options: [
-              "Comer em pé na frente da geladeira para ir mais rápido.",
-              "Desligar as telas, mastigar devagar e focar no sabor, textura e cheiro do alimento.",
-              "Comer assistindo um filme de ação para a comida descer mais fácil.",
-              "Engolir sem mastigar para não perder tempo."
-            ],
-            correctIndex: 1,
-            explanation: "Perfeito! Estar presente na refeição ajuda o corpo a mandar o sinal de saciedade no momento certo.",
-          },
-          {
-            id: "l4-2-3",
-            type: "true_false",
-            character: CHARACTERS.nina,
-            statement: "Apoiar o talher no prato entre uma garfada e outra é uma ótima estratégia para comer mais devagar.",
-            isTrue: true,
-            explanation: "Essa pausa força o ritmo a desacelerar, dando tempo (cerca de 20 min) pro estômago avisar o cérebro que você está satisfeito.",
-          }
-        ]
-      },
-      {
-        id: "lesson-4-3",
-        title: "Sem Culpa à Mesa",
-        xpReward: 100,
-        minPassScore: 0.70,
-        activities: [
-          {
-            id: "l4-3-1",
-            type: "dialogue",
-            character: CHARACTERS.nina,
-            text: "Vamos celebrar uma verdade maravilhosa da ciência nutricional atual: a mentalidade do 'Tudo ou Nada' fracassa em 95% das vezes.",
-          },
-          {
-            id: "l4-3-2",
-            type: "quiz",
-            character: CHARACTERS.nina,
-            question: "O que costuma acontecer (o efeito elástico) quando uma pessoa faz uma dieta muito extrema, cortando todos os carboidratos e doces?",
-            options: [
-              "Ela vive feliz para sempre e nunca mais sente fome.",
-              "Ela desenvolve uma relação sustentável com a comida.",
-              "Ela acaba sofrendo de frustração, desistindo e tendo episódios de compulsão ou excessos compensatórios (chutar o balde).",
-              "O corpo esquece que gosta de doce no dia seguinte."
-            ],
-            correctIndex: 2,
-            explanation: "A restrição gera compulsão. Proibir completamente um alimento eleva ele a um 'pedestal', gerando fixação mental nele.",
-          },
-          {
-            id: "l4-3-3",
-            type: "true_false",
-            character: CHARACTERS.lipe,
-            statement: "Uma vida saudável tem espaço tanto para o prato de salada no almoço de terça, quanto para o brigadeiro na festa de sábado sem culpa.",
-            isTrue: true,
-            explanation: "Você gabaritou! Constância é o segredo. Uma refeição ruim não estraga uma rotina boa. Seja gentil com você!",
-          }
-        ]
-      }
-    ]
-  }
-];
