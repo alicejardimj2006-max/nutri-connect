@@ -6,7 +6,10 @@ import {
   multi,
   order,
   quiz,
+  reflect,
   say,
+  scenario,
+  slider,
   sort,
   tf,
   type Draft,
@@ -91,6 +94,32 @@ const RAINBOW = stop(
       ],
       "Muito bem! Cada fruta tem a sua cor.",
     ),
+    multi(
+      "cadu",
+      "Quais destes alimentos são VERDES?",
+      ["Brócolis", "Couve", "Morango", "Alface"],
+      [0, 1, 3],
+      "Brócolis, couve e alface são verdinhos! Morango é vermelho.",
+    ),
+    match(
+      "nina",
+      "Ligue a fruta ou legume à cor dele:",
+      [
+        ["Cenoura", "Laranja"],
+        ["Uva", "Roxo"],
+        ["Tomate", "Vermelho"],
+      ],
+      "Você já é craque em combinar cores e alimentos!",
+    ),
+    scenario(
+      "cadu",
+      "Na hora do lanche, Cadu quer ficar com os olhos fortes para enxergar bem de longe.",
+      "Qual alimento vai ajudar mais?",
+      ["Cenoura", "Bala", "Refrigerante", "Biscoito"],
+      0,
+      "A cenoura é laranja e cheia de vitamina A, que ajuda os olhos a enxergarem bem!",
+    ),
+    reflect("mila", "Qual é a sua fruta ou legume colorido favorito? Por quê?"),
   ],
   [
     concept(
@@ -149,6 +178,32 @@ const RAINBOW = stop(
         "Finalize com um tomate vermelho",
       ],
       "Assim o prato fica lindo e completo!",
+    ),
+    match(
+      "tito",
+      "Ligue o alimento à cor que ainda falta no prato:",
+      [
+        ["Milho", "Amarelo"],
+        ["Berinjela", "Roxo"],
+        ["Pimentão vermelho", "Vermelho"],
+      ],
+      "Cada cor a mais deixa o prato mais completo!",
+    ),
+    scenario(
+      "mila",
+      "Mila está montando o prato dela: já colocou arroz e frango.",
+      "O que ela pode adicionar para deixar o prato mais colorido?",
+      ["Uma salada de tomate e alface", "Mais arroz", "Só frango", "Nada, está pronto"],
+      0,
+      "Uma salada colorida completa o prato com vitaminas e cores novas!",
+    ),
+    slider(
+      "cadu",
+      "Quantas cores diferentes de alimentos de verdade é legal ter no prato?",
+      { min: 1, max: 5, step: 1, unit: " cores" },
+      3,
+      1,
+      "Um bom objetivo é ter pelo menos 3 cores diferentes em cada refeição!",
     ),
   ],
   [
@@ -209,6 +264,35 @@ const RAINBOW = stop(
       ],
       "Agora você já sabe o que cada cor faz!",
     ),
+    multi(
+      "nina",
+      "Quais destes NÃO precisam de corante, porque a cor já é natural?",
+      ["Beterraba", "Bala de goma", "Cenoura", "Refresco em pó"],
+      [0, 2],
+      "Beterraba e cenoura já nascem com essas cores lindas!",
+    ),
+    fill(
+      "cadu",
+      "A cor da fruta é ___, mas a cor da bala vem de corante.",
+      ["natural", "de tinta", "de lápis", "mágica"],
+      0,
+      "Natural! As frutas já nascem com a cor delas.",
+    ),
+    order(
+      "lipe",
+      "Coloque em ordem para descobrir se um alimento tem cor natural:",
+      [
+        "Pense se ele é uma fruta ou legume de verdade",
+        "Veja se ele nasceu assim, da terra ou da árvore",
+        "Se sim, a cor dele é natural",
+        "Se for um doce bem colorido, a cor é corante",
+      ],
+      "Ótimo! Agora você é um detetive de cores.",
+    ),
+    reflect(
+      "tito",
+      "Existe algum alimento colorido que você nunca provou? Que tal experimentar um dia desses?",
+    ),
   ],
 );
 
@@ -267,6 +351,32 @@ const FRUITS = stop(
       0,
       "Vitaminas! Elas ajudam o corpo a funcionar bem.",
     ),
+    match(
+      "mila",
+      "Ligue a fruta ao grupo dela:",
+      [
+        ["Morango", "Fruta"],
+        ["Espinafre", "Verdura"],
+        ["Chuchu", "Legume"],
+      ],
+      "Você já reconhece cada grupo direitinho!",
+    ),
+    multi(
+      "cadu",
+      "Quais destas são FRUTAS?",
+      ["Manga", "Cenoura", "Uva", "Abobrinha"],
+      [0, 2],
+      "Manga e uva são frutas! Cenoura e abobrinha são legumes.",
+    ),
+    scenario(
+      "lipe",
+      "No lanche da escola, Léo só quer comer biscoito.",
+      "Qual seria uma boa troca, mantendo o lanche gostoso?",
+      ["Uma fruta picada", "Mais biscoito", "Refrigerante", "Nada"],
+      0,
+      "Uma fruta picada é doce, gostosa e cheia de vitaminas!",
+    ),
+    reflect("nina", "Qual fruta ou legume novo você toparia experimentar essa semana?"),
   ],
   [
     concept(
@@ -331,6 +441,43 @@ const FRUITS = stop(
       ["No lanche e na sobremesa", "Só no aniversário", "Nunca", "Só quando está doente"],
       0,
       "Frutas são ótimas todos os dias!",
+    ),
+    match(
+      "tito",
+      "Ligue o alimento ao jeito de prepará-lo:",
+      [
+        ["Cenoura", "Crua ou cozida"],
+        ["Banana", "Descascar e comer"],
+        ["Abóbora", "Cozida ou assada"],
+      ],
+      "Cada legume pode ser preparado de vários jeitos gostosos!",
+    ),
+    scenario(
+      "tito",
+      "Dudu provou brócolis pela primeira vez e não gostou muito.",
+      "O que ele pode fazer?",
+      [
+        "Provar de novo outro dia, de outro jeito",
+        "Nunca mais comer legumes",
+        "Desistir de vegetais para sempre",
+        "Comer só doces",
+      ],
+      0,
+      "Nosso paladar muda! Provar de novo, de um jeito diferente, ajuda a descobrir se a gente gosta.",
+    ),
+    slider(
+      "mila",
+      "Às vezes precisamos provar um alimento novo várias vezes até começar a gostar dele. Quantas vezes, mais ou menos?",
+      { min: 1, max: 15, step: 1, unit: " vezes" },
+      10,
+      5,
+      "Estudos mostram que o paladar pode levar cerca de 10 tentativas para se acostumar com um sabor novo!",
+    ),
+    tf(
+      "cadu",
+      "Comer frutas e legumes de jeitos diferentes, como cru, cozido ou assado, pode ajudar a gostar mais deles.",
+      true,
+      "Isso mesmo! Cada jeito de preparo muda o gosto e a textura.",
     ),
   ],
   [
@@ -403,6 +550,22 @@ const FRUITS = stop(
       ],
       "Cada fruta tem o seu jeito gostoso de comer!",
     ),
+    quiz(
+      "tito",
+      "O que tem MAIS fibras?",
+      ["Laranja inteira", "Suco de laranja coado", "Refrigerante de laranja"],
+      0,
+      "A laranja inteira guarda todas as fibras. O suco coado perde boa parte delas.",
+    ),
+    scenario(
+      "mila",
+      "Bia tomou um suco de caixinha no lanche e, pouco depois, já estava com fome de novo.",
+      "O que poderia ter ajudado mais a segurar a fome?",
+      ["Comer a fruta inteira", "Tomar mais suco", "Comer um doce", "Nada, já estava bom"],
+      0,
+      "A fruta inteira tem fibras que dão mais saciedade do que o suco.",
+    ),
+    reflect("cadu", "Você prefere comer a fruta inteira ou tomar em suco? Por quê?"),
   ],
 );
 
@@ -457,6 +620,30 @@ const WATER = stop(
       false,
       "Refrigerante tem muito açúcar. A água é sempre a melhor.",
     ),
+    multi(
+      "nina",
+      "Quais são boas horas para beber água?",
+      ["De manhã", "Depois de brincar", "Só se estiver doente", "Durante o dia todo"],
+      [0, 1, 3],
+      "Água faz bem em qualquer hora, e ainda mais depois de brincar bastante!",
+    ),
+    scenario(
+      "cadu",
+      "Enzo está com a boca seca e sedento no recreio.",
+      "O que ele deve fazer?",
+      ["Beber água", "Esperar até chegar em casa", "Comer bala", "Nada"],
+      0,
+      "Sentir sede é o corpo pedindo água. O melhor é beber logo!",
+    ),
+    slider(
+      "nina",
+      "Quantos copos de água você acha legal beber ao longo de um dia na escola?",
+      { min: 1, max: 8, step: 1, unit: " copos" },
+      4,
+      2,
+      "Beber água várias vezes ao longo do dia, mesmo em pequenas quantidades, ajuda muito!",
+    ),
+    reflect("lipe", "Você já bebeu água hoje? Que tal beber um copo agora mesmo?"),
   ],
   [
     concept(
@@ -511,6 +698,31 @@ const WATER = stop(
       0,
       "Água é a melhor companheira das refeições.",
     ),
+    match(
+      "mila",
+      "Ligue a fruta à quantidade de água que ela tem:",
+      [
+        ["Melancia", "Muita água"],
+        ["Pepino", "Muita água"],
+        ["Banana", "Um pouco menos de água"],
+      ],
+      "Frutas com muita água ajudam bastante na hidratação!",
+    ),
+    scenario(
+      "nina",
+      "No time de futebol, depois do treino, todo mundo está suado e com sede.",
+      "O que é melhor para repor a água do corpo?",
+      ["Água", "Refrigerante gelado", "Achocolatado", "Suco bem doce"],
+      0,
+      "Depois de suar bastante, a água é sempre a melhor escolha para repor o que foi perdido.",
+    ),
+    tf(
+      "cadu",
+      "Comer melancia também ajuda a se hidratar.",
+      true,
+      "A melancia é quase toda feita de água, além de ser doce e gostosa!",
+    ),
+    reflect("tito", "Qual fruta com bastante água você mais gosta de comer no verão?"),
   ],
   [
     concept(
@@ -577,6 +789,27 @@ const WATER = stop(
       0,
       "Energia! Água é combustível para brincar.",
     ),
+    multi(
+      "nina",
+      "Quais sinais mostram que o corpo está bem hidratado?",
+      ["Xixi clarinho", "Sem sede", "Boca úmida", "Xixi bem escuro"],
+      [0, 1, 2],
+      "Xixi clarinho, sem sede e boca úmida são sinais de que está tudo certo!",
+    ),
+    scenario(
+      "mila",
+      "Depois de um dia bem quente brincando lá fora, Sofia sente a boca seca e um pouco de dor de cabeça.",
+      "O que ela deveria fazer primeiro?",
+      [
+        "Beber água e descansar na sombra",
+        "Continuar correndo no sol",
+        "Comer um salgadinho",
+        "Nada, vai passar sozinho",
+      ],
+      0,
+      "Boca seca e dor de cabeça no calor podem ser sinal de desidratação. Água e sombra ajudam muito!",
+    ),
+    reflect("tito", "O que te ajuda a lembrar de beber água ao longo do dia?"),
   ],
 );
 
@@ -638,6 +871,38 @@ const BREAKFAST = stop(
       0,
       "Leite e água são ótimas companhias.",
     ),
+    multi(
+      "tito",
+      "O que combina num café da manhã de campeão?",
+      ["Fruta", "Ovo", "Bala", "Pão integral"],
+      [0, 1, 3],
+      "Fruta, ovo e pão integral dão energia de verdade para o dia.",
+    ),
+    scenario(
+      "nina",
+      "Théo acordou atrasado e quer sair de casa sem comer nada.",
+      "O que seria melhor para ele fazer?",
+      [
+        "Comer algo rápido, como uma fruta com pão",
+        "Sair sem comer nada",
+        "Comer só bala no caminho",
+        "Tomar refrigerante",
+      ],
+      0,
+      "Mesmo rápido, um lanchinho com fruta e pão dá energia para o dia começar bem.",
+    ),
+    order(
+      "cadu",
+      "Coloque em ordem uma manhã de campeão:",
+      [
+        "Acordar e lavar o rosto",
+        "Tomar um café da manhã completo",
+        "Escovar os dentes",
+        "Ir para a escola com energia",
+      ],
+      "Assim o dia começa com tudo!",
+    ),
+    reflect("lipe", "O que você mais gosta de comer no café da manhã?"),
   ],
   [
     concept(
@@ -691,6 +956,39 @@ const BREAKFAST = stop(
       ["integral", "de bala", "doce", "frito"],
       0,
       "Pão integral tem mais fibras.",
+    ),
+    match(
+      "nina",
+      "Ligue o alimento ao grupo do café da manhã:",
+      [
+        ["Ovo", "Proteína"],
+        ["Banana", "Fruta"],
+        ["Aveia", "Energia"],
+      ],
+      "Um café completo junta os três grupos!",
+    ),
+    scenario(
+      "tito",
+      "No café da manhã, Ana só tomou um copo de suco bem doce e saiu correndo.",
+      "O que faltou para deixar o café dela mais completo?",
+      [
+        "Uma proteína, como ovo ou queijo, e algo de energia",
+        "Mais açúcar no suco",
+        "Nada, está ótimo",
+        "Só mais suco",
+      ],
+      0,
+      "Suco sozinho passa fome rápido. Proteína e energia ajudam a segurar até o lanche.",
+    ),
+    tf(
+      "mila",
+      "Cereais muito açucarados dão uma energia que passa rápido.",
+      true,
+      "O açúcar dá energia rápida, mas ela acaba logo, deixando fome de novo cedo.",
+    ),
+    reflect(
+      "cadu",
+      "Se você pudesse montar o café da manhã dos seus sonhos (mas saudável), o que colocaria nele?",
     ),
   ],
   [
@@ -753,6 +1051,27 @@ const BREAKFAST = stop(
       0,
       "Energia para aprender e brincar.",
     ),
+    multi(
+      "mila",
+      "Quais são boas opções de lanche para levar na lancheira?",
+      ["Fruta", "Sanduíche integral", "Salgadinho", "Iogurte natural"],
+      [0, 1, 3],
+      "Fruta, sanduíche integral e iogurte são lanches espertos e gostosos.",
+    ),
+    scenario(
+      "tito",
+      "Na hora do lanche, os amigos de Pedro estão comendo salgadinho, e ele ficou com vontade de comer igual todo dia.",
+      "O que ele pode fazer?",
+      [
+        "Comer o lanche saudável dele na maioria dos dias, e o salgadinho às vezes",
+        "Comer salgadinho todos os dias também",
+        "Não comer nada",
+        "Ficar triste e não lanchar",
+      ],
+      0,
+      "Não precisa proibir nada, mas o lanche esperto pode ser o de todo dia, e o salgadinho, de vez em quando.",
+    ),
+    reflect("nina", "O que você poderia levar de lanche esperto para a escola essa semana?"),
   ],
 );
 
@@ -802,6 +1121,41 @@ const CHEW = stop(
       "Conversar e sorrir na mesa ajuda a comer devagar.",
       true,
       "Uma refeição alegre é uma refeição calma.",
+    ),
+    multi(
+      "nina",
+      "O que ajuda a comer com calma?",
+      ["Mastigar bem", "Sentar à mesa", "Correr comendo", "Conversar tranquilo"],
+      [0, 1, 3],
+      "Mastigar bem, sentar à mesa e conversar tranquilo ajudam a comer com calma.",
+    ),
+    scenario(
+      "lipe",
+      "Na hora do almoço, Duda engole a comida correndo para ir brincar logo.",
+      "O que ela poderia fazer diferente?",
+      [
+        "Comer com calma, mastigando bem",
+        "Comer ainda mais rápido",
+        "Não almoçar",
+        "Comer andando",
+      ],
+      0,
+      "Comer com calma ajuda a digestão e a perceber quando está satisfeita.",
+    ),
+    order(
+      "tito",
+      "Coloque em ordem uma garfada com calma:",
+      [
+        "Coloque uma porção pequena na boca",
+        "Mastigue bem devagar",
+        "Perceba o sabor",
+        "Engula e respire antes da próxima",
+      ],
+      "Devagar e sempre: assim a refeição fica mais gostosa.",
+    ),
+    reflect(
+      "mila",
+      "Você costuma comer rápido ou devagar? O que poderia ajudar a comer com mais calma?",
     ),
   ],
   [
@@ -872,6 +1226,34 @@ const CHEW = stop(
       0,
       "Satisfeito é quando o corpo diz 'já chega'.",
     ),
+    match(
+      "nina",
+      "Ligue o sinal da barriga ao que fazer:",
+      [
+        ["Barriga satisfeita", "Posso parar"],
+        ["Ainda com fome", "Posso repetir um pouco"],
+      ],
+      "Ouvir a barriga é uma habilidade que a gente treina!",
+    ),
+    scenario(
+      "cadu",
+      "Gui já está satisfeito, mas o prato ainda tem comida e ele acha que precisa terminar tudo.",
+      "O que ele pode fazer?",
+      [
+        "Ouvir a barriga e parar quando estiver satisfeito",
+        "Comer tudo mesmo estando cheio",
+        "Comer até passar mal",
+        "Nunca parar de comer",
+      ],
+      0,
+      "Está tudo bem deixar comida no prato quando já se está satisfeito.",
+    ),
+    tf(
+      "tito",
+      "É preciso sempre terminar tudo o que está no prato, mesmo satisfeito.",
+      false,
+      "Ouvir a barriga é mais importante do que terminar o prato todo.",
+    ),
   ],
   [
     concept(
@@ -941,6 +1323,32 @@ const CHEW = stop(
       ],
       "Você já sabe cuidar do sorriso!",
     ),
+    multi(
+      "tito",
+      "O que ajuda a cuidar bem dos dentes?",
+      [
+        "Escovar de manhã e à noite",
+        "Comer doce o dia todo sem escovar",
+        "Usar fio dental",
+        "Ir ao dentista",
+      ],
+      [0, 2, 3],
+      "Escovar direitinho, usar fio dental e visitar o dentista mantêm o sorriso saudável.",
+    ),
+    scenario(
+      "cadu",
+      "Depois de comer um doce grudento na festa, Vitor foi direto brincar sem escovar os dentes.",
+      "O que ele deveria ter feito?",
+      [
+        "Escovar os dentes depois do doce",
+        "Comer mais doce",
+        "Não fazer nada",
+        "Só enxaguar a boca com refrigerante",
+      ],
+      0,
+      "Doces grudentos pedem escovação extra, para não deixar restinhos nos dentes.",
+    ),
+    reflect("mila", "Você lembra de escovar os dentes de manhã e à noite todos os dias?"),
   ],
 );
 
@@ -991,6 +1399,33 @@ const HANDS = stop(
       0,
       "Por isso lavamos as mãos!",
     ),
+    multi(
+      "nina",
+      "Quando devemos lavar as mãos?",
+      ["Antes de comer", "Depois do banheiro", "Nunca", "Depois de brincar com terra"],
+      [0, 1, 3],
+      "Antes de comer, depois do banheiro e depois de mexer na terra: sempre lavar!",
+    ),
+    scenario(
+      "cadu",
+      "Rafa brincou no parquinho com terra e areia, e agora vai almoçar.",
+      "O que ele deve fazer antes de comer?",
+      [
+        "Lavar bem as mãos com água e sabão",
+        "Sentar e comer direto",
+        "Só limpar na roupa",
+        "Nada, terra não faz mal",
+      ],
+      0,
+      "Terra pode ter germes invisíveis. Lavar as mãos antes de comer é sempre importante.",
+    ),
+    order(
+      "mila",
+      "Coloque em ordem para lavar as mãos direitinho:",
+      ["Molhe as mãos", "Passe sabão", "Esfregue bem, inclusive entre os dedos", "Enxágue e seque"],
+      "Assim as mãos ficam limpinhas de verdade!",
+    ),
+    reflect("tito", "Você lembra de lavar as mãos antes de todas as refeições?"),
   ],
   [
     concept(
@@ -1049,6 +1484,36 @@ const HANDS = stop(
       ],
       "Ótimo! Você já é um especialista em higiene.",
     ),
+    match(
+      "nina",
+      "Ligue o momento ao cuidado certo:",
+      [
+        ["Antes de comer", "Lavar as mãos"],
+        ["Depois do parquinho", "Lavar as mãos e as unhas"],
+        ["Depois do banheiro", "Lavar com sabão"],
+      ],
+      "Cada momento pede o mesmo cuidado: água e sabão!",
+    ),
+    scenario(
+      "mila",
+      "Na hora do lanche, os amigos de Lara foram direto comer sem lavar as mãos.",
+      "O que Lara pode fazer?",
+      [
+        "Lavar as mãos antes de comer, mesmo se os amigos não lavarem",
+        "Fazer igual e não lavar",
+        "Comer só metade do lanche",
+        "Não comer nada",
+      ],
+      0,
+      "Cada um cuida da própria higiene, mesmo que os amigos façam diferente.",
+    ),
+    tf(
+      "tito",
+      "Germes são tão pequenos que não dá para ver, mas podem deixar a gente doente.",
+      true,
+      "Por serem invisíveis, lavamos as mãos sempre, mesmo quando parecem limpas.",
+    ),
+    reflect("cadu", "Quantas vezes por dia você lava as mãos? Em quais momentos?"),
   ],
   [
     concept(
@@ -1113,6 +1578,32 @@ const HANDS = stop(
       ],
       "Você é um cuidador de alimentos!",
     ),
+    multi(
+      "lipe",
+      "O que ajuda a manter a comida segura?",
+      [
+        "Lavar frutas e verduras",
+        "Guardar comida perecível na geladeira",
+        "Comer comida com cheiro estranho",
+        "Avisar um adulto se algo parecer errado",
+      ],
+      [0, 1, 3],
+      "Lavar, guardar direito e avisar um adulto são os cuidados certos.",
+    ),
+    scenario(
+      "tito",
+      "Marina encontrou um pedaço de queijo esquecido fora da geladeira há dois dias.",
+      "O que ela deve fazer?",
+      [
+        "Não comer e avisar um adulto",
+        "Comer mesmo assim",
+        "Só cheirar e comer se não sentir nada",
+        "Dar para o cachorro comer",
+      ],
+      0,
+      "Comida fora da geladeira por muito tempo pode estragar sem parecer. O melhor é avisar um adulto.",
+    ),
+    reflect("cadu", "O que você faria se encontrasse uma comida com cheiro estranho na geladeira?"),
   ],
 );
 

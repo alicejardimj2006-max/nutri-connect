@@ -19,7 +19,18 @@ export const CHARACTERS: Record<CharacterId, Character> = {
 };
 
 export type ActivityType =
-  "dialogue" | "concept" | "quiz" | "true_false" | "multi" | "match" | "order" | "sort" | "fill";
+  | "dialogue"
+  | "concept"
+  | "quiz"
+  | "true_false"
+  | "multi"
+  | "match"
+  | "order"
+  | "sort"
+  | "fill"
+  | "slider"
+  | "scenario"
+  | "reflect";
 
 /** Perfil da trilha: o adulto tem visual e conteúdo mais sérios; o infantil é lúdico. */
 export type ProfileKind = "adult" | "kid";
@@ -113,6 +124,41 @@ export interface FillActivity extends BaseActivity {
   explanation: string;
 }
 
+/** Estime um número numa régua deslizante; correta se ficar dentro da tolerância do alvo. */
+export interface SliderActivity extends BaseActivity {
+  type: "slider";
+  character?: Character;
+  question: string;
+  min: number;
+  max: number;
+  step?: number;
+  /** Unidade mostrada junto do número (ex.: "g", "colheres", "copos"). */
+  unit: string;
+  target: number;
+  tolerance: number;
+  explanation: string;
+}
+
+/** Uma situação real com uma decisão de múltipla escolha, num quadro narrativo. */
+export interface ScenarioActivity extends BaseActivity {
+  type: "scenario";
+  character?: Character;
+  /** A situação, em 1–3 frases. */
+  setup: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+/** Reflexão pessoal, sem resposta certa (não vale ponto). */
+export interface ReflectActivity extends BaseActivity {
+  type: "reflect";
+  character?: Character;
+  prompt: string;
+  placeholder?: string;
+}
+
 export type Activity =
   | DialogueActivity
   | ConceptActivity
@@ -122,10 +168,14 @@ export type Activity =
   | MatchActivity
   | OrderActivity
   | SortActivity
-  | FillActivity;
+  | FillActivity
+  | SliderActivity
+  | ScenarioActivity
+  | ReflectActivity;
 
 /** Atividades que valem ponto (têm resposta certa ou errada). */
-export const isGraded = (a: Activity) => a.type !== "dialogue" && a.type !== "concept";
+export const isGraded = (a: Activity) =>
+  a.type !== "dialogue" && a.type !== "concept" && a.type !== "reflect";
 
 export type LevelNumber = 1 | 2 | 3;
 

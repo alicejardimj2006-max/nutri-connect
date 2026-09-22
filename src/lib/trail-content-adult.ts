@@ -1,8 +1,25 @@
-import { concept, fill, sort, quiz, tf, multi, match, type Draft } from "./trail-content-levels";
+// Conteúdo adicional do perfil adulto: cartões de explicação (antes das perguntas de cada nível)
+// e atividades extras (cerca de 10 por nível, com tipos variados) para os níveis Fácil, Médio e Difícil.
+import {
+  concept,
+  fill,
+  sort,
+  quiz,
+  tf,
+  multi,
+  match,
+  order,
+  scenario,
+  slider,
+  reflect,
+  type Draft,
+} from "./trail-content-levels";
 
 export interface AdultExtras {
   /** Um cartão de explicação por nível (1, 2 e 3), exibido antes das perguntas. */
   concepts: [Draft, Draft, Draft];
+  /** Atividades extras do nível 1 (além da base e do level1Extra compartilhado). */
+  extra1: Draft[];
   extra2: Draft[];
   extra3: Draft[];
 }
@@ -43,6 +60,41 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      multi(
+        "nina",
+        "Quais destas opções são fontes de carboidratos complexos (de digestão mais lenta)?",
+        ["Arroz integral", "Aveia", "Açúcar refinado", "Batata-doce", "Refrigerante"],
+        [0, 1, 3],
+        "Arroz integral, aveia e batata-doce liberam energia aos poucos. Açúcar e refrigerante são de absorção muito rápida.",
+      ),
+      match(
+        "tito",
+        "Ligue o alimento ao macronutriente que mais se destaca nele:",
+        [
+          ["Azeite de oliva", "Gordura"],
+          ["Claras de ovo", "Proteína"],
+          ["Arroz branco", "Carboidrato"],
+        ],
+        "Quase todo alimento mistura nutrientes, mas cada um tem um que predomina.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem uma forma prática de montar um prato com os três macronutrientes:",
+        [
+          "Escolha os vegetais coloridos",
+          "Adicione uma fonte de carboidrato",
+          "Complete com uma fonte de proteína",
+          "Finalize com uma gordura boa, como azeite ou castanhas",
+        ],
+        "Pensar por partes facilita montar uma refeição equilibrada sem precisar pesar nada.",
+      ),
+      reflect(
+        "lipe",
+        "Pense na sua última refeição principal: ela teve carboidratos, proteínas e gorduras boas? O que você poderia ajustar?",
+        "Escreva livremente sobre sua última refeição…",
+      ),
+    ],
     extra2: [
       sort(
         "nina",
@@ -75,6 +127,19 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         1,
         "Arroz (carboidrato), Frango/Feijão (proteínas) e Azeite (gordura), além das fibras da salada. Excelente combinação!",
+      ),
+      scenario(
+        "nina",
+        "Ana está sem tempo para almoçar e pega só um pão francês com café.",
+        "O que ajudaria mais a deixar esse lanche mais completo?",
+        [
+          "Nada, já está ótimo assim",
+          "Acrescentar uma proteína e uma fruta",
+          "Só mais café",
+          "Trocar por outro pão",
+        ],
+        1,
+        "Um ovo, queijo ou iogurte (proteína) e uma fruta dão mais saciedade e equilíbrio ao lanche de Ana.",
       ),
     ],
     extra3: [
@@ -141,6 +206,41 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         "Uma dica simples: feijão com laranja de sobremesa ou limão na couve.",
       ),
     ],
+    extra1: [
+      match(
+        "mila",
+        "Ligue a vitamina ou mineral à sua função:",
+        [
+          ["Vitamina D", "Ajuda a absorver cálcio"],
+          ["Zinco", "Imunidade e cicatrização"],
+          ["Vitamina K", "Coagulação do sangue"],
+          ["Magnésio", "Função muscular e nervosa"],
+        ],
+        "Cada micronutriente tem um papel próprio, e todos trabalham juntos no corpo.",
+      ),
+      multi(
+        "nina",
+        "Quais destes são MINERAIS (e não vitaminas)?",
+        ["Ferro", "Vitamina C", "Zinco", "Vitamina B12", "Cálcio"],
+        [0, 2, 4],
+        "Ferro, zinco e cálcio são minerais. Vitamina C e B12 são vitaminas.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem uma forma de melhorar a absorção do ferro de origem vegetal numa refeição:",
+        [
+          "Prepare o feijão ou a lentilha",
+          "Adicione um alimento rico em vitamina C, como limão ou laranja",
+          "Evite café ou chá preto na mesma refeição",
+          "Sirva e aproveite",
+        ],
+        "A vitamina C converte o ferro vegetal numa forma mais fácil de absorver.",
+      ),
+      reflect(
+        "mila",
+        "Sua alimentação desta semana teve pelo menos 3 cores diferentes de frutas e vegetais por dia? O que poderia colorir mais o seu prato?",
+      ),
+    ],
     extra2: [
       sort(
         "mila",
@@ -156,6 +256,32 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Frutas cítricas e goiaba lideram em vitamina C. Os laticínios são as fontes mais conhecidas de cálcio.",
       ),
+      scenario(
+        "nina",
+        "Marcos anda sempre cansado e desconfia de anemia por falta de ferro.",
+        "Qual combinação ajudaria mais a melhorar a absorção do ferro do feijão que ele come?",
+        [
+          "Feijão com suco de laranja",
+          "Feijão com café",
+          "Só tomar suplemento, sem mudar a alimentação",
+          "Feijão com chá preto",
+        ],
+        0,
+        "A vitamina C do suco de laranja aumenta a absorção do ferro vegetal. Café e chá preto atrapalham esse processo.",
+      ),
+      quiz(
+        "mila",
+        "Qual vitamina o corpo consegue produzir com a exposição moderada ao sol?",
+        ["Vitamina D", "Vitamina C", "Vitamina B12", "Vitamina K"],
+        0,
+        "A pele produz vitamina D com a luz solar. Ela ajuda a fixar o cálcio nos ossos.",
+      ),
+      tf(
+        "nina",
+        "Suplementos vitamínicos substituem completamente a necessidade de uma alimentação variada.",
+        false,
+        "Os alimentos trazem combinações de nutrientes, fibras e outros compostos que suplementos isolados não replicam.",
+      ),
     ],
     extra3: [
       fill(
@@ -164,6 +290,26 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["limão (vitamina C)", "café", "refrigerante", "chocolate"],
         0,
         "A vitamina C converte o ferro vegetal em uma forma mais fácil de absorver.",
+      ),
+      multi(
+        "mila",
+        "Quais destes hábitos ajudam a absorver melhor o ferro dos vegetais?",
+        [
+          "Comer fruta cítrica junto",
+          "Tomar café na mesma refeição",
+          "Temperar com limão",
+          "Beber chá preto junto",
+        ],
+        [0, 2],
+        "Vitamina C e acidez do limão ajudam. Café e chá preto competem pela absorção do ferro.",
+      ),
+      slider(
+        "mila",
+        "Aproximadamente quantos miligramas de vitamina C tem uma laranja média?",
+        { min: 0, max: 100, step: 5, unit: " mg" },
+        70,
+        20,
+        "Uma laranja média tem cerca de 70 mg de vitamina C — mais que a necessidade diária de muitos adultos.",
       ),
     ],
   },
@@ -202,6 +348,42 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      slider(
+        "nina",
+        "Muitos guias sugerem, em média, quantos copos de água (200 ml) por dia para um adulto?",
+        { min: 2, max: 16, step: 1, unit: " copos" },
+        8,
+        2,
+        "Uma referência comum é cerca de 8 copos (perto de 2 litros), mas a necessidade real varia com clima, corpo e rotina.",
+      ),
+      match(
+        "tito",
+        "Ligue o alimento ao tipo de fibra que predomina nele:",
+        [
+          ["Aveia", "Fibra solúvel"],
+          ["Farelo de trigo", "Fibra insolúvel"],
+          ["Maçã com casca", "Fibra solúvel e insolúvel"],
+        ],
+        "Alimentos vegetais costumam trazer os dois tipos de fibra, em proporções diferentes.",
+      ),
+      multi(
+        "tito",
+        "Quais destes ajudam a aumentar a ingestão diária de fibras?",
+        [
+          "Trocar o suco pela fruta inteira",
+          "Escolher pão integral",
+          "Descascar todos os vegetais",
+          "Incluir feijão nas refeições",
+        ],
+        [0, 1, 3],
+        "A fruta inteira e o feijão preservam as fibras. Descascar tudo remove parte delas.",
+      ),
+      reflect(
+        "tito",
+        "Quantos copos de água você já bebeu hoje? O que poderia te ajudar a lembrar de beber mais ao longo do dia?",
+      ),
+    ],
     extra2: [
       sort(
         "tito",
@@ -217,6 +399,32 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Alimentos inteiros e integrais concentram as fibras. Os refinados e os líquidos açucarados têm muito pouco.",
       ),
+      scenario(
+        "tito",
+        "Beatriz aumentou de uma vez o consumo de feijão, farelo e vegetais crus, e agora sente a barriga estufada.",
+        "O que ela poderia ter feito diferente?",
+        [
+          "Aumentar as fibras aos poucos e beber mais água",
+          "Não comer fibra nenhuma",
+          "Comer tudo de uma vez, o corpo se acostuma rápido",
+          "Trocar a água por refrigerante",
+        ],
+        0,
+        "O aumento abrupto de fibra sem água suficiente costuma causar desconforto. O ideal é uma transição gradual.",
+      ),
+      quiz(
+        "nina",
+        "Qual destas bebidas hidrata bem, sem açúcar adicionado?",
+        ["Água de coco natural", "Refrigerante", "Suco de caixinha adoçado", "Refresco em pó"],
+        0,
+        "A água de coco natural hidrata bem e não tem açúcar adicionado, diferente das outras opções.",
+      ),
+      tf(
+        "nina",
+        "Frutas e vegetais contribuem para a hidratação do corpo, além da água que bebemos.",
+        true,
+        "Muitas frutas e legumes têm alto teor de água, como melancia, pepino e laranja.",
+      ),
     ],
     extra3: [
       fill(
@@ -225,6 +433,21 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["água", "sal", "açúcar", "gordura"],
         0,
         "A água ajuda as fibras a formarem o bolo fecal e evita desconforto.",
+      ),
+      multi(
+        "nina",
+        "Quais sinais podem indicar que você precisa beber mais água?",
+        ["Urina bem escura", "Boca seca", "Sede intensa", "Urina bem clara"],
+        [0, 1, 2],
+        "Urina escura, boca seca e sede são avisos do corpo. Urina clara costuma indicar boa hidratação.",
+      ),
+      slider(
+        "nina",
+        "Cerca de quantos por cento do peso corporal de um adulto é água?",
+        { min: 30, max: 80, step: 5, unit: "%" },
+        60,
+        10,
+        "Em média, cerca de 60% do corpo adulto é água — por isso ela é tão essencial para tudo funcionar bem.",
       ),
     ],
   },
@@ -264,6 +487,48 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      match(
+        "nina",
+        "Ligue o alimento ao seu grupo pelo Guia Alimentar:",
+        [
+          ["Feijão cru", "In natura"],
+          ["Queijo", "Processado"],
+          ["Salgadinho de pacote", "Ultraprocessado"],
+          ["Óleo de soja", "Ingrediente culinário"],
+        ],
+        "Cada grupo tem um papel diferente na alimentação, e a proporção entre eles é o que importa.",
+      ),
+      multi(
+        "cadu",
+        "Quais destes são exemplos de ultraprocessados?",
+        [
+          "Macarrão instantâneo",
+          "Arroz branco cru",
+          "Refrigerante",
+          "Salsicha",
+          "Feijão cozido em casa",
+        ],
+        [0, 2, 3],
+        "Macarrão instantâneo, refrigerante e salsicha passam por muitas etapas industriais e aditivos.",
+      ),
+      quiz(
+        "nina",
+        "Qual destas opções é um exemplo de alimento PROCESSADO (e não ultraprocessado)?",
+        [
+          "Queijo artesanal feito com leite, sal e coalho",
+          "Salgadinho de pacote",
+          "Macarrão instantâneo",
+          "Refrigerante",
+        ],
+        0,
+        "Processados usam poucos ingredientes e técnicas simples, como sal e fermentação — diferente dos ultraprocessados.",
+      ),
+      reflect(
+        "cadu",
+        "Pense no que você comeu ontem: quantas refeições tiveram como base alimentos in natura ou minimamente processados?",
+      ),
+    ],
     extra2: [
       sort(
         "nina",
@@ -279,6 +544,37 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Se tem lista longa de aditivos e vem pronto para consumo, é ultraprocessado.",
       ),
+      scenario(
+        "cadu",
+        "No supermercado, Rafael escolhe entre dois iogurtes: um com 4 ingredientes e outro com 15, incluindo corantes e conservantes.",
+        "Qual escolha segue melhor a lógica do Guia Alimentar?",
+        [
+          "O de lista mais curta e reconhecível",
+          "O de lista mais longa",
+          "Tanto faz, são iguais",
+          "O mais barato, sempre",
+        ],
+        0,
+        "Listas curtas e reconhecíveis costumam indicar alimentos menos processados e com menos aditivos.",
+      ),
+      tf(
+        "nina",
+        "Um produto pode ser considerado ultraprocessado mesmo tendo a palavra 'natural' na embalagem.",
+        true,
+        "Termos como 'natural' são apelos de marketing. A lista de ingredientes é que conta a verdade.",
+      ),
+      multi(
+        "tito",
+        "Quais características costumam indicar um ultraprocessado?",
+        [
+          "Lista longa de ingredientes irreconhecíveis",
+          "Poucos ingredientes caseiros",
+          "Corantes e aromatizantes artificiais",
+          "Pronto para consumir ou aquecer",
+        ],
+        [0, 2, 3],
+        "Essas são pistas clássicas de um produto muito industrializado.",
+      ),
     ],
     extra3: [
       fill(
@@ -287,6 +583,24 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["desembale", "cozinhe", "mastigue", "compre"],
         0,
         "Alimentos que precisam ser descascados ou preparados costumam ser menos processados.",
+      ),
+      order(
+        "nina",
+        "Coloque estes alimentos do MENOS para o MAIS processado:",
+        ["Milho na espiga", "Milho em conserva", "Farinha de milho", "Salgadinho de milho"],
+        "Quanto mais etapas industriais, mais processado o alimento se torna.",
+      ),
+      quiz(
+        "tito",
+        "Ao ler o rótulo de um produto pronto, o que é um bom sinal?",
+        [
+          "Lista curta, com ingredientes que você reconhece",
+          "Lista longa e cheia de siglas",
+          "Ausência de lista de ingredientes",
+          "Cores vibrantes na embalagem",
+        ],
+        0,
+        "Listas curtas e reconhecíveis costumam indicar menor grau de processamento.",
       ),
     ],
   },
@@ -323,6 +637,46 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      multi(
+        "mila",
+        "Quais destes nomes no rótulo indicam açúcar adicionado?",
+        [
+          "Xarope de milho",
+          "Farinha integral",
+          "Açúcar invertido",
+          "Maltodextrina",
+          "Fibra de aveia",
+        ],
+        [0, 2, 3],
+        "Xarope de milho, açúcar invertido e maltodextrina são formas de açúcar adicionadas pela indústria.",
+      ),
+      match(
+        "nina",
+        "Ligue o termo do rótulo ao que ele geralmente significa:",
+        [
+          ["Glutamato monossódico", "Realçador de sabor"],
+          ["Corante artificial", "Cor que não é natural do alimento"],
+          ["Conservante", "Aumenta o tempo de prateleira"],
+        ],
+        "Reconhecer esses termos ajuda a entender o que realmente tem no produto.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem os passos para investigar um rótulo:",
+        [
+          "Olhe a lista de ingredientes",
+          "Identifique os 3 primeiros itens",
+          "Procure nomes disfarçados de açúcar",
+          "Decida com base no que encontrou",
+        ],
+        "Seguir uma ordem simples torna o hábito de ler rótulos mais rápido no dia a dia.",
+      ),
+      reflect(
+        "mila",
+        "Escolha um produto industrializado que você tem em casa. O que você percebe ao ler a lista de ingredientes dele?",
+      ),
+    ],
     extra2: [
       sort(
         "mila",
@@ -338,6 +692,32 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Xaropes, maltodextrina e açúcar invertido são formas de açúcar. Aveia, farinha integral e sal não.",
       ),
+      scenario(
+        "mila",
+        "Duas caixas de cereal: a primeira lista 'aveia, uva-passa, canela'. A segunda lista 'açúcar, farinha de trigo, xarope de milho, corante caramelo, aromatizante'.",
+        "Qual é a melhor escolha, olhando só a lista de ingredientes?",
+        ["A primeira", "A segunda", "As duas são iguais", "Depende só do preço"],
+        0,
+        "A primeira lista é curta e reconhecível. A segunda tem açúcar em destaque e vários aditivos.",
+      ),
+      quiz(
+        "nina",
+        "'Corante caramelo' na lista de ingredientes é:",
+        [
+          "Um aditivo para dar cor, sem valor nutritivo",
+          "Uma fonte de fibras",
+          "Um tipo de açúcar saudável",
+          "Um conservante natural",
+        ],
+        0,
+        "É um corante artificial usado só para dar cor ao produto, sem nenhum valor nutricional.",
+      ),
+      tf(
+        "nina",
+        "Um produto pode ter açúcar mesmo sem a palavra 'açúcar' aparecer na lista.",
+        true,
+        "Nomes como xarope de milho, dextrose e maltodextrina são formas de açúcar disfarçadas.",
+      ),
     ],
     extra3: [
       fill(
@@ -346,6 +726,21 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["maior", "menor", "nenhuma", "igual"],
         0,
         "A lista segue a ordem decrescente de quantidade.",
+      ),
+      multi(
+        "mila",
+        "Quais destes são nomes alternativos para açúcar em rótulos?",
+        ["Dextrose", "Melaço", "Farinha integral", "Xarope de glicose-frutose"],
+        [0, 1, 3],
+        "Dextrose, melaço e xarope de glicose-frutose são todos formas de açúcar.",
+      ),
+      slider(
+        "nina",
+        "Aproximadamente quantos ingredientes diferentes costuma ter um alimento ultraprocessado típico?",
+        { min: 2, max: 25, step: 1, unit: " ingredientes" },
+        15,
+        5,
+        "Ultraprocessados costumam ter listas longas, muitas vezes com 10 a 20 ingredientes e aditivos.",
       ),
     ],
   },
@@ -380,6 +775,42 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      slider(
+        "nina",
+        "Um pacote de biscoitos tem 4 porções. Se a tabela mostra 120 kcal por porção, quantas calorias tem o pacote inteiro?",
+        { min: 100, max: 800, step: 10, unit: " kcal" },
+        480,
+        20,
+        "4 porções × 120 kcal = 480 kcal. Comer o pacote todo é multiplicar os valores da tabela pelo número de porções.",
+      ),
+      match(
+        "nina",
+        "Ligue o termo da tabela ao que ele representa:",
+        [
+          ["Valor energético", "Calorias da porção"],
+          ["%VD", "Porcentagem do valor diário de referência"],
+          ["Porção", "Quantidade usada para calcular os valores"],
+        ],
+        "Entender esses três termos já resolve boa parte da leitura de qualquer tabela.",
+      ),
+      multi(
+        "nina",
+        "Antes de comparar dois produtos pela tabela nutricional, é importante:",
+        [
+          "Olhar o tamanho da porção de cada um",
+          "Ignorar a porção e olhar só o total do pacote",
+          "Comparar pela mesma quantidade, como 100 g",
+          "Escolher pela cor da embalagem",
+        ],
+        [0, 2],
+        "Sem ajustar para a mesma quantidade, a comparação entre produtos não é justa.",
+      ),
+      reflect(
+        "nina",
+        "Pegue um alimento embalado perto de você (ou lembre de um). Quantas porções tem o pacote, e quantas você costuma comer de uma vez?",
+      ),
+    ],
     extra2: [
       sort(
         "lipe",
@@ -395,6 +826,32 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Não é proibir: é equilibrar. Quanto mais fibras e micronutrientes, melhor.",
       ),
+      scenario(
+        "lipe",
+        "Duas barras de cereal, na mesma porção de 20 g: a barra A tem 90 kcal e 3 g de açúcar; a barra B tem 90 kcal e 12 g de açúcar.",
+        "Qual tem menos açúcar adicionado, considerando a mesma porção?",
+        ["A barra A", "A barra B", "As duas têm igual", "Não dá para saber"],
+        0,
+        "Com a mesma porção e mesmas calorias, a barra A tem bem menos açúcar: uma escolha mais equilibrada.",
+      ),
+      quiz(
+        "nina",
+        "Se um rótulo mostra '2 porções por embalagem' e você come a embalagem toda, você deve:",
+        [
+          "Multiplicar os valores da tabela por 2",
+          "Dividir os valores por 2",
+          "Ignorar a tabela",
+          "Usar só o valor de 1 porção",
+        ],
+        0,
+        "Ao comer as duas porções, os valores de calorias e nutrientes também dobram.",
+      ),
+      tf(
+        "nina",
+        "Duas porções idênticas em peso (100 g) de produtos diferentes podem ser comparadas diretamente pela tabela.",
+        true,
+        "Quando a quantidade é igual, a comparação direta entre os nutrientes é justa.",
+      ),
     ],
     extra3: [
       fill(
@@ -403,6 +860,24 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["alto", "baixo", "normal", "inexistente"],
         0,
         "Pela regra prática, 5% ou menos é baixo e 20% ou mais é alto.",
+      ),
+      multi(
+        "tito",
+        "Ao comparar rótulos, quais nutrientes vale a pena LIMITAR?",
+        ["Sódio", "Fibras", "Açúcares adicionados", "Gorduras saturadas"],
+        [0, 2, 3],
+        "Fibra é o nutriente que vale buscar mais, não limitar.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem os passos para comparar dois produtos parecidos:",
+        [
+          "Verifique a porção de cada um",
+          "Ajuste para a mesma quantidade, como 100 g",
+          "Compare sódio, açúcar e gordura saturada",
+          "Escolha o que tiver menos desses e mais fibra",
+        ],
+        "Comparar na mesma base é o que torna a escolha realmente justa.",
       ),
     ],
   },
@@ -437,6 +912,40 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["No self-service, comece pelas saladas", "Nos lanches, inclua uma fruta ou castanhas"],
       ),
     ],
+    extra1: [
+      multi(
+        "mila",
+        "Quais destes alimentos entram na metade 'vegetais' do prato equilibrado?",
+        ["Couve refogada", "Arroz", "Salada de tomate e pepino", "Batata frita"],
+        [0, 2],
+        "Couve e salada de tomate e pepino são vegetais. Arroz e batata frita são carboidratos.",
+      ),
+      match(
+        "nina",
+        "Ligue o alimento à parte do prato equilibrado que ele ocupa:",
+        [
+          ["Feijão", "Proteínas"],
+          ["Purê de batata", "Carboidratos"],
+          ["Abobrinha grelhada", "Vegetais"],
+        ],
+        "Saber onde cada alimento se encaixa ajuda a montar o prato sem precisar pesar nada.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem para montar um prato equilibrado num self-service:",
+        [
+          "Comece enchendo metade do prato de saladas e legumes",
+          "Adicione um quarto de proteína",
+          "Complete um quarto com carboidrato",
+          "Tempere com azeite e ervas",
+        ],
+        "Começar pelos vegetais garante que eles ocupem a metade do prato.",
+      ),
+      reflect(
+        "mila",
+        "Pense no seu almoço de hoje ou de ontem: ele se aproximou do prato equilibrado? O que faltou ou sobrou?",
+      ),
+    ],
     extra2: [
       sort(
         "nina",
@@ -452,6 +961,32 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Vegetais ocupam metade; proteínas e carboidratos dividem a outra metade.",
       ),
+      scenario(
+        "nina",
+        "No restaurante por quilo, o prato de Júlia ficou com arroz, macarrão e batata, sem nenhuma salada.",
+        "O que ela poderia ajustar para se aproximar do prato equilibrado?",
+        [
+          "Trocar parte dos carboidratos por saladas e legumes",
+          "Adicionar mais um carboidrato",
+          "Está ótimo assim",
+          "Tirar toda a proteína",
+        ],
+        0,
+        "Reduzir um pouco dos carboidratos (que estão em triplicidade) e incluir vegetais deixa o prato mais equilibrado.",
+      ),
+      quiz(
+        "mila",
+        "No prato equilibrado, os carboidratos como arroz, batata e massas costumam ocupar:",
+        ["Um quarto do prato", "Metade do prato", "O prato inteiro", "Só a sobremesa"],
+        0,
+        "Um quarto para carboidratos, um quarto para proteínas e metade para vegetais.",
+      ),
+      tf(
+        "nina",
+        "É preciso excluir completamente os carboidratos para ter um prato equilibrado.",
+        false,
+        "Carboidratos fazem parte do prato equilibrado, só não devem dominar o espaço todo.",
+      ),
     ],
     extra3: [
       fill(
@@ -460,6 +995,21 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["metade", "quinta parte", "totalidade", "décima parte"],
         0,
         "Metade do prato de vegetais dá volume, fibras e vitaminas com poucas calorias.",
+      ),
+      multi(
+        "tito",
+        "Quais são boas fontes de proteína para o quarto do prato equilibrado?",
+        ["Feijão", "Ovo", "Batata", "Frango"],
+        [0, 1, 3],
+        "Feijão, ovo e frango são proteínas. Batata é uma fonte de carboidrato.",
+      ),
+      slider(
+        "tito",
+        "Quantos gramas de feijão cozido (cerca de uma concha média) uma pessoa costuma servir numa refeição?",
+        { min: 20, max: 200, step: 10, unit: " g" },
+        80,
+        30,
+        "Uma concha média de feijão cozido costuma pesar entre 50 e 110 g, girando em torno de 80 g.",
       ),
     ],
   },
@@ -497,6 +1047,41 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      match(
+        "lipe",
+        "Ligue o tempero ao prato que combina bem:",
+        [
+          ["Manjericão", "Molho de tomate"],
+          ["Cominho", "Feijão e carnes"],
+          ["Canela", "Frutas e doces"],
+          ["Coentro", "Peixes e caldos"],
+        ],
+        "Conhecer essas combinações clássicas facilita variar o sabor das refeições.",
+      ),
+      multi(
+        "cadu",
+        "Quais destes são temperos NATURAIS (não industrializados)?",
+        ["Alho", "Cebola", "Caldo em cubo", "Orégano", "Tempero pronto com realçador"],
+        [0, 1, 3],
+        "Alho, cebola e orégano são temperos naturais. Os outros são industrializados e concentram sódio.",
+      ),
+      order(
+        "lipe",
+        "Coloque em ordem o preparo de um refogado saboroso:",
+        [
+          "Aqueça o azeite",
+          "Doure a cebola",
+          "Adicione o alho por último",
+          "Tempere com ervas no final",
+        ],
+        "O alho queima rápido: entra depois da cebola. Ervas delicadas vão por último.",
+      ),
+      reflect(
+        "cadu",
+        "Qual tempero você usa com menos frequência em casa e poderia experimentar essa semana?",
+      ),
+    ],
     extra2: [
       sort(
         "lipe",
@@ -512,6 +1097,37 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Os industrializados concentram sódio e aditivos. Os naturais trazem sabor e compostos benéficos.",
       ),
+      scenario(
+        "lipe",
+        "Pedro acha a comida sem graça e sempre acrescenta bastante sal ou usa caldo em cubo.",
+        "O que poderia ajudar Pedro a ter mais sabor sem exagerar no sódio?",
+        [
+          "Usar ervas, alho, cebola e limão",
+          "Adicionar mais um cubo de caldo",
+          "Aumentar ainda mais o sal",
+          "Comer sem nenhum tempero",
+        ],
+        0,
+        "Ervas, alho, cebola e limão dão camadas de sabor sem depender de tanto sódio.",
+      ),
+      quiz(
+        "nina",
+        "Qual destes ajuda a reduzir o sal sem perder sabor?",
+        [
+          "Limão e ervas frescas",
+          "Mais sal grosso",
+          "Caldo industrializado",
+          "Molho de soja em excesso",
+        ],
+        0,
+        "Limão e ervas frescas realçam o sabor sem aumentar o sódio.",
+      ),
+      tf(
+        "nina",
+        "O sal rosa do Himalaia tem bem menos sódio que o sal comum, em quantidades iguais.",
+        false,
+        "Todo sal é feito de sódio e cloro. A cor muda, mas a quantidade de sódio é praticamente a mesma.",
+      ),
     ],
     extra3: [
       fill(
@@ -520,6 +1136,21 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["final", "início", "meio", "primeiro minuto"],
         0,
         "O calor prolongado apaga o aroma das ervas delicadas.",
+      ),
+      multi(
+        "lipe",
+        "Quais destes trazem sabor com pouco sódio?",
+        ["Limão", "Alho", "Caldo em cubo", "Ervas frescas"],
+        [0, 1, 3],
+        "Limão, alho e ervas frescas dão sabor sem depender de sódio extra.",
+      ),
+      slider(
+        "nina",
+        "Aproximadamente quanto sódio (em mg) a Organização Mundial da Saúde recomenda consumir, no máximo, por dia?",
+        { min: 500, max: 4000, step: 100, unit: " mg" },
+        2000,
+        300,
+        "A recomendação da OMS é de até 2 g de sódio por dia, o equivalente a cerca de 5 g de sal.",
       ),
     ],
   },
@@ -548,6 +1179,45 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      multi(
+        "nina",
+        "Quais hábitos ajudam no planejamento das refeições da semana?",
+        [
+          "Fazer lista de compras",
+          "Cozinhar em lote no fim de semana",
+          "Comprar sem lista",
+          "Congelar porções prontas",
+        ],
+        [0, 1, 3],
+        "Lista, cozinha em lote e congelamento são a base de um planejamento que funciona.",
+      ),
+      match(
+        "nina",
+        "Ligue o alimento à melhor forma de guardá-lo:",
+        [
+          ["Feijão cozido", "Congelar em porções"],
+          ["Folhas lavadas", "Geladeira, em pote"],
+          ["Frutas maduras", "Consumir logo ou congelar"],
+        ],
+        "Cada alimento tem uma forma de armazenamento que preserva melhor sua qualidade.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem um domingo de organização das refeições:",
+        [
+          "Planeje o cardápio da semana",
+          "Faça a lista de compras",
+          "Cozinhe as bases, como arroz, feijão e proteína",
+          "Guarde em potes ou congele em porções",
+        ],
+        "Planejar antes de comprar evita compras por impulso e desperdício.",
+      ),
+      reflect(
+        "nina",
+        "Como está sua organização das refeições para esta semana? O que poderia facilitar os dias mais corridos?",
+      ),
+    ],
     extra2: [
       sort(
         "nina",
@@ -563,6 +1233,37 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Congelar preserva preparos prontos por semanas. Folhas e legumes crus duram melhor na geladeira.",
       ),
+      scenario(
+        "nina",
+        "Camila chega cansada do trabalho todos os dias e acaba pedindo delivery quase sempre.",
+        "Qual mudança ajudaria mais Camila a cozinhar mais em casa?",
+        [
+          "Cozinhar em lote no fim de semana e congelar porções",
+          "Tentar cozinhar tudo do zero todo dia depois do trabalho",
+          "Desistir de cozinhar em casa",
+          "Comprar sem planejar",
+        ],
+        0,
+        "Preparar bases no fim de semana e congelar porções resolve justamente o problema do cansaço nos dias de semana.",
+      ),
+      quiz(
+        "nina",
+        "Qual é uma vantagem de cozinhar feijão e arroz em maior quantidade e congelar em porções?",
+        [
+          "Economiza tempo nos dias corridos",
+          "Estraga mais rápido",
+          "Fica sem sabor",
+          "Custa mais caro sempre",
+        ],
+        0,
+        "Congelar em porções permite ter uma refeição pronta rapidamente em dias sem tempo para cozinhar.",
+      ),
+      tf(
+        "cadu",
+        "Alimentos da estação costumam ser mais baratos e saborosos.",
+        true,
+        "Na safra, a oferta é maior, o preço cai e o alimento amadurece no tempo certo.",
+      ),
     ],
     extra3: [
       fill(
@@ -571,6 +1272,29 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["lista", "dieta", "pausa", "receita"],
         0,
         "A lista mantém o foco no que realmente precisa.",
+      ),
+      multi(
+        "tito",
+        "Quais atitudes reduzem o desperdício de alimentos?",
+        [
+          "Usar talos e cascas em receitas",
+          "Guardar o que vence primeiro na frente",
+          "Comprar mais do que vai usar",
+          "Congelar sobras",
+        ],
+        [0, 1, 3],
+        "Aproveitar talos, organizar a geladeira e congelar sobras são hábitos que reduzem o desperdício.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem o reaproveitamento de um talo de brócolis:",
+        [
+          "Lave bem o talo",
+          "Corte em pedaços pequenos",
+          "Refogue com alho e azeite",
+          "Sirva como acompanhamento",
+        ],
+        "Talos de brócolis rendem um ótimo refogado, cheio de fibras.",
       ),
     ],
   },
@@ -600,6 +1324,45 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["Caminhar, conversar, descansar, escrever", "Sem culpa nem punição depois"],
       ),
     ],
+    extra1: [
+      multi(
+        "nina",
+        "Quais são sinais de fome EMOCIONAL?",
+        [
+          "Vontade urgente e específica",
+          "Aparece aos poucos",
+          "Pode gerar culpa depois",
+          "Some com qualquer alimento",
+        ],
+        [0, 2],
+        "A fome emocional é urgente, específica e às vezes vem acompanhada de culpa.",
+      ),
+      match(
+        "nina",
+        "Ligue o gatilho emocional a uma forma de acolhimento, sem ser a comida:",
+        [
+          ["Estresse", "Respirar fundo ou caminhar"],
+          ["Tédio", "Uma atividade prazerosa"],
+          ["Solidão", "Conversar com alguém"],
+        ],
+        "Cada emoção pede um cuidado diferente. A comida pode ajudar, mas não precisa ser a única resposta.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem uma pausa antes de comer por impulso:",
+        [
+          "Pare e respire",
+          "Pergunte: é fome no estômago?",
+          "Nomeie a emoção que sente",
+          "Decida com calma o que fazer",
+        ],
+        "Esse pequeno ritual devolve a escolha para você, sem julgamento.",
+      ),
+      reflect(
+        "nina",
+        "Na última vez que comeu por impulso, o que você estava sentindo? Havia outra forma de cuidar de si naquele momento?",
+      ),
+    ],
     extra2: [
       sort(
         "nina",
@@ -615,6 +1378,37 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "A fome física é flexível e gradual. A emocional é urgente e específica.",
       ),
+      scenario(
+        "nina",
+        "Depois de um dia estressante no trabalho, Fernanda sente uma vontade urgente de comer chocolate, mesmo tendo almoçado bem.",
+        "O que pode ajudar Fernanda a entender melhor essa vontade?",
+        [
+          "Fazer uma pausa e perguntar se é fome física ou emocional",
+          "Comer o quanto quiser sem pensar",
+          "Se proibir de comer chocolate para sempre",
+          "Ignorar completamente o que está sentindo",
+        ],
+        0,
+        "A pausa ajuda a identificar a origem da vontade e escolher uma resposta com mais consciência.",
+      ),
+      quiz(
+        "nina",
+        "A fome emocional costuma pedir:",
+        [
+          "Alimentos específicos, geralmente de conforto",
+          "Qualquer alimento disponível",
+          "Só água",
+          "Nada, ela desaparece sozinha",
+        ],
+        0,
+        "A fome emocional costuma ser direcionada a alimentos de conforto, diferente da física.",
+      ),
+      tf(
+        "tito",
+        "Sentir vontade de comer por causa de uma emoção é sinal de fraqueza.",
+        false,
+        "É uma resposta humana e comum. O importante é não deixá-la ser a única ferramenta para lidar com emoções.",
+      ),
     ],
     extra3: [
       fill(
@@ -623,6 +1417,23 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["pausar", "correr", "pular a refeição", "ir ao mercado"],
         0,
         "A pausa devolve a escolha para você.",
+      ),
+      multi(
+        "nina",
+        "Quais atitudes ajudam a lidar com a fome emocional, sem culpa?",
+        [
+          "Reconhecer a emoção sem julgamento",
+          "Se punir depois de comer",
+          "Buscar outras formas de acolhimento",
+          "Pedir ajuda quando for recorrente",
+        ],
+        [0, 2, 3],
+        "Acolhimento e apoio ajudam muito mais do que punição e culpa.",
+      ),
+      reflect(
+        "nina",
+        "Quais são 3 formas de se acolher além de comer, que funcionam bem para você?",
+        "Ex.: caminhar, ouvir música, ligar para alguém…",
       ),
     ],
   },
@@ -652,6 +1463,45 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
       ),
     ],
+    extra1: [
+      multi(
+        "mila",
+        "Quais práticas ajudam a comer com mais atenção?",
+        [
+          "Desligar telas",
+          "Mastigar devagar",
+          "Comer andando com pressa",
+          "Perceber cores e cheiros",
+        ],
+        [0, 1, 3],
+        "Presença e ritmo são a base de comer com mais atenção.",
+      ),
+      match(
+        "nina",
+        "Ligue a prática ao benefício:",
+        [
+          ["Mastigar devagar", "Percebe melhor a saciedade"],
+          ["Desligar o celular", "Mais presença na refeição"],
+          ["Sentar à mesa", "Menos distração"],
+        ],
+        "Cada pequeno hábito soma para uma refeição mais consciente.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem uma refeição com atenção plena:",
+        [
+          "Sente-se sem telas por perto",
+          "Observe cor, cheiro e textura",
+          "Mastigue devagar",
+          "Faça pausas e perceba a saciedade",
+        ],
+        "Seguir esses passos ajuda o corpo a registrar melhor a refeição.",
+      ),
+      reflect(
+        "nina",
+        "Na sua última refeição, você estava presente ou distraído(a)? O que poderia ajudar a estar mais presente na próxima?",
+      ),
+    ],
     extra2: [
       sort(
         "mila",
@@ -667,6 +1517,37 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Presença e ritmo ajudam a perceber a saciedade.",
       ),
+      scenario(
+        "mila",
+        "Lucas sempre almoça assistindo vídeos no celular e, no final, sente que 'nem percebeu' o que comeu.",
+        "O que poderia ajudar Lucas a comer com mais atenção?",
+        [
+          "Guardar o celular durante a refeição",
+          "Comer mais rápido para acabar logo o vídeo",
+          "Assistir vídeos ainda mais interessantes",
+          "Comer em pé para ganhar tempo",
+        ],
+        0,
+        "Guardar o celular ajuda Lucas a notar sabor, textura e os sinais de saciedade do próprio corpo.",
+      ),
+      quiz(
+        "nina",
+        "Comer devagar ajuda principalmente porque:",
+        [
+          "Dá tempo para o cérebro registrar a saciedade",
+          "Faz a comida esfriar mais rápido",
+          "Não tem nenhum efeito real",
+          "Deixa a refeição sem graça",
+        ],
+        0,
+        "O cérebro leva cerca de 20 minutos para perceber a saciedade — comer devagar acompanha esse ritmo.",
+      ),
+      tf(
+        "nina",
+        "Prestar atenção na refeição pode aumentar o prazer de comer.",
+        true,
+        "Perceber sabores, texturas e cheiros costuma tornar a experiência mais prazerosa, não menos.",
+      ),
     ],
     extra3: [
       fill(
@@ -675,6 +1556,26 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["20", "2", "60", "120"],
         0,
         "Por isso comer devagar evita passar do ponto.",
+      ),
+      multi(
+        "nina",
+        "Quais sinais podem indicar saciedade confortável?",
+        [
+          "Ausência de fome, mas sem estar cheio demais",
+          "Barriga estufada e desconfortável",
+          "Satisfação tranquila",
+          "Vontade de continuar comendo por hábito",
+        ],
+        [0, 2],
+        "Saciedade confortável é um estado tranquilo, sem exagero nem desconforto.",
+      ),
+      slider(
+        "nina",
+        "Numa escala de 1 (faminto) a 10 (empanturrado), qual nível costuma indicar um bom ponto para parar de comer?",
+        { min: 1, max: 10, step: 1, unit: "" },
+        7,
+        1,
+        "Por volta de 7, a pessoa costuma estar satisfeita e confortável, sem exagerar.",
       ),
     ],
   },
@@ -703,6 +1604,45 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["Buscar ajuda é cuidado, não fraqueza", "Família e amigos também fazem parte da rede"],
       ),
     ],
+    extra1: [
+      multi(
+        "nina",
+        "Quais pensamentos são mais gentis e sustentáveis?",
+        [
+          "Uma refeição não define minha saúde",
+          "Estraguei tudo, não adianta mais",
+          "Amanhã eu sigo meu ritmo normal",
+          "Preciso me punir por ter comido isso",
+        ],
+        [0, 2],
+        "Pensamentos gentis mantêm a constância sem alimentar o ciclo de culpa.",
+      ),
+      match(
+        "nina",
+        "Ligue o pensamento ao tipo:",
+        [
+          ["Comi bolo, mas sigo bem hoje", "Pensamento flexível"],
+          ["Comi bolo, agora só fome zero", "Pensamento tudo ou nada"],
+          ["Posso incluir doce com equilíbrio", "Pensamento flexível"],
+        ],
+        "Reconhecer o próprio padrão de pensamento é o primeiro passo para mudá-lo.",
+      ),
+      order(
+        "nina",
+        "Coloque em ordem um recomeço gentil depois de um exagero:",
+        [
+          "Perceba sem se julgar",
+          "Beba água e descanse",
+          "Volte à próxima refeição normalmente",
+          "Reflita com gentileza sobre o que aconteceu",
+        ],
+        "O recomeço gentil é sempre mais eficiente do que o castigo.",
+      ),
+      reflect(
+        "nina",
+        "Como você fala consigo mesmo(a) depois de comer algo que considera 'proibido'? Isso te ajuda ou atrapalha?",
+      ),
+    ],
     extra2: [
       sort(
         "nina",
@@ -718,6 +1658,37 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ],
         "Pensamentos gentis mantêm a constância. O tudo ou nada alimenta o ciclo de culpa.",
       ),
+      scenario(
+        "nina",
+        "Depois de comer um pedaço de bolo na festa, Rodrigo pensa em pular o jantar como forma de 'compensar'.",
+        "Qual seria uma atitude mais equilibrada?",
+        [
+          "Fazer o jantar normalmente, sem compensação",
+          "Pular o jantar todo",
+          "Comer o dobro no jantar de propósito",
+          "Se sentir culpado o resto do dia",
+        ],
+        0,
+        "Compensar com restrição alimenta o ciclo de culpa. Seguir a rotina normalmente quebra esse padrão.",
+      ),
+      quiz(
+        "nina",
+        "O ciclo de 'restrição extrema seguida de compulsão' costuma ser causado por:",
+        [
+          "Regras alimentares muito rígidas",
+          "Comer de forma flexível",
+          "Ter acompanhamento de uma nutricionista",
+          "Comer devagar",
+        ],
+        0,
+        "Regras muito rígidas tendem a gerar desejo intenso pelo que foi proibido, alimentando o ciclo.",
+      ),
+      tf(
+        "nina",
+        "Buscar ajuda profissional para lidar com a alimentação é sinal de fraqueza.",
+        false,
+        "Buscar ajuda é um ato de cuidado. Nutricionistas e psicólogos podem apoiar bastante esse processo.",
+      ),
     ],
     extra3: [
       fill(
@@ -726,6 +1697,10 @@ export const ADULT_EXTRAS: Record<string, AdultExtras> = {
         ["compulsão", "equilíbrio", "saciedade", "disciplina"],
         0,
         "Quanto mais restrição, maior o risco de exagero depois.",
+      ),
+      reflect(
+        "nina",
+        "O que você gostaria de lembrar da próxima vez que sentir culpa por comer algo 'fora da dieta'?",
       ),
     ],
   },

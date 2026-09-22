@@ -73,6 +73,7 @@ const ADULT_UNITS: Unit[] = BASE_UNITS.map((unit) => ({
           ...withIds(1, adult ? [adult.concepts[0]] : [], "c"),
           ...lesson.activities,
           ...withIds(1, extras?.level1Extra ?? [], "x"),
+          ...withIds(1, adult?.extra1 ?? [], "y"),
         ]),
         build(2, [
           ...withIds(2, adult ? [adult.concepts[1]] : [], "c"),

@@ -108,6 +108,53 @@ export const order = (
   explanation,
 });
 
+export const slider = (
+  who: CharacterId,
+  question: string,
+  range: { min: number; max: number; step?: number; unit: string },
+  target: number,
+  tolerance: number,
+  explanation: string,
+): Draft => ({
+  type: "slider",
+  character: c(who),
+  question,
+  min: range.min,
+  max: range.max,
+  step: range.step,
+  unit: range.unit,
+  target,
+  tolerance,
+  explanation,
+});
+
+export const scenario = (
+  who: CharacterId,
+  setup: string,
+  question: string,
+  options: string[],
+  correctIndex: number,
+  explanation: string,
+): Draft => {
+  const perm = permutation(options.length, setup + question);
+  return {
+    type: "scenario",
+    character: c(who),
+    setup,
+    question,
+    options: perm.map((i) => options[i]),
+    correctIndex: perm.indexOf(correctIndex),
+    explanation,
+  };
+};
+
+export const reflect = (who: CharacterId, prompt: string, placeholder?: string): Draft => ({
+  type: "reflect",
+  character: c(who),
+  prompt,
+  placeholder,
+});
+
 export interface StopExtras {
   /** Perguntas fáceis adicionadas ao nível 1 (o conteúdo base tem poucas nas paradas mais curtas). */
   level1Extra?: Draft[];

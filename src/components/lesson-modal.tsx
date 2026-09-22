@@ -35,7 +35,7 @@ export interface LessonModalProps {
 
 /* ------------------------------ Utilidades ------------------------------ */
 
-type Answer = number | boolean | number[] | Record<number, number> | null;
+type Answer = number | boolean | number[] | Record<number, number> | string | null;
 
 const initialAnswer = (a: Activity): Answer => {
   switch (a.type) {
@@ -65,6 +65,9 @@ const isReady = (a: Activity, ans: Answer) => {
       return Object.keys(ans as Record<number, number>).length === a.items.length;
     case "fill":
       return ans !== null;
+    case "slider":
+    case "scenario":
+      return ans !== null;
     default:
       return true;
   }
@@ -89,6 +92,10 @@ const isCorrect = (a: Activity, ans: Answer) => {
       return a.items.every((it, i) => (ans as Record<number, number>)[i] === it.group);
     case "fill":
       return ans === a.correctIndex;
+    case "scenario":
+      return ans === a.correctIndex;
+    case "slider":
+      return Math.abs((ans as number) - a.target) <= a.tolerance;
     default:
       return true;
   }
@@ -119,6 +126,10 @@ const rightAnswerText = (a: Activity): string | null => {
         .join(" • ");
     case "fill":
       return a.options[a.correctIndex];
+    case "scenario":
+      return a.options[a.correctIndex];
+    case "slider":
+      return `perto de ${a.target}${a.unit}`;
     default:
       return null;
   }
@@ -772,6 +783,150 @@ function FillView({
   );
 }
 
+function ScenarioView({
+  activity,
+  answer,
+  onChange,
+  checked,
+  mood,
+  moodKey,
+}: ActivityProps<Extract<Activity, { type: "scenario" }>>) {
+  return (
+    <div className="nc-rise">
+      <div className="mb-5 flex items-start gap-3 rounded-3xl border-2 border-dashed border-accent/40 bg-accent/5 p-4 sm:p-5">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/15 text-lg">
+          📖
+        </span>
+        <div className="min-w-0">
+          <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-accent">
+            Situação
+          </p>
+          <p className="text-sm font-medium leading-relaxed text-foreground/90 sm:text-base">
+            {activity.setup}
+          </p>
+        </div>
+      </div>
+      <Ask character={activity.character} mood={mood} moodKey={moodKey}>
+        {activity.question}
+      </Ask>
+      <div className="grid gap-3">
+        {activity.options.map((opt, i) => (
+          <button
+            key={i}
+            type="button"
+            disabled={checked}
+            onClick={() => onChange(i)}
+            className={`${optionBase} ${optionState(answer === i, checked, i === activity.correctIndex)}`}
+          >
+            <span className="mr-3 inline-grid h-7 w-7 place-items-center rounded-lg border-2 border-current/30 text-xs font-black opacity-70">
+              {String.fromCharCode(65 + i)}
+            </span>
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SliderView({
+  activity,
+  answer,
+  onChange,
+  checked,
+  mood,
+  moodKey,
+}: ActivityProps<Extract<Activity, { type: "slider" }>>) {
+  const chosen = answer as number | null;
+  const mid = Math.round((activity.min + activity.max) / 2);
+  const shown = chosen ?? mid;
+  const right = chosen !== null && Math.abs(chosen - activity.target) <= activity.tolerance;
+  return (
+    <div className="nc-rise">
+      <Ask character={activity.character} mood={mood} moodKey={moodKey}>
+        {activity.question}
+      </Ask>
+      <div
+        className={`rounded-3xl border-2 p-5 transition-colors sm:p-6 ${
+          checked
+            ? right
+              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10"
+              : "border-rose-500 bg-rose-50 dark:bg-rose-500/10"
+            : "border-border bg-card"
+        }`}
+      >
+        <div className="mb-4 text-center">
+          <span
+            className={`font-display text-4xl font-black sm:text-5xl ${
+              !checked ? "text-primary" : right ? "text-emerald-600" : "text-rose-600"
+            }`}
+          >
+            {chosen === null ? "?" : shown}
+          </span>
+          <span className="ml-1.5 text-lg font-bold text-muted-foreground">{activity.unit}</span>
+        </div>
+        <input
+          type="range"
+          aria-label={activity.question}
+          min={activity.min}
+          max={activity.max}
+          step={activity.step ?? 1}
+          disabled={checked}
+          value={shown}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="w-full cursor-pointer accent-[var(--color-primary)] disabled:cursor-not-allowed"
+        />
+        <div className="mt-1.5 flex justify-between text-xs font-bold text-muted-foreground">
+          <span>
+            {activity.min}
+            {activity.unit}
+          </span>
+          <span>
+            {activity.max}
+            {activity.unit}
+          </span>
+        </div>
+        {checked && (
+          <p className="mt-4 text-center text-sm font-bold text-muted-foreground">
+            Valor de referência:{" "}
+            <span className="text-foreground">
+              ~{activity.target}
+              {activity.unit}
+            </span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReflectView({
+  activity,
+  answer,
+  onChange,
+  mood,
+  moodKey,
+}: ActivityProps<Extract<Activity, { type: "reflect" }>>) {
+  const text = (answer as string | null) ?? "";
+  return (
+    <div className="nc-rise">
+      <Ask character={activity.character} mood={mood} moodKey={moodKey}>
+        {activity.prompt}
+      </Ask>
+      <textarea
+        rows={4}
+        value={text}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={activity.placeholder ?? "Escreva o que vier à mente…"}
+        className="w-full resize-none rounded-2xl border-2 border-border bg-card p-4 text-base leading-relaxed text-foreground outline-none transition focus:border-primary"
+      />
+      <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        Sem certo ou errado aqui — é só para você refletir. Nada disso fica salvo.
+      </p>
+    </div>
+  );
+}
+
 /** Depois de um erro: explicação em destaque, com o personagem, para aprender com a resposta. */
 function ExplainCard({ activity, guide }: { activity: Activity; guide: CharacterId }) {
   if (!("explanation" in activity)) return null;
@@ -1064,6 +1219,15 @@ export function LessonModal({
               )}
               {current.type === "order" && (
                 <OrderView key={`${current.id}-${index}`} activity={current} {...shared} />
+              )}
+              {current.type === "scenario" && (
+                <ScenarioView key={`${current.id}-${index}`} activity={current} {...shared} />
+              )}
+              {current.type === "slider" && (
+                <SliderView key={`${current.id}-${index}`} activity={current} {...shared} />
+              )}
+              {current.type === "reflect" && (
+                <ReflectView key={`${current.id}-${index}`} activity={current} {...shared} />
               )}
               {checked && !correct && gradedCurrent && (
                 <ExplainCard activity={current} guide={guide} />
