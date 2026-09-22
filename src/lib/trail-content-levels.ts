@@ -51,7 +51,12 @@ export const quiz = (
   };
 };
 
-export const tf = (who: CharacterId, statement: string, isTrue: boolean, explanation: string): Draft => ({
+export const tf = (
+  who: CharacterId,
+  statement: string,
+  isTrue: boolean,
+  explanation: string,
+): Draft => ({
   type: "true_false",
   character: c(who),
   statement,
@@ -90,7 +95,12 @@ export const match = (
   explanation,
 });
 
-export const order = (who: CharacterId, prompt: string, items: string[], explanation: string): Draft => ({
+export const order = (
+  who: CharacterId,
+  prompt: string,
+  items: string[],
+  explanation: string,
+): Draft => ({
   type: "order",
   character: c(who),
   prompt,
@@ -1444,7 +1454,6 @@ export const STOP_EXTRAS: Record<string, StopExtras> = {
     ],
   },
 };
-
 
 export const concept = (
   who: CharacterId,

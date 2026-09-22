@@ -1130,19 +1130,10 @@ export function LessonModal({
                       </span>
                     )}
                   </div>
-                  {!correct && (
-                    <p className="mt-1.5 text-sm font-bold text-rose-800 dark:text-rose-200">
-                      Resposta certa: {rightAnswerText(current)}
-                    </p>
-                  )}
-                  {"explanation" in current && (
-                    <p
-                      className={`mt-1 text-xs font-medium leading-relaxed sm:text-sm ${
-                        correct
-                          ? "text-emerald-800 dark:text-emerald-200"
-                          : "text-rose-800/90 dark:text-rose-200/90"
-                      }`}
-                    >
+                  {/* Quando errado, a explicação e a resposta certa aparecem no ExplainCard, com o
+                      mascote, logo acima desta barra — não duplicamos aqui. */}
+                  {correct && "explanation" in current && (
+                    <p className="mt-1 text-xs font-medium leading-relaxed text-emerald-800 dark:text-emerald-200 sm:text-sm">
                       {current.explanation}
                     </p>
                   )}

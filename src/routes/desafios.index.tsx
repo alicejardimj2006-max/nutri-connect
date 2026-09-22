@@ -1,36 +1,38 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Award, BookOpen, Flame, Sparkles, Users, Baby, User } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Award, BookOpen, Flame, Sparkles, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { ChallengeCard } from "@/components/community-cards";
 import {
   TrailHeader,
   TrailHero,
+  TrailPicker,
   TrailAchievements,
   CommunityChallengeGroup,
   PopularBadge,
 } from "@/components/trail-components";
+import { ProfileSwitcher } from "@/components/trail-profile-switcher";
 import { LearningTrailMap, StopSheet } from "@/components/trail-map";
 import { LessonModal } from "@/components/lesson-modal";
 import { getEarnedBadges, getUserXP, getUserLevel, getUserStreak } from "@/lib/community";
 import {
   DAILY_GOAL_XP,
-  NUTRITION_UNITS,
   TRAIL_CHANGE_EVENT,
   getActiveStreak,
   getCurrentStopId,
   getDailyXP,
+  getTrails,
   getTrailTotals,
   loadTrailProgress,
   setTrailScope,
-  getUnits,
-  type ProfileKind,
   type LevelNumber,
   type Stop,
+  type Trail,
   type TrailProgress,
   type Unit,
 } from "@/lib/learning-trail";
+import { useTrailProfiles } from "@/lib/trail-profiles";
 
 export const Route = createFileRoute("/desafios/")({
   head: () => ({
@@ -39,7 +41,7 @@ export const Route = createFileRoute("/desafios/")({
       {
         name: "description",
         content:
-          "Trilha de aprendizado sobre nutrição, desafios populares e desafios das suas comunidades.",
+          "Trilhas de aprendizado sobre nutrição, desafios populares e desafios das suas comunidades.",
       },
     ],
   }),
@@ -58,21 +60,28 @@ function DesafiosIndexPage() {
   const { user } = useAuth();
   const { challenges, communities, hydrated } = useCommunity();
   const [tab, setTab] = useState<Tab>("trilha");
-  const [activeProfile, setActiveProfile] = useState<ProfileKind>("adult");
 
-  // ── Progresso da trilha (localStorage próprio) ──
+  const currentUserId = user?.id || "guest";
+  const { profiles, active, select, addKid, removeKid } = useTrailProfiles(
+    currentUserId,
+    user?.name || "Você",
+  );
+
+  // ── Progresso da trilha (por conta + perfil) ──
   const [trailProgress, setTrailProgress] = useState<TrailProgress>(() => {
-    setTrailScope("guest", "adult");
+    setTrailScope(currentUserId, active.id);
     return loadTrailProgress();
   });
 
-  const currentUserId = user?.id || "guest";
-
-  const handleProfileChange = (kind: ProfileKind) => {
-    setActiveProfile(kind);
-    setTrailScope(currentUserId, kind);
+  useEffect(() => {
+    setTrailScope(currentUserId, active.id);
     setTrailProgress(loadTrailProgress());
-  };
+    // Uma lição ou uma parada aberta pertence ao perfil anterior: fecha ao trocar de perfil.
+    setSheet(null);
+    setActiveLesson(null);
+    setTab((t) => (active.kind === "kid" && t !== "trilha" ? "trilha" : t));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserId, active.id]);
 
   useEffect(() => {
     const sync = () => setTrailProgress(loadTrailProgress());
@@ -84,6 +93,15 @@ function DesafiosIndexPage() {
     };
   }, []);
 
+  // ── Grande tema (trilha) em estudo: cada perfil escolhe entre as trilhas do seu tipo ──
+  const availableTrails = useMemo(() => getTrails(active.kind), [active.kind]);
+  const [trailId, setTrailId] = useState(availableTrails[0]?.id);
+  useEffect(() => {
+    if (!availableTrails.some((t) => t.id === trailId)) setTrailId(availableTrails[0]?.id);
+  }, [availableTrails, trailId]);
+  const trail: Trail | undefined =
+    availableTrails.find((t) => t.id === trailId) ?? availableTrails[0];
+
   // ── Parada aberta (escolha de nível) e lição em andamento ──
   const [sheet, setSheet] = useState<{ stop: Stop; unit: Unit } | null>(null);
   const [activeLesson, setActiveLesson] = useState<{
@@ -93,24 +111,32 @@ function DesafiosIndexPage() {
     xpBefore: number;
   } | null>(null);
 
-  // ── XP combinado (trilha + desafios) ──
+  // ── XP combinado (trilha + desafios); desafios sociais só contam no perfil do responsável ──
   const challengeXP = useMemo(
-    () => getUserXP(currentUserId, challenges),
-    [currentUserId, challenges],
+    () => (active.kind === "adult" ? getUserXP(currentUserId, challenges) : 0),
+    [active.kind, currentUserId, challenges],
   );
   const totalXP = trailProgress.totalXP + challengeXP;
   const levelInfo = useMemo(() => getUserLevel(totalXP), [totalXP]);
   const streak = useMemo(
-    () => Math.max(getActiveStreak(trailProgress), getUserStreak(currentUserId, challenges)),
-    [trailProgress, currentUserId, challenges],
+    () =>
+      active.kind === "adult"
+        ? Math.max(getActiveStreak(trailProgress), getUserStreak(currentUserId, challenges))
+        : getActiveStreak(trailProgress),
+    [active.kind, trailProgress, currentUserId, challenges],
   );
   const earnedBadges = useMemo(
     () => getEarnedBadges(currentUserId, challenges),
     [currentUserId, challenges],
   );
-  const totals = useMemo(() => getTrailTotals(trailProgress, activeProfile), [trailProgress, activeProfile]);
-  const currentUnits = useMemo(() => getUnits(activeProfile), [activeProfile]);
-  const currentStopId = useMemo(() => getCurrentStopId(trailProgress, currentUnits), [trailProgress, currentUnits]);
+  const totals = useMemo(
+    () => getTrailTotals(trailProgress, active.kind),
+    [trailProgress, active.kind],
+  );
+  const currentStopId = useMemo(
+    () => (trail ? getCurrentStopId(trailProgress, trail.units) : null),
+    [trailProgress, trail],
+  );
 
   // Populares: desafios com createdByProfessionalId, ordenados por participantes
   const popularChallenges = useMemo(
@@ -145,56 +171,31 @@ function DesafiosIndexPage() {
     });
   };
 
+  const displayName =
+    active.kind === "kid" ? active.name : user?.name || active.name || "Visitante";
+
   return (
     <>
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8">
-        {/* Cabeçalho com Seletor de Perfil */}
-        <div className="border-b border-border/70 pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent mb-2">
-              <Award className="h-3.5 w-3.5" />
-              <span>Aprendizado & Desafios</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
-              Desafios & Aprendizado
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-              Aprenda sobre nutrição no seu ritmo com lições interativas, participe de desafios
-              práticos e cresça junto com a comunidade.
-            </p>
+        {/* Cabeçalho */}
+        <div className="border-b border-border/70 pb-6 mb-8">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent mb-2">
+            <Award className="h-3.5 w-3.5" />
+            <span>Aprendizado & Desafios</span>
           </div>
-          
-          {/* Seletor de Perfil */}
-          <div className="flex bg-secondary p-1 rounded-xl shadow-inner shrink-0">
-            <button
-              onClick={() => handleProfileChange("adult")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                activeProfile === "adult"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <User className="w-4 h-4" />
-              Perfil Adulto
-            </button>
-            <button
-              onClick={() => handleProfileChange("kid")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                activeProfile === "kid"
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Baby className="w-4 h-4" />
-              Perfil Infantil
-            </button>
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
+            Desafios & Aprendizado
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
+            Aprenda sobre nutrição no seu ritmo com lições interativas, participe de desafios
+            práticos e cresça junto com a comunidade.
+          </p>
         </div>
 
-        {/* Barra de XP, nível, ofensiva e meta do dia */}
+        {/* Barra de XP, nível, ofensiva e meta do dia (com o seletor de perfil embutido) */}
         <TrailHeader
-          variant={activeProfile}
-          name={user?.name || (activeProfile === "adult" ? "Visitante" : "Pequeno Explorador")}
+          variant={active.kind}
+          name={displayName}
           xp={totalXP}
           level={levelInfo.level}
           label={levelInfo.label}
@@ -209,41 +210,52 @@ function DesafiosIndexPage() {
           totalStops={totals.totalStops}
           levelsDone={totals.levels}
           totalLevels={totals.totalLevels}
+          profileSlot={
+            <ProfileSwitcher
+              profiles={profiles}
+              active={active}
+              onSelect={select}
+              onAddKid={addKid}
+              onRemoveKid={removeKid}
+            />
+          }
         />
 
-        {/* Conquistas compactas */}
-        <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 mb-8 shadow-xs">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <h2 className="text-sm font-bold font-display text-foreground flex items-center gap-2">
-              <Award className="h-4 w-4 text-accent" />
-              <span>Suas Conquistas</span>
-            </h2>
-            <span className="text-[10px] text-muted-foreground font-medium">
-              {totals.levels} níveis ·{" "}
-              {challenges.filter((c) => c.completedBy.includes(currentUserId)).length} desafios
-              concluídos
-            </span>
+        {/* Conquistas compactas (só fazem sentido com desafios sociais, no perfil do responsável) */}
+        {active.kind === "adult" && (
+          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 mb-8 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h2 className="text-sm font-bold font-display text-foreground flex items-center gap-2">
+                <Award className="h-4 w-4 text-accent" />
+                <span>Suas Conquistas</span>
+              </h2>
+              <span className="text-[10px] text-muted-foreground font-medium">
+                {totals.levels} níveis ·{" "}
+                {challenges.filter((c) => c.completedBy.includes(currentUserId)).length} desafios
+                concluídos
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {earnedBadges.map((badge) => (
+                <div
+                  key={badge.label}
+                  className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
+                    badge.achieved
+                      ? "border-accent/40 bg-accent-soft/40"
+                      : "border-border bg-secondary/30 opacity-60"
+                  }`}
+                >
+                  <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
+                  <span className="text-[11px] font-bold text-foreground">{badge.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {earnedBadges.map((badge) => (
-              <div
-                key={badge.label}
-                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
-                  badge.achieved
-                    ? "border-accent/40 bg-accent-soft/40"
-                    : "border-border bg-secondary/30 opacity-60"
-                }`}
-              >
-                <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
-                <span className="text-[11px] font-bold text-foreground">{badge.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
 
-        {/* Navegação por Abas */}
+        {/* Navegação por Abas (perfis infantis não têm rede social: sem desafios ou comunidades) */}
         <div className="flex items-center gap-1 rounded-2xl bg-secondary p-1 mb-8 overflow-x-auto no-scrollbar">
-          {TABS.map((t) => (
+          {(active.kind === "adult" ? TABS : TABS.filter((t) => t.key === "trilha")).map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
@@ -275,26 +287,36 @@ function DesafiosIndexPage() {
         ) : (
           <>
             {/* ── ABA: Minha Trilha (Lições Educativas) ── */}
-            {tab === "trilha" && (
+            {tab === "trilha" && trail && (
               <div>
-                <TrailHero variant={activeProfile} name={user?.name || (activeProfile === "adult" ? "Visitante" : "Pequeno Explorador")} />
+                <TrailHero variant={active.kind} name={displayName} />
+
+                <TrailPicker
+                  trails={availableTrails}
+                  progress={trailProgress}
+                  selectedId={trail.id}
+                  onSelect={setTrailId}
+                  variant={active.kind}
+                />
 
                 <LearningTrailMap
-                  units={currentUnits}
+                  trail={trail}
                   progress={trailProgress}
                   currentStopId={currentStopId}
                   frozen={!!activeLesson}
                   onOpenStop={(stop, unit) => setSheet({ stop, unit })}
                 />
 
-                <div className="mt-10">
-                  <TrailAchievements unlocked={trailProgress.achievements} />
-                </div>
+                {active.kind === "adult" && (
+                  <div className="mt-10">
+                    <TrailAchievements unlocked={trailProgress.achievements} />
+                  </div>
+                )}
               </div>
             )}
 
             {/* ── ABA: Desafios Populares ── */}
-            {tab === "populares" && (
+            {tab === "populares" && active.kind === "adult" && (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -344,7 +366,7 @@ function DesafiosIndexPage() {
             )}
 
             {/* ── ABA: Das Minhas Comunidades ── */}
-            {tab === "comunidades" && (
+            {tab === "comunidades" && active.kind === "adult" && (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -389,20 +411,25 @@ function DesafiosIndexPage() {
         )}
       </div>
 
-      <StopSheet
-        stop={sheet?.stop ?? null}
-        unit={sheet?.unit ?? null}
-        progress={trailProgress}
-        onClose={() => setSheet(null)}
-        onStart={(stop, level) => sheet && startLevel(stop, sheet.unit, level)}
-      />
+      {trail && (
+        <StopSheet
+          stop={sheet?.stop ?? null}
+          unit={sheet?.unit ?? null}
+          trail={trail}
+          progress={trailProgress}
+          onClose={() => setSheet(null)}
+          onStart={(stop, level) => sheet && startLevel(stop, sheet.unit, level)}
+        />
+      )}
 
-      {activeLesson && (
+      {activeLesson && trail && (
         <LessonModal
           key={`${activeLesson.stop.id}-${activeLesson.level}`}
           stop={activeLesson.stop}
           level={activeLesson.level}
           unit={activeLesson.unit}
+          variant={trail.kind}
+          guide={trail.guide}
           xpBefore={activeLesson.xpBefore}
           onClose={() => setActiveLesson(null)}
           onNextLevel={(level) => startLevel(activeLesson.stop, activeLesson.unit, level)}

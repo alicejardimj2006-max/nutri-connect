@@ -19,15 +19,7 @@ export const CHARACTERS: Record<CharacterId, Character> = {
 };
 
 export type ActivityType =
-  | "dialogue"
-  | "concept"
-  | "quiz"
-  | "true_false"
-  | "multi"
-  | "match"
-  | "order"
-  | "sort"
-  | "fill";
+  "dialogue" | "concept" | "quiz" | "true_false" | "multi" | "match" | "order" | "sort" | "fill";
 
 /** Perfil da trilha: o adulto tem visual e conteúdo mais sérios; o infantil é lúdico. */
 export type ProfileKind = "adult" | "kid";

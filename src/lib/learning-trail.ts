@@ -128,8 +128,7 @@ export const ADULT_TRAILS: Trail[] = [
     kind: "adult",
     title: "Mente e Bem-estar",
     tagline: "Comportamento alimentar",
-    description:
-      "Fome emocional, atenção plena e uma relação mais leve com a comida, sem culpa.",
+    description: "Fome emocional, atenção plena e uma relação mais leve com a comida, sem culpa.",
     icon: "🧠",
     guide: "nina",
     scene: "lake",
@@ -255,7 +254,10 @@ export function getCurrentStopId(progress: TrailProgress, units: Unit[]): string
   for (const unit of units) {
     for (let i = 0; i < unit.stops.length; i++) {
       const stop = unit.stops[i];
-      if (isStopUnlocked(unit, i, progress, units) && getStopProgress(progress, stop.id).done === 0) {
+      if (
+        isStopUnlocked(unit, i, progress, units) &&
+        getStopProgress(progress, stop.id).done === 0
+      ) {
         return stop.id;
       }
     }
@@ -263,7 +265,8 @@ export function getCurrentStopId(progress: TrailProgress, units: Unit[]): string
   for (const unit of units) {
     for (let i = 0; i < unit.stops.length; i++) {
       const stop = unit.stops[i];
-      if (isStopUnlocked(unit, i, progress, units) && !isStopGold(progress, stop.id)) return stop.id;
+      if (isStopUnlocked(unit, i, progress, units) && !isStopGold(progress, stop.id))
+        return stop.id;
     }
   }
   return null;

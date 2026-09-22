@@ -155,7 +155,7 @@ export function fireConfetti(options: ConfettiOptions = {}) {
 }
 
 /** Explosão grande de comemoração: dois canhões laterais e uma chuva central. */
-export function celebrate(kind: "level" | "gold" | "levelup" = "level") {
+export function celebrate(kind: "level" | "gold" | "levelup" = "level", playful = true) {
   if (kind === "gold") {
     const emojis = ["⭐", "✨", "🏅", "🪙"];
     fireConfetti({
@@ -211,8 +211,12 @@ export function celebrate(kind: "level" | "gold" | "levelup" = "level") {
     );
     return;
   }
-  const emojis =
-    kind === "levelup" ? ["🌟", "🎉", "🥑", "🍎", "🥦"] : ["🍎", "🥕", "🥑", "🥦", "🍊"];
+  // No perfil adulto o confete é só de papel, sem emojis de frutas.
+  const emojis = !playful
+    ? []
+    : kind === "levelup"
+      ? ["🌟", "🎉", "🥑", "🍎", "🥦"]
+      : ["🍎", "🥕", "🥑", "🥦", "🍊"];
   fireConfetti({ x: 0.2, y: 0.8, angle: 300, spread: 55, count: 70, power: 19, emojis });
   fireConfetti({ x: 0.8, y: 0.8, angle: 240, spread: 55, count: 70, power: 19, emojis });
   window.setTimeout(
