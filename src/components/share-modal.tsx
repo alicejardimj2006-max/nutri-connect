@@ -218,9 +218,9 @@ function PinnedCard({
       onContextMenu={sort ? (e) => e.preventDefault() : undefined}
       className={`relative rounded-[1.75rem] border-2 ${t.border} bg-gradient-to-br ${t.wash} p-5 shadow-md transition-all duration-300 hover:z-10 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-xl ${rotate} ${className} ${
         sort
-          ? sort.dragging
-            ? "z-30 cursor-grabbing select-none shadow-2xl"
-            : "cursor-grab [-webkit-touch-callout:none]"
+          ? // touch-none: sem isso, o primeiro toque já dispara a rolagem nativa da página
+            // (o navegador decide na primeira "touchmove"), e não dá mais para virar arrasto depois.
+            `touch-none ${sort.dragging ? "z-30 cursor-grabbing select-none shadow-2xl" : "cursor-grab [-webkit-touch-callout:none]"}`
           : ""
       }`}
     >
@@ -286,6 +286,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     px: number;
     py: number;
     active: boolean;
+    /** No toque, o gesto virou rolagem (não vira mais arrasto, mas seguimos rolando à mão). */
+    canceled: boolean;
     lastSwap: number;
     timer?: number;
   } | null>(null);
@@ -373,6 +375,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               px: e.clientX,
               py: e.clientY,
               active: false,
+              canceled: false,
               lastSwap: 0,
               timer: undefined as number | undefined,
             };
@@ -391,15 +394,23 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
           onPointerMove: (e) => {
             const d = drag.current;
             if (!d || d.block !== block) return;
+            const prevY = d.py;
             d.px = e.clientX;
             d.py = e.clientY;
+            if (d.canceled) {
+              // O card tem touch-action:none (para podermos decidir o gesto), então a
+              // rolagem por toque não acontece mais sozinha: nós a repetimos à mão.
+              formRef.current?.scrollBy(0, prevY - d.py);
+              return;
+            }
             if (!d.active) {
               const moved = Math.hypot(d.px - d.sx, d.py - d.sy);
               if (e.pointerType === "touch") {
                 // Mexeu o dedo antes do tempo: é rolagem, não arrasto.
                 if (moved > 8) {
                   window.clearTimeout(d.timer);
-                  drag.current = null;
+                  d.canceled = true;
+                  formRef.current?.scrollBy(0, prevY - d.py);
                 }
                 return;
               }
@@ -734,7 +745,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         ? "Ex: O que aprendi cozinhando minhas refeições da semana"
                         : "Ex: Como vocês lidam com a vontade de comer doce à noite?"
                 }
-                className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
+                className="w-full touch-auto rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-chart-3 transition"
               />
             </PinnedCard>
 
@@ -767,7 +778,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                     <button
                       type="button"
                       onClick={() => setEditorOpen(true)}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-full bg-black/60 px-3 text-xs font-medium text-white transition hover:bg-black/80 cursor-pointer"
+                      className="inline-flex h-8 touch-auto items-center gap-1.5 rounded-full bg-black/60 px-3 text-xs font-medium text-white transition hover:bg-black/80 cursor-pointer"
                     >
                       <SlidersHorizontal className="h-3.5 w-3.5" /> Ajustar
                     </button>
@@ -778,7 +789,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         setImageOriginal(undefined);
                         setImageEdits(undefined);
                       }}
-                      className="grid h-8 w-8 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80 cursor-pointer"
+                      className="grid h-8 w-8 touch-auto place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80 cursor-pointer"
                       aria-label="Remover imagem"
                     >
                       <X className="h-4 w-4" />
@@ -789,7 +800,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4 bg-card py-7 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground cursor-pointer"
+                  className="flex w-full touch-auto flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-chart-4 bg-card py-7 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground cursor-pointer"
                 >
                   <ImagePlus className="h-6 w-6 text-chart-4" />
                   <span>{isCommunity ? "Adicionar uma capa" : "Adicionar uma foto"}</span>
@@ -819,7 +830,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                     ? "Explique o tema e para quem é esta comunidade..."
                     : "Compartilhe como foi sua experiência, dicas ou reflexões..."
                 }
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary transition resize-none"
+                className="w-full touch-auto resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none transition focus:border-primary"
                 required
               />
             </PinnedCard>
@@ -843,7 +854,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Tempo
                       </label>
                       <input
-                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
+                        className="w-full touch-auto rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={prepTime}
                         onChange={(e) => setPrepTime(e.target.value)}
                         placeholder="Ex: 25 min"
@@ -854,7 +865,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Rendimento
                       </label>
                       <input
-                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
+                        className="w-full touch-auto rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={servings}
                         onChange={(e) => setServings(e.target.value)}
                         placeholder="Ex: 2 porções"
@@ -865,7 +876,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Dificuldade
                       </label>
                       <select
-                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
+                        className="w-full touch-auto rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={difficulty}
                         onChange={(e) =>
                           setDifficulty(e.target.value as "Fácil" | "Médio" | "Difícil")
@@ -881,7 +892,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                         Categoria
                       </label>
                       <select
-                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
+                        className="w-full touch-auto rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={recipeCategory}
                         onChange={(e) => setRecipeCategory(e.target.value)}
                       >
@@ -901,7 +912,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       </label>
                       <textarea
                         rows={3}
-                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs resize-none"
+                        className="w-full touch-auto resize-none rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={ingredientsText}
                         onChange={(e) => setIngredientsText(e.target.value)}
                         placeholder={"1 xícara de aveia\n1 maçã picada\n1 colher de canela"}
@@ -914,7 +925,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                       </label>
                       <textarea
                         rows={3}
-                        className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs resize-none"
+                        className="w-full touch-auto resize-none rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs"
                         value={stepsText}
                         onChange={(e) => setStepsText(e.target.value)}
                         placeholder={
