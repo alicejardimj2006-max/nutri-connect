@@ -6,6 +6,7 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
+import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
 import {
   Carousel,
   CarouselContent,
@@ -136,65 +137,79 @@ function EspacoDeHojePage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {/* Navegação discreta entre tipos de publicação */}
-        <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
-          {FEED_TAB_KEYS.map((tab, index) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => carouselApi?.scrollTo(index)}
-              className={cn(
-                "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                activeTabIndex === index
-                  ? "bg-secondary text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t(tab.labelKey)}
-            </button>
-          ))}
-        </div>
-
-        {/* Feed centralizado, deslizável entre abas (arraste para o lado no celular) */}
-        <div className="mx-auto w-full max-w-2xl">
-          {!hydrated ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              {t("espaco.loading")}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+          <div className="hidden xl:block">
+            <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+              <EspacoLeftColumn />
             </div>
-          ) : (
-            <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
-              <CarouselContent className="items-start">
-                {FEED_TAB_KEYS.map((tab) => {
-                  const tabPosts = postsByTab[tab.id];
-                  return (
-                    <CarouselItem key={tab.id}>
-                      {tabPosts.length > 0 ? (
-                        <div className="space-y-8">
-                          {tabPosts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
-                          <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
-                          <p className="text-base text-muted-foreground font-medium mb-6">
-                            {t(EMPTY_STATE_KEYS[tab.id])}
-                          </p>
-                          <ShareModal
-                            triggerButton={
-                              <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
-                                {t("espaco.firstPost")}
-                              </button>
-                            }
-                          />
-                        </div>
-                      )}
-                    </CarouselItem>
-                  );
-                })}
-              </CarouselContent>
-            </Carousel>
-          )}
+          </div>
+          <div className="min-w-0">
+            {/* Navegação discreta entre tipos de publicação */}
+            <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
+              {FEED_TAB_KEYS.map((tab, index) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => carouselApi?.scrollTo(index)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+                    activeTabIndex === index
+                      ? "bg-secondary text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t(tab.labelKey)}
+                </button>
+              ))}
+            </div>
+
+            {/* Feed centralizado, deslizável entre abas (arraste para o lado no celular) */}
+            <div className="mx-auto w-full max-w-2xl">
+              {!hydrated ? (
+                <div className="py-12 text-center text-sm text-muted-foreground">
+                  {t("espaco.loading")}
+                </div>
+              ) : (
+                <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
+                  <CarouselContent className="items-start">
+                    {FEED_TAB_KEYS.map((tab) => {
+                      const tabPosts = postsByTab[tab.id];
+                      return (
+                        <CarouselItem key={tab.id}>
+                          {tabPosts.length > 0 ? (
+                            <div className="space-y-8">
+                              {tabPosts.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
+                              <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
+                              <p className="text-base text-muted-foreground font-medium mb-6">
+                                {t(EMPTY_STATE_KEYS[tab.id])}
+                              </p>
+                              <ShareModal
+                                triggerButton={
+                                  <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
+                                    {t("espaco.firstPost")}
+                                  </button>
+                                }
+                              />
+                            </div>
+                          )}
+                        </CarouselItem>
+                      );
+                    })}
+                  </CarouselContent>
+                </Carousel>
+              )}
+            </div>
+          </div>
+          <div className="hidden lg:block">
+            <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+              <EspacoRightColumn />
+            </div>
+          </div>
         </div>
       </main>
     </div>
