@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { registerUser } from "@/lib/auth";
 import { JOURNEY_GOALS } from "@/lib/community";
 import { AuthLayout, Field } from "./login";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({ meta: [{ title: "Criar conta — NutriConnect" }] }),
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/cadastro")({
 
 function Cadastro() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [form, setForm] = useState({
     nome: "",
     cpf: "",
@@ -34,13 +36,13 @@ function Cadastro() {
     const cleanSenha = form.senha;
     const cleanConf = form.conf;
 
-    if (!cleanNome) return toast.error("Preencha seu nome.");
-    if (!cleanEmail) return toast.error("Preencha seu e-mail.");
-    if (!/\S+@\S+\.\S+/.test(cleanEmail)) return toast.error("E-mail inválido.");
-    if (!cleanTel) return toast.error("Preencha seu telefone.");
-    if (!cleanSenha) return toast.error("Preencha sua senha.");
-    if (cleanSenha.length < 6) return toast.error("A senha deve ter ao menos 6 caracteres.");
-    if (cleanSenha !== cleanConf) return toast.error("As senhas não coincidem.");
+    if (!cleanNome) return toast.error(t("signup.fillName"));
+    if (!cleanEmail) return toast.error(t("auth.fillEmail"));
+    if (!/\S+@\S+\.\S+/.test(cleanEmail)) return toast.error(t("signup.invalidEmail"));
+    if (!cleanTel) return toast.error(t("signup.fillPhone"));
+    if (!cleanSenha) return toast.error(t("auth.fillPassword"));
+    if (cleanSenha.length < 6) return toast.error(t("signup.shortPassword"));
+    if (cleanSenha !== cleanConf) return toast.error(t("signup.mismatch"));
 
     try {
       registerUser({
@@ -53,31 +55,28 @@ function Cadastro() {
         goal: selectedGoal,
         journeyGoal: selectedGoal,
       });
-      toast.success("Conta criada com sucesso! Bem-vindo à comunidade.");
+      toast.success(t("signup.success"));
       navigate({ to: "/espaco" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao criar conta.");
+      toast.error(err instanceof Error ? err.message : t("signup.error"));
     }
   };
 
   return (
-    <AuthLayout
-      title="Começar minha jornada"
-      subtitle="Faça parte de uma comunidade que cuida da alimentação de verdade."
-    >
+    <AuthLayout title={t("signup.title")} subtitle={t("signup.subtitle")}>
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Nome completo">
+        <Field label={t("signup.fullName")}>
           <input
             className="input"
             value={form.nome}
             onChange={upd("nome")}
-            placeholder="Como gostaria de ser chamado(a)?"
+            placeholder={t("signup.namePlaceholder")}
           />
         </Field>
 
         <div>
           <span className="mb-1.5 block text-xs font-semibold text-foreground">
-            Qual o foco da sua caminhada alimentar?
+            {t("signup.goalQuestion")}
           </span>
           <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border/80 bg-secondary/30">
             {JOURNEY_GOALS.map((g) => (
@@ -98,7 +97,7 @@ function Cadastro() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="CPF (Opcional)">
+          <Field label={`${t("settings.account.cpf")} (${t("common.optional")})`}>
             <input
               className="input"
               value={form.cpf}
@@ -106,11 +105,11 @@ function Cadastro() {
               placeholder="000.000.000-00"
             />
           </Field>
-          <Field label="Data de nascimento">
+          <Field label={t("signup.birthDate")}>
             <input type="date" className="input" value={form.nasc} onChange={upd("nasc")} />
           </Field>
         </div>
-        <Field label="Telefone">
+        <Field label={t("signup.phone")}>
           <input
             className="input"
             value={form.tel}
@@ -118,7 +117,7 @@ function Cadastro() {
             placeholder="(11) 99999-9999"
           />
         </Field>
-        <Field label="E-mail">
+        <Field label={t("auth.email")}>
           <input
             type="email"
             className="input"
@@ -128,32 +127,32 @@ function Cadastro() {
           />
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Senha">
+          <Field label={t("auth.password")}>
             <input
               type="password"
               className="input"
               value={form.senha}
               onChange={upd("senha")}
-              placeholder="Mínimo 6 caracteres"
+              placeholder={t("signup.passwordPlaceholder")}
             />
           </Field>
-          <Field label="Confirmar senha">
+          <Field label={t("signup.confirmPassword")}>
             <input
               type="password"
               className="input"
               value={form.conf}
               onChange={upd("conf")}
-              placeholder="Repita a senha"
+              placeholder={t("signup.confirmPlaceholder")}
             />
           </Field>
         </div>
         <button className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft hover:bg-accent/90 transition">
-          Criar minha conta e começar
+          {t("signup.submit")}
         </button>
         <p className="text-center text-sm text-muted-foreground">
-          Já possui conta?{" "}
+          {t("signup.haveAccount")}{" "}
           <Link to="/login" className="text-accent hover:underline font-medium">
-            Entrar
+            {t("signup.signIn")}
           </Link>
         </p>
       </form>

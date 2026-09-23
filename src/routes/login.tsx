@@ -3,6 +3,8 @@ import { Leaf, Sparkles, Users, ChefHat, Award, Compass } from "lucide-react";
 import { useState } from "react";
 import { loginUser } from "@/lib/auth";
 import { toast } from "sonner";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — NutriConnect" }] }),
@@ -11,27 +13,28 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
-    if (!cleanEmail) return toast.error("Preencha seu e-mail.");
-    if (!password) return toast.error("Preencha sua senha.");
+    if (!cleanEmail) return toast.error(t("auth.fillEmail"));
+    if (!password) return toast.error(t("auth.fillPassword"));
 
     try {
       loginUser(cleanEmail, password);
-      toast.success("Bem-vindo(a) de volta à sua jornada!");
+      toast.success(t("auth.loginWelcome"));
       navigate({ to: "/espaco" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao fazer login.");
+      toast.error(err instanceof Error ? err.message : t("auth.loginError"));
     }
   };
   return (
-    <AuthLayout title="Bem-vindo de volta" subtitle="Entre na sua conta para continuar sua jornada.">
+    <AuthLayout title={t("auth.loginTitle")} subtitle={t("auth.loginSubtitle")}>
       <form onSubmit={submit} className="space-y-5">
-        <Field label="E-mail">
+        <Field label={t("auth.email")}>
           <input
             className="input"
             type="email"
@@ -40,7 +43,7 @@ function Login() {
             placeholder="voce@email.com"
           />
         </Field>
-        <Field label="Senha">
+        <Field label={t("auth.password")}>
           <input
             className="input"
             type="password"
@@ -50,14 +53,14 @@ function Login() {
           />
         </Field>
         <button className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer">
-          Entrar na comunidade
+          {t("auth.loginSubmit")}
         </button>
         <div className="flex items-center justify-between text-sm">
           <Link to="/recuperar-senha" className="text-accent hover:underline">
-            Esqueceu a senha?
+            {t("auth.forgot")}
           </Link>
           <Link to="/cadastro" className="text-muted-foreground hover:text-foreground">
-            Criar uma conta
+            {t("auth.createAccount")}
           </Link>
         </div>
       </form>
@@ -65,11 +68,11 @@ function Login() {
   );
 }
 
-const FEATURES = [
-  { icon: Users, label: "Comunidades temáticas para trocar experiências" },
-  { icon: ChefHat, label: "Receitas de verdade compartilhadas pela comunidade" },
-  { icon: Award, label: "Desafios de hábitos, no seu próprio ritmo" },
-  { icon: Compass, label: "Um feed diário com histórias reais, sem julgamento" },
+const FEATURES: { icon: typeof Users; key: DictKey }[] = [
+  { icon: Users, key: "auth.feature1" },
+  { icon: ChefHat, key: "auth.feature2" },
+  { icon: Award, key: "auth.feature3" },
+  { icon: Compass, key: "auth.feature4" },
 ];
 
 export function AuthLayout({
@@ -81,6 +84,7 @@ export function AuthLayout({
   subtitle?: string;
   children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex min-h-screen bg-secondary/40">
       {/* Landing — apresentação da rede (metade esquerda) */}
@@ -104,35 +108,34 @@ export function AuthLayout({
         <div className="relative z-10 space-y-7">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" /> Rede social de alimentação
+              <Sparkles className="h-3.5 w-3.5" /> {t("auth.tagline")}
             </span>
             <h2 className="mt-4 text-4xl font-extrabold leading-tight font-display">
-              Sua alimentação.
+              {t("auth.hero1")}
               <br />
-              Sua jornada.
+              {t("auth.hero2")}
               <br />
-              <span className="text-accent-soft">Sua rede.</span>
+              <span className="text-accent-soft">{t("auth.hero3")}</span>
             </h2>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85">
-              Compartilhe receitas, participe de comunidades temáticas e desafios de hábitos — e
-              construa uma relação mais leve com a comida, junto com outras pessoas.
+              {t("auth.heroText")}
             </p>
           </div>
 
           <ul className="space-y-3">
             {FEATURES.map((f) => (
-              <li key={f.label} className="flex items-center gap-3 text-sm text-white/90">
+              <li key={f.key} className="flex items-center gap-3 text-sm text-white/90">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/15 backdrop-blur">
                   <f.icon className="h-4 w-4" />
                 </span>
-                <span>{f.label}</span>
+                <span>{t(f.key)}</span>
               </li>
             ))}
           </ul>
         </div>
 
         <p className="relative z-10 text-xs text-white/70">
-          © {new Date().getFullYear()} NutriConnect. Sua caminhada, no seu ritmo.
+          © {new Date().getFullYear()} NutriConnect. {t("auth.footer")}
         </p>
       </div>
 

@@ -7,6 +7,7 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { updateCurrentUser } from "@/lib/auth";
 import { JOURNEY_GOALS, loadState, upsertProfile } from "@/lib/community";
 import { Field } from "./login";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/perfil/editar")({
   head: () => ({ meta: [{ title: "Editar perfil — NutriConnect" }] }),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/perfil/editar")({
 
 function EditProfilePage() {
   const { user, hydrated } = useRequireAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -38,7 +40,7 @@ function EditProfilePage() {
     e.preventDefault();
     const cleanName = name.trim();
     if (!cleanName) {
-      toast.error("O nome não pode ficar em branco.");
+      toast.error(t("edit.blankName"));
       return;
     }
     updateCurrentUser({
@@ -55,7 +57,7 @@ function EditProfilePage() {
       upsertProfile({ ...publicProfile, name: cleanName, bio: bio.trim() || publicProfile.bio });
     }
 
-    toast.success("Perfil atualizado!");
+    toast.success(t("edit.updated"));
     navigate({ to: "/perfil/$userId", params: { userId: user.id } });
   };
 
@@ -69,13 +71,13 @@ function EditProfilePage() {
           className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar para o perfil</span>
+          <span>{t("edit.back")}</span>
         </Link>
 
-        <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">Editar perfil</h1>
-        <p className="text-sm text-muted-foreground mb-8">
-          Como você aparece para a comunidade: nome, bio, contato e o foco da sua jornada.
-        </p>
+        <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">
+          {t("edit.title")}
+        </h1>
+        <p className="text-sm text-muted-foreground mb-8">{t("edit.subtitle")}</p>
 
         <form onSubmit={handleSave} className="space-y-5">
           <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
@@ -84,30 +86,32 @@ function EditProfilePage() {
                 <User className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-sm font-bold font-display text-foreground">Meu perfil</p>
-                <p className="text-[11px] text-muted-foreground">Nome, bio e contato</p>
+                <p className="text-sm font-bold font-display text-foreground">
+                  {t("edit.myProfile")}
+                </p>
+                <p className="text-[11px] text-muted-foreground">{t("edit.nameBioContact")}</p>
               </div>
             </div>
             <div className="space-y-4">
-              <Field label="Nome completo">
+              <Field label={t("signup.fullName")}>
                 <input
                   className="input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Como gostaria de ser chamado(a)?"
+                  placeholder={t("signup.namePlaceholder")}
                 />
               </Field>
-              <Field label="Bio">
+              <Field label={t("edit.bio")}>
                 <textarea
                   rows={3}
                   className="textarea"
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Fale um pouco sobre a sua jornada alimentar..."
+                  placeholder={t("edit.bioPlaceholder")}
                 />
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Telefone">
+                <Field label={t("signup.phone")}>
                   <input
                     className="input"
                     value={phone}
@@ -115,12 +119,12 @@ function EditProfilePage() {
                     placeholder="(11) 99999-9999"
                   />
                 </Field>
-                <Field label="E-mail">
+                <Field label={t("auth.email")}>
                   <input
                     className="input opacity-60"
                     value={user.email}
                     disabled
-                    title="O e-mail não pode ser alterado"
+                    title={t("edit.emailLocked")}
                   />
                 </Field>
               </div>
@@ -133,10 +137,10 @@ function EditProfilePage() {
                 <Heart className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-sm font-bold font-display text-foreground">Minha jornada</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Qual o foco da sua caminhada alimentar?
+                <p className="text-sm font-bold font-display text-foreground">
+                  {t("edit.myJourney")}
                 </p>
+                <p className="text-[11px] text-muted-foreground">{t("signup.goalQuestion")}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -162,14 +166,14 @@ function EditProfilePage() {
               type="submit"
               className="flex-1 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer"
             >
-              Salvar alterações
+              {t("edit.saveChanges")}
             </button>
             <Link
               to="/perfil/$userId"
               params={{ userId: user.id }}
               className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary"
             >
-              Cancelar
+              {t("common.cancel")}
             </Link>
           </div>
         </form>

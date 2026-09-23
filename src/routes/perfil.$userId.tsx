@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { useI18n } from "@/hooks/use-i18n";
 import { initials } from "@/lib/community";
 import {
   getAdministeredCommunity,
@@ -64,6 +65,7 @@ export const Route = createFileRoute("/perfil/$userId")({
 function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
   const { user, hydrated: authHydrated } = useRequireAuth();
+  const { t } = useI18n();
   const state = useCommunity();
   const { profiles, posts, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ function PublicProfilePage() {
 
   const handleSignOut = () => {
     signOut();
-    toast.success("Você saiu da sua conta.");
+    toast.success(t("settings.signout.success"));
     navigate({ to: "/login" });
   };
 
@@ -87,12 +89,12 @@ function PublicProfilePage() {
   const handleBlock = () => {
     if (!user || !profile) return;
     blockUser(user.id, { userId, name: profile.name });
-    toast.success(`${profile.name} foi bloqueado(a).`);
+    toast.success(t("profile.blockedToast").replace("{name}", profile.name));
   };
   const handleUnblock = () => {
     if (!user || !profile) return;
     unblockUser(user.id, userId);
-    toast.success(`${profile.name} foi desbloqueado(a).`);
+    toast.success(t("profile.unblockedToast").replace("{name}", profile.name));
   };
 
   const stored = profiles.find((p) => p.userId === userId);
@@ -104,13 +106,13 @@ function PublicProfilePage() {
       ? {
           userId,
           name: user.name,
-          bio: user.bio || "Este perfil ainda não tem biografia.",
+          bio: user.bio || t("profile.noBio"),
         }
       : fromPost
         ? {
             userId,
             name: fromPost.authorName,
-            bio: "Membro da comunidade NutriConnect.",
+            bio: t("profile.memberBio"),
           }
         : null);
 
@@ -133,9 +135,9 @@ function PublicProfilePage() {
   const userGoals =
     isSelf && user
       ? [
-          user.journeyGoal || user.goal || "Construir uma relação mais leve com a comida",
-          "Cozinhar com alimentos frescos em casa",
-          "Respeitar meus sinais de fome e saciedade",
+          user.journeyGoal || user.goal || t("profile.goal1"),
+          t("profile.goal2"),
+          t("profile.goal3"),
         ]
       : [];
 
@@ -144,29 +146,27 @@ function PublicProfilePage() {
       <SiteHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {!hydrated ? (
-          <p className="text-sm text-muted-foreground">Carregando…</p>
+          <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
           <>
             <Lock className="h-8 w-8 text-muted-foreground mb-3" />
-            <h1 className="text-2xl font-bold text-primary">Perfil indisponível</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Este perfil não está disponível para você no momento.
-            </p>
+            <h1 className="text-2xl font-bold text-primary">{t("profile.unavailable")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("profile.unavailableText")}</p>
             <Link
               to="/comunidades"
               className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
             >
-              Voltar para comunidades
+              {t("profile.backToCommunities")}
             </Link>
           </>
         ) : !profile ? (
           <>
-            <h1 className="text-2xl font-bold text-primary">Perfil não encontrado</h1>
+            <h1 className="text-2xl font-bold text-primary">{t("profile.notFound")}</h1>
             <Link
               to="/comunidades"
               className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
             >
-              Voltar para comunidades
+              {t("profile.backToCommunities")}
             </Link>
           </>
         ) : (
@@ -195,7 +195,7 @@ function PublicProfilePage() {
                       <button
                         type="button"
                         className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
-                        aria-label="Abrir menu do perfil"
+                        aria-label={t("profile.openMenu")}
                       >
                         <MoreVertical className="h-4 w-4" />
                       </button>
@@ -208,7 +208,7 @@ function PublicProfilePage() {
                             className="flex items-center gap-2 cursor-pointer"
                           >
                             <Settings className="h-4 w-4" />
-                            <span>Configurações</span>
+                            <span>{t("settings.title")}</span>
                           </Link>
                         </DropdownMenuItem>
                         {!isProfessional && (
@@ -218,7 +218,7 @@ function PublicProfilePage() {
                               className="flex items-center gap-2 cursor-pointer"
                             >
                               <BadgeCheck className="h-4 w-4" />
-                              <span>Verificação profissional</span>
+                              <span>{t("profile.proVerification")}</span>
                             </Link>
                           </DropdownMenuItem>
                         )}
@@ -227,7 +227,7 @@ function PublicProfilePage() {
                             <Link to="/convites" className="flex items-center gap-2 cursor-pointer">
                               <Inbox className="h-4 w-4" />
                               <span>
-                                Convites de comunidades
+                                {t("profile.invites")}
                                 {inviteCount > 0 ? ` (${inviteCount})` : ""}
                               </span>
                             </Link>
@@ -237,7 +237,7 @@ function PublicProfilePage() {
                           <DropdownMenuItem asChild>
                             <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
                               <ShieldCheck className="h-4 w-4" />
-                              <span>Painel da plataforma</span>
+                              <span>{t("profile.adminPanel")}</span>
                             </Link>
                           </DropdownMenuItem>
                         )}
@@ -247,7 +247,7 @@ function PublicProfilePage() {
                           className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
                         >
                           <LogOut className="h-4 w-4" />
-                          <span>Sair da conta</span>
+                          <span>{t("settings.signout")}</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     ) : (
@@ -258,7 +258,7 @@ function PublicProfilePage() {
                             className="flex items-center gap-2 cursor-pointer"
                           >
                             <UserCheck className="h-4 w-4" />
-                            <span>Desbloquear</span>
+                            <span>{t("profile.unblock")}</span>
                           </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem
@@ -266,7 +266,7 @@ function PublicProfilePage() {
                             className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
                           >
                             <UserX className="h-4 w-4" />
-                            <span>Bloquear</span>
+                            <span>{t("profile.block")}</span>
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
@@ -282,7 +282,7 @@ function PublicProfilePage() {
                     </h1>
                     {isProfessional && professionalInfo && (
                       <p className="mt-1 text-xs sm:text-sm font-semibold text-accent">
-                        Profissional verificado · {professionalInfo.profession} ·{" "}
+                        {t("profile.verifiedPro")} · {professionalInfo.profession} ·{" "}
                         {professionalInfo.council} {professionalInfo.registration}/
                         {professionalInfo.uf}
                       </p>
@@ -329,7 +329,7 @@ function PublicProfilePage() {
                         className="flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        <span>Editar perfil</span>
+                        <span>{t("profile.editProfile")}</span>
                       </Link>
                       <ShareModal
                         triggerButton={
@@ -338,7 +338,7 @@ function PublicProfilePage() {
                             className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
                           >
                             <Plus className="h-4 w-4" />
-                            <span>Compartilhar</span>
+                            <span>{t("profile.share")}</span>
                           </button>
                         }
                       />
@@ -351,9 +351,9 @@ function PublicProfilePage() {
             {!isSelf && privacy?.privateProfile && (
               <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center mb-8">
                 <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm font-semibold text-foreground">Este perfil é privado</p>
+                <p className="text-sm font-semibold text-foreground">{t("profile.privateTitle")}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {profile.name} decidiu manter a jornada e as publicações visíveis só para si.
+                  {t("profile.privateText").replace("{name}", profile.name)}
                 </p>
               </div>
             )}
@@ -364,7 +364,7 @@ function PublicProfilePage() {
                   <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Receitas Preparadas
+                        {t("profile.stat.recipes")}
                       </span>
                       <ChefHat className="h-5 w-5 text-accent" />
                     </div>
@@ -372,27 +372,29 @@ function PublicProfilePage() {
                       {preparedRecipes.length}
                     </p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      registros na comunidade
+                      {t("profile.stat.recipesSub")}
                     </p>
                   </div>
 
                   <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Desafios Ativos
+                        {t("profile.stat.challenges")}
                       </span>
                       <Award className="h-5 w-5 text-accent" />
                     </div>
                     <p className="mt-2 text-2xl font-bold font-display text-foreground">
                       {myChallenges.length}
                     </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">hábitos em construção</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      {t("profile.stat.challengesSub")}
+                    </p>
                   </div>
 
                   <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Compartilhamentos
+                        {t("profile.stat.shares")}
                       </span>
                       <Sparkles className="h-5 w-5 text-accent" />
                     </div>
@@ -400,19 +402,23 @@ function PublicProfilePage() {
                       {myPosts.length}
                     </p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      relatos e ideias na rede
+                      {t("profile.stat.sharesSub")}
                     </p>
                   </div>
 
                   <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Ritmo da Caminhada
+                        {t("profile.stat.pace")}
                       </span>
                       <Compass className="h-5 w-5 text-accent" />
                     </div>
-                    <p className="mt-2 text-base font-bold text-foreground">Constante</p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">um dia de cada vez</p>
+                    <p className="mt-2 text-base font-bold text-foreground">
+                      {t("profile.stat.paceValue")}
+                    </p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      {t("profile.stat.paceSub")}
+                    </p>
                   </div>
                 </div>
 
@@ -423,13 +429,15 @@ function PublicProfilePage() {
                       <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
                         <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                           <ChefHat className="h-5 w-5 text-accent" />
-                          <span>Receitas que Preparou ({preparedRecipes.length})</span>
+                          <span>
+                            {t("profile.recipesDone")} ({preparedRecipes.length})
+                          </span>
                         </h2>
                         <Link
                           to="/receitas"
                           className="text-xs text-primary font-semibold hover:underline"
                         >
-                          Descobrir mais receitas
+                          {t("profile.discoverMore")}
                         </Link>
                       </div>
 
@@ -443,22 +451,20 @@ function PublicProfilePage() {
                         <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
                           <ChefHat className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                           <p className="text-sm font-semibold text-foreground">
-                            {isSelf
-                              ? "Você ainda não marcou nenhuma receita como preparada"
-                              : "Ainda não preparou nenhuma receita."}
+                            {isSelf ? t("profile.noRecipesSelf") : t("profile.noRecipesOther")}
                           </p>
                           {isSelf && (
                             <>
                               <p className="text-xs text-muted-foreground mt-1">
-                                Ao navegar pelas receitas da comunidade, clique em{" "}
-                                <b>"Eu preparei"</b> para registrar suas conquistas na cozinha!
+                                {t("profile.howTo1")} <b>"{t("profile.howTo2")}"</b>{" "}
+                                {t("profile.howTo3")}
                               </p>
                               <div className="mt-4">
                                 <Link
                                   to="/receitas"
                                   className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground inline-block"
                                 >
-                                  Explorar receitas
+                                  {t("profile.exploreRecipes")}
                                 </Link>
                               </div>
                             </>
@@ -472,7 +478,9 @@ function PublicProfilePage() {
                       <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
                         <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                           <Sparkles className="h-5 w-5 text-accent" />
-                          <span>Publicações na comunidade ({myPosts.length})</span>
+                          <span>
+                            {t("profile.postsTitle")} ({myPosts.length})
+                          </span>
                         </h2>
                       </div>
 
@@ -485,9 +493,7 @@ function PublicProfilePage() {
                       ) : (
                         <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
                           <p className="text-sm text-muted-foreground">
-                            {isSelf
-                              ? "Você ainda não compartilhou nenhuma publicação."
-                              : "Ainda sem publicações."}
+                            {isSelf ? t("profile.noPostsSelf") : t("profile.noPostsOther")}
                           </p>
                           {isSelf && (
                             <div className="mt-3">
@@ -505,7 +511,7 @@ function PublicProfilePage() {
                       <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
                         <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3 flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4 text-accent" />
-                          <span>Meus Objetivos</span>
+                          <span>{t("profile.myGoals")}</span>
                         </h3>
                         <ul className="space-y-2.5 text-xs text-foreground">
                           {userGoals.map((goal, i) => (
@@ -525,13 +531,13 @@ function PublicProfilePage() {
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground flex items-center gap-2">
                           <Award className="h-4 w-4 text-accent" />
-                          <span>Desafios em Andamento</span>
+                          <span>{t("profile.activeChallenges")}</span>
                         </h3>
                         <Link
                           to="/desafios"
                           className="text-xs text-primary font-semibold hover:underline"
                         >
-                          Ver todos
+                          {t("profile.seeAll")}
                         </Link>
                       </div>
 
@@ -575,15 +581,15 @@ function PublicProfilePage() {
                         <div className="text-center py-4 text-xs text-muted-foreground">
                           <p>
                             {isSelf
-                              ? "Você ainda não está participando de nenhum desafio."
-                              : "Ainda não participa de nenhum desafio."}
+                              ? t("profile.noChallengesSelf")
+                              : t("profile.noChallengesOther")}
                           </p>
                           {isSelf && (
                             <Link
                               to="/desafios"
                               className="mt-2.5 inline-block text-xs font-semibold text-accent hover:underline"
                             >
-                              Escolher um desafio de hábito
+                              {t("profile.pickChallenge")}
                             </Link>
                           )}
                         </div>
@@ -593,7 +599,7 @@ function PublicProfilePage() {
                     {administeredCommunities.length > 0 && (
                       <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
                         <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3">
-                          Comunidade que administra
+                          {t("profile.administers")}
                         </h3>
                         <ul className="flex flex-wrap gap-2">
                           {administeredCommunities.map((c) => (
