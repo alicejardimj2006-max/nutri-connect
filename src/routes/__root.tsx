@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { APPEARANCE_INIT_SCRIPT, initAppearance } from "../lib/appearance";
+import { LANG_INIT_SCRIPT, initI18n } from "../lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -107,8 +108,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
-    // Aplica o tema salvo antes da primeira pintura, para não piscar o tema padrão.
-    scripts: [{ children: APPEARANCE_INIT_SCRIPT }],
+    // Aplica o tema e o idioma salvos antes da primeira pintura, para não piscar o padrão.
+    scripts: [{ children: APPEARANCE_INIT_SCRIPT }, { children: LANG_INIT_SCRIPT }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -134,6 +135,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => initAppearance(), []);
+  useEffect(() => initI18n(), []);
 
   return (
     <QueryClientProvider client={queryClient}>

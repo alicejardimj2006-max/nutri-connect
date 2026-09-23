@@ -13,6 +13,9 @@ import {
   Inbox,
   ShieldCheck,
   Pencil,
+  UserX,
+  UserCheck,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
@@ -26,9 +29,10 @@ import {
   isPlatformAdmin,
 } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
-import { signOut } from "@/lib/auth";
+import { getStoredUserById, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
+import { blockUser, isUserBlocked, loadPrivacySettings, unblockUser } from "@/lib/settings";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +77,23 @@ function PublicProfilePage() {
   };
 
   const isSelf = user?.id === userId;
+
+  const viewedAccount = !isSelf ? getStoredUserById(userId) : null;
+  const privacy = !isSelf ? loadPrivacySettings(userId) : null;
+  const iBlockedThem = !isSelf && user ? isUserBlocked(user.id, userId) : false;
+  const theyBlockedMe = !isSelf && user ? isUserBlocked(userId, user.id) : false;
+  const unavailable = !isSelf && (iBlockedThem || theyBlockedMe);
+
+  const handleBlock = () => {
+    if (!user || !profile) return;
+    blockUser(user.id, { userId, name: profile.name });
+    toast.success(`${profile.name} foi bloqueado(a).`);
+  };
+  const handleUnblock = () => {
+    if (!user || !profile) return;
+    unblockUser(user.id, userId);
+    toast.success(`${profile.name} foi desbloqueado(a).`);
+  };
 
   const stored = profiles.find((p) => p.userId === userId);
   const fromPost = posts.find((p) => p.authorId === userId);
@@ -124,6 +145,20 @@ function PublicProfilePage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {!hydrated ? (
           <p className="text-sm text-muted-foreground">Carregando…</p>
+        ) : unavailable ? (
+          <>
+            <Lock className="h-8 w-8 text-muted-foreground mb-3" />
+            <h1 className="text-2xl font-bold text-primary">Perfil indisponível</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Este perfil não está disponível para você no momento.
+            </p>
+            <Link
+              to="/comunidades"
+              className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
+            >
+              Voltar para comunidades
+            </Link>
+          </>
         ) : !profile ? (
           <>
             <h1 className="text-2xl font-bold text-primary">Perfil não encontrado</h1>
@@ -182,6 +217,21 @@ function PublicProfilePage() {
                       <p className="text-xs text-muted-foreground mt-1">
                         📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
                       </p>
+                    )}
+                    {!isSelf && privacy && viewedAccount && !unavailable && (
+                      <>
+                        {(privacy.showEmail || privacy.showPhone) && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {privacy.showEmail && `📧 ${viewedAccount.email}`}
+                            {privacy.showEmail && privacy.showPhone && viewedAccount.phone
+                              ? " · "
+                              : ""}
+                            {privacy.showPhone && viewedAccount.phone
+                              ? `📞 ${viewedAccount.phone}`
+                              : ""}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -271,255 +321,311 @@ function PublicProfilePage() {
                       </DropdownMenu>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
 
-            {/* Métricas da Jornada */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Receitas Preparadas
-                  </span>
-                  <ChefHat className="h-5 w-5 text-accent" />
-                </div>
-                <p className="mt-2 text-2xl font-bold font-display text-foreground">
-                  {preparedRecipes.length}
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">registros na comunidade</p>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Desafios Ativos</span>
-                  <Award className="h-5 w-5 text-accent" />
-                </div>
-                <p className="mt-2 text-2xl font-bold font-display text-foreground">
-                  {myChallenges.length}
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">hábitos em construção</p>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Compartilhamentos
-                  </span>
-                  <Sparkles className="h-5 w-5 text-accent" />
-                </div>
-                <p className="mt-2 text-2xl font-bold font-display text-foreground">
-                  {myPosts.length}
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">relatos e ideias na rede</p>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Ritmo da Caminhada
-                  </span>
-                  <Compass className="h-5 w-5 text-accent" />
-                </div>
-                <p className="mt-2 text-base font-bold text-foreground">Constante</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">um dia de cada vez</p>
-              </div>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-              <div className="space-y-8">
-                {/* Receitas que preparou */}
-                <section>
-                  <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
-                    <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                      <ChefHat className="h-5 w-5 text-accent" />
-                      <span>Receitas que Preparou ({preparedRecipes.length})</span>
-                    </h2>
-                    <Link
-                      to="/receitas"
-                      className="text-xs text-primary font-semibold hover:underline"
-                    >
-                      Descobrir mais receitas
-                    </Link>
-                  </div>
-
-                  {preparedRecipes.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {preparedRecipes.map((r) => (
-                        <PostCard key={r.id} post={r} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
-                      <ChefHat className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-foreground">
-                        {isSelf
-                          ? "Você ainda não marcou nenhuma receita como preparada"
-                          : "Ainda não preparou nenhuma receita."}
-                      </p>
-                      {isSelf && (
-                        <>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Ao navegar pelas receitas da comunidade, clique em <b>"Eu preparei"</b>{" "}
-                            para registrar suas conquistas na cozinha!
-                          </p>
-                          <div className="mt-4">
-                            <Link
-                              to="/receitas"
-                              className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground inline-block"
+                  {!isSelf && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
+                            aria-label="Abrir menu do perfil"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          {iBlockedThem ? (
+                            <DropdownMenuItem
+                              onClick={handleUnblock}
+                              className="flex items-center gap-2 cursor-pointer"
                             >
-                              Explorar receitas
-                            </Link>
-                          </div>
-                        </>
-                      )}
+                              <UserCheck className="h-4 w-4" />
+                              <span>Desbloquear</span>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={handleBlock}
+                              className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
+                            >
+                              <UserX className="h-4 w-4" />
+                              <span>Bloquear</span>
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   )}
-                </section>
+                </div>
+              </div>
+            </div>
 
-                {/* Publicações */}
-                <section>
-                  <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
-                    <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-accent" />
-                      <span>Publicações na comunidade ({myPosts.length})</span>
-                    </h2>
+            {!isSelf && privacy?.privateProfile && (
+              <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center mb-8">
+                <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm font-semibold text-foreground">Este perfil é privado</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {profile.name} decidiu manter a jornada e as publicações visíveis só para si.
+                </p>
+              </div>
+            )}
+            {(isSelf || !privacy?.privateProfile) && (
+              <>
+                {/* Métricas da Jornada */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Receitas Preparadas
+                      </span>
+                      <ChefHat className="h-5 w-5 text-accent" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold font-display text-foreground">
+                      {preparedRecipes.length}
+                    </p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      registros na comunidade
+                    </p>
                   </div>
 
-                  {myPosts.length > 0 ? (
-                    <div className="space-y-4">
-                      {myPosts.map((p) => (
-                        <PostCard key={p.id} post={p} />
-                      ))}
+                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Desafios Ativos
+                      </span>
+                      <Award className="h-5 w-5 text-accent" />
                     </div>
-                  ) : (
-                    <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
-                      <p className="text-sm text-muted-foreground">
-                        {isSelf
-                          ? "Você ainda não compartilhou nenhuma publicação."
-                          : "Ainda sem publicações."}
-                      </p>
-                      {isSelf && (
-                        <div className="mt-3">
-                          <ShareModal />
+                    <p className="mt-2 text-2xl font-bold font-display text-foreground">
+                      {myChallenges.length}
+                    </p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">hábitos em construção</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Compartilhamentos
+                      </span>
+                      <Sparkles className="h-5 w-5 text-accent" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold font-display text-foreground">
+                      {myPosts.length}
+                    </p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      relatos e ideias na rede
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Ritmo da Caminhada
+                      </span>
+                      <Compass className="h-5 w-5 text-accent" />
+                    </div>
+                    <p className="mt-2 text-base font-bold text-foreground">Constante</p>
+                    <p className="mt-1 text-[11px] text-muted-foreground">um dia de cada vez</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+                  <div className="space-y-8">
+                    {/* Receitas que preparou */}
+                    <section>
+                      <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
+                        <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                          <ChefHat className="h-5 w-5 text-accent" />
+                          <span>Receitas que Preparou ({preparedRecipes.length})</span>
+                        </h2>
+                        <Link
+                          to="/receitas"
+                          className="text-xs text-primary font-semibold hover:underline"
+                        >
+                          Descobrir mais receitas
+                        </Link>
+                      </div>
+
+                      {preparedRecipes.length > 0 ? (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          {preparedRecipes.map((r) => (
+                            <PostCard key={r.id} post={r} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
+                          <ChefHat className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm font-semibold text-foreground">
+                            {isSelf
+                              ? "Você ainda não marcou nenhuma receita como preparada"
+                              : "Ainda não preparou nenhuma receita."}
+                          </p>
+                          {isSelf && (
+                            <>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Ao navegar pelas receitas da comunidade, clique em{" "}
+                                <b>"Eu preparei"</b> para registrar suas conquistas na cozinha!
+                              </p>
+                              <div className="mt-4">
+                                <Link
+                                  to="/receitas"
+                                  className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground inline-block"
+                                >
+                                  Explorar receitas
+                                </Link>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </section>
+
+                    {/* Publicações */}
+                    <section>
+                      <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
+                        <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                          <Sparkles className="h-5 w-5 text-accent" />
+                          <span>Publicações na comunidade ({myPosts.length})</span>
+                        </h2>
+                      </div>
+
+                      {myPosts.length > 0 ? (
+                        <div className="space-y-4">
+                          {myPosts.map((p) => (
+                            <PostCard key={p.id} post={p} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
+                          <p className="text-sm text-muted-foreground">
+                            {isSelf
+                              ? "Você ainda não compartilhou nenhuma publicação."
+                              : "Ainda sem publicações."}
+                          </p>
+                          {isSelf && (
+                            <div className="mt-3">
+                              <ShareModal />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </section>
+                  </div>
+
+                  {/* Barra Lateral */}
+                  <aside className="space-y-6">
+                    {isSelf && userGoals.length > 0 && (
+                      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+                        <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3 flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-accent" />
+                          <span>Meus Objetivos</span>
+                        </h3>
+                        <ul className="space-y-2.5 text-xs text-foreground">
+                          {userGoals.map((goal, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-2 rounded-xl bg-secondary/40 p-2.5"
+                            >
+                              <span className="text-accent font-bold mt-0.5">✓</span>
+                              <span className="leading-snug">{goal}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground flex items-center gap-2">
+                          <Award className="h-4 w-4 text-accent" />
+                          <span>Desafios em Andamento</span>
+                        </h3>
+                        <Link
+                          to="/desafios"
+                          className="text-xs text-primary font-semibold hover:underline"
+                        >
+                          Ver todos
+                        </Link>
+                      </div>
+
+                      {myChallenges.length > 0 ? (
+                        <div className="space-y-3">
+                          {myChallenges.map((c) => {
+                            const completed = (c.progress?.[userId] || []).length;
+                            const total = c.steps.length;
+                            const isDone = c.completedBy.includes(userId);
+                            return (
+                              <Link
+                                key={c.id}
+                                to="/desafios/$challengeId"
+                                params={{ challengeId: c.id }}
+                                className="block rounded-xl bg-secondary/50 p-3 text-xs hover:bg-secondary transition"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 font-bold text-foreground">
+                                    <span>{c.badgeIcon}</span> {c.title}
+                                  </div>
+                                  {isDone && (
+                                    <Award className="h-3.5 w-3.5 text-primary shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-1">
+                                  {c.description}
+                                </p>
+                                {total > 0 && (
+                                  <div className="h-1.5 w-full rounded-full bg-card overflow-hidden mt-2">
+                                    <div
+                                      className="h-full rounded-full bg-primary transition-all"
+                                      style={{ width: `${Math.round((completed / total) * 100)}%` }}
+                                    />
+                                  </div>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-xs text-muted-foreground">
+                          <p>
+                            {isSelf
+                              ? "Você ainda não está participando de nenhum desafio."
+                              : "Ainda não participa de nenhum desafio."}
+                          </p>
+                          {isSelf && (
+                            <Link
+                              to="/desafios"
+                              className="mt-2.5 inline-block text-xs font-semibold text-accent hover:underline"
+                            >
+                              Escolher um desafio de hábito
+                            </Link>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </section>
-              </div>
 
-              {/* Barra Lateral */}
-              <aside className="space-y-6">
-                {isSelf && userGoals.length > 0 && (
-                  <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                    <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3 flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-accent" />
-                      <span>Meus Objetivos</span>
-                    </h3>
-                    <ul className="space-y-2.5 text-xs text-foreground">
-                      {userGoals.map((goal, i) => (
-                        <li
-                          key={i}
-                          className="flex items-start gap-2 rounded-xl bg-secondary/40 p-2.5"
-                        >
-                          <span className="text-accent font-bold mt-0.5">✓</span>
-                          <span className="leading-snug">{goal}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground flex items-center gap-2">
-                      <Award className="h-4 w-4 text-accent" />
-                      <span>Desafios em Andamento</span>
-                    </h3>
-                    <Link
-                      to="/desafios"
-                      className="text-xs text-primary font-semibold hover:underline"
-                    >
-                      Ver todos
-                    </Link>
-                  </div>
-
-                  {myChallenges.length > 0 ? (
-                    <div className="space-y-3">
-                      {myChallenges.map((c) => {
-                        const completed = (c.progress?.[userId] || []).length;
-                        const total = c.steps.length;
-                        const isDone = c.completedBy.includes(userId);
-                        return (
-                          <Link
-                            key={c.id}
-                            to="/desafios/$challengeId"
-                            params={{ challengeId: c.id }}
-                            className="block rounded-xl bg-secondary/50 p-3 text-xs hover:bg-secondary transition"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5 font-bold text-foreground">
-                                <span>{c.badgeIcon}</span> {c.title}
-                              </div>
-                              {isDone && <Award className="h-3.5 w-3.5 text-primary shrink-0" />}
-                            </div>
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              {c.description}
-                            </p>
-                            {total > 0 && (
-                              <div className="h-1.5 w-full rounded-full bg-card overflow-hidden mt-2">
-                                <div
-                                  className="h-full rounded-full bg-primary transition-all"
-                                  style={{ width: `${Math.round((completed / total) * 100)}%` }}
-                                />
-                              </div>
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-xs text-muted-foreground">
-                      <p>
-                        {isSelf
-                          ? "Você ainda não está participando de nenhum desafio."
-                          : "Ainda não participa de nenhum desafio."}
-                      </p>
-                      {isSelf && (
-                        <Link
-                          to="/desafios"
-                          className="mt-2.5 inline-block text-xs font-semibold text-accent hover:underline"
-                        >
-                          Escolher um desafio de hábito
-                        </Link>
-                      )}
-                    </div>
-                  )}
+                    {administeredCommunities.length > 0 && (
+                      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
+                        <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3">
+                          Comunidade que administra
+                        </h3>
+                        <ul className="flex flex-wrap gap-2">
+                          {administeredCommunities.map((c) => (
+                            <li key={c.id}>
+                              <Link
+                                to="/comunidades/$slug"
+                                params={{ slug: c.slug }}
+                                className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-muted"
+                              >
+                                {c.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </aside>
                 </div>
-
-                {administeredCommunities.length > 0 && (
-                  <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                    <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3">
-                      Comunidade que administra
-                    </h3>
-                    <ul className="flex flex-wrap gap-2">
-                      {administeredCommunities.map((c) => (
-                        <li key={c.id}>
-                          <Link
-                            to="/comunidades/$slug"
-                            params={{ slug: c.slug }}
-                            className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-muted"
-                          >
-                            {c.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </aside>
-            </div>
+              </>
+            )}
           </>
         )}
       </main>

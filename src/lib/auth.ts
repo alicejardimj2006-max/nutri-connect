@@ -149,3 +149,38 @@ export function updateCurrentUser(updates: Partial<AuthUser>): AuthUser | null {
 export function mockLogin(email: string): AuthUser {
   return loginUser(email);
 }
+
+export function getStoredUserById(id: string): StoredAccount | null {
+  const users = getStoredUsers();
+  return Object.values(users).find((u) => u.id === id) ?? null;
+}
+
+export function changePassword(currentPassword: string, newPassword: string) {
+  const current = getUser();
+  if (!current) throw new Error("Nenhuma conta autenticada.");
+
+  const key = current.email.toLowerCase().trim();
+  const users = getStoredUsers();
+  const stored = users[key];
+  if (!stored || stored.password !== currentPassword) {
+    throw new Error("Senha atual incorreta.");
+  }
+
+  users[key] = { ...stored, password: newPassword };
+  if (typeof window !== "undefined") {
+    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+  }
+}
+
+export function deleteAccount() {
+  const current = getUser();
+  if (!current) return;
+
+  const key = current.email.toLowerCase().trim();
+  const users = getStoredUsers();
+  delete users[key];
+  if (typeof window !== "undefined") {
+    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+  }
+  signOut();
+}

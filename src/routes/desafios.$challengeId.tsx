@@ -24,6 +24,7 @@ import {
   type PublicProfile,
 } from "@/lib/community";
 import type { AuthUser } from "@/lib/auth";
+import { sendBrowserNotification } from "@/lib/settings";
 
 export const Route = createFileRoute("/desafios/$challengeId")({
   head: () => ({
@@ -81,8 +82,7 @@ function ChallengeDetailPage() {
   const isCompleted = challenge.completedBy.includes(currentUserId);
   const totalSteps = challenge.steps.length;
   const myCompletedSteps = challenge.progress[currentUserId] || [];
-  const progressPct =
-    totalSteps > 0 ? Math.round((myCompletedSteps.length / totalSteps) * 100) : 0;
+  const progressPct = totalSteps > 0 ? Math.round((myCompletedSteps.length / totalSteps) * 100) : 0;
   const earnedBadges = getEarnedBadges(currentUserId, challenges);
 
   const handleJoin = () => {
@@ -104,10 +104,21 @@ function ChallengeDetailPage() {
       return;
     }
     const willComplete =
-      !isCompleted && totalSteps > 0 && myCompletedSteps.length === totalSteps - 1 && !myCompletedSteps.includes(index);
+      !isCompleted &&
+      totalSteps > 0 &&
+      myCompletedSteps.length === totalSteps - 1 &&
+      !myCompletedSteps.includes(index);
     toggleChallengeStep(challenge.id, user.id, index);
     if (willComplete) {
-      toast.success(`Desafio concluído! Você ganhou o distintivo ${challenge.badgeIcon} ${challenge.badgeLabel}.`);
+      toast.success(
+        `Desafio concluído! Você ganhou o distintivo ${challenge.badgeIcon} ${challenge.badgeLabel}.`,
+      );
+      sendBrowserNotification(
+        user.id,
+        "achievements",
+        "Desafio concluído! 🏆",
+        `Você ganhou o distintivo ${challenge.badgeIcon} ${challenge.badgeLabel}.`,
+      );
     }
   };
 
@@ -388,9 +399,7 @@ function ChallengeDetailPage() {
             </h3>
             <div
               className={`flex items-center gap-3 rounded-2xl border p-4 mb-4 ${
-                isCompleted
-                  ? "border-accent/40 bg-accent-soft/40"
-                  : "border-border bg-secondary/30"
+                isCompleted ? "border-accent/40 bg-accent-soft/40" : "border-border bg-secondary/30"
               }`}
             >
               <span className="text-3xl">{isCompleted ? challenge.badgeIcon : "🔒"}</span>

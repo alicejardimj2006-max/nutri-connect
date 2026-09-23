@@ -35,6 +35,11 @@ import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configu
 import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
 import { Route as PerfilPersonalizacaoRouteImport } from './routes/perfil.personalizacao'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
+import { Route as PerfilConfiguracoesIndexRouteImport } from './routes/perfil.configuracoes.index'
+import { Route as PerfilConfiguracoesContaRouteImport } from './routes/perfil.configuracoes.conta'
+import { Route as PerfilConfiguracoesIdiomaRouteImport } from './routes/perfil.configuracoes.idioma'
+import { Route as PerfilConfiguracoesNotificacoesRouteImport } from './routes/perfil.configuracoes.notificacoes'
+import { Route as PerfilConfiguracoesPrivacidadeRouteImport } from './routes/perfil.configuracoes.privacidade'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -166,6 +171,36 @@ const ReceitasIdRoute = ReceitasIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ReceitasRoute,
 } as any)
+const PerfilConfiguracoesIndexRoute =
+  PerfilConfiguracoesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
+const PerfilConfiguracoesContaRoute =
+  PerfilConfiguracoesContaRouteImport.update({
+    id: '/conta',
+    path: '/conta',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
+const PerfilConfiguracoesIdiomaRoute =
+  PerfilConfiguracoesIdiomaRouteImport.update({
+    id: '/idioma',
+    path: '/idioma',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
+const PerfilConfiguracoesNotificacoesRoute =
+  PerfilConfiguracoesNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
+const PerfilConfiguracoesPrivacidadeRoute =
+  PerfilConfiguracoesPrivacidadeRouteImport.update({
+    id: '/privacidade',
+    path: '/privacidade',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -188,12 +223,17 @@ export interface FileRoutesByFullPath {
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
-  '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
+  '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
   '/perfil/editar': typeof PerfilEditarRoute
   '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
   '/desafios/': typeof DesafiosIndexRoute
+  '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
+  '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
+  '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
+  '/perfil/configuracoes/': typeof PerfilConfiguracoesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -214,12 +254,16 @@ export interface FileRoutesByTo {
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
-  '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
   '/perfil/editar': typeof PerfilEditarRoute
   '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades': typeof ComunidadesIndexRoute
   '/desafios': typeof DesafiosIndexRoute
+  '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
+  '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
+  '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
+  '/perfil/configuracoes': typeof PerfilConfiguracoesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -243,12 +287,17 @@ export interface FileRoutesById {
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
-  '/perfil/configuracoes': typeof PerfilConfiguracoesRoute
+  '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
   '/perfil/editar': typeof PerfilEditarRoute
   '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
   '/receitas/$id': typeof ReceitasIdRoute
   '/comunidades/': typeof ComunidadesIndexRoute
   '/desafios/': typeof DesafiosIndexRoute
+  '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
+  '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
+  '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
+  '/perfil/configuracoes/': typeof PerfilConfiguracoesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -279,6 +328,11 @@ export interface FileRouteTypes {
     | '/receitas/$id'
     | '/comunidades/'
     | '/desafios/'
+    | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/idioma'
+    | '/perfil/configuracoes/notificacoes'
+    | '/perfil/configuracoes/privacidade'
+    | '/perfil/configuracoes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -299,12 +353,16 @@ export interface FileRouteTypes {
     | '/comunidades/$slug'
     | '/desafios/$challengeId'
     | '/perfil/$userId'
-    | '/perfil/configuracoes'
     | '/perfil/editar'
     | '/perfil/personalizacao'
     | '/receitas/$id'
     | '/comunidades'
     | '/desafios'
+    | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/idioma'
+    | '/perfil/configuracoes/notificacoes'
+    | '/perfil/configuracoes/privacidade'
+    | '/perfil/configuracoes'
   id:
     | '__root__'
     | '/'
@@ -333,6 +391,11 @@ export interface FileRouteTypes {
     | '/receitas/$id'
     | '/comunidades/'
     | '/desafios/'
+    | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/idioma'
+    | '/perfil/configuracoes/notificacoes'
+    | '/perfil/configuracoes/privacidade'
+    | '/perfil/configuracoes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -354,7 +417,7 @@ export interface RootRouteChildren {
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
   VerificacaoRoute: typeof VerificacaoRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
-  PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRoute
+  PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRouteWithChildren
   PerfilEditarRoute: typeof PerfilEditarRoute
   PerfilPersonalizacaoRoute: typeof PerfilPersonalizacaoRoute
 }
@@ -543,6 +606,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReceitasIdRouteImport
       parentRoute: typeof ReceitasRoute
     }
+    '/perfil/configuracoes/': {
+      id: '/perfil/configuracoes/'
+      path: '/'
+      fullPath: '/perfil/configuracoes/'
+      preLoaderRoute: typeof PerfilConfiguracoesIndexRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
+    '/perfil/configuracoes/conta': {
+      id: '/perfil/configuracoes/conta'
+      path: '/conta'
+      fullPath: '/perfil/configuracoes/conta'
+      preLoaderRoute: typeof PerfilConfiguracoesContaRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
+    '/perfil/configuracoes/idioma': {
+      id: '/perfil/configuracoes/idioma'
+      path: '/idioma'
+      fullPath: '/perfil/configuracoes/idioma'
+      preLoaderRoute: typeof PerfilConfiguracoesIdiomaRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
+    '/perfil/configuracoes/notificacoes': {
+      id: '/perfil/configuracoes/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/perfil/configuracoes/notificacoes'
+      preLoaderRoute: typeof PerfilConfiguracoesNotificacoesRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
+    '/perfil/configuracoes/privacidade': {
+      id: '/perfil/configuracoes/privacidade'
+      path: '/privacidade'
+      fullPath: '/perfil/configuracoes/privacidade'
+      preLoaderRoute: typeof PerfilConfiguracoesPrivacidadeRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
   }
 }
 
@@ -586,6 +684,25 @@ const ReceitasRouteWithChildren = ReceitasRoute._addFileChildren(
   ReceitasRouteChildren,
 )
 
+interface PerfilConfiguracoesRouteChildren {
+  PerfilConfiguracoesContaRoute: typeof PerfilConfiguracoesContaRoute
+  PerfilConfiguracoesIdiomaRoute: typeof PerfilConfiguracoesIdiomaRoute
+  PerfilConfiguracoesNotificacoesRoute: typeof PerfilConfiguracoesNotificacoesRoute
+  PerfilConfiguracoesPrivacidadeRoute: typeof PerfilConfiguracoesPrivacidadeRoute
+  PerfilConfiguracoesIndexRoute: typeof PerfilConfiguracoesIndexRoute
+}
+
+const PerfilConfiguracoesRouteChildren: PerfilConfiguracoesRouteChildren = {
+  PerfilConfiguracoesContaRoute: PerfilConfiguracoesContaRoute,
+  PerfilConfiguracoesIdiomaRoute: PerfilConfiguracoesIdiomaRoute,
+  PerfilConfiguracoesNotificacoesRoute: PerfilConfiguracoesNotificacoesRoute,
+  PerfilConfiguracoesPrivacidadeRoute: PerfilConfiguracoesPrivacidadeRoute,
+  PerfilConfiguracoesIndexRoute: PerfilConfiguracoesIndexRoute,
+}
+
+const PerfilConfiguracoesRouteWithChildren =
+  PerfilConfiguracoesRoute._addFileChildren(PerfilConfiguracoesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -605,7 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   TemaDaSemanaRoute: TemaDaSemanaRoute,
   VerificacaoRoute: VerificacaoRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,
-  PerfilConfiguracoesRoute: PerfilConfiguracoesRoute,
+  PerfilConfiguracoesRoute: PerfilConfiguracoesRouteWithChildren,
   PerfilEditarRoute: PerfilEditarRoute,
   PerfilPersonalizacaoRoute: PerfilPersonalizacaoRoute,
 }
