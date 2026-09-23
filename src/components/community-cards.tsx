@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 import { useCommunity } from "@/hooks/use-community";
 import {
   type Post,
@@ -46,6 +47,7 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const { communities, profiles } = useCommunity();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -59,7 +61,7 @@ export function PostCard({ post }: PostCardProps) {
 
   const handleSupport = () => {
     if (!user) {
-      toast.info("Faça login para apoiar esta publicação.");
+      toast.info(t("common.loginToSupport"));
       return;
     }
     toggleSupport(post.id, user.id);
@@ -67,19 +69,19 @@ export function PostCard({ post }: PostCardProps) {
 
   const handlePrepared = () => {
     if (!user) {
-      toast.info("Faça login para registrar que preparou esta receita.");
+      toast.info(t("common.loginToPrepared"));
       return;
     }
     togglePrepared(post.id, user.id);
     if (!hasPrepared) {
-      toast.success("Que ótimo! Adicionamos este preparo à sua jornada.");
+      toast.success(t("postcard.preparedSuccess"));
     }
   };
 
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.info("Faça login para comentar.");
+      toast.info(t("common.loginToComment"));
       return;
     }
     const trimmed = commentText.trim();
@@ -88,9 +90,9 @@ export function PostCard({ post }: PostCardProps) {
     try {
       addComment(post.id, { id: user.id, name: user.name }, trimmed);
       setCommentText("");
-      toast.success("Comentário publicado!");
+      toast.success(t("postcard.commentPublished"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível publicar o comentário.");
+      toast.error(err instanceof Error ? err.message : t("postcard.commentError"));
     }
   };
 
@@ -146,7 +148,7 @@ export function PostCard({ post }: PostCardProps) {
           params={{ slug: community.slug }}
           className="shrink-0 text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground px-2 py-1 rounded-md transition border border-border"
         >
-          Da comunidade: <span className="text-accent">{community.name}</span>
+          {t("postcard.fromCommunity")} <span className="text-accent">{community.name}</span>
         </Link>
       )}
     </div>
@@ -156,7 +158,9 @@ export function PostCard({ post }: PostCardProps) {
     <Dialog open={showComments} onOpenChange={setShowComments}>
       <DialogContent className="flex max-h-[85dvh] w-[calc(100vw-2rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:rounded-2xl">
         <DialogHeader className="shrink-0 space-y-1 border-b border-border/60 px-5 py-4 pr-12 text-left">
-          <DialogTitle className="text-base font-bold font-display">Conversa</DialogTitle>
+          <DialogTitle className="text-base font-bold font-display">
+            {t("postcard.conversation")}
+          </DialogTitle>
           <DialogDescription className="truncate text-xs">
             {post.authorName}
             {(post.title || post.text) && ` · ${post.title || post.text}`}
@@ -180,7 +184,7 @@ export function PostCard({ post }: PostCardProps) {
             ))
           ) : (
             <p className="rounded-2xl bg-secondary/20 py-6 text-center text-sm text-muted-foreground">
-              Seja a primeira pessoa a conversar.
+              {t("postcard.beFirstToComment")}
             </p>
           )}
         </div>
@@ -193,13 +197,13 @@ export function PostCard({ post }: PostCardProps) {
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Deixe uma palavra ou dúvida..."
+            placeholder={t("postcard.commentPlaceholder")}
             className="flex-1 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-accent"
           />
           <button
             type="submit"
             disabled={!commentText.trim()}
-            aria-label="Enviar comentário"
+            aria-label={t("postcard.sendComment")}
             className="rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-accent-foreground shadow-sm transition hover:bg-accent/90 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
@@ -246,7 +250,7 @@ export function PostCard({ post }: PostCardProps) {
       <div className="mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
         {isRecipe &&
           action({
-            label: "Preparei",
+            label: t("postcard.prepared"),
             count: preparedCount,
             icon: <ChefHat className="h-4 w-4" />,
             onClick: handlePrepared,
@@ -255,7 +259,7 @@ export function PostCard({ post }: PostCardProps) {
           })}
 
         {action({
-          label: "Conversa",
+          label: t("postcard.conversation"),
           count: post.comments?.length || 0,
           icon: <MessageSquare className="h-4 w-4" />,
           onClick: () => setShowComments((v) => !v),
@@ -265,7 +269,7 @@ export function PostCard({ post }: PostCardProps) {
 
         {!isQuestion &&
           action({
-            label: "Apoiar",
+            label: t("postcard.support"),
             count: supportCount,
             icon: <Heart className={`h-4 w-4 ${hasSupported ? "fill-accent" : ""}`} />,
             onClick: handleSupport,
@@ -295,7 +299,7 @@ export function PostCard({ post }: PostCardProps) {
     return (
       <PostCardFrame className={frameClass} footer={footer(false, true)}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
-          <ChefHat className="h-4 w-4" /> Receita Comunitária
+          <ChefHat className="h-4 w-4" /> {t("postcard.communityRecipe")}
         </div>
 
         {renderAuthorInfo()}
@@ -304,7 +308,7 @@ export function PostCard({ post }: PostCardProps) {
           image: displayImage && (
             <PostImage
               src={displayImage}
-              alt="Receita"
+              alt={t("postcard.altRecipe")}
               className="my-4 w-full rounded-2xl shadow-sm"
             />
           ),
@@ -333,7 +337,7 @@ export function PostCard({ post }: PostCardProps) {
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Ingredientes
+                    {t("postcard.ingredients")}
                   </h4>
                   <ul className="space-y-2 text-sm text-foreground">
                     {post.recipeData.ingredients.map((ing, i) => (
@@ -345,7 +349,7 @@ export function PostCard({ post }: PostCardProps) {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                    Preparo
+                    {t("postcard.preparation")}
                   </h4>
                   <ol className="space-y-3 text-sm text-foreground list-decimal list-inside">
                     {post.recipeData.steps.map((step, i) => (
@@ -368,7 +372,7 @@ export function PostCard({ post }: PostCardProps) {
     return (
       <PostCardFrame className={frameClass} footer={footer()}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-primary">
-          <Sparkles className="h-4 w-4" /> História da Comunidade
+          <Sparkles className="h-4 w-4" /> {t("postcard.communityStory")}
         </div>
 
         {renderAuthorInfo()}
@@ -377,7 +381,7 @@ export function PostCard({ post }: PostCardProps) {
           image: displayImage && (
             <PostImage
               src={displayImage}
-              alt="Experiência"
+              alt={t("postcard.altExperience")}
               className="mb-4 w-full rounded-2xl shadow-sm"
             />
           ),
@@ -401,7 +405,7 @@ export function PostCard({ post }: PostCardProps) {
     return (
       <PostCardFrame className={frameClass} footer={footer(true)}>
         <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
-          <HelpCircle className="h-4 w-4" /> Dúvida
+          <HelpCircle className="h-4 w-4" /> {t("postcard.question")}
         </div>
 
         {renderAuthorInfo()}
@@ -430,7 +434,7 @@ export function PostCard({ post }: PostCardProps) {
         image: displayImage && (
           <PostImage
             src={displayImage}
-            alt="Postagem"
+            alt={t("postcard.altPost")}
             className="mb-4 w-full rounded-2xl shadow-sm"
           />
         ),
@@ -456,6 +460,7 @@ interface WeeklyThemeCardProps {
 
 export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const currentUserId = user?.id || "guest";
 
   const totalVotes = theme?.poll?.options
@@ -464,11 +469,11 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
 
   const handleVote = (optionId: string) => {
     if (!user) {
-      toast.info("Faça login para participar da enquete da semana.");
+      toast.info(t("weekly.loginToVote"));
       return;
     }
     voteThemePoll(optionId, user.id);
-    toast.success("Voto registrado! Obrigado por contribuir com o pulso da comunidade.");
+    toast.success(t("weekly.voteRegistered"));
   };
 
   if (!theme) return null;
@@ -492,7 +497,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[10px] font-bold text-accent-foreground tracking-wide uppercase">
-              <Sparkles className="h-3 w-3" /> {theme.badge || "Tema da Semana"}
+              <Sparkles className="h-3 w-3" /> {theme.badge || t("weekly.badge")}
             </span>
           </div>
         </div>
@@ -504,7 +509,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
         {(!themeImage || compact) && (
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
-              <Sparkles className="h-3.5 w-3.5" /> {theme.badge || "Tema da Semana"}
+              <Sparkles className="h-3.5 w-3.5" /> {theme.badge || t("weekly.badge")}
             </span>
             <span className="text-xs font-medium text-muted-foreground">{theme.currentWeek}</span>
           </div>
@@ -527,7 +532,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
         {theme.questionOfTheWeek && (
           <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
             <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
-              Pergunta da Semana
+              {t("weekly.questionOfWeek")}
             </p>
             <p className="text-sm font-medium text-foreground">“{theme.questionOfTheWeek}”</p>
           </div>
@@ -537,7 +542,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
         {!compact && theme.poll && theme.poll.options && (
           <div className="mt-6 border-t border-border/80 pt-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-              Enquete: {theme.poll.question}
+              {t("weekly.pollPrefix")} {theme.poll.question}
             </h3>
             <div className="grid gap-2.5 sm:grid-cols-2">
               {theme.poll.options.map((opt) => {
@@ -568,7 +573,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
               })}
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground text-right">
-              {totalVotes} membros já participaram desta reflexão
+              {totalVotes} {t("weekly.membersParticipated")}
             </p>
           </div>
         )}
@@ -578,7 +583,7 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
             to="/tema-da-semana"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
           >
-            <span>Ver todas as reflexões e receitas deste tema</span>
+            <span>{t("weekly.viewAll")}</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -593,6 +598,7 @@ interface ChallengeCardProps {
 
 export function ChallengeCard({ challenge }: ChallengeCardProps) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const currentUserId = user?.id || "guest";
   const participants = challenge?.participants || [];
   const isJoined = participants.includes(currentUserId);
@@ -602,14 +608,14 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
 
   const handleJoin = () => {
     if (!user) {
-      toast.info("Faça login para entrar no desafio.");
+      toast.info(t("challenge.loginToJoin"));
       return;
     }
     toggleJoinChallenge(challenge.id, user.id);
     if (!isJoined) {
-      toast.success("Você entrou no desafio! Sua jornada agradece cada pequeno passo.");
+      toast.success(t("challenge.joined"));
     } else {
-      toast.info("Você saiu do desafio.");
+      toast.info(t("challenge.left"));
     }
   };
 
@@ -636,11 +642,11 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
               {challenge.badgeIcon || "🎯"}
             </div>
             <div className="absolute top-3 right-3 rounded-full bg-card/90 px-2.5 py-0.5 text-[11px] font-bold text-foreground backdrop-blur-sm shadow-xs">
-              {challenge.duration || "Semana"}
+              {challenge.duration || t("challenge.weekFallback")}
             </div>
             {isCompleted && (
               <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-xs">
-                <Award className="h-3 w-3" /> Concluído
+                <Award className="h-3 w-3" /> {t("challenge.completed")}
               </div>
             )}
           </div>
@@ -652,11 +658,11 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
             <div className="flex items-center gap-2">
               {isCompleted && (
                 <span className="flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-[10px] font-bold text-primary">
-                  <Award className="h-3 w-3" /> Concluído
+                  <Award className="h-3 w-3" /> {t("challenge.completed")}
                 </span>
               )}
               <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                {challenge.duration || "Semana"}
+                {challenge.duration || t("challenge.weekFallback")}
               </span>
             </div>
           </div>
@@ -678,9 +684,9 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         {isJoined && totalSteps > 0 && (
           <div className="mt-4 px-5">
             <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground mb-1">
-              <span>Seu progresso</span>
+              <span>{t("challenge.yourProgress")}</span>
               <span>
-                {completedSteps}/{totalSteps} passos
+                {completedSteps}/{totalSteps} {t("challenge.steps")}
               </span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
@@ -696,14 +702,14 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
       <div className="mt-5 border-t border-border/60 pt-3 px-5 pb-5 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
-            👥 {participants.length} participando
+            👥 {participants.length} {t("challenge.participating")}
           </span>
           <Link
             to="/desafios/$challengeId"
             params={{ challengeId: challenge.id }}
             className="text-xs font-semibold text-accent hover:underline"
           >
-            Ver desafio
+            {t("challenge.viewChallenge")}
           </Link>
         </div>
         <button
@@ -715,7 +721,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
               : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-xs"
           }`}
         >
-          {isJoined ? "Participando ✓" : "Participar"}
+          {isJoined ? t("challenge.joinedLabel") : t("challenge.joinLabel")}
         </button>
       </div>
     </div>

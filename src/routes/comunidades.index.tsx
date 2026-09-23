@@ -6,6 +6,7 @@ import { AdminPerson } from "@/components/person-chip";
 import { useCommunity } from "@/hooks/use-community";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import { CATEGORIES, type Community } from "@/lib/community";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/comunidades/")({
   head: () => ({
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/comunidades/")({
 
 function ComunidadesPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const { communities: allCommunities, posts, hydrated } = useCommunity();
   // Comunidades pendentes ainda não existem publicamente: só quem as criou as vê.
   const communities = useMemo(
@@ -64,7 +66,7 @@ function ComunidadesPage() {
       {showFeatured && (
         <section>
           <h2 className="text-xl font-bold font-display text-foreground mb-6">
-            Comunidades em destaque
+            {t("comunidades.featured")}
           </h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((c) => (
@@ -79,10 +81,10 @@ function ComunidadesPage() {
       >
         <aside className="min-w-0 space-y-6">
           <div className="rounded-2xl border bg-card p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Buscar</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4">{t("common.search")}</h2>
             <input
               type="text"
-              placeholder="Buscar comunidades..."
+              placeholder={t("comunidades.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -90,7 +92,9 @@ function ComunidadesPage() {
           </div>
 
           <div className="rounded-2xl border bg-card p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Categorias temáticas</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4">
+              {t("comunidades.categories")}
+            </h2>
             <div className="flex overflow-x-auto no-scrollbar gap-2 lg:flex-col lg:items-start pb-2 lg:pb-0">
               {["Todas", ...CATEGORIES].map((c) => (
                 <button
@@ -102,7 +106,7 @@ function ComunidadesPage() {
                       : "bg-secondary text-secondary-foreground hover:bg-muted"
                   }`}
                 >
-                  {c}
+                  {c === "Todas" ? t("comunidades.categoryAll") : c}
                 </button>
               ))}
             </div>
@@ -115,12 +119,12 @@ function ComunidadesPage() {
           ))}
           {hydrated && filtered.length === 0 && communities.length > 0 && (
             <p className="text-sm text-muted-foreground col-span-full">
-              Nenhuma comunidade encontrada para essa busca.
+              {t("comunidades.noResults")}
             </p>
           )}
           {hydrated && communities.length === 0 && (
             <p className="text-sm text-muted-foreground col-span-full">
-              Ainda não existem comunidades disponíveis.
+              {t("comunidades.noneYet")}
             </p>
           )}
         </section>
@@ -129,14 +133,14 @@ function ComunidadesPage() {
   );
 }
 
-const STATUS_LABEL = {
-  pendente: "Aguardando profissional",
-  suspensa: "Suspensa",
-} as const;
-
 function CommunityCard({ community: c }: { community: Community }) {
   const { posts, profiles } = useCommunity();
   const { user } = useAuth();
+  const { t } = useI18n();
+  const STATUS_LABEL = {
+    pendente: t("comunidades.status.pendente"),
+    suspensa: t("comunidades.status.suspensa"),
+  } as const;
   const isMember = !!user && c.members.some((m) => m.userId === user.id);
   const pro = c.professionalId ? getProfessionalInfo(profiles, c.professionalId) : undefined;
 
@@ -156,8 +160,8 @@ function CommunityCard({ community: c }: { community: Community }) {
         {isMember && (
           <span
             role="img"
-            aria-label="Você participa desta comunidade"
-            title="Você participa desta comunidade"
+            aria-label={t("comunidades.youAreMember")}
+            title={t("comunidades.youAreMember")}
             className="absolute top-3 right-3 grid h-7 w-7 place-items-center rounded-full bg-card/90 text-accent shadow-xs backdrop-blur-sm"
           >
             <UserCheck className="h-4 w-4" />
@@ -189,31 +193,31 @@ function CommunityCard({ community: c }: { community: Community }) {
         <div className="mt-5 space-y-2.5 border-t border-border/60 pt-4">
           <AdminPerson
             raised
-            label="Admin usuário"
+            label={t("comunidades.adminUser")}
             userId={c.adminUserId}
             name={c.adminUserName}
-            vacantText="Aguardando indicação"
+            vacantText={t("comunidades.awaitingNomination")}
           />
           <AdminPerson
             raised
-            label="Admin profissional"
+            label={t("comunidades.adminProfessional")}
             detail={
               pro ? `${pro.profession} · ${pro.council} ${pro.registration}/${pro.uf}` : undefined
             }
             userId={c.professionalId}
             name={c.professionalName}
             verified
-            vacantText="Aguardando profissional"
+            vacantText={t("comunidades.status.pendente")}
           />
         </div>
 
         <div className="mt-4 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
           <span className="inline-flex items-center gap-1">
-            <Users className="h-4 w-4 text-accent" /> {c.members.length} membros
+            <Users className="h-4 w-4 text-accent" /> {c.members.length} {t("comunidades.members")}
           </span>
           <span className="inline-flex items-center gap-1">
             <MessageCircle className="h-4 w-4 text-accent" />
-            {posts.filter((p) => p.communityId === c.id).length} publicações
+            {posts.filter((p) => p.communityId === c.id).length} {t("comunidades.posts")}
           </span>
         </div>
       </div>

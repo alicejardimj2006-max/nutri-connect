@@ -187,7 +187,94 @@ function PublicProfilePage() {
                   {initials(profile.name)}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                {/* Menu de opções: canto fixo, separado dos botões de ação para não quebrar
+                    linha sozinho em telas estreitas. */}
+                <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
+                        aria-label="Abrir menu do perfil"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    {isSelf ? (
+                      <DropdownMenuContent align="end" className="w-64">
+                        <DropdownMenuItem asChild>
+                          <Link
+                            to="/perfil/configuracoes"
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span>Configurações</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {!isProfessional && (
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to="/verificacao"
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <BadgeCheck className="h-4 w-4" />
+                              <span>Verificação profissional</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        {isProfessional && (
+                          <DropdownMenuItem asChild>
+                            <Link to="/convites" className="flex items-center gap-2 cursor-pointer">
+                              <Inbox className="h-4 w-4" />
+                              <span>
+                                Convites de comunidades
+                                {inviteCount > 0 ? ` (${inviteCount})` : ""}
+                              </span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        {isPlatformAdmin(user) && (
+                          <DropdownMenuItem asChild>
+                            <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                              <ShieldCheck className="h-4 w-4" />
+                              <span>Painel da plataforma</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Sair da conta</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    ) : (
+                      <DropdownMenuContent align="end" className="w-56">
+                        {iBlockedThem ? (
+                          <DropdownMenuItem
+                            onClick={handleUnblock}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <UserCheck className="h-4 w-4" />
+                            <span>Desbloquear</span>
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={handleBlock}
+                            className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
+                          >
+                            <UserX className="h-4 w-4" />
+                            <span>Bloquear</span>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    )}
+                  </DropdownMenu>
+                </div>
+
+                <div className="flex flex-col gap-6 pr-10 sm:pr-12">
                   <div>
                     <h1 className="flex items-center gap-2 text-2xl sm:text-3xl font-extrabold font-display text-foreground">
                       {profile.name}
@@ -255,105 +342,6 @@ function PublicProfilePage() {
                           </button>
                         }
                       />
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
-                            aria-label="Abrir menu do perfil"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64">
-                          <DropdownMenuItem asChild>
-                            <Link
-                              to="/perfil/configuracoes"
-                              className="flex items-center gap-2 cursor-pointer"
-                            >
-                              <Settings className="h-4 w-4" />
-                              <span>Configurações</span>
-                            </Link>
-                          </DropdownMenuItem>
-                          {!isProfessional && (
-                            <DropdownMenuItem asChild>
-                              <Link
-                                to="/verificacao"
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <BadgeCheck className="h-4 w-4" />
-                                <span>Verificação profissional</span>
-                              </Link>
-                            </DropdownMenuItem>
-                          )}
-                          {isProfessional && (
-                            <DropdownMenuItem asChild>
-                              <Link
-                                to="/convites"
-                                className="flex items-center gap-2 cursor-pointer"
-                              >
-                                <Inbox className="h-4 w-4" />
-                                <span>
-                                  Convites de comunidades
-                                  {inviteCount > 0 ? ` (${inviteCount})` : ""}
-                                </span>
-                              </Link>
-                            </DropdownMenuItem>
-                          )}
-                          {isPlatformAdmin(user) && (
-                            <DropdownMenuItem asChild>
-                              <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
-                                <ShieldCheck className="h-4 w-4" />
-                                <span>Painel da plataforma</span>
-                              </Link>
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={handleSignOut}
-                            className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
-                          >
-                            <LogOut className="h-4 w-4" />
-                            <span>Sair da conta</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  )}
-
-                  {!isSelf && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
-                            aria-label="Abrir menu do perfil"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          {iBlockedThem ? (
-                            <DropdownMenuItem
-                              onClick={handleUnblock}
-                              className="flex items-center gap-2 cursor-pointer"
-                            >
-                              <UserCheck className="h-4 w-4" />
-                              <span>Desbloquear</span>
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={handleBlock}
-                              className="flex items-center gap-2 text-destructive cursor-pointer focus:text-destructive"
-                            >
-                              <UserX className="h-4 w-4" />
-                              <span>Bloquear</span>
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   )}
                 </div>

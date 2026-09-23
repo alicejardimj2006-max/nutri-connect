@@ -14,19 +14,21 @@ import {
 } from "@/components/ui/carousel";
 import { getAuthorRole, getFriendIds, type Post } from "@/lib/community";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 
 type FeedTab = "geral" | "amigos" | "profissionais";
 
-const FEED_TABS: { id: FeedTab; label: string }[] = [
-  { id: "geral", label: "Geral" },
-  { id: "amigos", label: "Amigos" },
-  { id: "profissionais", label: "Profissionais" },
+const FEED_TAB_KEYS: { id: FeedTab; labelKey: DictKey }[] = [
+  { id: "geral", labelKey: "espaco.tab.geral" },
+  { id: "amigos", labelKey: "espaco.tab.amigos" },
+  { id: "profissionais", labelKey: "espaco.tab.profissionais" },
 ];
 
-const EMPTY_STATE_COPY: Record<FeedTab, string> = {
-  geral: "Nenhuma publicação encontrada nesta categoria ainda.",
-  amigos: "Seus amigos ainda não fizeram nenhuma publicação.",
-  profissionais: "Nenhum profissional publicou por aqui ainda.",
+const EMPTY_STATE_KEYS: Record<FeedTab, DictKey> = {
+  geral: "espaco.empty.geral",
+  amigos: "espaco.empty.amigos",
+  profissionais: "espaco.empty.profissionais",
 };
 
 export const Route = createFileRoute("/espaco")({
@@ -51,6 +53,7 @@ export const Route = createFileRoute("/espaco")({
 
 function EspacoDeHojePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
+  const { t } = useI18n();
   const { posts, communities, profiles, hydrated } = useCommunity();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
@@ -69,7 +72,7 @@ function EspacoDeHojePage() {
 
     const onSelect = () => {
       const newIndex = carouselApi.selectedScrollSnap();
-      const newTab = FEED_TABS[newIndex].id;
+      const newTab = FEED_TAB_KEYS[newIndex].id;
       const oldTab = activeTabRef.current;
 
       setActiveTabIndex(newIndex);
@@ -135,7 +138,7 @@ function EspacoDeHojePage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {/* Navegação discreta entre tipos de publicação */}
         <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
-          {FEED_TABS.map((tab, index) => (
+          {FEED_TAB_KEYS.map((tab, index) => (
             <button
               key={tab.id}
               type="button"
@@ -147,7 +150,7 @@ function EspacoDeHojePage() {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           ))}
         </div>
@@ -156,12 +159,12 @@ function EspacoDeHojePage() {
         <div className="mx-auto w-full max-w-2xl">
           {!hydrated ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              Carregando o Espaço de Hoje…
+              {t("espaco.loading")}
             </div>
           ) : (
             <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
               <CarouselContent className="items-start">
-                {FEED_TABS.map((tab) => {
+                {FEED_TAB_KEYS.map((tab) => {
                   const tabPosts = postsByTab[tab.id];
                   return (
                     <CarouselItem key={tab.id}>
@@ -175,12 +178,12 @@ function EspacoDeHojePage() {
                         <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
                           <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
                           <p className="text-base text-muted-foreground font-medium mb-6">
-                            {EMPTY_STATE_COPY[tab.id]}
+                            {t(EMPTY_STATE_KEYS[tab.id])}
                           </p>
                           <ShareModal
                             triggerButton={
                               <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
-                                Fazer primeira publicação
+                                {t("espaco.firstPost")}
                               </button>
                             }
                           />
@@ -194,7 +197,6 @@ function EspacoDeHojePage() {
           )}
         </div>
       </main>
-
     </div>
   );
 }
