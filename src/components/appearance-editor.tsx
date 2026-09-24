@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Monitor, Moon, RotateCcw, Sun } from "lucide-react";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 import {
   ACCENT_PRESETS,
   APPEARANCE_EVENT,
@@ -95,6 +97,7 @@ function HexInput({
   onCommit: (hex: string) => void;
   label: string;
 }) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
 
@@ -104,7 +107,7 @@ function HexInput({
       value={draft}
       maxLength={7}
       spellCheck={false}
-      aria-label={`${label}: código da cor`}
+      aria-label={`${label}: ${t("ap.colorCode")}`}
       onChange={(e) => {
         const text = e.target.value.startsWith("#") ? e.target.value : `#${e.target.value}`;
         setDraft(text);
@@ -133,17 +136,18 @@ function FreeColor({
   onChange: (value: string | null) => void;
   resetLabel: string;
 }) {
+  const { t } = useI18n();
   const shown = value ?? fallback;
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       <label
         className="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border-2 border-foreground/30 shadow-xs"
         style={{ backgroundColor: shown }}
-        title="Escolher cor"
+        title={t("ap.pickColor")}
       >
         <input
           type="color"
-          aria-label={`${label}: seletor de cor`}
+          aria-label={`${label}: ${t("ap.colorPicker")}`}
           value={shown}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
@@ -177,6 +181,7 @@ function BrandColor({
   fallback: string;
   onChange: (value: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -186,8 +191,8 @@ function BrandColor({
             <button
               key={p.value}
               type="button"
-              title={p.name}
-              aria-label={`${label}: ${p.name}`}
+              title={t(`ap.color.${p.name}` as DictKey)}
+              aria-label={`${label}: ${t(`ap.color.${p.name}` as DictKey)}`}
               aria-pressed={active}
               onClick={() => onChange(p.value)}
               style={{ backgroundColor: p.value }}
@@ -203,7 +208,7 @@ function BrandColor({
         value={value}
         fallback={fallback}
         onChange={(v) => onChange(v ?? fallback)}
-        resetLabel="Usar padrão"
+        resetLabel={t("ap.useDefault")}
       />
     </div>
   );
@@ -215,11 +220,12 @@ function Segmented<T extends string>({
   onChange,
   columns,
 }: {
-  options: { id: T; label: string; icon?: React.ComponentType<{ className?: string }> }[];
+  options: { id: T; label: DictKey; icon?: React.ComponentType<{ className?: string }> }[];
   value: T;
   onChange: (id: T) => void;
   columns: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className={`grid gap-2 ${columns}`}>
       {options.map(({ id, label, icon: Icon }) => (
@@ -231,7 +237,7 @@ function Segmented<T extends string>({
           className={`${optionClass(value === id)} flex items-center justify-center gap-1.5`}
         >
           {Icon && <Icon className="h-3.5 w-3.5" />}
-          {label}
+          {t(label)}
         </button>
       ))}
     </div>
@@ -309,41 +315,45 @@ function Switch({
   );
 }
 
-const MODES: { id: ThemeMode; label: string; icon: React.ComponentType<{ className?: string }> }[] =
-  [
-    { id: "light", label: "Claro", icon: Sun },
-    { id: "dark", label: "Escuro", icon: Moon },
-    { id: "system", label: "Automático", icon: Monitor },
-  ];
-
-const DENSITIES: { id: Density; label: string }[] = [
-  { id: "compact", label: "Compacta" },
-  { id: "normal", label: "Padrão" },
-  { id: "spacious", label: "Espaçosa" },
+const MODES: {
+  id: ThemeMode;
+  label: DictKey;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { id: "light", label: "ap.mode.light", icon: Sun },
+  { id: "dark", label: "ap.mode.dark", icon: Moon },
+  { id: "system", label: "ap.mode.system", icon: Monitor },
 ];
 
-const BORDERS: { id: BorderStyle; label: string }[] = [
-  { id: "none", label: "Sem bordas" },
-  { id: "subtle", label: "Sutis" },
-  { id: "strong", label: "Marcadas" },
+const DENSITIES: { id: Density; label: DictKey }[] = [
+  { id: "compact", label: "ap.density.compact" },
+  { id: "normal", label: "ap.density.normal" },
+  { id: "spacious", label: "ap.density.spacious" },
 ];
 
-const SHADOWS: { id: ShadowStyle; label: string }[] = [
-  { id: "none", label: "Sem sombras" },
-  { id: "soft", label: "Suaves" },
-  { id: "strong", label: "Marcadas" },
+const BORDERS: { id: BorderStyle; label: DictKey }[] = [
+  { id: "none", label: "ap.border.none" },
+  { id: "subtle", label: "ap.border.subtle" },
+  { id: "strong", label: "ap.border.strong" },
+];
+
+const SHADOWS: { id: ShadowStyle; label: DictKey }[] = [
+  { id: "none", label: "ap.shadow.none" },
+  { id: "soft", label: "ap.shadow.soft" },
+  { id: "strong", label: "ap.shadow.strong" },
 ];
 
 function contrastLabel(ratio: number) {
-  if (ratio >= 7) return { text: "excelente", ok: true };
-  if (ratio >= 4.5) return { text: "bom", ok: true };
-  if (ratio >= 3) return { text: "baixo — pode cansar a leitura", ok: false };
-  return { text: "muito baixo — difícil de ler", ok: false };
+  if (ratio >= 7) return { text: "ap.contrast.excellent" as DictKey, ok: true };
+  if (ratio >= 4.5) return { text: "ap.contrast.good" as DictKey, ok: true };
+  if (ratio >= 3) return { text: "ap.contrast.low" as DictKey, ok: false };
+  return { text: "ap.contrast.veryLow" as DictKey, ok: false };
 }
 
 /** Todas as opções de personalização. Tudo vale na hora e fica salvo neste aparelho. */
 export function AppearanceEditor() {
   const { appearance: a, update, reset } = useAppearance();
+  const { t } = useI18n();
   const isDefault = JSON.stringify(a) === JSON.stringify(DEFAULT_APPEARANCE);
 
   // Contraste do texto personalizado contra o fundo que está valendo agora.
@@ -362,7 +372,7 @@ export function AppearanceEditor() {
       <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Prévia
+            {t("ap.preview")}
           </p>
           <button
             type="button"
@@ -371,30 +381,28 @@ export function AppearanceEditor() {
             className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:cursor-default disabled:opacity-40"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            Restaurar padrão
+            {t("ap.restore")}
           </button>
         </div>
         <h3 className="mt-1 font-display text-lg font-bold text-foreground">
-          Uma refeição com calma
+          {t("ap.previewTitle")}
         </h3>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          Cada escolha abaixo muda a aparência do NutriConnect só para você, na hora.
-        </p>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t("ap.previewText")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
-            Botão de destaque
+            {t("ap.accentButton")}
           </span>
           <span className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">
-            Cor principal
+            {t("ap.primaryColorSample")}
           </span>
           <span className="rounded-full bg-accent-soft px-4 py-1.5 text-xs font-semibold text-accent">
-            Detalhe suave
+            {t("ap.softDetail")}
           </span>
         </div>
       </div>
 
-      <Section title="Cores" hint="Escolha qualquer cor. O contraste do texto é ajustado sozinho.">
-        <Group title="Modo">
+      <Section title={t("ap.colors")} hint={t("ap.colorsHint")}>
+        <Group title={t("ap.mode")}>
           <Segmented
             columns="grid-cols-3"
             options={MODES}
@@ -403,9 +411,9 @@ export function AppearanceEditor() {
           />
         </Group>
 
-        <Group title="Cor de destaque" hint="Botões principais, links e selos.">
+        <Group title={t("ap.accent")} hint={t("ap.accentHint")}>
           <BrandColor
-            label="Cor de destaque"
+            label={t("ap.accent")}
             presets={ACCENT_PRESETS}
             value={a.accent}
             fallback={DEFAULT_APPEARANCE.accent}
@@ -413,9 +421,9 @@ export function AppearanceEditor() {
           />
         </Group>
 
-        <Group title="Cor principal" hint="Marca e elementos de apoio.">
+        <Group title={t("ap.primary")} hint={t("ap.primaryHint")}>
           <BrandColor
-            label="Cor principal"
+            label={t("ap.primary")}
             presets={PRIMARY_PRESETS}
             value={a.primary}
             fallback={DEFAULT_APPEARANCE.primary}
@@ -423,36 +431,33 @@ export function AppearanceEditor() {
           />
         </Group>
 
-        <Group
-          title="Fundo no modo claro"
-          hint="Cards, bordas e texto se ajustam a essa cor automaticamente."
-        >
+        <Group title={t("ap.bgLight")} hint={t("ap.bgLightHint")}>
           <FreeColor
-            label="Fundo no modo claro"
+            label={t("ap.bgLight")}
             value={a.backgroundLight}
             fallback={THEME_COLORS.light.background}
             onChange={(backgroundLight) => update({ backgroundLight })}
-            resetLabel="Usar o fundo do tema"
+            resetLabel={t("ap.useThemeBg")}
           />
         </Group>
 
-        <Group title="Fundo no modo escuro">
+        <Group title={t("ap.bgDark")}>
           <FreeColor
-            label="Fundo no modo escuro"
+            label={t("ap.bgDark")}
             value={a.backgroundDark}
             fallback={THEME_COLORS.dark.background}
             onChange={(backgroundDark) => update({ backgroundDark })}
-            resetLabel="Usar o fundo do tema"
+            resetLabel={t("ap.useThemeBg")}
           />
         </Group>
 
-        <Group title="Cor do texto" hint="Opcional. Sem escolha, o texto contrasta com o fundo.">
+        <Group title={t("ap.textColor")} hint={t("ap.textColorHint")}>
           <FreeColor
-            label="Cor do texto"
+            label={t("ap.textColor")}
             value={a.textColor}
             fallback={darkNow ? THEME_COLORS.dark.text : THEME_COLORS.light.text}
             onChange={(textColor) => update({ textColor })}
-            resetLabel="Automática"
+            resetLabel={t("ap.automatic")}
           />
           {textContrast && (
             <p
@@ -460,14 +465,14 @@ export function AppearanceEditor() {
                 textContrast.ok ? "text-muted-foreground" : "text-destructive"
               }`}
             >
-              Contraste com o fundo: {textContrast.text}.
+              {t("ap.contrastWithBg")} {t(textContrast.text)}.
             </p>
           )}
         </Group>
       </Section>
 
-      <Section title="Texto" hint="Fontes e tamanho da leitura.">
-        <Group title="Fonte dos títulos">
+      <Section title={t("ap.text")} hint={t("ap.textHint")}>
+        <Group title={t("ap.headingFont")}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {HEADING_FONTS.map((f) => (
               <button
@@ -483,13 +488,13 @@ export function AppearanceEditor() {
                 >
                   Aa
                 </span>
-                {f.name}
+                {t(`ap.hfont.${f.id}` as DictKey)}
               </button>
             ))}
           </div>
         </Group>
 
-        <Group title="Fonte do texto">
+        <Group title={t("ap.bodyFont")}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {BODY_FONTS.map((f) => (
               <button
@@ -505,15 +510,15 @@ export function AppearanceEditor() {
                 >
                   Aa
                 </span>
-                {f.name}
+                {f.id === "sistema" || f.id === "mono" ? t(`ap.bfont.${f.id}` as DictKey) : f.name}
               </button>
             ))}
           </div>
         </Group>
 
-        <Group title="Tamanho do texto" hint="Aumenta ou diminui tudo no site.">
+        <Group title={t("ap.textSize")} hint={t("ap.textSizeHint")}>
           <Slider
-            label="Tamanho do texto"
+            label={t("ap.textSize")}
             min={TEXT_SCALE_RANGE.min}
             max={TEXT_SCALE_RANGE.max}
             step={5}
@@ -524,10 +529,10 @@ export function AppearanceEditor() {
         </Group>
       </Section>
 
-      <Section title="Formas e espaço" hint="Como os elementos são desenhados e distribuídos.">
-        <Group title="Arredondamento dos cantos">
+      <Section title={t("ap.shapes")} hint={t("ap.shapesHint")}>
+        <Group title={t("ap.corners")}>
           <Slider
-            label="Arredondamento dos cantos"
+            label={t("ap.corners")}
             min={CORNER_RANGE.min}
             max={CORNER_RANGE.max}
             step={2}
@@ -541,7 +546,7 @@ export function AppearanceEditor() {
           />
         </Group>
 
-        <Group title="Densidade" hint="Espaço entre os elementos.">
+        <Group title={t("ap.density")} hint={t("ap.densityHint")}>
           <Segmented
             columns="grid-cols-3"
             options={DENSITIES}
@@ -550,7 +555,7 @@ export function AppearanceEditor() {
           />
         </Group>
 
-        <Group title="Bordas">
+        <Group title={t("ap.borders")}>
           <Segmented
             columns="grid-cols-3"
             options={BORDERS}
@@ -559,7 +564,7 @@ export function AppearanceEditor() {
           />
         </Group>
 
-        <Group title="Sombras">
+        <Group title={t("ap.shadows")}>
           <Segmented
             columns="grid-cols-3"
             options={SHADOWS}
@@ -569,12 +574,12 @@ export function AppearanceEditor() {
         </Group>
       </Section>
 
-      <Section title="Acessibilidade" hint="Deixe o site mais confortável para você.">
+      <Section title={t("ap.accessibility")} hint={t("ap.accessibilityHint")}>
         <Switch
           checked={a.reduceMotion}
           onChange={(reduceMotion) => update({ reduceMotion })}
-          label="Reduzir movimento"
-          hint="Desliga animações e transições."
+          label={t("ap.reduceMotion")}
+          hint={t("ap.reduceMotionHint")}
         />
       </Section>
     </div>

@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -414,7 +415,7 @@ function ChallengeDetailPage() {
                   }`}
                 >
                   <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
-                  <span className="font-semibold text-foreground">{badge.label}</span>
+                  <span className="font-semibold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}
             </div>

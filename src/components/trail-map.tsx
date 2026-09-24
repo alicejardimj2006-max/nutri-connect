@@ -23,6 +23,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 import { Mascot, type MascotMood } from "@/components/mascots";
 import { Scenery, Sparkles, themeFor, type SceneTheme } from "@/components/trail-scenery";
 import {
@@ -121,6 +123,7 @@ function StopNode({
   variant: ProfileKind;
   onOpen: () => void;
 }) {
+  const { t } = useI18n();
   const adult = variant === "adult";
   const Icon = (stop.iconKey && STOP_ICONS[stop.iconKey]) || Sparkles;
   const p = getStopProgress(progress, stop.id);
@@ -145,7 +148,7 @@ function StopNode({
               style={{ background: theme.main, opacity: 0.5 }}
             />
             <div className="nc-bob-fast absolute -top-11 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-2xl border-2 border-border bg-card px-3.5 py-1.5 text-xs font-black text-foreground shadow-md">
-              Começar!
+              {t("tm.start")}
               <span className="absolute -bottom-[7px] left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 border-border bg-card" />
             </div>
           </>
@@ -156,8 +159,10 @@ function StopNode({
           type="button"
           onClick={() => (locked ? setShake(true) : onOpen())}
           onAnimationEnd={() => setShake(false)}
-          aria-label={locked ? `${stop.title} (bloqueada)` : `Abrir ${stop.title}`}
-          title={locked ? "Conclua a parada anterior para desbloquear" : stop.title}
+          aria-label={
+            locked ? `${stop.title} (${t("tm.locked")})` : `${t("tm.open")} ${stop.title}`
+          }
+          title={locked ? t("tm.lockedTitle") : stop.title}
           style={{ background: face, "--dark": dark } as CSSProperties}
           className={`relative grid h-[88px] w-[88px] place-items-center overflow-hidden rounded-full border-4 border-white/70 shadow-[0_8px_0_0_var(--dark)] outline-none transition-all duration-150 focus-visible:ring-4 focus-visible:ring-primary/50 sm:h-24 sm:w-24 ${
             locked
@@ -215,7 +220,9 @@ function StopNode({
             return (
               <span
                 key={n}
-                title={`Nível ${n}: ${LEVEL_META[n].label}`}
+                title={t("tm.levelTitle")
+                  .replace("{n}", String(n))
+                  .replace("{label}", t(`lv.${n}.label` as DictKey))}
                 className={`grid h-[18px] w-[18px] place-items-center rounded-full border-2 text-[9px] font-black ${
                   done
                     ? gold
@@ -296,6 +303,7 @@ function UnitBanner({
   variant: ProfileKind;
   guide: CharacterId;
 }) {
+  const { t } = useI18n();
   const adult = variant === "adult";
   const gold = isUnitGold(progress, unit);
   const started = unit.stops.filter((s) => getStopProgress(progress, s.id).done >= 1).length;
@@ -314,14 +322,14 @@ function UnitBanner({
         </div>
         <div className="min-w-0">
           <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-            Unidade {index + 1}
+            {t("tm.unit").replace("{n}", String(index + 1))}
           </span>
           <h2 className="text-lg font-black leading-tight text-muted-foreground sm:text-xl">
             {unit.title}
           </h2>
           {requiredTitle && (
             <p className="mt-1 text-xs font-medium text-muted-foreground">
-              Conclua o nível 1 de todas as paradas de “{requiredTitle}” para abrir.
+              {t("tm.unlockHint").replace("{title}", requiredTitle)}
             </p>
           )}
         </div>
@@ -346,10 +354,10 @@ function UnitBanner({
       <div className="relative flex items-center gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-85 sm:text-xs">
-            <span>Unidade {index + 1}</span>
+            <span>{t("tm.unit").replace("{n}", String(index + 1))}</span>
             {gold && (
               <span className="nc-pop inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5">
-                <Crown className="h-3 w-3 fill-white" /> Dourada
+                <Crown className="h-3 w-3 fill-white" /> {t("tm.goldenTag")}
               </span>
             )}
           </div>
@@ -606,6 +614,7 @@ function TrailFinale({
   progress: TrailProgress;
   variant: ProfileKind;
 }) {
+  const { t } = useI18n();
   const allGold = units.every((u) => isUnitGold(progress, u));
   const adult = variant === "adult";
   return (
@@ -624,14 +633,10 @@ function TrailFinale({
       </div>
       {allGold && <Sparkles radius={70} />}
       <h3 className="relative z-10 mt-3 font-display text-3xl font-black text-amber-500 drop-shadow-sm">
-        {adult ? "Trilha concluída" : "Mestre da Nutrição"}
+        {adult ? t("tm.finaleAdult") : t("tm.finaleKid")}
       </h3>
       <p className="relative z-10 mt-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-        {allGold
-          ? adult
-            ? "Todas as paradas douradas. Excelente trabalho."
-            : "Você deixou toda a trilha dourada!"
-          : "Deixe todas as paradas douradas"}
+        {allGold ? (adult ? t("tm.finaleAdultDone") : t("tm.finaleKidDone")) : t("tm.finaleTodo")}
       </p>
     </div>
   );
@@ -660,6 +665,7 @@ export function StopSheet({
   onClose: () => void;
   onStart: (stop: Stop, level: LevelNumber) => void;
 }) {
+  const { t } = useI18n();
   const guide = trail.guide;
   const adult = trail.kind === "adult";
   const theme = themeFor(unit?.scene ?? "meadow", trail.kind);
@@ -695,7 +701,7 @@ export function StopSheet({
                 <div className="min-w-0">
                   <DialogDescription className="text-[11px] font-black uppercase tracking-widest text-white/85">
                     {unit?.title}
-                    {gold && (adult ? " · Parada dourada" : " · Parada dourada 👑")}
+                    {gold && (adult ? t("tm.goldenStop") : `${t("tm.goldenStop")} 👑`)}
                   </DialogDescription>
                   <DialogTitle className="mt-0.5 font-display text-2xl font-black leading-tight text-white">
                     {stop.title}
@@ -750,11 +756,15 @@ export function StopSheet({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-black text-foreground">
-                          Nível {n} · {meta.label}
+                          {t("tm.levelN")
+                            .replace("{n}", String(n))
+                            .replace("{label}", t(`lv.${n}.label` as DictKey))}
                         </span>
                         {done && <Stars count={p.stars[n - 1]} size={13} />}
                       </div>
-                      <p className="text-xs font-medium text-muted-foreground">{meta.blurb}</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {t(`lv.${n}.blurb` as DictKey)}
+                      </p>
                       <p className="mt-1 flex items-center gap-2.5 text-[11px] font-bold text-muted-foreground">
                         <span className="text-amber-600 dark:text-amber-400">+{meta.xp} XP</span>
                         <span className="inline-flex items-center gap-0.5">
@@ -776,12 +786,12 @@ export function StopSheet({
                     >
                       {done ? (
                         <>
-                          <RotateCcw className="h-3.5 w-3.5" /> Repetir
+                          <RotateCcw className="h-3.5 w-3.5" /> {t("tm.repeat")}
                         </>
                       ) : (
                         <>
                           <Play className="h-3.5 w-3.5 fill-current" />{" "}
-                          {unlocked ? "Jogar" : "Bloqueado"}
+                          {unlocked ? t("tm.play") : t("tm.blocked")}
                         </>
                       )}
                     </button>
@@ -790,9 +800,7 @@ export function StopSheet({
               })}
 
               <p className="px-1 pt-1 text-center text-[11px] font-semibold text-muted-foreground">
-                {gold
-                  ? "Parada dourada! Repita os níveis para treinar e ganhar XP extra."
-                  : `Complete o nível ${nextLevel} para avançar. Ao concluir os 3 níveis, a parada fica dourada!`}
+                {gold ? t("tm.goldNote") : t("tm.nextNote").replace("{n}", String(nextLevel))}
               </p>
             </div>
           </>

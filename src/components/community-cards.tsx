@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { Link } from "@tanstack/react-router";
 import {
   Heart,
@@ -331,7 +332,7 @@ export function PostCard({ post }: PostCardProps) {
                 <span>·</span>
                 <span>{post.recipeData.servings}</span>
                 <span>·</span>
-                <span className="text-primary">{post.recipeData.difficulty}</span>
+                <span className="text-primary">{td(post.recipeData.difficulty)}</span>
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">

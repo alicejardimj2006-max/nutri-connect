@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
@@ -28,18 +29,8 @@ import {
   setTrailScope,
   type TrailProgress,
 } from "@/lib/learning-trail";
+import { LEVEL_LABEL_KEYS } from "@/lib/i18n/content";
 import { ADULT_PROFILE_ID } from "@/lib/trail-profiles";
-
-const LEVEL_KEYS: Record<string, DictKey> = {
-  Semente: "hub.level.1",
-  Broto: "hub.level.2",
-  Folha: "hub.level.3",
-  Flor: "hub.level.4",
-  Fruto: "hub.level.5",
-  Árvore: "hub.level.6",
-  Floresta: "hub.level.7",
-  Mestre: "hub.level.8",
-};
 
 function Panel({
   title,
@@ -126,7 +117,7 @@ export function EspacoLeftColumn() {
           </p>
           <p className="text-xs text-muted-foreground">
             {t("hub.level").replace("{n}", String(lvl.level))} ·{" "}
-            {t(LEVEL_KEYS[lvl.label] ?? "hub.level.1")}
+            {t(LEVEL_LABEL_KEYS[lvl.label] ?? "hub.level.1")}
           </p>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-secondary">
             <div
@@ -215,12 +206,12 @@ export function EspacoLeftColumn() {
 /** Coluna direita: trilha com a Nina, tema da semana, desafios e sugestões. */
 export function EspacoRightColumn() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { communities, challenges, weeklyTheme, profiles, hydrated } = useCommunity();
   const trailProgress = useAdultTrailProgress(user?.id);
 
   const trail = useMemo(() => {
-    const trails = getTrails("adult");
+    const trails = getTrails("adult", locale);
     if (!trailProgress) return { trail: trails[0], stopTitle: null as string | null, pct: 0 };
     for (const tr of trails) {
       const id = getCurrentStopId(trailProgress, tr.units);
@@ -236,7 +227,7 @@ export function EspacoRightColumn() {
       }
     }
     return { trail: trails[0], stopTitle: null, pct: 100, started: true };
-  }, [trailProgress]);
+  }, [trailProgress, locale]);
 
   const myChallenges = useMemo(
     () =>
@@ -386,7 +377,7 @@ export function EspacoRightColumn() {
                       {c.name}
                     </span>
                     <span className="block truncate text-[11px] text-muted-foreground">
-                      {c.category}
+                      {td(c.category)}
                     </span>
                   </span>
                 </Link>
@@ -419,7 +410,7 @@ export function EspacoRightColumn() {
                       </span>
                       {info && (
                         <span className="block truncate text-[11px] text-muted-foreground">
-                          {info.profession}
+                          {td(info.profession)}
                         </span>
                       )}
                     </span>

@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 // Governança: verificação de profissionais e administração das comunidades
 // (um admin usuário + um admin profissional, sempre os dois).
 
@@ -116,10 +117,10 @@ export type VerificationInput = Omit<
 export function submitVerification(input: VerificationInput) {
   const state = loadState();
   if (isVerifiedProfessional(state.profiles, input.userId)) {
-    throw new Error("Seu perfil já é profissional verificado.");
+    throw new Error(t("err.alreadyPro"));
   }
   if (getLatestVerification(state.verifications, input.userId)?.status === "em_analise") {
-    throw new Error("Você já tem um pedido em análise.");
+    throw new Error(t("err.pendingRequest"));
   }
   const request: VerificationRequest = {
     ...input,
@@ -255,16 +256,16 @@ export function acceptProfessionalInvite(communityId: string, actor: Actor) {
   const state = loadState();
   const community = state.communities.find((c) => c.id === communityId);
   if (!community || !needsProfessional(community)) {
-    throw new Error("Esta comunidade não está mais procurando um profissional.");
+    throw new Error(t("err.noLongerSeeking"));
   }
   if (!isVerifiedProfessional(state.profiles, actor.id)) {
-    throw new Error("Só profissionais verificados podem ser admin profissional.");
+    throw new Error(t("err.onlyVerified"));
   }
   if (isCommunityAdmin(actor.id, state.communities)) {
-    throw new Error("Você já administra uma comunidade. Cada pessoa administra uma por vez.");
+    throw new Error(t("err.alreadyAdmin"));
   }
   if (!rankProfessionalsFor(community, state).some((r) => r.profile.userId === actor.id)) {
-    throw new Error("Esta comunidade não foi indicada para você.");
+    throw new Error(t("err.notInvited"));
   }
 
   saveState({
@@ -369,11 +370,11 @@ export function designateAdminUser(communityId: string, userId: string) {
   const state = loadState();
   const community = state.communities.find((c) => c.id === communityId);
   if (!community || !needsAdminUser(community)) {
-    throw new Error("Esta comunidade não precisa de um novo admin usuário.");
+    throw new Error(t("err.noNewAdmin"));
   }
   const candidate = rankEngagedMembers(community, state).find((m) => m.userId === userId);
   if (!candidate) {
-    throw new Error("Essa pessoa não pode ser indicada (não é membro elegível).");
+    throw new Error(t("err.notEligible"));
   }
   saveState({
     ...state,

@@ -25,6 +25,9 @@ import {
   type TrailProgress,
 } from "@/lib/learning-trail";
 import { burstFrom } from "@/lib/confetti";
+import { useI18n } from "@/hooks/use-i18n";
+import { LEVEL_LABEL_KEYS } from "@/lib/i18n/content";
+import type { DictKey } from "@/lib/i18n";
 
 /* ---------------------------------- XP ---------------------------------- */
 
@@ -37,6 +40,7 @@ interface XPBarProps {
 }
 
 export function XPBar({ xp, level, label, xpInLevel, xpForNext }: XPBarProps) {
+  const { t } = useI18n();
   const pct = xpForNext > 0 ? Math.min(Math.round((xpInLevel / xpForNext) * 100), 100) : 100;
   return (
     <div className="flex items-center gap-4">
@@ -50,7 +54,9 @@ export function XPBar({ xp, level, label, xpInLevel, xpForNext }: XPBarProps) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex items-center justify-between text-sm font-bold">
-          <span className="truncate text-foreground">{label}</span>
+          <span className="truncate text-foreground">
+            {LEVEL_LABEL_KEYS[label] ? t(LEVEL_LABEL_KEYS[label]) : label}
+          </span>
           <span className="tabular-nums text-amber-600 dark:text-amber-400">{xp} XP</span>
         </div>
         <div className="relative h-4 w-full overflow-hidden rounded-full border-2 border-secondary bg-secondary">
@@ -62,8 +68,10 @@ export function XPBar({ xp, level, label, xpInLevel, xpForNext }: XPBarProps) {
           </div>
         </div>
         <div className="mt-1.5 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          <span>Nível {level}</span>
-          <span>Faltam {Math.max(xpForNext - xpInLevel, 0)} XP</span>
+          <span>{t("hub.level").replace("{n}", String(level))}</span>
+          <span>
+            {t("tc.missingXp").replace("{n}", String(Math.max(xpForNext - xpInLevel, 0)))}
+          </span>
         </div>
       </div>
     </div>
@@ -73,6 +81,7 @@ export function XPBar({ xp, level, label, xpInLevel, xpForNext }: XPBarProps) {
 /* ------------------------------- Ofensiva ------------------------------- */
 
 export function StreakBadge({ streak }: { streak: number }) {
+  const { t } = useI18n();
   const active = streak > 0;
   return (
     <div
@@ -87,14 +96,14 @@ export function StreakBadge({ streak }: { streak: number }) {
         <div
           className={`text-lg font-black leading-none ${active ? "text-orange-500" : "text-muted-foreground"}`}
         >
-          {streak} {streak === 1 ? "dia" : "dias"}
+          {streak} {streak === 1 ? t("tc.day") : t("tc.days")}
         </div>
         <div
           className={`mt-0.5 text-[11px] font-bold uppercase tracking-widest ${
             active ? "text-orange-500/70" : "text-muted-foreground"
           }`}
         >
-          Ofensiva
+          {t("tc.streak")}
         </div>
       </div>
     </div>
@@ -103,6 +112,7 @@ export function StreakBadge({ streak }: { streak: number }) {
 
 /** Anel com o progresso da meta diária de XP. */
 function DailyGoalRing({ xp, goal }: { xp: number; goal: number }) {
+  const { t } = useI18n();
   const pct = Math.min(1, xp / goal);
   const done = pct >= 1;
   const r = 22;
@@ -147,7 +157,7 @@ function DailyGoalRing({ xp, goal }: { xp: number; goal: number }) {
           {Math.min(xp, goal)}/{goal}
         </div>
         <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-          Meta do dia
+          {t("tc.dailyGoal")}
         </div>
       </div>
     </div>
@@ -178,22 +188,22 @@ interface TrailHeaderProps {
   profileSlot?: React.ReactNode;
 }
 
-function guideMessage(p: TrailHeaderProps) {
+function guideMessage(p: TrailHeaderProps, t: (key: DictKey) => string) {
+  const left = String(p.dailyGoal - p.dailyXP);
   if (p.variant === "adult") {
-    if (p.levelsDone === 0)
-      return `Olá, ${p.name}. Sou a Nina, sua nutricionista guia. Escolha uma trilha e comece pela primeira parada.`;
-    if (p.dailyXP >= p.dailyGoal) return "Meta diária concluída. Ótimo ritmo!";
-    if (p.dailyXP === 0) return "Que tal um nível hoje? A constância é o que mais conta.";
-    return `Faltam ${p.dailyGoal - p.dailyXP} XP para a meta de hoje.`;
+    if (p.levelsDone === 0) return t("tc.adult.start").replace("{name}", p.name);
+    if (p.dailyXP >= p.dailyGoal) return t("tc.adult.goalDone");
+    if (p.dailyXP === 0) return t("tc.adult.zero");
+    return t("tc.adult.left").replace("{n}", left);
   }
-  if (p.levelsDone === 0)
-    return `Oi, ${p.name}! Eu sou a Nina. Toque na primeira parada e vamos começar juntos!`;
-  if (p.dailyXP >= p.dailyGoal) return "Meta do dia batida! Você é demais! 🎉";
-  if (p.dailyXP === 0) return "Que tal um nível rapidinho hoje? Sua ofensiva agradece!";
-  return `Faltam só ${p.dailyGoal - p.dailyXP} XP para a meta de hoje. Bora!`;
+  if (p.levelsDone === 0) return t("tc.kid.start").replace("{name}", p.name);
+  if (p.dailyXP >= p.dailyGoal) return t("tc.kid.goalDone");
+  if (p.dailyXP === 0) return t("tc.kid.zero");
+  return t("tc.kid.left").replace("{n}", left);
 }
 
 export function TrailHeader(props: TrailHeaderProps) {
+  const { t } = useI18n();
   const goalDone = props.dailyXP >= props.dailyGoal;
   const mood: MascotMood = goalDone ? "cheer" : "talk";
   return (
@@ -214,7 +224,7 @@ export function TrailHeader(props: TrailHeaderProps) {
                   : "rounded-2xl rounded-bl-none font-semibold"
               }`}
             >
-              {guideMessage(props)}
+              {guideMessage(props, t)}
             </div>
           </div>
           {props.profileSlot}
@@ -240,7 +250,7 @@ export function TrailHeader(props: TrailHeaderProps) {
                   {props.stars}/{props.maxStars}
                 </div>
                 <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-amber-600/70 dark:text-amber-400/70">
-                  Estrelas
+                  {t("tc.stars")}
                 </div>
               </div>
             </div>
@@ -251,7 +261,7 @@ export function TrailHeader(props: TrailHeaderProps) {
                   {props.goldStops}/{props.totalStops}
                 </div>
                 <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-yellow-600/70 dark:text-yellow-400/70">
-                  Douradas
+                  {t("tc.gold")}
                 </div>
               </div>
             </div>
@@ -276,6 +286,7 @@ const HERO_FLOATERS = [
 
 /** Faixa de boas-vindas. No perfil adulto é sóbria, com a Nina em destaque; no infantil, os Nutri-Amigos. */
 export function TrailHero({ variant, name }: { variant: ProfileKind; name: string }) {
+  const { t } = useI18n();
   const [cheering, setCheering] = useState<CharacterId | null>(null);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -304,24 +315,22 @@ export function TrailHero({ variant, name }: { variant: ProfileKind; name: strin
         <div className="relative flex flex-col items-center justify-between gap-4 lg:flex-row">
           <div className="max-w-xl space-y-3 text-center lg:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm">
-              <FlaskConical className="h-3.5 w-3.5" /> Trilhas de aprendizado
+              <FlaskConical className="h-3.5 w-3.5" /> {t("tc.hero.badge")}
             </span>
             <h2 className="font-display text-3xl font-bold leading-tight text-white sm:text-4xl">
-              Nutrição com evidências, no seu ritmo
+              {t("tc.hero.title")}
             </h2>
             <p className="text-sm leading-relaxed text-white/80 sm:text-base">
-              Escolha um tema e avance em etapas curtas: explicações claras, atividades práticas e
-              três níveis por parada. Conquiste estrelas, mantenha a constância e deixe as paradas
-              douradas.
+              {t("tc.hero.text")}
             </p>
-            <p className="text-xs text-white/60">Toque na Nina para cumprimentá-la.</p>
+            <p className="text-xs text-white/60">{t("tc.hero.hint")}</p>
           </div>
           <button
             type="button"
             onClick={(e) =>
               cheer("nina", e.currentTarget, ["#fde047", "#34d399", "#ffffff", "#93c5fd"])
             }
-            aria-label="Cumprimentar a Nutri Nina"
+            aria-label={t("tc.hero.greetNina")}
             className="-mb-6 shrink-0 cursor-pointer self-end transition-transform hover:-translate-y-1 active:scale-95 lg:-mr-2"
           >
             <Mascot
@@ -355,14 +364,13 @@ export function TrailHero({ variant, name }: { variant: ProfileKind; name: strin
       <div className="relative flex flex-col items-center justify-between gap-6 lg:flex-row">
         <div className="max-w-xl space-y-2 text-center lg:text-left">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-black uppercase tracking-widest backdrop-blur-sm">
-            ✨ Olá, {name}!
+            {t("tc.kid.hello").replace("{name}", name)}
           </span>
           <h2 className="font-display text-3xl font-black text-white drop-shadow-sm sm:text-4xl">
-            Vamos aprender brincando!
+            {t("tc.kid.title")}
           </h2>
           <p className="text-sm font-medium leading-relaxed text-white/90 sm:text-base">
-            Escolha uma aventura, ganhe estrelas e deixe as paradas douradas. Toque nos amigos para
-            cumprimentá-los!
+            {t("tc.kid.text")}
           </p>
         </div>
 
@@ -372,8 +380,8 @@ export function TrailHero({ variant, name }: { variant: ProfileKind; name: strin
               key={id}
               type="button"
               onClick={(e) => cheer(id, e.currentTarget)}
-              title={`${CHARACTERS[id].name}: ${CHARACTERS[id].role}`}
-              aria-label={`Cumprimentar ${CHARACTERS[id].name}`}
+              title={`${CHARACTERS[id].name}: ${t(`ch.role.${id}` as DictKey)}`}
+              aria-label={`${t("tc.greet")} ${CHARACTERS[id].name}`}
               className="cursor-pointer transition-transform hover:-translate-y-1.5 active:scale-95"
               style={{ zIndex: i === 1 ? 2 : 1 }}
             >
@@ -412,15 +420,16 @@ export function TrailPicker({
   onSelect: (id: string) => void;
   variant: ProfileKind;
 }) {
+  const { t } = useI18n();
   const adult = variant === "adult";
   return (
     <div className="mb-8">
       <div className="mb-3 flex items-baseline justify-between gap-2">
         <h2 className="font-display text-lg font-bold text-foreground">
-          {adult ? "Escolha um tema" : "Escolha sua aventura"}
+          {adult ? t("tc.pickTheme") : t("tc.pickAdventure")}
         </h2>
         <span className="text-xs font-medium text-muted-foreground">
-          {trails.length} {adult ? "trilhas" : "aventuras"}
+          {trails.length} {adult ? t("tc.trailsWord") : t("tc.adventuresWord")}
         </span>
       </div>
       <div className={`grid gap-4 ${trails.length > 2 ? "md:grid-cols-3" : "sm:grid-cols-2"}`}>
@@ -487,7 +496,9 @@ export function TrailPicker({
                 </span>
               </div>
               <p className="mt-1.5 text-[11px] font-medium text-muted-foreground">
-                {sum.stops} paradas · {sum.gold} douradas
+                {t("tc.stopsGold")
+                  .replace("{stops}", String(sum.stops))
+                  .replace("{gold}", String(sum.gold))}
               </p>
             </button>
           );
@@ -500,12 +511,13 @@ export function TrailPicker({
 /* ------------------------------- Conquistas ------------------------------- */
 
 export function TrailAchievements({ unlocked }: { unlocked: string[] }) {
+  const { t } = useI18n();
   const count = ACHIEVEMENTS.filter((a) => unlocked.includes(a.id)).length;
   return (
     <div className="mb-8 rounded-[2rem] border-2 border-border bg-card p-5 shadow-sm sm:p-7">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-display text-base font-black text-foreground">
-          🏅 Conquistas da trilha
+          {t("tc.achievementsTitle")}
         </h2>
         <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
           {count}/{ACHIEVEMENTS.length}
@@ -517,7 +529,7 @@ export function TrailAchievements({ unlocked }: { unlocked: string[] }) {
           return (
             <div
               key={a.id}
-              title={a.description}
+              title={t(`ach.${a.id}.desc` as DictKey)}
               className={`group flex items-center gap-3 rounded-2xl border-2 p-3 transition ${
                 has
                   ? "border-amber-400/50 bg-gradient-to-br from-amber-100/70 to-yellow-100/40 hover:-translate-y-0.5 hover:shadow-md dark:from-amber-500/15 dark:to-yellow-500/10"
@@ -535,10 +547,10 @@ export function TrailAchievements({ unlocked }: { unlocked: string[] }) {
                 <p
                   className={`truncate text-xs font-black ${has ? "text-foreground" : "text-muted-foreground"}`}
                 >
-                  {a.title}
+                  {t(`ach.${a.id}.title` as DictKey)}
                 </p>
                 <p className="line-clamp-2 text-[10px] font-medium leading-snug text-muted-foreground">
-                  {a.description}
+                  {t(`ach.${a.id}.desc` as DictKey)}
                 </p>
               </div>
             </div>
@@ -552,9 +564,10 @@ export function TrailAchievements({ unlocked }: { unlocked: string[] }) {
 /* ------------------------------ Desafios ------------------------------ */
 
 export function PopularBadge() {
+  const { t } = useI18n();
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-black text-amber-600 dark:text-amber-400">
-      <Flame className="nc-flame h-3 w-3" /> POPULAR
+      <Flame className="nc-flame h-3 w-3" /> {t("tc.popular")}
     </span>
   );
 }
@@ -570,6 +583,7 @@ export function CommunityChallengeGroup({
   challenges,
   userId,
 }: CommunityChallengeGroupProps) {
+  const { t } = useI18n();
   return (
     <div className="rounded-[2rem] border-2 border-border bg-card p-6 shadow-sm sm:p-8">
       <div className="mb-6 flex items-center gap-4">
@@ -585,8 +599,10 @@ export function CommunityChallengeGroup({
             {community.name}
           </Link>
           <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-            {community.members.length} membros · {challenges.length} desafio
-            {challenges.length !== 1 ? "s" : ""}
+            {t("tc.membersChallenges")
+              .replace("{members}", String(community.members.length))
+              .replace("{n}", String(challenges.length))
+              .replace("{word}", challenges.length === 1 ? t("tc.challenge") : t("tc.challenges"))}
           </p>
         </div>
       </div>

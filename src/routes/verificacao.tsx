@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -66,12 +67,15 @@ function VerificationPage() {
             </div>
             {professional && (
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                <Info label={t("verify.profession")} value={professional.profession} />
+                <Info label={t("verify.profession")} value={td(professional.profession)} />
                 <Info
                   label={t("verify.registration")}
                   value={`${professional.council} ${professional.registration}/${professional.uf}`}
                 />
-                <Info label={t("verify.fields")} value={professional.specialties.join(", ")} />
+                <Info
+                  label={t("verify.fields")}
+                  value={professional.specialties.map((s) => td(s)).join(", ")}
+                />
                 <Info label={t("verify.verifiedAt")} value={formatDate(professional.verifiedAt)} />
               </dl>
             )}
@@ -247,7 +251,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
           >
             {PROFESSIONS.map((p) => (
               <option key={p.label} value={p.label}>
-                {p.label}
+                {td(p.label)}
               </option>
             ))}
           </select>
@@ -291,7 +295,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
                     : "border-border bg-background text-muted-foreground hover:bg-secondary"
                 }`}
               >
-                {c}
+                {td(c)}
               </button>
             );
           })}

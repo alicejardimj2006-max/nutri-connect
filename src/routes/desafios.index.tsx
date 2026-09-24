@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Award, BookOpen, Flame, Sparkles, Users } from "lucide-react";
@@ -33,6 +34,8 @@ import {
   type Unit,
 } from "@/lib/learning-trail";
 import { useTrailProfiles } from "@/lib/trail-profiles";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/desafios/")({
   head: () => ({
@@ -50,21 +53,22 @@ export const Route = createFileRoute("/desafios/")({
 
 type Tab = "trilha" | "populares" | "comunidades";
 
-const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
-  { key: "trilha", label: "Minha Trilha", icon: <BookOpen className="h-4 w-4" /> },
-  { key: "populares", label: "Desafios Populares", icon: <Flame className="h-4 w-4" /> },
-  { key: "comunidades", label: "Das Minhas Comunidades", icon: <Users className="h-4 w-4" /> },
+const TABS: { key: Tab; label: DictKey; icon: React.ReactNode }[] = [
+  { key: "trilha", label: "dz.tab.trail", icon: <BookOpen className="h-4 w-4" /> },
+  { key: "populares", label: "dz.tab.popular", icon: <Flame className="h-4 w-4" /> },
+  { key: "comunidades", label: "dz.tab.communities", icon: <Users className="h-4 w-4" /> },
 ];
 
 function DesafiosIndexPage() {
   const { user } = useAuth();
+  const { t, locale } = useI18n();
   const { challenges, communities, hydrated } = useCommunity();
   const [tab, setTab] = useState<Tab>("trilha");
 
   const currentUserId = user?.id || "guest";
   const { profiles, active, select, addKid, removeKid } = useTrailProfiles(
     currentUserId,
-    user?.name || "Você",
+    t("dz.you"),
   );
 
   // ── Progresso da trilha (por conta + perfil) ──
@@ -94,7 +98,7 @@ function DesafiosIndexPage() {
   }, []);
 
   // ── Grande tema (trilha) em estudo: cada perfil escolhe entre as trilhas do seu tipo ──
-  const availableTrails = useMemo(() => getTrails(active.kind), [active.kind]);
+  const availableTrails = useMemo(() => getTrails(active.kind, locale), [active.kind, locale]);
   const [trailId, setTrailId] = useState(availableTrails[0]?.id);
   useEffect(() => {
     if (!availableTrails.some((t) => t.id === trailId)) setTrailId(availableTrails[0]?.id);
@@ -172,7 +176,7 @@ function DesafiosIndexPage() {
   };
 
   const displayName =
-    active.kind === "kid" ? active.name : user?.name || active.name || "Visitante";
+    active.kind === "kid" ? active.name : user?.name || active.name || t("dz.visitor");
 
   return (
     <>
@@ -181,15 +185,12 @@ function DesafiosIndexPage() {
         <div className="border-b border-border/70 pb-6 mb-8">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent mb-2">
             <Award className="h-3.5 w-3.5" />
-            <span>Aprendizado & Desafios</span>
+            <span>{t("dz.badge")}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
-            Desafios & Aprendizado
+            {t("dz.title")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-            Aprenda sobre nutrição no seu ritmo com lições interativas, participe de desafios
-            práticos e cresça junto com a comunidade.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{t("dz.intro")}</p>
         </div>
 
         {/* Barra de XP, nível, ofensiva e meta do dia (com o seletor de perfil embutido) */}
@@ -227,12 +228,12 @@ function DesafiosIndexPage() {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <h2 className="text-sm font-bold font-display text-foreground flex items-center gap-2">
                 <Award className="h-4 w-4 text-accent" />
-                <span>Suas Conquistas</span>
+                <span>{t("dz.achievements")}</span>
               </h2>
               <span className="text-[10px] text-muted-foreground font-medium">
-                {totals.levels} níveis ·{" "}
-                {challenges.filter((c) => c.completedBy.includes(currentUserId)).length} desafios
-                concluídos
+                {totals.levels} {t("dz.levelsAnd")}{" "}
+                {challenges.filter((c) => c.completedBy.includes(currentUserId)).length}{" "}
+                {t("dz.challengesDone")}
               </span>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -246,7 +247,7 @@ function DesafiosIndexPage() {
                   }`}
                 >
                   <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
-                  <span className="text-[11px] font-bold text-foreground">{badge.label}</span>
+                  <span className="text-[11px] font-bold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}
             </div>
@@ -255,24 +256,24 @@ function DesafiosIndexPage() {
 
         {/* Navegação por Abas (perfis infantis não têm rede social: sem desafios ou comunidades) */}
         <div className="flex items-center gap-1 rounded-2xl bg-secondary p-1 mb-8 overflow-x-auto no-scrollbar">
-          {(active.kind === "adult" ? TABS : TABS.filter((t) => t.key === "trilha")).map((t) => (
+          {(active.kind === "adult" ? TABS : TABS.filter((tb) => tb.key === "trilha")).map((tb) => (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
+              key={tb.key}
+              onClick={() => setTab(tb.key)}
               className={`flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
-                tab === t.key
+                tab === tb.key
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
               }`}
             >
-              {t.icon}
-              <span>{t.label}</span>
-              {t.key === "populares" && (
+              {tb.icon}
+              <span>{t(tb.label)}</span>
+              {tb.key === "populares" && (
                 <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400">
                   {popularChallenges.length}
                 </span>
               )}
-              {t.key === "comunidades" && userCommunityChallenges.length > 0 && (
+              {tb.key === "comunidades" && userCommunityChallenges.length > 0 && (
                 <span className="rounded-full bg-accent/20 px-1.5 py-0.5 text-[9px] font-bold text-accent">
                   {userCommunityChallenges.length}
                 </span>
@@ -283,7 +284,9 @@ function DesafiosIndexPage() {
 
         {/* Conteúdo da aba ativa */}
         {!hydrated ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">Carregando…</div>
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            {t("common.loading")}
+          </div>
         ) : (
           <>
             {/* ── ABA: Minha Trilha (Lições Educativas) ── */}
@@ -322,22 +325,18 @@ function DesafiosIndexPage() {
                   <div>
                     <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                       <Flame className="h-5 w-5 text-amber-500" />
-                      Desafios Populares
+                      {t("dz.popularTitle")}
                     </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Publicados por profissionais verificados · Ordenados por participação
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t("dz.popularHint")}</p>
                   </div>
                   <span className="text-xs text-muted-foreground font-medium">
-                    {popularChallenges.length} desafios
+                    {popularChallenges.length} {t("dz.challengesCount")}
                   </span>
                 </div>
 
                 {popularChallenges.length === 0 ? (
                   <div className="py-16 text-center rounded-3xl border bg-card p-8">
-                    <p className="text-sm text-muted-foreground">
-                      Nenhum desafio popular publicado ainda por profissionais.
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t("dz.noPopular")}</p>
                   </div>
                 ) : (
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -352,7 +351,7 @@ function DesafiosIndexPage() {
                         {c.createdByProfessionalName && (
                           <div className="mt-2 px-2 text-[10px] text-muted-foreground flex items-center gap-1">
                             <Sparkles className="h-3 w-3 text-accent" />
-                            Criado por{" "}
+                            {t("dz.createdBy")}{" "}
                             <span className="font-semibold text-foreground">
                               {c.createdByProfessionalName}
                             </span>
@@ -372,25 +371,21 @@ function DesafiosIndexPage() {
                   <div>
                     <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                       <Users className="h-5 w-5 text-accent" />
-                      Desafios das Minhas Comunidades
+                      {t("dz.commTitle")}
                     </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Desafios das comunidades que você participa
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t("dz.commHint")}</p>
                   </div>
                 </div>
 
                 {userCommunityChallenges.length === 0 ? (
                   <div className="py-16 text-center rounded-3xl border bg-card p-8">
                     <div className="text-4xl mb-3">👥</div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Você ainda não participa de nenhuma comunidade com desafios ativos.
-                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">{t("dz.noCommChallenges")}</p>
                     <Link
                       to="/comunidades"
                       className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition"
                     >
-                      Explorar Comunidades
+                      {t("dz.exploreCommunities")}
                     </Link>
                   </div>
                 ) : (

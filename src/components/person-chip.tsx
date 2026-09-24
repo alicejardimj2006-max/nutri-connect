@@ -1,13 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck } from "lucide-react";
 import { getAvatarSrc, initials } from "@/lib/community";
+import { useI18n } from "@/hooks/use-i18n";
 
 /** Selo de profissional verificado. */
 export function VerifiedBadge({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  const { t } = useI18n();
   return (
     <BadgeCheck
       role="img"
-      aria-label="Profissional verificado"
+      aria-label={t("verified.professional")}
       className={`shrink-0 text-accent ${className}`}
     />
   );

@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -113,7 +114,7 @@ function AdminPage() {
                       <span className="text-sm text-foreground">
                         {v.fullName}{" "}
                         <span className="text-muted-foreground">
-                          · {v.profession} {v.council} {v.registration}/{v.uf}
+                          · {td(v.profession)} {v.council} {v.registration}/{v.uf}
                         </span>
                       </span>
                       <span
@@ -180,9 +181,9 @@ function VerificationCard({
 
       <dl className="mt-3 grid gap-3 sm:grid-cols-2">
         <Row label={t("admin.account")} value={v.userName} />
-        <Row label={t("verify.profession")} value={v.profession} />
+        <Row label={t("verify.profession")} value={td(v.profession)} />
         <Row label={t("verify.registration")} value={`${v.council} ${v.registration}/${v.uf}`} />
-        <Row label={t("verify.fields")} value={v.specialties.join(", ")} />
+        <Row label={t("verify.fields")} value={v.specialties.map((s) => td(s)).join(", ")} />
       </dl>
       {v.bio && <p className="mt-3 text-sm text-muted-foreground">{v.bio}</p>}
       {v.publicLookupUrl && (
@@ -286,7 +287,7 @@ function CommunityCase({ community: c }: { community: Community }) {
             : t("comunidades.status.suspensa")}
         </span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">{c.category}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{td(c.category)}</p>
 
       {needsProfessional(c) && (
         <div className="mt-4">

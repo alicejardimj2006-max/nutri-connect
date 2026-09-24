@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -155,7 +156,7 @@ function EditProfilePage() {
                       : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
-                  {g}
+                  {td(g)}
                 </button>
               ))}
             </div>

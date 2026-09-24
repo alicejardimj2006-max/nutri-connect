@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 // Frontend auth stored in localStorage.
 // Ready for future API/DB integration.
 
@@ -73,7 +74,7 @@ export function registerUser(data: {
 
   const existingUsers = getStoredUsers();
   if (existingUsers[cleanEmail]) {
-    throw new Error("E-mail já cadastrado");
+    throw new Error(t("err.emailTaken"));
   }
 
   const id =
@@ -104,11 +105,11 @@ export function loginUser(email: string, password?: string): AuthUser {
   const existing = users[cleanEmail];
 
   if (!existing) {
-    throw new Error("E-mail não encontrado. Verifique ou crie sua conta.");
+    throw new Error(t("err.emailNotFound"));
   }
 
   if (existing.password !== password) {
-    throw new Error("Senha incorreta.");
+    throw new Error(t("err.wrongPassword"));
   }
 
   const activeUser: AuthUser = {
@@ -157,13 +158,13 @@ export function getStoredUserById(id: string): StoredAccount | null {
 
 export function changePassword(currentPassword: string, newPassword: string) {
   const current = getUser();
-  if (!current) throw new Error("Nenhuma conta autenticada.");
+  if (!current) throw new Error(t("err.noAccount"));
 
   const key = current.email.toLowerCase().trim();
   const users = getStoredUsers();
   const stored = users[key];
   if (!stored || stored.password !== currentPassword) {
-    throw new Error("Senha atual incorreta.");
+    throw new Error(t("err.wrongCurrent"));
   }
 
   users[key] = { ...stored, password: newPassword };

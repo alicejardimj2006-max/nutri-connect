@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -90,7 +91,7 @@ function Cadastro() {
                     : "bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
               >
-                {g}
+                {td(g)}
               </button>
             ))}
           </div>

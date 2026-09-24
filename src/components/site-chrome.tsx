@@ -83,7 +83,7 @@ export function SiteHeader() {
         {/* Cabeçalho desktop — reúne os atalhos que no mobile ficam na barra inferior */}
         <div className="relative mx-auto hidden h-16 max-w-7xl items-center justify-between gap-4 px-6 lg:flex">
           {user ? (
-            <nav aria-label="Navegação principal" className="flex items-center gap-1">
+            <nav aria-label={t("nav.mainAria")} className="flex items-center gap-1">
               <Link
                 to="/espaco"
                 className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
@@ -175,7 +175,7 @@ export function SiteHeader() {
       {/* Logo flutuante: fica fixo no celular enquanto a barra superior está recolhida */}
       <Link
         to="/"
-        aria-label="NutriConnect — página inicial"
+        aria-label={t("nav.homeAria")}
         aria-hidden={!hidden}
         tabIndex={hidden ? 0 : -1}
         className={`fixed left-1/2 top-3 z-40 -translate-x-1/2 rounded-full border border-border/60 bg-background/75 px-4 py-1.5 shadow-lg backdrop-blur-md transition-all duration-300 lg:hidden ${
@@ -192,7 +192,7 @@ export function SiteHeader() {
         <nav
           data-site-bottom-nav
           data-hidden={hidden}
-          aria-label="Navegação principal"
+          aria-label={t("nav.mainAria")}
           className="transition-transform duration-300 data-[hidden=true]:translate-y-[calc(100%+1rem)] fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] lg:hidden"
         >
           <Link

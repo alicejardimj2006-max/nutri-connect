@@ -1,3 +1,4 @@
+import { loadLocale, localeMeta, t } from "./i18n";
 // Comunidade & Jornadas — Armazenamento local reativo (pronto para futura API/DB).
 
 export interface CommunityMember {
@@ -1147,7 +1148,7 @@ export function toggleChallengeStep(challengeId: string, userId: string, stepInd
 export function addChallengeTip(challengeId: string, actor: Actor, text: string) {
   const trimmed = text.trim();
   if (!trimmed) {
-    throw new Error("A dica não pode estar vazia.");
+    throw new Error(t("err.emptyTip"));
   }
 
   update((s) => ({
@@ -1200,7 +1201,7 @@ export function createCommunityPost(input: {
 }): Post {
   const trimmedText = input.text.trim();
   if (!trimmedText) {
-    throw new Error("A publicação não pode ser vazia.");
+    throw new Error(t("err.emptyPost"));
   }
 
   const post: Post = {
@@ -1245,7 +1246,7 @@ export function createPost(input: {
 export function addComment(postId: string, actor: Actor, text: string) {
   const trimmedText = text.trim();
   if (!trimmedText) {
-    throw new Error("O comentário não pode ser vazio.");
+    throw new Error(t("err.emptyComment"));
   }
 
   update((s) => ({
@@ -1294,12 +1295,10 @@ export function createCommunity(input: {
 }) {
   const current = loadState();
   if (current.profiles.find((p) => p.userId === input.actor.id)?.role === "profissional") {
-    throw new Error(
-      "Apenas usuários criam comunidades. Profissionais entram como admin profissional por convite.",
-    );
+    throw new Error(t("err.prosNoCommunity"));
   }
   if (isCommunityAdmin(input.actor.id, current.communities)) {
-    throw new Error("Você já administra uma comunidade. Cada pessoa administra uma por vez.");
+    throw new Error(t("err.alreadyAdmin"));
   }
   const community: Community = {
     id: id(),
@@ -1373,7 +1372,7 @@ export function upsertProfile(profile: PublicProfile) {
 }
 
 export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
+  return new Date(iso).toLocaleDateString(localeMeta(loadLocale()).tag, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",

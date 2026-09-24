@@ -17,6 +17,10 @@ import {
   type Unit,
 } from "./trail-types";
 
+import { loadLocale } from "./i18n";
+import { contentOverrides, localizeEntry } from "./i18n/content";
+import type { Locale } from "./i18n/locales";
+
 export * from "./trail-types";
 
 /* --------------------------------- Conteúdo --------------------------------- */
@@ -142,9 +146,39 @@ export const TRAILS_BY_KIND: Record<ProfileKind, Trail[]> = {
   kid: KID_TRAILS,
 };
 
-export const getTrails = (kind: ProfileKind) => TRAILS_BY_KIND[kind];
-export const getUnits = (kind: ProfileKind) => getTrails(kind).flatMap((t) => t.units);
-export const getStops = (kind: ProfileKind) => getUnits(kind).flatMap((u) => u.stops);
+const localizedCache = new Map<string, Trail[]>();
+
+/** Trilhas no idioma pedido (o conteúdo original é em português). */
+function localizedTrails(kind: ProfileKind, locale: Locale): Trail[] {
+  const source = TRAILS_BY_KIND[kind];
+  const ov = contentOverrides(locale);
+  if (!ov) return source;
+  const key = `${kind}:${locale}`;
+  const cached = localizedCache.get(key);
+  if (cached) return cached;
+  const result = source.map((trail) => ({
+    ...localizeEntry(ov, `trail:${trail.id}`, trail),
+    units: trail.units.map((unit) => ({
+      ...localizeEntry(ov, `unit:${unit.id}`, unit),
+      stops: unit.stops.map((stop) => ({
+        ...localizeEntry(ov, `stop:${stop.id}`, stop),
+        levels: stop.levels.map((level) => ({
+          ...level,
+          activities: level.activities.map((a) => localizeEntry(ov, `act:${a.id}`, a)),
+        })) as Stop["levels"],
+      })),
+    })),
+  }));
+  localizedCache.set(key, result);
+  return result;
+}
+
+export const getTrails = (kind: ProfileKind, locale: Locale = loadLocale()) =>
+  localizedTrails(kind, locale);
+export const getUnits = (kind: ProfileKind, locale?: Locale) =>
+  getTrails(kind, locale).flatMap((t) => t.units);
+export const getStops = (kind: ProfileKind, locale?: Locale) =>
+  getUnits(kind, locale).flatMap((u) => u.stops);
 
 const EVERY_TRAIL = [...ADULT_TRAILS, ...KID_TRAILS];
 export const ALL_STOPS: Stop[] = EVERY_TRAIL.flatMap((t) => t.units.flatMap((u) => u.stops));

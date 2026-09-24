@@ -15,6 +15,8 @@ import {
   Zap,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 import {
   ASPECTS,
   DEFAULT_EDITS,
@@ -41,32 +43,32 @@ type TabId = "crop" | "light" | "color" | "looks" | "detail";
 
 const TABS: {
   id: TabId;
-  label: string;
+  label: DictKey;
   icon: React.ComponentType<{ className?: string }>;
   keys: (keyof ImageEdits)[];
 }[] = [
   {
     id: "crop",
-    label: "Recortar",
+    label: "ie.tab.crop",
     icon: Crop,
     keys: ["rotation", "straighten", "flipH", "flipV", "zoom", "offX", "offY", "aspect"],
   },
   {
     id: "light",
-    label: "Luz",
+    label: "ie.tab.light",
     icon: Sun,
     keys: ["exposure", "contrast", "highlights", "shadows", "fade"],
   },
   {
     id: "color",
-    label: "Cor",
+    label: "ie.tab.color",
     icon: Palette,
     keys: ["temperature", "tint", "saturation", "vibrance"],
   },
-  { id: "looks", label: "Filtros", icon: Sparkles, keys: ["look", "lookAmount"] },
+  { id: "looks", label: "ie.tab.looks", icon: Sparkles, keys: ["look", "lookAmount"] },
   {
     id: "detail",
-    label: "Detalhes",
+    label: "ie.tab.detail",
     icon: Aperture,
     keys: ["sharpness", "blur", "vignette", "grain"],
   },
@@ -95,6 +97,7 @@ function Slider({
   neutral?: number;
   onChange: (v: number) => void;
 }) {
+  const { t } = useI18n();
   const shown = step < 1 ? value.toFixed(1) : Math.round(value);
   return (
     <div>
@@ -102,7 +105,7 @@ function Slider({
         <button
           type="button"
           onDoubleClick={() => onChange(neutral)}
-          title="Duplo clique para zerar"
+          title={t("ie.resetTitle")}
           className="font-medium text-foreground cursor-pointer select-none"
         >
           {label}
@@ -146,6 +149,7 @@ export function ImageEditor({
   onCancel: () => void;
   onApply: (dataUrl: string, edits: ImageEdits) => void;
 }) {
+  const { t } = useI18n();
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [edits, setEdits] = useState<ImageEdits>({ ...DEFAULT_EDITS, ...initial });
   const editsRef = useRef(edits);
@@ -318,9 +322,9 @@ export function ImageEditor({
   );
 
   const num = (key: keyof ImageEdits) => edits[key] as number;
-  const adjSlider = (key: keyof ImageEdits, label: string, min = -100, max = 100) => (
+  const adjSlider = (key: keyof ImageEdits, label: DictKey, min = -100, max = 100) => (
     <Slider
-      label={label}
+      label={t(label)}
       value={num(key)}
       min={min}
       max={max}
@@ -350,19 +354,16 @@ export function ImageEditor({
           <div className="flex min-h-0 flex-col bg-card">
             <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5 pr-14">
               <DialogTitle className="mr-auto text-base font-bold font-display">
-                Editor de foto
+                {t("ie.title")}
               </DialogTitle>
-              <DialogDescription className="sr-only">
-                Recorte, ajuste luz e cor, aplique filtros e detalhes. As mudanças só valem ao
-                aplicar.
-              </DialogDescription>
+              <DialogDescription className="sr-only">{t("ie.desc")}</DialogDescription>
               <button
                 type="button"
                 className={toolBtn}
                 onClick={undo}
                 disabled={past.length === 0}
-                title="Desfazer (Ctrl+Z)"
-                aria-label="Desfazer"
+                title={t("ie.undoTitle")}
+                aria-label={t("ie.undo")}
               >
                 <Undo2 className="h-3.5 w-3.5" />
               </button>
@@ -371,8 +372,8 @@ export function ImageEditor({
                 className={toolBtn}
                 onClick={redo}
                 disabled={future.length === 0}
-                title="Refazer (Ctrl+Shift+Z)"
-                aria-label="Refazer"
+                title={t("ie.redoTitle")}
+                aria-label={t("ie.redo")}
               >
                 <Redo2 className="h-3.5 w-3.5" />
               </button>
@@ -384,9 +385,9 @@ export function ImageEditor({
                 onPointerLeave={() => setComparing(false)}
                 onPointerCancel={() => setComparing(false)}
                 disabled={!dirtyAny}
-                title="Segure para ver sem os ajustes de cor"
+                title={t("ie.compareTitle")}
               >
-                <Eye className="h-3.5 w-3.5" /> Comparar
+                <Eye className="h-3.5 w-3.5" /> {t("ie.compare")}
               </button>
             </div>
 
@@ -428,8 +429,7 @@ export function ImageEditor({
               </div>
             </div>
             <p className="hidden border-t border-border/60 px-4 py-2 text-[11px] text-muted-foreground md:block">
-              Arraste para reposicionar · role o mouse para dar zoom · duplo clique em um controle
-              para zerar
+              {t("ie.hint")}
             </p>
           </div>
 
@@ -438,30 +438,30 @@ export function ImageEditor({
             <div className="border-b border-border/60 p-3">
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Histograma
+                  {t("ie.histogram")}
                 </span>
                 <button
                   type="button"
                   onClick={autoFix}
                   className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary transition hover:opacity-80 cursor-pointer"
                 >
-                  <Zap className="h-3 w-3" /> Melhorar automaticamente
+                  <Zap className="h-3 w-3" /> {t("ie.auto")}
                 </button>
               </div>
               <canvas ref={histRef} className="h-14 w-full rounded-lg bg-secondary/40" />
             </div>
 
             <div role="tablist" className="grid grid-cols-5 border-b border-border/60">
-              {TABS.map((t) => {
-                const Icon = t.icon;
-                const active = tab === t.id;
+              {TABS.map((tb) => {
+                const Icon = tb.icon;
+                const active = tab === tb.id;
                 return (
                   <button
-                    key={t.id}
+                    key={tb.id}
                     type="button"
                     role="tab"
                     aria-selected={active}
-                    onClick={() => setTab(t.id)}
+                    onClick={() => setTab(tb.id)}
                     className={`relative flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-medium transition cursor-pointer ${
                       active
                         ? "bg-primary-soft text-primary"
@@ -469,8 +469,8 @@ export function ImageEditor({
                     }`}
                   >
                     <Icon className="h-4 w-4" />
-                    {t.label}
-                    {isDirty(edits, t.keys) && (
+                    {t(tb.label)}
+                    {isDirty(edits, tb.keys) && (
                       <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />
                     )}
                   </button>
@@ -482,7 +482,7 @@ export function ImageEditor({
               {tab === "crop" && (
                 <>
                   <div>
-                    <p className="mb-1.5 text-xs font-medium text-foreground">Proporção</p>
+                    <p className="mb-1.5 text-xs font-medium text-foreground">{t("ie.aspect")}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {ASPECTS.map((a) => (
                         <button
@@ -491,9 +491,9 @@ export function ImageEditor({
                           onClick={() => change({ aspect: a.id })}
                           title={
                             a.id === "original"
-                              ? "O maior tamanho que uma foto ocupa no post"
+                              ? t("ie.aspect.originalTitle")
                               : a.id === "native"
-                                ? "Mantém a proporção da foto, sem cortes"
+                                ? t("ie.aspect.nativeTitle")
                                 : undefined
                           }
                           className={`rounded-full border px-3 py-1 text-xs font-medium transition cursor-pointer ${
@@ -502,7 +502,9 @@ export function ImageEditor({
                               : "border-border bg-card text-muted-foreground hover:bg-secondary"
                           }`}
                         >
-                          {a.label}
+                          {a.id === "original" || a.id === "native"
+                            ? t(a.id === "original" ? "ie.aspect.original" : "ie.aspect.native")
+                            : a.label}
                         </button>
                       ))}
                     </div>
@@ -512,7 +514,7 @@ export function ImageEditor({
                       type="button"
                       className={toolBtn}
                       onClick={() => change({ rotation: (edits.rotation + 3) % 4 })}
-                      title="Girar 90° para a esquerda"
+                      title={t("ie.rotateLeft")}
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
                     </button>
@@ -520,7 +522,7 @@ export function ImageEditor({
                       type="button"
                       className={toolBtn}
                       onClick={() => change({ rotation: (edits.rotation + 1) % 4 })}
-                      title="Girar 90° para a direita"
+                      title={t("ie.rotateRight")}
                     >
                       <RotateCw className="h-3.5 w-3.5" />
                     </button>
@@ -528,7 +530,7 @@ export function ImageEditor({
                       type="button"
                       className={toolBtn}
                       onClick={() => change({ flipH: !edits.flipH })}
-                      title="Espelhar na horizontal"
+                      title={t("ie.flipH")}
                     >
                       <FlipHorizontal2 className="h-3.5 w-3.5" />
                     </button>
@@ -536,13 +538,13 @@ export function ImageEditor({
                       type="button"
                       className={toolBtn}
                       onClick={() => change({ flipV: !edits.flipV })}
-                      title="Espelhar na vertical"
+                      title={t("ie.flipV")}
                     >
                       <FlipVertical2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                   <Slider
-                    label="Endireitar"
+                    label={t("ie.straighten")}
                     value={edits.straighten}
                     min={-45}
                     max={45}
@@ -551,7 +553,7 @@ export function ImageEditor({
                     onChange={(v) => slide({ straighten: v })}
                   />
                   <Slider
-                    label="Zoom"
+                    label={t("ie.zoom")}
                     value={Math.round(edits.zoom * 100)}
                     min={100}
                     max={400}
@@ -565,27 +567,27 @@ export function ImageEditor({
                     onClick={() => change({ offX: 0, offY: 0 })}
                     disabled={edits.offX === 0 && edits.offY === 0}
                   >
-                    Centralizar imagem
+                    {t("ie.center")}
                   </button>
                 </>
               )}
 
               {tab === "light" && (
                 <>
-                  {adjSlider("exposure", "Exposição")}
-                  {adjSlider("contrast", "Contraste")}
-                  {adjSlider("highlights", "Realces")}
-                  {adjSlider("shadows", "Sombras")}
-                  {adjSlider("fade", "Desbotado", 0, 100)}
+                  {adjSlider("exposure", "ie.exposure")}
+                  {adjSlider("contrast", "ie.contrast")}
+                  {adjSlider("highlights", "ie.highlights")}
+                  {adjSlider("shadows", "ie.shadows")}
+                  {adjSlider("fade", "ie.fade", 0, 100)}
                 </>
               )}
 
               {tab === "color" && (
                 <>
-                  {adjSlider("temperature", "Temperatura")}
-                  {adjSlider("tint", "Matiz (verde ↔ magenta)")}
-                  {adjSlider("saturation", "Saturação")}
-                  {adjSlider("vibrance", "Vibração")}
+                  {adjSlider("temperature", "ie.temperature")}
+                  {adjSlider("tint", "ie.tint")}
+                  {adjSlider("saturation", "ie.saturation")}
+                  {adjSlider("vibrance", "ie.vibrance")}
                 </>
               )}
 
@@ -614,14 +616,14 @@ export function ImageEditor({
                           ) : (
                             <span className="aspect-square w-full rounded-lg bg-secondary" />
                           )}
-                          {look.label}
+                          {t(`ie.look.${look.id}` as DictKey)}
                         </button>
                       );
                     })}
                   </div>
                   {edits.look !== "none" && (
                     <Slider
-                      label="Intensidade do filtro"
+                      label={t("ie.lookAmount")}
                       value={edits.lookAmount}
                       min={0}
                       max={100}
@@ -635,10 +637,10 @@ export function ImageEditor({
 
               {tab === "detail" && (
                 <>
-                  {adjSlider("sharpness", "Nitidez", 0, 100)}
-                  {adjSlider("blur", "Desfoque", 0, 100)}
-                  {adjSlider("vignette", "Vinheta (escurecer ↔ clarear)")}
-                  {adjSlider("grain", "Granulação", 0, 100)}
+                  {adjSlider("sharpness", "ie.sharpness", 0, 100)}
+                  {adjSlider("blur", "ie.blur", 0, 100)}
+                  {adjSlider("vignette", "ie.vignette")}
+                  {adjSlider("grain", "ie.grain", 0, 100)}
                 </>
               )}
 
@@ -648,7 +650,7 @@ export function ImageEditor({
                   className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline cursor-pointer"
                   onClick={() => resetKeys(TABS.find((t) => t.id === tab)!.keys)}
                 >
-                  Zerar esta aba
+                  {t("ie.resetTab")}
                 </button>
               )}
             </div>
@@ -660,7 +662,7 @@ export function ImageEditor({
                 disabled={!dirtyAny}
                 className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
               >
-                Restaurar tudo
+                {t("ie.restoreAll")}
               </button>
               <div className="flex gap-2">
                 <button
@@ -668,7 +670,7 @@ export function ImageEditor({
                   onClick={onCancel}
                   className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary cursor-pointer"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="button"
@@ -676,7 +678,7 @@ export function ImageEditor({
                   disabled={!img}
                   className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground shadow-soft transition hover:bg-primary/90 disabled:opacity-50 cursor-pointer"
                 >
-                  Aplicar
+                  {t("ie.apply")}
                 </button>
               </div>
             </div>

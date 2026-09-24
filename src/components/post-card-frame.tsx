@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 
 const PADDING = {
   md: { top: "px-6 pt-6", bottom: "px-6 pb-6", toggle: "px-6 pt-3" },
@@ -39,6 +40,7 @@ export function PostCardFrame({
   children,
 }: PostCardFrameProps) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const userId = user?.id;
   const [expanded, setExpanded] = useState(false);
   const [overflowing, setOverflowing] = useState(false);
@@ -115,11 +117,11 @@ export function PostCardFrame({
           >
             {expanded ? (
               <>
-                Ver menos <ChevronUp className="h-3.5 w-3.5" />
+                {t("frame.seeLess")} <ChevronUp className="h-3.5 w-3.5" />
               </>
             ) : (
               <>
-                Ver mais <ChevronDown className="h-3.5 w-3.5" />
+                {t("frame.seeMore")} <ChevronDown className="h-3.5 w-3.5" />
               </>
             )}
           </button>

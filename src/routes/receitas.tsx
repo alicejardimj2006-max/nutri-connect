@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChefHat, Clock, Plus, Search, Filter, Sparkles, Heart } from "lucide-react";
@@ -118,7 +119,7 @@ function ReceitasPage() {
                       : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
-                  {cat === "Todas" ? t("comunidades.categoryAll") : cat}
+                  {cat === "Todas" ? t("comunidades.categoryAll") : td(cat)}
                 </button>
               );
             })}
@@ -144,7 +145,7 @@ function ReceitasPage() {
                     {/* Topo do Card */}
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <span className="rounded-full bg-accent-soft px-3 py-0.5 text-xs font-semibold text-accent">
-                        {recipe.recipeData?.category || t("recipes.fallbackCategory")}
+                        {td(recipe.recipeData?.category) || t("recipes.fallbackCategory")}
                       </span>
                       {recipe.recipeData?.prepTime && (
                         <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
@@ -192,7 +193,7 @@ function ReceitasPage() {
                       </span>
                       <span>
                         {t("recipes.difficulty")}{" "}
-                        <b>{recipe.recipeData?.difficulty || t("recipes.easy")}</b>
+                        <b>{td(recipe.recipeData?.difficulty) || t("recipes.easy")}</b>
                       </span>
                     </div>
                   </div>

@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ArrowLeft, BadgeCheck, Inbox, Users } from "lucide-react";
@@ -78,7 +79,7 @@ function InvitesPage() {
           <>
             {info && (
               <p className="mt-4 text-xs text-muted-foreground">
-                {t("invites.yourArea")} {info.specialties.join(", ")}.
+                {t("invites.yourArea")} {info.specialties.map((s) => td(s)).join(", ")}.
               </p>
             )}
 
@@ -143,7 +144,7 @@ function InviteCard({
     <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground">
-          {c.category}
+          {td(c.category)}
         </span>
         {matchesTopic && (
           <span className="rounded-full bg-accent-soft px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent">

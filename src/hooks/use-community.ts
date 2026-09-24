@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "@/hooks/use-i18n";
+import { localizeWeeklyTheme } from "@/lib/i18n/data";
 import { COMMUNITY_EVENT, loadState, type CommunityState } from "@/lib/community";
 
 const EMPTY: CommunityState = {
@@ -40,5 +42,11 @@ export function useCommunity() {
     };
   }, []);
 
-  return { ...state, hydrated };
+  const { locale } = useI18n();
+  const weeklyTheme = useMemo(
+    () => localizeWeeklyTheme(state.weeklyTheme, locale),
+    [state.weeklyTheme, locale],
+  );
+
+  return { ...state, weeklyTheme, hydrated };
 }

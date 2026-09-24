@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, Crown, Flame, Heart, Lightbulb, Star, X } from "lucide-react";
 import { Mascot, type MascotMood } from "@/components/mascots";
+import { t } from "@/lib/i18n";
+import type { DictKey } from "@/lib/i18n";
+import { LEVEL_LABEL_KEYS } from "@/lib/i18n/content";
 import { Scenery, Sparkles } from "@/components/trail-scenery";
 import { burstFrom, celebrate, fireConfetti, GOLD_COLORS } from "@/lib/confetti";
 import {
@@ -107,7 +110,7 @@ const rightAnswerText = (a: Activity): string | null => {
     case "quiz":
       return a.options[a.correctIndex];
     case "true_false":
-      return a.isTrue ? "Verdadeiro" : "Falso";
+      return a.isTrue ? t("lm.true") : t("lm.false");
     case "multi":
       return a.correctIndexes.map((i) => a.options[i]).join(" • ");
     case "match":
@@ -129,7 +132,7 @@ const rightAnswerText = (a: Activity): string | null => {
     case "scenario":
       return a.options[a.correctIndex];
     case "slider":
-      return `perto de ${a.target}${a.unit}`;
+      return t("lm.near").replace("{v}", `${a.target}${a.unit}`);
     default:
       return null;
   }
@@ -152,14 +155,9 @@ function seededShuffle<T>(items: T[], seed: string): T[] {
   return arr;
 }
 
-const CORRECT_MSGS = ["Mandou bem!", "Isso aí!", "Perfeito!", "Você arrasou!", "Correto!", "Show!"];
-const WRONG_MSGS = [
-  "Quase lá!",
-  "Ops, não foi dessa vez.",
-  "Vamos aprender com isso!",
-  "Sem stress!",
-];
-const pick = (arr: string[], i: number) => arr[i % arr.length];
+const CORRECT_MSGS: DictKey[] = ["lm.ok1", "lm.ok2", "lm.ok3", "lm.ok4", "lm.ok5", "lm.ok6"];
+const WRONG_MSGS: DictKey[] = ["lm.bad1", "lm.bad2", "lm.bad3", "lm.bad4"];
+const pick = (arr: DictKey[], i: number) => t(arr[i % arr.length]);
 
 const MATCH_COLORS = [
   { bg: "bg-sky-100 dark:bg-sky-500/20", border: "border-sky-400", badge: "bg-sky-500" },
@@ -328,7 +326,7 @@ function TrueFalseView({
             )}`}
           >
             <span className="text-3xl sm:text-4xl">{v ? "👍" : "👎"}</span>
-            {v ? "Verdadeiro" : "Falso"}
+            {v ? t("lm.true") : t("lm.false")}
           </button>
         ))}
       </div>
@@ -353,7 +351,7 @@ function MultiView({
         {activity.question}
       </Ask>
       <p className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
-        Marque todas as corretas
+        {t("lm.multiHint")}
       </p>
       <div className="grid gap-3">
         {activity.options.map((opt, i) => {
@@ -438,7 +436,7 @@ function MatchView({
         {activity.prompt}
       </Ask>
       <p className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
-        Toque em um item e depois no par dele
+        {t("lm.matchHint")}
       </p>
       <div className="grid grid-cols-2 gap-3 sm:gap-5">
         <div className="grid content-start gap-3">
@@ -534,7 +532,7 @@ function OrderView({
         {activity.prompt}
       </Ask>
       <p className="mb-2 text-xs font-black uppercase tracking-widest text-muted-foreground">
-        Toque nos itens na ordem certa
+        {t("lm.orderHint")}
       </p>
       <div className="mb-4 grid min-h-[3.5rem] gap-2 rounded-2xl border-2 border-dashed border-border bg-secondary/30 p-2.5">
         {activity.items.map((_, slot) => {
@@ -604,7 +602,7 @@ function ConceptView({ activity }: { activity: Extract<Activity, { type: "concep
         <div className="mb-2 min-w-0 flex-1">
           <p className="text-[11px] font-black uppercase tracking-widest text-primary">
             {activity.emoji && <span className="mr-1">{activity.emoji}</span>}
-            Antes de começar
+            {t("lm.beforeStart")}
           </p>
           <h2 className="font-display text-xl font-extrabold leading-snug text-foreground sm:text-3xl">
             {activity.title}
@@ -669,7 +667,7 @@ function SortView({
         {activity.prompt}
       </Ask>
       <p className="mb-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
-        Escolha o grupo de cada item
+        {t("lm.sortHint")}
       </p>
       <ul className="grid gap-2.5">
         {order.map((i) => {
@@ -741,7 +739,7 @@ function FillView({
         )}
         <div className="min-w-0 flex-1 rounded-3xl rounded-bl-none border-2 border-border bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:py-4">
           <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-            Complete a frase
+            {t("lm.fillHint")}
           </p>
           <p className="font-display text-lg font-extrabold leading-relaxed text-foreground sm:text-2xl">
             {before}
@@ -799,7 +797,7 @@ function ScenarioView({
         </span>
         <div className="min-w-0">
           <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-accent">
-            Situação
+            {t("lm.situation")}
           </p>
           <p className="text-sm font-medium leading-relaxed text-foreground/90 sm:text-base">
             {activity.setup}
@@ -888,7 +886,7 @@ function SliderView({
         </div>
         {checked && (
           <p className="mt-4 text-center text-sm font-bold text-muted-foreground">
-            Valor de referência:{" "}
+            {t("lm.reference")}{" "}
             <span className="text-foreground">
               ~{activity.target}
               {activity.unit}
@@ -917,11 +915,11 @@ function ReflectView({
         rows={4}
         value={text}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={activity.placeholder ?? "Escreva o que vier à mente…"}
+        placeholder={activity.placeholder ?? t("lm.reflectPh")}
         className="w-full resize-none rounded-2xl border-2 border-border bg-card p-4 text-base leading-relaxed text-foreground outline-none transition focus:border-primary"
       />
       <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        Sem certo ou errado aqui — é só para você refletir. Nada disso fica salvo.
+        {t("lm.reflectNote")}
       </p>
     </div>
   );
@@ -936,14 +934,14 @@ function ExplainCard({ activity, guide }: { activity: Activity; guide: Character
       <Mascot id={who} mood="talk" size={64} />
       <div className="min-w-0">
         <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
-          <Lightbulb className="h-3.5 w-3.5" /> Vamos entender
+          <Lightbulb className="h-3.5 w-3.5" /> {t("lm.understand")}
         </p>
         <p className="mt-1 text-sm font-semibold leading-relaxed text-foreground sm:text-base">
           {activity.explanation}
         </p>
         {rightAnswerText(activity) && (
           <p className="mt-2 text-xs font-bold text-muted-foreground">
-            Resposta certa: {rightAnswerText(activity)}
+            {t("lm.rightAnswer")} {rightAnswerText(activity)}
           </p>
         )}
       </div>
@@ -1141,7 +1139,7 @@ export function LessonModal({
       className="fixed inset-0 z-[60] flex flex-col bg-background sm:p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`${stop.title} — nível ${level}`}
+      aria-label={t("lm.ariaDialog").replace("{title}", stop.title).replace("{n}", String(level))}
     >
       <div className="pointer-events-none absolute inset-0 opacity-60">
         <Scenery scene={unit.scene} variant={variant} />
@@ -1152,7 +1150,7 @@ export function LessonModal({
           <button
             type="button"
             onClick={() => (phase === "play" ? setConfirmExit(true) : onClose())}
-            aria-label="Sair da lição"
+            aria-label={t("lm.exitLesson")}
             className="cursor-pointer rounded-lg p-1 text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="h-6 w-6 sm:h-7 sm:w-7" />
@@ -1176,7 +1174,7 @@ export function LessonModal({
           <span
             key={heartHit}
             className={`inline-flex items-center gap-1 text-base font-black text-rose-500 ${heartHit > 0 ? "nc-shake" : ""}`}
-            aria-label={`${Math.max(hearts, 0)} vidas`}
+            aria-label={t("lm.livesAria").replace("{n}", String(Math.max(hearts, 0)))}
           >
             <Heart className="h-6 w-6 fill-rose-500" /> {Math.max(hearts, 0)}
           </span>
@@ -1188,11 +1186,14 @@ export function LessonModal({
             <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center py-4">
               <div className="mb-4 flex items-center gap-2">
                 <span className="rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
-                  {meta.emoji} Nível {level} · {meta.label}
+                  {meta.emoji}{" "}
+                  {t("tm.levelN")
+                    .replace("{n}", String(level))
+                    .replace("{label}", t(`lv.${level}.label` as DictKey))}
                 </span>
                 {isRetry && (
                   <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-amber-600">
-                    Segunda chance
+                    {t("lm.secondChance")}
                   </span>
                 )}
               </div>
@@ -1290,7 +1291,8 @@ export function LessonModal({
                     </span>
                     {correct && combo >= 3 && (
                       <span className="nc-pop inline-flex items-center gap-1 rounded-full bg-orange-500 px-2 py-0.5 text-[11px] font-black text-white">
-                        <Flame className="h-3 w-3 fill-white" /> Combo x{combo}
+                        <Flame className="h-3 w-3 fill-white" />{" "}
+                        {t("lm.combo").replace("{n}", String(combo))}
                       </span>
                     )}
                   </div>
@@ -1318,7 +1320,9 @@ export function LessonModal({
                         : "bg-primary [--sh:var(--primary-hover)] hover:brightness-110"
                     }`}
                   >
-                    {checked && !correct && outOfHearts && !isRetry ? "Ver resultado" : "Continuar"}
+                    {checked && !correct && outOfHearts && !isRetry
+                      ? t("lm.seeResult")
+                      : t("lm.continue")}
                     <ArrowRight className="h-5 w-5" />
                   </button>
                 ) : (
@@ -1333,7 +1337,7 @@ export function LessonModal({
                         : "cursor-not-allowed bg-secondary text-muted-foreground opacity-60"
                     }`}
                   >
-                    Verificar
+                    {t("lm.check")}
                   </button>
                 )}
               </div>
@@ -1349,7 +1353,7 @@ export function LessonModal({
                 onClick={onClose}
                 className="w-full cursor-pointer rounded-2xl bg-secondary py-3.5 text-base font-bold text-foreground transition hover:bg-secondary/70"
               >
-                Voltar à trilha
+                {t("lm.backToTrail")}
               </button>
               {level < 3 && (
                 <button
@@ -1357,7 +1361,7 @@ export function LessonModal({
                   onClick={() => onNextLevel((level + 1) as LevelNumber)}
                   className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-base font-black text-white shadow-[0_5px_0_0_#047857] transition active:translate-y-1 active:shadow-none hover:bg-emerald-600"
                 >
-                  Próximo nível <ArrowRight className="h-5 w-5" />
+                  {t("lm.nextLevel")} <ArrowRight className="h-5 w-5" />
                 </button>
               )}
             </div>
@@ -1372,14 +1376,14 @@ export function LessonModal({
                 onClick={onClose}
                 className="w-full cursor-pointer rounded-2xl bg-secondary py-3.5 text-base font-bold text-foreground transition hover:bg-secondary/70"
               >
-                Voltar à trilha
+                {t("lm.backToTrail")}
               </button>
               <button
                 type="button"
                 onClick={retry}
                 className="w-full cursor-pointer rounded-2xl bg-primary py-3.5 text-base font-black text-primary-foreground shadow-[0_5px_0_0_var(--primary-hover)] transition active:translate-y-1 active:shadow-none hover:brightness-110"
               >
-                Tentar de novo
+                {t("lm.tryAgain")}
               </button>
             </div>
           </div>
@@ -1391,25 +1395,23 @@ export function LessonModal({
             <div className="nc-pop w-full max-w-sm rounded-3xl border-2 border-border bg-card p-6 text-center shadow-2xl">
               <Mascot id={guide} mood="sad" size={88} />
               <h3 className="mt-2 font-display text-xl font-black text-foreground">
-                Já vai embora?
+                {t("lm.leaveQ")}
               </h3>
-              <p className="mt-1 text-sm font-medium text-muted-foreground">
-                Se sair agora, você perde o progresso desta rodada.
-              </p>
+              <p className="mt-1 text-sm font-medium text-muted-foreground">{t("lm.leaveText")}</p>
               <div className="mt-5 grid gap-2.5">
                 <button
                   type="button"
                   onClick={() => setConfirmExit(false)}
                   className="cursor-pointer rounded-2xl bg-primary py-3 text-base font-black text-primary-foreground shadow-[0_4px_0_0_var(--primary-hover)] transition active:translate-y-1 active:shadow-none"
                 >
-                  Continuar aprendendo
+                  {t("lm.keepLearning")}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
                   className="cursor-pointer rounded-2xl py-3 text-sm font-bold text-rose-500 transition hover:bg-rose-500/10"
                 >
-                  Sair mesmo assim
+                  {t("lm.leaveAnyway")}
                 </button>
               </div>
             </div>
@@ -1533,15 +1535,15 @@ function PassedView({
       {golden ? (
         <div className="nc-pop mt-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-300 to-amber-500 px-4 py-1.5 text-sm font-black uppercase tracking-widest text-amber-950 shadow-lg">
           <Crown className="h-4 w-4 fill-amber-950" />
-          {reward?.becameUnitGold ? "Unidade dourada!" : "Parada dourada!"}
+          {reward?.becameUnitGold ? t("lm.unitGold") : t("lm.stopGold")}
         </div>
       ) : null}
 
       <h2 className="mt-3 font-display text-3xl font-black text-emerald-600 sm:text-4xl dark:text-emerald-400">
-        {golden ? "Você é mestre nisso!" : "Nível concluído!"}
+        {golden ? t("lm.masterHere") : t("lm.levelDone")}
       </h2>
       <p className="mt-1 text-sm font-semibold text-muted-foreground">
-        {stop.title} · Nível {level}
+        {t("lm.stopLevel").replace("{title}", stop.title).replace("{n}", String(level))}
       </p>
 
       <div className="my-5">
@@ -1565,7 +1567,7 @@ function PassedView({
           style={{ animationDelay: "1.05s" }}
         >
           <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Acertos
+            {t("lm.hits")}
           </div>
           <div className="text-2xl font-black text-emerald-500">
             {correct}/{total}
@@ -1576,7 +1578,7 @@ function PassedView({
           style={{ animationDelay: "1.2s" }}
         >
           <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            Combo
+            {t("lm.comboLabel")}
           </div>
           <div className="text-2xl font-black text-orange-500">x{maxCombo}</div>
         </div>
@@ -1584,11 +1586,11 @@ function PassedView({
 
       {reward && (
         <ul className="mt-3 w-full space-y-1 text-left text-xs font-bold text-muted-foreground">
-          {reward.xp.base > 0 && <XpLine label="Nível concluído" value={reward.xp.base} />}
-          {reward.xp.combo > 0 && <XpLine label="Bônus de combo" value={reward.xp.combo} />}
-          {reward.xp.perfect > 0 && <XpLine label="Bônus sem erros" value={reward.xp.perfect} />}
+          {reward.xp.base > 0 && <XpLine label={t("lm.xpBase")} value={reward.xp.base} />}
+          {reward.xp.combo > 0 && <XpLine label={t("lm.xpCombo")} value={reward.xp.combo} />}
+          {reward.xp.perfect > 0 && <XpLine label={t("lm.xpPerfect")} value={reward.xp.perfect} />}
           {reward.xp.practice > 0 && (
-            <XpLine label="Prática (repetição)" value={reward.xp.practice} />
+            <XpLine label={t("lm.xpPractice")} value={reward.xp.practice} />
           )}
         </ul>
       )}
@@ -1597,15 +1599,22 @@ function PassedView({
         {reward?.streakIncreased && (
           <Chip
             icon="🔥"
-            text={`Ofensiva de ${reward.streak} ${reward.streak === 1 ? "dia" : "dias"}!`}
+            text={t("lm.streakChip")
+              .replace("{n}", String(reward.streak))
+              .replace("{word}", reward.streak === 1 ? t("tc.day") : t("tc.days"))}
             tone="orange"
           />
         )}
-        {reward?.dailyGoalReached && <Chip icon="🎯" text="Meta do dia concluída!" tone="sky" />}
+        {reward?.dailyGoalReached && <Chip icon="🎯" text={t("lm.dailyDone")} tone="sky" />}
         {leveledUp && (
           <Chip
             icon="🌟"
-            text={`Você subiu para o nível ${after.level}: ${after.label}!`}
+            text={t("lm.levelUp")
+              .replace("{n}", String(after.level))
+              .replace(
+                "{label}",
+                LEVEL_LABEL_KEYS[after.label] ? t(LEVEL_LABEL_KEYS[after.label]) : after.label,
+              )}
             tone="amber"
           />
         )}
@@ -1614,7 +1623,7 @@ function PassedView({
         ))}
         {level < 3 && !golden && (
           <p className="text-xs font-semibold text-muted-foreground">
-            Continue para o nível {level + 1} e deixe esta parada dourada!
+            {t("lm.keepGoing").replace("{n}", String(level + 1))}
           </p>
         )}
       </div>
@@ -1661,9 +1670,9 @@ function AchievementChip({ a }: { a: AchievementDef }) {
       <span className="text-3xl">{a.icon}</span>
       <div>
         <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">
-          Nova conquista!
+          {t("lm.newAchievement")}
         </p>
-        <p className="text-sm font-black text-foreground">{a.title}</p>
+        <p className="text-sm font-black text-foreground">{t(`ach.${a.id}.title` as DictKey)}</p>
       </div>
     </div>
   );
@@ -1686,25 +1695,23 @@ function FailedView({
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center py-4 text-center">
       <Mascot id={guide} mood="sad" size={130} />
       <h2 className="mt-3 font-display text-3xl font-black text-rose-500">
-        {outOfHearts ? "Acabaram as vidas!" : "Quase lá!"}
+        {outOfHearts ? t("lm.outOfLives") : t("lm.bad1")}
       </h2>
       <p className="mt-2 text-base font-medium leading-relaxed text-foreground/80">
         {outOfHearts ? (
-          "Você errou algumas vezes, mas cada erro ensina algo. Respire e tente de novo!"
+          t("lm.outOfLivesText")
         ) : (
           <>
-            Para concluir você precisa de pelo menos <strong>{Math.round(minPass * 100)}%</strong>{" "}
-            de acertos de primeira. Você acertou{" "}
+            {t("lm.needPass1")} <strong>{Math.round(minPass * 100)}%</strong> {t("lm.needPass2")}{" "}
             <strong>
-              {correct} de {total}
+              {correct} {t("lm.of")} {total}
             </strong>
             .
           </>
         )}
       </p>
       <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-muted-foreground">
-        <Heart className="h-4 w-4 fill-rose-500 text-rose-500" /> Suas vidas voltam quando você
-        tentar de novo
+        <Heart className="h-4 w-4 fill-rose-500 text-rose-500" /> {t("lm.livesBack")}
       </div>
     </div>
   );

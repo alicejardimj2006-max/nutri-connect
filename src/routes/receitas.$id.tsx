@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -139,7 +140,7 @@ function ReceitaDetalhePage() {
           {/* Cabeçalho */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <span className="rounded-full bg-accent-soft px-3.5 py-1 text-xs font-bold text-accent">
-              {recipe.recipeData?.category || t("recipe.defaultCategory")}
+              {td(recipe.recipeData?.category) || t("recipe.defaultCategory")}
             </span>
 
             {/* Contador comunitário */}
@@ -208,7 +209,7 @@ function ReceitaDetalhePage() {
                 <span>{recipe.recipeData?.servings || t("recipe.defaultServings")}</span>
               </span>
               <span className="rounded-md bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
-                {t("recipes.difficulty")} {recipe.recipeData?.difficulty || t("recipes.easy")}
+                {t("recipes.difficulty")} {td(recipe.recipeData?.difficulty) || t("recipes.easy")}
               </span>
             </div>
           </div>

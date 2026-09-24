@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
@@ -130,7 +131,7 @@ function CommunityFeed() {
           <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-4">
             <div>
               <span className="inline-block rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider mb-2">
-                {community.category}
+                {td(community.category)}
               </span>
               <h1 className="text-3xl sm:text-4xl font-bold font-display text-white">
                 {community.name}
@@ -175,7 +176,7 @@ function CommunityFeed() {
                   label={t("comunidades.adminProfessional")}
                   detail={
                     pro
-                      ? `${pro.profession} · ${pro.council} ${pro.registration}/${pro.uf}`
+                      ? `${td(pro.profession)} · ${pro.council} ${pro.registration}/${pro.uf}`
                       : undefined
                   }
                   userId={community.professionalId}

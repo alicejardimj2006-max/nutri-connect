@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
@@ -246,7 +247,7 @@ function ExplorarPage() {
                       </p>
                       <div className="mt-4 flex items-center gap-2">
                         <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-foreground">
-                          {c.category}
+                          {td(c.category)}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
                           {c.members.length}{" "}

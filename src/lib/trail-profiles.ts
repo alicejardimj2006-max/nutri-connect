@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 // Perfis da trilha: uma conta de adulto pode ter perfis infantis (crianças usam a conta do responsável,
 // sem rede social). Cada perfil tem o seu próprio progresso (veja setTrailScope em learning-trail.ts).
 import { useCallback, useEffect, useState } from "react";
@@ -54,7 +55,7 @@ export function setActiveProfileId(userId: string, profileId: string) {
 export function addKidProfile(userId: string, userName: string, name: string, avatar: CharacterId) {
   const current = loadProfiles(userId, userName);
   const kids = current.filter((p) => p.kind === "kid");
-  if (kids.length >= MAX_KID_PROFILES) throw new Error("Limite de perfis infantis atingido.");
+  if (kids.length >= MAX_KID_PROFILES) throw new Error(t("err.kidLimit"));
   const profile: TrailProfile = {
     id: `kid-${Date.now().toString(36)}`,
     name: name.trim() || "Criança",

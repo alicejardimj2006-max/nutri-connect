@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Mascot } from "@/components/mascots";
 import { CHARACTERS, type CharacterId, type TrailProfile } from "@/lib/learning-trail";
 import { KID_AVATARS, MAX_KID_PROFILES } from "@/lib/trail-profiles";
+import { useI18n } from "@/hooks/use-i18n";
 
 /** Avatar redondo do perfil: o responsável usa um ícone; a criança usa o personagem escolhido. */
 export function ProfileAvatar({ profile, size = 36 }: { profile: TrailProfile; size?: number }) {
@@ -47,6 +48,7 @@ export function ProfileSwitcher({
   onAddKid: (name: string, avatar: CharacterId) => void;
   onRemoveKid: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -63,15 +65,15 @@ export function ProfileSwitcher({
 
   const create = () => {
     if (!name.trim()) {
-      toast.error("Escreva o nome da criança.");
+      toast.error(t("ps.enterName"));
       return;
     }
     try {
       onAddKid(name, avatar);
-      toast.success(`Perfil de ${name.trim()} criado!`);
+      toast.success(t("ps.created").replace("{name}", name.trim()));
       reset();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não foi possível criar o perfil.");
+      toast.error(e instanceof Error ? e.message : t("ps.createError"));
     }
   };
 
@@ -87,12 +89,12 @@ export function ProfileSwitcher({
         <button
           type="button"
           className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border-2 border-border bg-card py-1.5 pl-1.5 pr-3.5 text-left shadow-sm transition hover:border-primary/40 hover:shadow-md"
-          aria-label="Trocar de perfil"
+          aria-label={t("ps.switch")}
         >
           <ProfileAvatar profile={active} size={36} />
           <span className="leading-tight">
             <span className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              {active.kind === "kid" ? "Perfil infantil" : "Perfil do responsável"}
+              {active.kind === "kid" ? t("ps.kidProfile") : t("ps.guardianProfile")}
             </span>
             <span className="block max-w-[10rem] truncate text-sm font-bold text-foreground">
               {active.name}
@@ -104,7 +106,7 @@ export function ProfileSwitcher({
 
       <PopoverContent align="end" className="w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl p-3">
         <p className="px-2 pb-2 pt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          Quem vai estudar?
+          {t("ps.whoStudies")}
         </p>
         <ul className="space-y-1">
           {profiles.map((p) => {
@@ -128,8 +130,8 @@ export function ProfileSwitcher({
                     </span>
                     <span className="block text-[11px] text-muted-foreground">
                       {p.kind === "adult"
-                        ? "Responsável · com comunidade e desafios"
-                        : `Criança · avatar ${CHARACTERS[p.avatar].name}`}
+                        ? t("ps.guardianDesc")
+                        : t("ps.kidDesc").replace("{avatar}", CHARACTERS[p.avatar].name)}
                     </span>
                   </span>
                   {isActive && <Check className="h-4 w-4 shrink-0 text-primary" />}
@@ -144,13 +146,13 @@ export function ProfileSwitcher({
                       }}
                       className="cursor-pointer rounded-lg bg-destructive px-2.5 py-1.5 text-[11px] font-bold text-destructive-foreground"
                     >
-                      Excluir?
+                      {t("ps.deleteQ")}
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => setConfirmId(p.id)}
-                      aria-label={`Excluir o perfil de ${p.name}`}
+                      aria-label={t("ps.deleteAria").replace("{name}", p.name)}
                       className="cursor-pointer rounded-lg p-2 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -166,7 +168,7 @@ export function ProfileSwitcher({
             <div className="space-y-3 rounded-xl bg-secondary/40 p-3">
               <label className="block">
                 <span className="mb-1 block text-xs font-bold text-foreground">
-                  Nome da criança
+                  {t("ps.kidName")}
                 </span>
                 <input
                   autoFocus
@@ -174,13 +176,13 @@ export function ProfileSwitcher({
                   maxLength={24}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && create()}
-                  placeholder="Ex: Sofia"
+                  placeholder={t("ps.kidNamePh")}
                   className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
                 />
               </label>
               <div>
                 <span className="mb-1.5 block text-xs font-bold text-foreground">
-                  Escolha um amigo
+                  {t("ps.pickFriend")}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {KID_AVATARS.map((id) => (
@@ -207,14 +209,14 @@ export function ProfileSwitcher({
                   onClick={create}
                   className="flex-1 cursor-pointer rounded-lg bg-primary py-2 text-sm font-bold text-primary-foreground transition hover:brightness-110"
                 >
-                  Criar perfil
+                  {t("ps.create")}
                 </button>
                 <button
                   type="button"
                   onClick={reset}
                   className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -228,17 +230,14 @@ export function ProfileSwitcher({
               <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-soft">
                 <Plus className="h-4 w-4" />
               </span>
-              {kids.length >= MAX_KID_PROFILES
-                ? "Limite de perfis infantis atingido"
-                : "Adicionar perfil infantil"}
+              {kids.length >= MAX_KID_PROFILES ? t("ps.limit") : t("ps.addKid")}
             </button>
           )}
         </div>
 
         <p className="mt-2 flex gap-2 rounded-lg bg-secondary/50 p-2.5 text-[11px] leading-snug text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-          Perfis infantis usam a conta do responsável e não têm acesso a comunidades, publicações ou
-          desafios sociais: só às trilhas de aprendizado.
+          {t("ps.note")}
         </p>
       </PopoverContent>
     </Popover>

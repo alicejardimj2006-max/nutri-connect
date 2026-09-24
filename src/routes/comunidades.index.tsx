@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { MessageCircle, UserCheck, Users } from "lucide-react";
@@ -106,7 +107,7 @@ function ComunidadesPage() {
                       : "bg-secondary text-secondary-foreground hover:bg-muted"
                   }`}
                 >
-                  {c === "Todas" ? t("comunidades.categoryAll") : c}
+                  {c === "Todas" ? t("comunidades.categoryAll") : td(c)}
                 </button>
               ))}
             </div>
@@ -169,7 +170,7 @@ function CommunityCard({ community: c }: { community: Community }) {
         )}
         <div className="absolute top-3 left-3">
           <span className="rounded-full bg-card/90 px-3 py-1 text-[10px] font-bold text-foreground backdrop-blur-sm shadow-xs uppercase tracking-wider">
-            {c.category}
+            {td(c.category)}
           </span>
         </div>
         {c.status !== "ativa" && (
@@ -202,7 +203,9 @@ function CommunityCard({ community: c }: { community: Community }) {
             raised
             label={t("comunidades.adminProfessional")}
             detail={
-              pro ? `${pro.profession} · ${pro.council} ${pro.registration}/${pro.uf}` : undefined
+              pro
+                ? `${td(pro.profession)} · ${pro.council} ${pro.registration}/${pro.uf}`
+                : undefined
             }
             userId={c.professionalId}
             name={c.professionalName}

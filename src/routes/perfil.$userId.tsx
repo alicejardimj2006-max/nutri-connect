@@ -1,3 +1,4 @@
+import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import {
   ChefHat,
@@ -135,7 +136,7 @@ function PublicProfilePage() {
   const userGoals =
     isSelf && user
       ? [
-          user.journeyGoal || user.goal || t("profile.goal1"),
+          td(user.journeyGoal || user.goal) || t("profile.goal1"),
           t("profile.goal2"),
           t("profile.goal3"),
         ]
@@ -282,7 +283,7 @@ function PublicProfilePage() {
                     </h1>
                     {isProfessional && professionalInfo && (
                       <p className="mt-1 text-xs sm:text-sm font-semibold text-accent">
-                        {t("profile.verifiedPro")} · {professionalInfo.profession} ·{" "}
+                        {t("profile.verifiedPro")} · {td(professionalInfo.profession)} ·{" "}
                         {professionalInfo.council} {professionalInfo.registration}/
                         {professionalInfo.uf}
                       </p>
@@ -295,7 +296,7 @@ function PublicProfilePage() {
                             key={sp}
                             className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
                           >
-                            {sp}
+                            {td(sp)}
                           </li>
                         ))}
                       </ul>
