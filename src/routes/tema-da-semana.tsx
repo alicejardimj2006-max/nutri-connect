@@ -13,6 +13,8 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/tema-da-semana")({
   head: () => ({
@@ -30,6 +32,7 @@ export const Route = createFileRoute("/tema-da-semana")({
 
 function TemaDaSemanaPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
+  const { t } = useI18n();
   const { weeklyTheme, posts, challenges, hydrated } = useCommunity();
 
   if (!authHydrated || !user) return <AuthGateLoading />;
@@ -37,28 +40,31 @@ function TemaDaSemanaPage() {
   const themeRecipes = posts.filter((p) => p.type === "receita");
   const linkedChallenge = challenges.find((c) => c.themeId === weeklyTheme?.id) || challenges[0];
 
-  const pastThemes = [
+  const pastThemes: {
+    title: DictKey;
+    week: DictKey;
+    summary: DictKey;
+    recipesCount: number;
+    reflectionsCount: number;
+  }[] = [
     {
-      title: "Desvendando Rótulos e Ingredientes",
-      week: "Semana de 01 a 07 de Setembro",
-      summary:
-        "Conversamos sobre como ler a lista de ingredientes sem medo e identificar armadilhas da indústria.",
+      title: "theme.past1.title",
+      week: "theme.past1.week",
+      summary: "theme.past1.summary",
       recipesCount: 14,
       reflectionsCount: 86,
     },
     {
-      title: "Café da Manhã que Sustenta",
-      week: "Semana de 25 a 31 de Agosto",
-      summary:
-        "Trocas sobre combinações de fibras e proteínas para começar o dia com energia estável.",
+      title: "theme.past2.title",
+      week: "theme.past2.week",
+      summary: "theme.past2.summary",
       recipesCount: 22,
       reflectionsCount: 110,
     },
     {
-      title: "Comer com Atenção Plena",
-      week: "Semana de 18 a 24 de Agosto",
-      summary:
-        "Práticas de respiração e observação de sinais de saciedade à mesa sem telas por perto.",
+      title: "theme.past3.title",
+      week: "theme.past3.week",
+      summary: "theme.past3.summary",
       recipesCount: 9,
       reflectionsCount: 94,
     },
@@ -71,7 +77,7 @@ function TemaDaSemanaPage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {!hydrated || !weeklyTheme ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
-            Carregando o tema da semana…
+            {t("theme.loading")}
           </div>
         ) : (
           <div className="space-y-12">
@@ -115,7 +121,7 @@ function TemaDaSemanaPage() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-xs font-bold uppercase tracking-wider text-accent mb-1">
-                        Pergunta da Semana
+                        {t("weekly.questionOfWeek")}
                       </h3>
                       <p className="text-lg font-semibold text-foreground italic">
                         “{weeklyTheme.questionOfTheWeek}”
@@ -125,7 +131,7 @@ function TemaDaSemanaPage() {
                       {weeklyTheme.poll && (
                         <div className="mt-6 space-y-2">
                           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                            Vote para responder:
+                            {t("theme.vote")}
                           </p>
                           {weeklyTheme.poll.options.map((opt) => (
                             <div
@@ -136,7 +142,7 @@ function TemaDaSemanaPage() {
                                 {opt.text}
                               </span>
                               <span className="text-xs font-semibold text-muted-foreground relative z-10">
-                                {opt.votes} votos
+                                {opt.votes} {t("theme.votes")}
                               </span>
                             </div>
                           ))}
@@ -151,7 +157,7 @@ function TemaDaSemanaPage() {
                               className="rounded-full bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-sm flex items-center gap-1.5 transition hover:-translate-y-0.5"
                             >
                               <MessageSquare className="h-4 w-4" />
-                              <span>Deixe seu relato no Espaço de Hoje</span>
+                              <span>{t("theme.leaveStory")}</span>
                             </button>
                           }
                         />
@@ -169,7 +175,7 @@ function TemaDaSemanaPage() {
                 <div className="flex items-center gap-2">
                   <Award className="h-5 w-5 text-accent" />
                   <h3 className="text-lg font-bold font-display text-foreground">
-                    Desafio desta Semana
+                    {t("theme.challengeOfWeek")}
                   </h3>
                 </div>
                 {linkedChallenge && <ChallengeCard challenge={linkedChallenge} />}
@@ -181,14 +187,14 @@ function TemaDaSemanaPage() {
                   <div className="flex items-center gap-2">
                     <ChefHat className="h-5 w-5 text-accent" />
                     <h3 className="text-lg font-bold font-display text-foreground">
-                      Receitas Inspiradas no Tema
+                      {t("theme.inspiredRecipes")}
                     </h3>
                   </div>
                   <Link
                     to="/receitas"
                     className="text-xs font-semibold text-primary hover:underline"
                   >
-                    Ver todas as receitas
+                    {t("theme.seeAllRecipes")}
                   </Link>
                 </div>
 
@@ -204,15 +210,13 @@ function TemaDaSemanaPage() {
             <section className="border-t border-border pt-10">
               <div className="mb-6">
                 <h3 className="text-xl font-bold font-display text-foreground">
-                  Acervo de Temas Anteriores
+                  {t("theme.archive")}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Revisite os aprendizados e conversas de semanas passadas para inspirar sua rotina.
-                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("theme.archiveHint")}</p>
               </div>
 
               <div className="grid gap-5 sm:grid-cols-3">
-                {pastThemes.map((t, index) => {
+                {pastThemes.map((pt, index) => {
                   const cover =
                     index === 0
                       ? "/images/hero/kitchen-prep.jpg"
@@ -222,33 +226,37 @@ function TemaDaSemanaPage() {
 
                   return (
                     <div
-                      key={t.title}
+                      key={pt.title}
                       className="rounded-2xl border border-border bg-card shadow-xs transition hover:shadow-md overflow-hidden flex flex-col"
                     >
                       <div className="h-32 w-full relative">
                         <img
                           src={cover}
-                          alt={t.title}
+                          alt={t(pt.title)}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-3 left-4">
                           <span className="text-[10px] font-bold text-white/90 drop-shadow-md">
-                            {t.week}
+                            {t(pt.week)}
                           </span>
                         </div>
                       </div>
                       <div className="p-5 flex flex-col flex-1">
                         <h4 className="text-sm font-bold font-display text-foreground mb-2">
-                          {t.title}
+                          {t(pt.title)}
                         </h4>
                         <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed flex-1">
-                          {t.summary}
+                          {t(pt.summary)}
                         </p>
                         <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                          <span>🥗 {t.recipesCount} receitas</span>
-                          <span>💬 {t.reflectionsCount} relatos</span>
+                          <span>
+                            🥗 {pt.recipesCount} {t("theme.recipesCount")}
+                          </span>
+                          <span>
+                            💬 {pt.reflectionsCount} {t("theme.storiesCount")}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -259,7 +267,6 @@ function TemaDaSemanaPage() {
           </div>
         )}
       </main>
-
     </div>
   );
 }

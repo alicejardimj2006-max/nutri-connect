@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { AppearanceEditor } from "@/components/appearance-editor";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/perfil/personalizacao")({
   head: () => ({ meta: [{ title: "Personalização — NutriConnect" }] }),
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/perfil/personalizacao")({
 
 function PersonalizationPage() {
   const { user, hydrated } = useRequireAuth();
+  const { t } = useI18n();
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
@@ -23,16 +25,13 @@ function PersonalizationPage() {
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar para as configurações</span>
+          <span>{t("custom.back")}</span>
         </Link>
 
         <h1 className="mb-1 font-display text-3xl font-extrabold text-foreground">
-          Personalização
+          {t("custom.title")}
         </h1>
-        <p className="mb-8 text-sm text-muted-foreground">
-          Monte o seu estilo: cores, fontes, formas e mais. As mudanças aparecem na hora e ficam
-          salvas neste aparelho.
-        </p>
+        <p className="mb-8 text-sm text-muted-foreground">{t("custom.intro")}</p>
 
         <AppearanceEditor />
       </main>

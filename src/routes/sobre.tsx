@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-chrome";
+import { useI18n } from "@/hooks/use-i18n";
+import type { DictKey } from "@/lib/i18n";
 import {
   Heart,
   ShieldCheck,
@@ -23,87 +25,59 @@ export const Route = createFileRoute("/sobre")({
           "Conheça a história da NutriConnect, nossa missão de humanizar e conectar pessoas em torno da alimentação através de uma rede social acolhedora.",
       },
       { property: "og:title", content: "Sobre Nós — NutriConnect" },
-      { property: "og:description", content: "Uma rede social sobre alimentação, humanizada e conectada." },
+      {
+        property: "og:description",
+        content: "Uma rede social sobre alimentação, humanizada e conectada.",
+      },
     ],
   }),
   component: Sobre,
 });
 
-const stats = [
-  { label: "Membros Ativos", value: "+45.000", hint: "em todo o Brasil" },
-  { label: "Comunidades Temáticas", value: "+1.200", hint: "criadas pela rede" },
-  { label: "Receitas Compartilhadas", value: "+180.000", hint: "publicadas e preparadas" },
-  { label: "Índice de Satisfação", value: "98.4%", hint: "avaliação positiva" },
+const stats: { label: DictKey; value: string; hint: DictKey }[] = [
+  { label: "about.stat1.label", value: "+45.000", hint: "about.stat1.hint" },
+  { label: "about.stat2.label", value: "+1.200", hint: "about.stat2.hint" },
+  { label: "about.stat3.label", value: "+180.000", hint: "about.stat3.hint" },
+  { label: "about.stat4.label", value: "98.4%", hint: "about.stat4.hint" },
 ];
 
-const timeline = [
-  {
-    year: "2023",
-    title: "O Início da Jornada",
-    desc: "Fundada com o propósito de criar um espaço onde falar sobre comida não fosse sinônimo de culpa ou comparação.",
-  },
-  {
-    year: "2024",
-    title: "Comunidades Temáticas",
-    desc: "Lançamento das primeiras comunidades temáticas, unindo pessoas em torno de objetivos e rotinas alimentares parecidas.",
-  },
-  {
-    year: "2025",
-    title: "Desafios & Tema da Semana",
-    desc: "Chegada dos desafios de hábitos e do Tema da Semana, trazendo mais constância e leveza para a jornada de cada pessoa.",
-  },
-  {
-    year: "2026",
-    title: "Expansão da Rede",
-    desc: "Alcançamos a marca de mais de 45 mil membros compartilhando receitas, experiências e conquistas todos os dias.",
-  },
+const timeline: { year: string; title: DictKey; desc: DictKey }[] = [
+  { year: "2023", title: "about.tl1.title", desc: "about.tl1.desc" },
+  { year: "2024", title: "about.tl2.title", desc: "about.tl2.desc" },
+  { year: "2025", title: "about.tl3.title", desc: "about.tl3.desc" },
+  { year: "2026", title: "about.tl4.title", desc: "about.tl4.desc" },
 ];
 
-const values = [
-  {
-    icon: Heart,
-    title: "Humanização em Primeiro Lugar",
-    desc: "Acreditamos que a alimentação é afeto, cultura e hábito. Não impomos dietas restritivas punitivas.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Ciência & Evidência",
-    desc: "Todas as nossas recomendações e algoritmos são embasados nas diretrizes atualizadas de nutrição humana.",
-  },
-  {
-    icon: Zap,
-    title: "Tecnologia Descomplicada",
-    desc: "Criamos interfaces intuitivas e acessíveis para que qualquer pessoa consiga usar com facilidade.",
-  },
-  {
-    icon: Users,
-    title: "Comunidade Acolhedora",
-    desc: "Promovemos um ambiente livre de julgamentos, onde a evolução individual é celebrada por todos.",
-  },
+const values: { icon: typeof Heart; title: DictKey; desc: DictKey }[] = [
+  { icon: Heart, title: "about.val1.title", desc: "about.val1.desc" },
+  { icon: ShieldCheck, title: "about.val2.title", desc: "about.val2.desc" },
+  { icon: Zap, title: "about.val3.title", desc: "about.val3.desc" },
+  { icon: Users, title: "about.val4.title", desc: "about.val4.desc" },
 ];
 
-const team = [
+const team: { name: string; role: DictKey; bio: DictKey; crn: string }[] = [
   {
     name: "Dra. Camila Jardim",
-    role: "Co-fundadora & Diretora de Nutrição",
-    bio: "Nutricionista clínica com mais de 12 anos de experiência em reeducação alimentar e nutrição esportiva.",
+    role: "about.team1.role",
+    bio: "about.team1.bio",
     crn: "CRN-3 48921",
   },
   {
     name: "Eng. Lucas Silveira",
-    role: "Co-fundador & CTO",
-    bio: "Especialista em inteligência artificial aplicada à saúde e arquitetura de software seguro.",
+    role: "about.team2.role",
+    bio: "about.team2.bio",
     crn: "Ex-Google Health",
   },
   {
     name: "Dra. Beatriz Santos",
-    role: "Head de Pesquisa & IA",
-    bio: "Doutora em Ciências dos Alimentos pela USP com foco em algoritmos de recomendação nutricional.",
+    role: "about.team3.role",
+    bio: "about.team3.bio",
     crn: "CRN-3 32109",
   },
 ];
 
 function Sobre() {
+  const { t } = useI18n();
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
@@ -113,16 +87,14 @@ function Sobre() {
         <section className="relative bg-gradient-to-b from-secondary/50 to-background py-16 md:py-24">
           <div className="mx-auto max-w-5xl px-4 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-soft/50 px-4 py-1.5 text-xs font-semibold text-primary">
-              <Sparkles className="h-4 w-4" /> Conheça nossa história
+              <Sparkles className="h-4 w-4" /> {t("about.badge")}
             </span>
             <h1 className="mt-6 font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Reinventando a conexão entre <br />
-              <span className="text-primary">você e sua alimentação</span>
+              {t("about.hero1")} <br />
+              <span className="text-primary">{t("about.hero2")}</span>
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground leading-relaxed">
-              A NutriConnect nasceu da convicção de que mudar hábitos alimentares não precisa ser
-              solitário nem complicado. Combinamos empatia humana com inteligência tecnológica para
-              criar o melhor ecossistema de nutrição da América Latina.
+              {t("about.heroText")}
             </p>
           </div>
         </section>
@@ -133,8 +105,8 @@ function Sobre() {
             {stats.map((s) => (
               <div key={s.label} className="rounded-3xl border bg-card p-6 shadow-card text-center">
                 <div className="font-display text-4xl font-extrabold text-primary">{s.value}</div>
-                <div className="mt-2 text-sm font-semibold text-foreground">{s.label}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{s.hint}</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">{t(s.label)}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{t(s.hint)}</div>
               </div>
             ))}
           </div>
@@ -148,11 +120,9 @@ function Sobre() {
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                 <Globe2 className="h-5 w-5" />
               </span>
-              <h2 className="mt-4 font-display text-2xl font-bold">Nossa Missão</h2>
+              <h2 className="mt-4 font-display text-2xl font-bold">{t("about.mission")}</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Democratizar o acesso a uma comunidade acolhedora sobre alimentação, oferecendo um
-                espaço para trocar experiências, receitas e conquistas em uma jornada contínua,
-                prazerosa e sem julgamentos.
+                {t("about.missionText")}
               </p>
             </div>
 
@@ -161,10 +131,9 @@ function Sobre() {
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
                 <TrendingUp className="h-5 w-5" />
               </span>
-              <h2 className="mt-4 font-display text-2xl font-bold">Nossa Visão</h2>
+              <h2 className="mt-4 font-display text-2xl font-bold">{t("about.vision")}</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Ser a principal referência em comunidade digital sobre alimentação, transformando a
-                relação das pessoas com a comida através de conexão real e apoio mútuo.
+                {t("about.visionText")}
               </p>
             </div>
           </div>
@@ -175,9 +144,9 @@ function Sobre() {
           <div className="mx-auto max-w-4xl px-4">
             <div className="text-center">
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
-                <Calendar className="h-4 w-4" /> Nossa Trajetória
+                <Calendar className="h-4 w-4" /> {t("about.trajectory")}
               </span>
-              <h2 className="mt-2 font-display text-3xl font-bold">Como chegamos até aqui</h2>
+              <h2 className="mt-2 font-display text-3xl font-bold">{t("about.howWeGotHere")}</h2>
             </div>
 
             <div className="mt-12 space-y-8 relative before:absolute before:left-4 md:before:left-1/2 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
@@ -194,9 +163,9 @@ function Sobre() {
                   <div className="ml-12 md:ml-0 md:w-1/2 md:px-8">
                     <div className="rounded-2xl border bg-card p-6 shadow-card">
                       <span className="text-xs font-bold text-primary">{item.year}</span>
-                      <h3 className="mt-1 font-display text-lg font-bold">{item.title}</h3>
+                      <h3 className="mt-1 font-display text-lg font-bold">{t(item.title)}</h3>
                       <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                        {item.desc}
+                        {t(item.desc)}
                       </p>
                     </div>
                   </div>
@@ -209,10 +178,8 @@ function Sobre() {
         {/* VALUES */}
         <section className="mx-auto max-w-6xl px-4 py-20">
           <div className="text-center">
-            <h2 className="font-display text-3xl font-bold">Nossos Valores Fundamentais</h2>
-            <p className="mt-2 text-muted-foreground">
-              O que nos guia em cada linha de código e decisão
-            </p>
+            <h2 className="font-display text-3xl font-bold">{t("about.valuesTitle")}</h2>
+            <p className="mt-2 text-muted-foreground">{t("about.valuesHint")}</p>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -225,8 +192,8 @@ function Sobre() {
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <v.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-4 font-display text-base font-bold">{v.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{v.desc}</p>
+                  <h3 className="mt-4 font-display text-base font-bold">{t(v.title)}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{t(v.desc)}</p>
                 </div>
               </div>
             ))}
@@ -238,9 +205,11 @@ function Sobre() {
           <div className="mx-auto max-w-6xl px-4">
             <div className="text-center">
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
-                <Award className="h-4 w-4" /> Liderança
+                <Award className="h-4 w-4" /> {t("about.leadership")}
               </span>
-              <h2 className="mt-2 font-display text-3xl font-bold">Quem faz acontecer</h2>
+              <h2 className="mt-2 font-display text-3xl font-bold">
+                {t("about.whoMakesItHappen")}
+              </h2>
             </div>
 
             <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -255,11 +224,13 @@ function Sobre() {
                     </div>
                   </div>
                   <h3 className="mt-4 font-display text-lg font-bold">{member.name}</h3>
-                  <div className="text-xs font-semibold text-primary">{member.role}</div>
+                  <div className="text-xs font-semibold text-primary">{t(member.role)}</div>
                   <span className="mt-1 inline-block rounded-full bg-secondary px-3 py-0.5 text-[10px] font-bold text-muted-foreground">
                     {member.crn}
                   </span>
-                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{member.bio}</p>
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                    {t(member.bio)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -269,29 +240,27 @@ function Sobre() {
         {/* JOIN US CTA */}
         <section className="mx-auto max-w-5xl px-4 py-16 text-center">
           <div className="rounded-3xl border bg-gradient-to-b from-secondary/60 to-background p-10 md:p-14 shadow-lg">
-            <h2 className="font-display text-3xl font-bold">Faça parte desta transformação</h2>
+            <h2 className="font-display text-3xl font-bold">{t("about.join")}</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-              Seja para alcançar sua melhor versão física ou para encontrar pessoas que entendem a
-              sua jornada, o NutriConnect é o seu lugar.
+              {t("about.joinText")}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link
                 to="/cadastro"
                 className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary-hover"
               >
-                Criar Conta Gratuita
+                {t("about.createFree")}
               </Link>
               <Link
                 to="/contato"
                 className="rounded-full border border-border bg-card px-8 py-3 text-sm font-semibold text-foreground hover:bg-secondary"
               >
-                Entre em Contato
+                {t("about.contactUs")}
               </Link>
             </div>
           </div>
         </section>
       </main>
-
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { useCommunity } from "@/hooks/use-community";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { togglePrepared, toggleSupport, addComment, formatDate, initials } from "@/lib/community";
 import { toast } from "sonner";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/receitas/$id")({
   head: () => ({
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/receitas/$id")({
 function ReceitaDetalhePage() {
   const { id } = useParams({ from: "/receitas/$id" });
   const { user, hydrated: authHydrated } = useRequireAuth();
+  const { t } = useI18n();
   const { posts, hydrated } = useCommunity();
 
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
@@ -54,7 +56,7 @@ function ReceitaDetalhePage() {
       <div className="flex min-h-screen flex-col bg-background">
         <SiteHeader />
         <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-16 text-center text-sm text-muted-foreground">
-          Carregando receita…
+          {t("recipe.loading")}
         </main>
       </div>
     );
@@ -67,17 +69,15 @@ function ReceitaDetalhePage() {
         <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-16 text-center">
           <ChefHat className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <h1 className="text-2xl font-bold font-display text-foreground">
-            Receita não encontrada
+            {t("recipe.notFound")}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            A receita que você procura pode ter sido removida ou o link está incorreto.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("recipe.notFoundText")}</p>
           <div className="mt-6">
             <Link
               to="/receitas"
               className="rounded-full bg-accent px-6 py-2.5 text-xs font-semibold text-accent-foreground inline-flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" /> Voltar para o catálogo de receitas
+              <ArrowLeft className="h-4 w-4" /> {t("recipe.backToCatalog")}
             </Link>
           </div>
         </main>
@@ -91,18 +91,18 @@ function ReceitaDetalhePage() {
 
   const handlePrepared = () => {
     if (!user) {
-      toast.info("Faça login para registrar que preparou esta receita.");
+      toast.info(t("common.loginToPrepared"));
       return;
     }
     togglePrepared(recipe.id, user.id);
     if (!hasPrepared) {
-      toast.success("Que maravilha! Registramos esse preparo na sua jornada.");
+      toast.success(t("recipe.prepared.success"));
     }
   };
 
   const handleSupport = () => {
     if (!user) {
-      toast.info("Faça login para apoiar esta receita.");
+      toast.info(t("recipe.loginToSupport"));
       return;
     }
     toggleSupport(recipe.id, user.id);
@@ -111,13 +111,13 @@ function ReceitaDetalhePage() {
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.info("Faça login para comentar.");
+      toast.info(t("common.loginToComment"));
       return;
     }
     if (!commentText.trim()) return;
     addComment(recipe.id, { id: user.id, name: user.name }, commentText.trim());
     setCommentText("");
-    toast.success("Dica ou comentário publicado!");
+    toast.success(t("recipe.commentPublished"));
   };
 
   return (
@@ -131,7 +131,7 @@ function ReceitaDetalhePage() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-6 transition"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar para todas as receitas</span>
+          <span>{t("recipe.backToAll")}</span>
         </Link>
 
         {/* Card Principal da Receita */}
@@ -139,7 +139,7 @@ function ReceitaDetalhePage() {
           {/* Cabeçalho */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <span className="rounded-full bg-accent-soft px-3.5 py-1 text-xs font-bold text-accent">
-              {recipe.recipeData?.category || "Receita da Comunidade"}
+              {recipe.recipeData?.category || t("recipe.defaultCategory")}
             </span>
 
             {/* Contador comunitário */}
@@ -154,9 +154,7 @@ function ReceitaDetalhePage() {
                 }`}
               >
                 <ChefHat className="h-4 w-4" />
-                <span>
-                  {hasPrepared ? "Eu preparei esta receita ✓" : "Eu preparei esta receita"}
-                </span>
+                <span>{hasPrepared ? t("recipe.iMadeThisDone") : t("recipe.iMadeThis")}</span>
               </button>
 
               <button
@@ -167,7 +165,7 @@ function ReceitaDetalhePage() {
                     ? "bg-accent-soft border-accent text-accent"
                     : "border-border text-muted-foreground hover:bg-secondary"
                 }`}
-                title="Apoiar"
+                title={t("postcard.support")}
               >
                 <Heart className={`h-4 w-4 ${hasSupported ? "fill-accent text-accent" : ""}`} />
               </button>
@@ -175,7 +173,7 @@ function ReceitaDetalhePage() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground leading-tight">
-            {recipe.title || "Receita sem título"}
+            {recipe.title || t("recipe.untitled")}
           </h1>
 
           <p className="mt-3 text-base text-foreground/85 leading-relaxed">{recipe.text}</p>
@@ -193,7 +191,7 @@ function ReceitaDetalhePage() {
               <div>
                 <p className="font-semibold text-foreground">{recipe.authorName}</p>
                 <p className="text-muted-foreground">
-                  Membro da comunidade
+                  {t("recipe.communityMember")}
                   {" · "}
                   {formatDate(recipe.createdAt)}
                 </p>
@@ -207,10 +205,10 @@ function ReceitaDetalhePage() {
               </span>
               <span className="flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-accent" />
-                <span>{recipe.recipeData?.servings || "2 porções"}</span>
+                <span>{recipe.recipeData?.servings || t("recipe.defaultServings")}</span>
               </span>
               <span className="rounded-md bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
-                Dificuldade: {recipe.recipeData?.difficulty || "Fácil"}
+                {t("recipes.difficulty")} {recipe.recipeData?.difficulty || t("recipes.easy")}
               </span>
             </div>
           </div>
@@ -220,8 +218,8 @@ function ReceitaDetalhePage() {
             <div className="flex items-center gap-2.5 text-xs text-foreground font-medium min-w-0">
               <span className="text-xl">👩‍🍳</span>
               <span>
-                <b>{prepCount} pessoas</b> desta comunidade já prepararam esta receita e
-                compartilharam a experiência.
+                <b>{t("recipe.peoplePrepared").replace("{n}", String(prepCount))}</b>{" "}
+                {t("recipe.peoplePreparedText")}
               </span>
             </div>
             <button
@@ -229,7 +227,7 @@ function ReceitaDetalhePage() {
               onClick={handlePrepared}
               className="text-xs font-bold text-accent hover:underline shrink-0"
             >
-              {hasPrepared ? "Desmarcar" : "Já preparei também!"}
+              {hasPrepared ? t("recipe.unmark") : t("recipe.mademineToo")}
             </button>
           </div>
 
@@ -239,9 +237,11 @@ function ReceitaDetalhePage() {
             <div className="rounded-2xl border border-border/90 bg-secondary/30 p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-foreground font-display">
-                  Ingredientes
+                  {t("postcard.ingredients")}
                 </h2>
-                <span className="text-[11px] text-muted-foreground">Marque o que já tem</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {t("recipe.checkWhatYouHave")}
+                </span>
               </div>
 
               {recipe.recipeData?.ingredients && recipe.recipeData.ingredients.length > 0 ? (
@@ -273,14 +273,14 @@ function ReceitaDetalhePage() {
                   })}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">Ingredientes simples e a gosto.</p>
+                <p className="text-xs text-muted-foreground">{t("recipe.simpleIngredients")}</p>
               )}
             </div>
 
             {/* Modo de Preparo */}
             <div className="space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground font-display">
-                Modo de Preparo
+                {t("recipe.method")}
               </h2>
 
               {recipe.recipeData?.steps && recipe.recipeData.steps.length > 0 ? (
@@ -298,7 +298,7 @@ function ReceitaDetalhePage() {
                   ))}
                 </ol>
               ) : (
-                <p className="text-xs text-muted-foreground">Preparo simples no seu ritmo.</p>
+                <p className="text-xs text-muted-foreground">{t("recipe.simpleMethod")}</p>
               )}
             </div>
           </div>
@@ -306,12 +306,12 @@ function ReceitaDetalhePage() {
           {/* Tags */}
           {recipe.tags && recipe.tags.length > 0 && (
             <div className="mt-8 pt-4 border-t border-border flex flex-wrap gap-2">
-              {recipe.tags.map((t) => (
+              {recipe.tags.map((tag) => (
                 <span
-                  key={t}
+                  key={tag}
                   className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground"
                 >
-                  #{t}
+                  #{tag}
                 </span>
               ))}
             </div>
@@ -321,19 +321,16 @@ function ReceitaDetalhePage() {
         {/* Seção de Comentários e Dicas da Comunidade */}
         <section className="mt-8 rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
           <h3 className="text-lg font-bold font-display text-foreground mb-1">
-            Conversa & Dicas da Comunidade
+            {t("recipe.talkTitle")}
           </h3>
-          <p className="text-xs text-muted-foreground mb-4">
-            Testou alguma substituição de ingrediente? Deixe sua dica para inspirar os próximos
-            preparos.
-          </p>
+          <p className="text-xs text-muted-foreground mb-4">{t("recipe.talkHint")}</p>
 
           <form onSubmit={handleAddComment} className="flex gap-2 mb-6">
             <input
               type="text"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Compartilhe como ficou a sua receita ou faça uma pergunta..."
+              placeholder={t("recipe.commentPlaceholder")}
               className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-xs text-foreground outline-none focus:border-accent"
             />
             <button
@@ -341,7 +338,7 @@ function ReceitaDetalhePage() {
               className="rounded-full bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
             >
               <Send className="h-3.5 w-3.5" />
-              <span>Enviar</span>
+              <span>{t("recipe.send")}</span>
             </button>
           </form>
 
@@ -360,13 +357,12 @@ function ReceitaDetalhePage() {
               ))
             ) : (
               <p className="text-xs text-muted-foreground text-center py-4">
-                Ainda não há comentários. Prepare a receita e venha contar como foi!
+                {t("recipe.noComments")}
               </p>
             )}
           </div>
         </section>
       </main>
-
     </div>
   );
 }

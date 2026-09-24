@@ -18,6 +18,7 @@ import {
 import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { useI18n } from "@/hooks/use-i18n";
 import { getProfessionalInfo, isPlatformAdmin, leaveAsAdmin } from "@/lib/community-admin";
 import {
   addComment,
@@ -57,6 +58,7 @@ export const Route = createFileRoute("/comunidades/$slug")({
 function CommunityFeed() {
   const { slug } = useParams({ from: "/comunidades/$slug" });
   const { user } = useAuth();
+  const { t } = useI18n();
   const { communities, posts, profiles, hydrated } = useCommunity();
   const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
 
@@ -78,19 +80,21 @@ function CommunityFeed() {
 
   if (!hydrated) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">Carregando…</div>
+      <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">
+        {t("common.loading")}
+      </div>
     );
   }
 
   if (!community || hiddenPending) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
-        <h1 className="text-2xl font-bold text-primary">Comunidade não encontrada</h1>
+        <h1 className="text-2xl font-bold text-primary">{t("cf.notFound")}</h1>
         <Link
           to="/comunidades"
           className="mt-3 inline-block text-sm font-semibold text-accent hover:underline"
         >
-          Voltar para comunidades
+          {t("cf.back")}
         </Link>
       </div>
     );
@@ -116,7 +120,7 @@ function CommunityFeed() {
         to="/comunidades"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground mb-4"
       >
-        &larr; Voltar para comunidades
+        &larr; {t("cf.back")}
       </Link>
 
       <header className="rounded-3xl border border-border bg-card shadow-card overflow-hidden">
@@ -155,20 +159,20 @@ function CommunityFeed() {
 
               {community.objective && (
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  <span className="font-semibold text-foreground">Objetivo: </span>
+                  <span className="font-semibold text-foreground">{t("invites.objective")} </span>
                   {community.objective}
                 </p>
               )}
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <AdminPerson
-                  label="Admin usuário"
+                  label={t("comunidades.adminUser")}
                   userId={community.adminUserId}
                   name={community.adminUserName}
-                  vacantText="Aguardando indicação"
+                  vacantText={t("comunidades.awaitingNomination")}
                 />
                 <AdminPerson
-                  label="Admin profissional"
+                  label={t("comunidades.adminProfessional")}
                   detail={
                     pro
                       ? `${pro.profession} · ${pro.council} ${pro.registration}/${pro.uf}`
@@ -177,14 +181,15 @@ function CommunityFeed() {
                   userId={community.professionalId}
                   name={community.professionalName}
                   verified
-                  vacantText="Aguardando profissional"
+                  vacantText={t("comunidades.status.pendente")}
                 />
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
               <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
-                <Users className="h-4 w-4 text-accent" /> {community.members.length} membros
+                <Users className="h-4 w-4 text-accent" /> {community.members.length}{" "}
+                {t("comunidades.members")}
               </span>
 
               {actor && (
@@ -205,15 +210,13 @@ function CommunityFeed() {
       {community.status !== "ativa" && (
         <p className="mt-6 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm text-foreground">
           {community.status === "pendente"
-            ? "Sua comunidade está aguardando um profissional aceitar ser o admin profissional. Ela passa a existir para todos assim que isso acontecer."
-            : `Comunidade suspensa: ${[
-                !community.adminUserId &&
-                  "falta o admin usuário (a plataforma indicará entre os membros mais engajados)",
-                !community.professionalId &&
-                  "falta o admin profissional (profissionais indicados já foram convidados)",
+            ? t("cf.pendingText")
+            : `${t("cf.suspended")} ${[
+                !community.adminUserId && t("cf.missingUser"),
+                !community.professionalId && t("cf.missingPro"),
               ]
                 .filter(Boolean)
-                .join(" e ")}. As publicações voltam quando a administração estiver completa.`}
+                .join(t("cf.and"))}. ${t("cf.resume")}`}
         </p>
       )}
 
@@ -224,14 +227,14 @@ function CommunityFeed() {
           {!actor ? (
             <>
               <Link to="/login" className="font-semibold text-accent hover:underline">
-                Entre na sua conta
+                {t("cf.signIn")}
               </Link>{" "}
-              para participar e publicar nesta comunidade.
+              {t("cf.toParticipate")}
             </>
           ) : community.status !== "ativa" ? (
-            "As publicações estão pausadas enquanto a comunidade não estiver ativa."
+            t("cf.paused")
           ) : (
-            "Participe da comunidade para publicar."
+            t("cf.joinToPost")
           )}
         </p>
       )}
@@ -242,7 +245,7 @@ function CommunityFeed() {
         ))}
         {feed.length === 0 && (
           <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
-            Ainda não há publicações por aqui.
+            {t("cf.noPosts")}
           </p>
         )}
       </section>
@@ -266,6 +269,7 @@ function MembershipAction({
   isPro: boolean;
 }) {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const cover = variant === "cover";
   const base = cover
     ? "hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition"
@@ -279,34 +283,34 @@ function MembershipAction({
 
   if (isAdmin) {
     const consequence = isPro
-      ? "A comunidade ficará suspensa até que outro profissional verificado aceite o convite para ser admin profissional."
+      ? t("cf.consPro")
       : community.status === "pendente"
-        ? "Como ela ainda não foi ativada, será cancelada."
-        : "A comunidade ficará suspensa até a plataforma indicar um novo admin usuário entre os membros mais engajados.";
+        ? t("cf.consPending")
+        : t("cf.consUser");
     return (
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button type="button" className={`${base} ${secondary}`}>
-            Deixar a administração
+            {t("cf.leaveAdmin")}
           </button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Deixar a administração?</AlertDialogTitle>
+            <AlertDialogTitle>{t("cf.leaveAdminQ")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Você deixará de ser admin e sairá da comunidade. {consequence}
+              {t("cf.leaveText")} {consequence}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continuar como admin</AlertDialogCancel>
+            <AlertDialogCancel>{t("cf.keepAdmin")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 leaveAsAdmin(community.id, actor);
-                toast.success("Você deixou a administração da comunidade.");
+                toast.success(t("cf.leftToast"));
                 navigate({ to: "/comunidades" });
               }}
             >
-              Deixar a administração
+              {t("cf.leaveAdmin")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -320,12 +324,13 @@ function MembershipAction({
       onClick={() => toggleMembership(community.id, actor)}
       className={`${base} ${isMember ? secondary : primary}`}
     >
-      {isMember ? "Sair da comunidade" : "Participar"}
+      {isMember ? t("cf.leaveCommunity") : t("cf.join")}
     </button>
   );
 }
 
 function Composer({ communityId, actor }: { communityId: string; actor: Actor }) {
+  const { t } = useI18n();
   const [text, setText] = useState("");
   const [image, setImage] = useState<string | undefined>(undefined);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -335,27 +340,27 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
       onSubmit={(e) => {
         e.preventDefault();
         if (!text.trim()) {
-          toast.error("Escreva algo para publicar.");
+          toast.error(t("cf.writeSomething"));
           return;
         }
         createPost({ communityId, actor, text: text.trim(), ...(image ? { image } : {}) });
         setText("");
         setImage(undefined);
-        toast.success("Publicado na comunidade!");
+        toast.success(t("cf.published"));
       }}
       className="mt-6 rounded-2xl border bg-card p-5 shadow-card"
     >
       <textarea
         rows={3}
         className="textarea"
-        placeholder="Compartilhe uma refeição, uma dúvida ou uma conquista do seu dia…"
+        placeholder={t("cf.composerPlaceholder")}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
       {image && (
         <img
           src={image}
-          alt="Prévia da imagem da publicação"
+          alt={t("cf.previewAlt")}
           className="mt-3 max-h-64 rounded-xl object-cover"
         />
       )}
@@ -378,10 +383,10 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
           onClick={() => fileRef.current?.click()}
           className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold text-foreground transition hover:bg-secondary"
         >
-          <ImagePlus className="h-4 w-4" /> Adicionar foto
+          <ImagePlus className="h-4 w-4" /> {t("cf.addPhoto")}
         </button>
         <button className="ml-auto rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
-          Publicar na comunidade
+          {t("cf.postToCommunity")}
         </button>
       </div>
     </form>
@@ -398,6 +403,7 @@ function PostCard({
   isModerator: boolean;
 }) {
   const [comment, setComment] = useState("");
+  const { t } = useI18n();
   const liked = !!actor && post.likes.includes(actor.id);
 
   return (
@@ -407,7 +413,7 @@ function PostCard({
     >
       {post.pinned && (
         <p className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-          <Pin className="h-3.5 w-3.5" /> Orientação fixada
+          <Pin className="h-3.5 w-3.5" /> {t("cf.pinnedTag")}
         </p>
       )}
       <div className="flex items-center gap-3">
@@ -429,17 +435,17 @@ function PostCard({
             <button
               onClick={() => togglePin(post.id)}
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-              aria-label={post.pinned ? "Desafixar publicação" : "Fixar publicação"}
+              aria-label={post.pinned ? t("cf.unpin") : t("cf.pin")}
             >
               <Pin className="h-4 w-4" />
             </button>
             <button
               onClick={() => {
                 removePost(post.id);
-                toast.success("Publicação removida pela moderação.");
+                toast.success(t("cf.removedPost"));
               }}
               className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
-              aria-label="Remover publicação"
+              aria-label={t("cf.removePost")}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -448,11 +454,7 @@ function PostCard({
       </div>
 
       {post.image && (
-        <PostImage
-          src={post.image}
-          alt="Foto compartilhada na publicação"
-          className="mt-3 w-full rounded-xl"
-        />
+        <PostImage src={post.image} alt={t("cf.photoAlt")} className="mt-3 w-full rounded-xl" />
       )}
       <p className="mt-3 whitespace-pre-line text-justify hyphens-auto text-sm leading-relaxed text-foreground">
         {post.text}
@@ -461,7 +463,7 @@ function PostCard({
       <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
         <button
           onClick={() => {
-            if (!actor) return toast.error("Entre na sua conta para apoiar.");
+            if (!actor) return toast.error(t("cf.loginToSupport"));
             toggleLike(post.id, actor.id);
           }}
           className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold transition ${
@@ -469,10 +471,10 @@ function PostCard({
           }`}
         >
           <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length}{" "}
-          {post.likes.length === 1 ? "apoio" : "apoios"}
+          {post.likes.length === 1 ? t("cf.supportOne") : t("cf.supportMany")}
         </button>
         <span className="inline-flex items-center gap-1">
-          <MessageCircle className="h-4 w-4" /> {post.comments.length} comentários
+          <MessageCircle className="h-4 w-4" /> {post.comments.length} {t("cf.comments")}
         </span>
       </div>
 
@@ -495,10 +497,10 @@ function PostCard({
               <button
                 onClick={() => {
                   removeComment(post.id, c.id);
-                  toast.success("Comentário removido.");
+                  toast.success(t("cf.commentRemoved"));
                 }}
                 className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
-                aria-label="Remover comentário"
+                aria-label={t("cf.removeComment")}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -518,12 +520,12 @@ function PostCard({
           >
             <input
               className="input"
-              placeholder="Escreva um comentário acolhedor…"
+              placeholder={t("cf.commentPlaceholder")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
             <button className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90">
-              Comentar
+              {t("cf.comment")}
             </button>
           </form>
         )}

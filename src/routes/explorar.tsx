@@ -5,6 +5,7 @@ import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({
@@ -24,6 +25,7 @@ type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidade
 
 function ExplorarPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
+  const { t } = useI18n();
   const { posts, challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
@@ -38,7 +40,7 @@ function ExplorarPage() {
       !q ||
       p.title?.toLowerCase().includes(q) ||
       p.text.toLowerCase().includes(q) ||
-      p.tags?.some((t) => t.toLowerCase().includes(q)) ||
+      p.tags?.some((tag) => tag.toLowerCase().includes(q)) ||
       p.authorName.toLowerCase().includes(q),
   );
 
@@ -71,17 +73,17 @@ function ExplorarPage() {
   const tabs: { id: SearchTab; label: string; count: number }[] = [
     {
       id: "tudo",
-      label: "Tudo",
+      label: t("explore.tab.all"),
       count:
         matchingPosts.length +
         matchingChallenges.length +
         matchingCommunities.length +
         matchingTheme.length,
     },
-    { id: "receitas", label: "Receitas", count: matchingRecipes.length },
-    { id: "experiencias", label: "Experiências", count: matchingExperiences.length },
-    { id: "desafios", label: "Desafios", count: matchingChallenges.length },
-    { id: "comunidades", label: "Comunidades", count: matchingCommunities.length },
+    { id: "receitas", label: t("explore.tab.recipes"), count: matchingRecipes.length },
+    { id: "experiencias", label: t("explore.tab.experiences"), count: matchingExperiences.length },
+    { id: "desafios", label: t("explore.tab.challenges"), count: matchingChallenges.length },
+    { id: "comunidades", label: t("explore.tab.communities"), count: matchingCommunities.length },
   ];
 
   return (
@@ -92,11 +94,9 @@ function ExplorarPage() {
         {/* Caixa de Busca Principal */}
         <div className="mx-auto max-w-3xl text-center space-y-4 mb-10">
           <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
-            O que você quer descobrir hoje?
+            {t("explore.title")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Pesquise por ingredientes, receitas afetivas, relatos de rotina ou desafios.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("explore.subtitle")}</p>
 
           <div className="relative mt-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-accent" />
@@ -104,7 +104,7 @@ function ExplorarPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ex: aveia, maçã, marmitas, rotina..."
+              placeholder={t("explore.placeholder")}
               className="w-full rounded-full border border-border bg-card pl-12 pr-4 py-3.5 text-sm text-foreground outline-none focus:border-accent shadow-card"
               autoFocus
             />
@@ -116,13 +116,13 @@ function ExplorarPage() {
               to="/receitas"
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
             >
-              <ChefHat className="h-3.5 w-3.5 text-accent" /> Receitas Comunitárias
+              <ChefHat className="h-3.5 w-3.5 text-accent" /> {t("explore.communityRecipes")}
             </Link>
             <Link
               to="/tema-da-semana"
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
             >
-              <Sparkles className="h-3.5 w-3.5 text-accent" /> Tema da Semana
+              <Sparkles className="h-3.5 w-3.5 text-accent" /> {t("weekly.badge")}
             </Link>
           </div>
 
@@ -160,14 +160,16 @@ function ExplorarPage() {
               <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
                 <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                   <ChefHat className="h-4 w-4 text-accent" />
-                  <span>Receitas Encontradas ({matchingRecipes.length})</span>
+                  <span>
+                    {t("explore.recipesFound")} ({matchingRecipes.length})
+                  </span>
                 </h2>
                 {activeTab === "tudo" && (
                   <button
                     onClick={() => setActiveTab("receitas")}
                     className="text-xs text-primary font-semibold hover:underline"
                   >
-                    Ver todas
+                    {t("profile.seeAll")}
                   </button>
                 )}
               </div>
@@ -186,7 +188,9 @@ function ExplorarPage() {
                 <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
                   <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-accent" />
-                    <span>Experiências e Relatos ({matchingExperiences.length})</span>
+                    <span>
+                      {t("explore.experiencesFound")} ({matchingExperiences.length})
+                    </span>
                   </h2>
                 </div>
                 <div className="space-y-4">
@@ -203,7 +207,9 @@ function ExplorarPage() {
               <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
                 <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                   <Award className="h-4 w-4 text-accent" />
-                  <span>Desafios ({matchingChallenges.length})</span>
+                  <span>
+                    {t("explore.tab.challenges")} ({matchingChallenges.length})
+                  </span>
                 </h2>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -221,7 +227,9 @@ function ExplorarPage() {
                 <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
                   <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
                     <Users className="h-4 w-4 text-accent" />
-                    <span>Comunidades ({matchingCommunities.length})</span>
+                    <span>
+                      {t("explore.tab.communities")} ({matchingCommunities.length})
+                    </span>
                   </h2>
                 </div>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -241,7 +249,8 @@ function ExplorarPage() {
                           {c.category}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          {c.members.length} {c.members.length === 1 ? "membro" : "membros"}
+                          {c.members.length}{" "}
+                          {c.members.length === 1 ? t("explore.member") : t("comunidades.members")}
                         </span>
                       </div>
                     </Link>
@@ -258,11 +267,9 @@ function ExplorarPage() {
               <div className="rounded-3xl border border-dashed border-border p-12 text-center max-w-md mx-auto">
                 <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <h3 className="text-base font-bold font-display text-foreground">
-                  Nenhum resultado para “{query}”
+                  {t("explore.noResults")} “{query}”
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Tente buscar por termos mais genéricos, como receitas, aveia, marmita ou saúde.
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t("explore.noResultsHint")}</p>
               </div>
             )}
         </div>

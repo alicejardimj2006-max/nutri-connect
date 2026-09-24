@@ -15,6 +15,7 @@ import {
   submitVerification,
 } from "@/lib/community-admin";
 import { fileToDataUrl } from "@/lib/image";
+import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/verificacao")({
   head: () => ({ meta: [{ title: "Verificação profissional — NutriConnect" }] }),
@@ -26,6 +27,7 @@ const inputClass =
 
 function VerificationPage() {
   const { user, hydrated } = useRequireAuth();
+  const { t } = useI18n();
   const { profiles, verifications, hydrated: dataHydrated } = useCommunity();
 
   if (!hydrated || !user) return <AuthGateLoading />;
@@ -44,60 +46,55 @@ function VerificationPage() {
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar para o perfil</span>
+          <span>{t("edit.back")}</span>
         </Link>
 
         <h1 className="font-display text-3xl font-extrabold text-foreground">
-          Verificação profissional
+          {t("verify.title")}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Se você atua na área da saúde ou do bem-estar, verifique seu perfil para se tornar
-          profissional verificado. Conferimos seu registro no conselho da categoria antes de
-          aprovar.
-        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("verify.intro")}</p>
 
         {!dataHydrated ? (
-          <p className="mt-8 text-sm text-muted-foreground">Carregando…</p>
+          <p className="mt-8 text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : isVerified ? (
           <section className="mt-8 rounded-2xl border border-accent/30 bg-card p-5 shadow-xs sm:p-6">
             <div className="flex items-center gap-2 text-accent">
               <BadgeCheck className="h-5 w-5" />
               <h2 className="font-display text-lg font-bold text-foreground">
-                Seu perfil é profissional verificado
+                {t("verify.isVerified")}
               </h2>
             </div>
             {professional && (
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                <Info label="Profissão" value={professional.profession} />
+                <Info label={t("verify.profession")} value={professional.profession} />
                 <Info
-                  label="Registro"
+                  label={t("verify.registration")}
                   value={`${professional.council} ${professional.registration}/${professional.uf}`}
                 />
-                <Info label="Áreas de atuação" value={professional.specialties.join(", ")} />
-                <Info label="Verificado em" value={formatDate(professional.verifiedAt)} />
+                <Info label={t("verify.fields")} value={professional.specialties.join(", ")} />
+                <Info label={t("verify.verifiedAt")} value={formatDate(professional.verifiedAt)} />
               </dl>
             )}
-            <p className="mt-4 text-sm text-muted-foreground">
-              Seu selo aparece nas suas publicações e no perfil, e você pode aceitar convites para
-              ser admin profissional de comunidades.
-            </p>
+            <p className="mt-4 text-sm text-muted-foreground">{t("verify.badgeText")}</p>
             <Link
               to="/convites"
               className="mt-4 inline-flex rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
             >
-              Ver convites de comunidades
+              {t("verify.seeInvites")}
             </Link>
           </section>
         ) : latest?.status === "em_analise" ? (
           <section className="mt-8 rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-warning" />
-              <h2 className="font-display text-lg font-bold text-foreground">Pedido em análise</h2>
+              <h2 className="font-display text-lg font-bold text-foreground">
+                {t("verify.inReview")}
+              </h2>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Recebemos seus dados em {formatDate(latest.submittedAt)}. Nossa equipe está conferindo
-              seu registro {latest.council} {latest.registration}/{latest.uf}. Você receberá o selo
-              assim que o pedido for aprovado.
+              {t("verify.inReviewText1")} {formatDate(latest.submittedAt)}.{" "}
+              {t("verify.inReviewText2")} {latest.council} {latest.registration}/{latest.uf}.{" "}
+              {t("verify.inReviewText3")}
             </p>
           </section>
         ) : (
@@ -106,14 +103,12 @@ function VerificationPage() {
               <section className="mt-8 rounded-2xl border border-destructive/30 bg-destructive/5 p-5 sm:p-6">
                 <div className="flex items-center gap-2 text-destructive">
                   <XCircle className="h-5 w-5" />
-                  <h2 className="font-display text-lg font-bold">Seu último pedido foi recusado</h2>
+                  <h2 className="font-display text-lg font-bold">{t("verify.rejected")}</h2>
                 </div>
                 <p className="mt-2 text-sm text-foreground">
-                  {latest.rejectionReason || "A equipe não conseguiu confirmar as informações."}
+                  {latest.rejectionReason || t("verify.rejectedDefault")}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Você pode corrigir os dados e enviar um novo pedido abaixo.
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{t("verify.rejectedHint")}</p>
               </section>
             )}
             <VerificationForm userId={user.id} userName={user.name} />
@@ -123,12 +118,11 @@ function VerificationPage() {
         <ul className="mt-10 space-y-2 text-xs text-muted-foreground">
           <li className="flex items-start gap-2">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-            Os documentos são vistos só pela equipe da plataforma e não aparecem no seu perfil.
+            {t("verify.note1")}
           </li>
           <li className="flex items-start gap-2">
             <VerifiedBadge className="mt-0.5 h-4 w-4" />
-            Com o perfil verificado você ganha o selo, aparece na aba Profissionais e pode ser
-            convidado como admin profissional de uma comunidade.
+            {t("verify.note2")}
           </li>
         </ul>
       </main>
@@ -168,6 +162,7 @@ function Label({
 }
 
 function VerificationForm({ userId, userName }: { userId: string; userName: string }) {
+  const { t } = useI18n();
   const [fullName, setFullName] = useState(userName);
   const [profession, setProfession] = useState<string>(PROFESSIONS[0].label);
   const [registration, setRegistration] = useState("");
@@ -190,19 +185,19 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || registration.trim().length < 3) {
-      toast.error("Informe seu nome completo e o número do registro profissional.");
+      toast.error(t("verify.errNameReg"));
       return;
     }
     if (specialties.length === 0) {
-      toast.error("Escolha ao menos uma área de atuação.");
+      toast.error(t("verify.errSpecialty"));
       return;
     }
     if (!documentImage || !selfieImage) {
-      toast.error("Envie a foto do documento e a selfie com o documento.");
+      toast.error(t("verify.errImages"));
       return;
     }
     if (!declared) {
-      toast.error("Confirme a declaração de veracidade para enviar.");
+      toast.error(t("verify.errDeclare"));
       return;
     }
     setSubmitting(true);
@@ -221,9 +216,9 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
         documentImage,
         selfieImage,
       });
-      toast.success("Pedido enviado! Avisaremos quando a análise terminar.");
+      toast.success(t("verify.sent"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível enviar o pedido.");
+      toast.error(err instanceof Error ? err.message : t("verify.sendError"));
       setSubmitting(false);
     }
   };
@@ -233,10 +228,10 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
       onSubmit={handleSubmit}
       className="mt-8 space-y-6 rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6"
     >
-      <h2 className="font-display text-lg font-bold text-foreground">Dados profissionais</h2>
+      <h2 className="font-display text-lg font-bold text-foreground">{t("verify.formTitle")}</h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Label text="Nome completo" hint="como consta no registro">
+        <Label text={t("verify.fullName")} hint={t("verify.fullNameHint")}>
           <input
             className={inputClass}
             value={fullName}
@@ -244,7 +239,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
             required
           />
         </Label>
-        <Label text="Profissão">
+        <Label text={t("verify.profession")}>
           <select
             className={inputClass}
             value={profession}
@@ -257,16 +252,16 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
             ))}
           </select>
         </Label>
-        <Label text={`Número do registro (${council})`}>
+        <Label text={`${t("verify.regNumber")} (${council})`}>
           <input
             className={inputClass}
             value={registration}
             onChange={(e) => setRegistration(e.target.value)}
-            placeholder="Ex: 12345"
+            placeholder={t("verify.regPlaceholder")}
             required
           />
         </Label>
-        <Label text="UF do conselho">
+        <Label text={t("verify.state")}>
           <select className={inputClass} value={uf} onChange={(e) => setUf(e.target.value)}>
             {BR_STATES.map((s) => (
               <option key={s} value={s}>
@@ -279,7 +274,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
 
       <div>
         <p className="mb-1 text-xs font-medium text-muted-foreground">
-          Áreas de atuação <span className="font-normal">— usadas para indicar comunidades</span>
+          {t("verify.fields")} <span className="font-normal">— {t("verify.fieldsHint")}</span>
         </p>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => {
@@ -303,17 +298,17 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
         </div>
       </div>
 
-      <Label text="Apresentação profissional" hint="opcional, aparece no seu perfil">
+      <Label text={t("verify.intro2")} hint={t("verify.optionalShown")}>
         <textarea
           rows={3}
           className={`${inputClass} resize-none`}
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          placeholder="Conte como você atua e o que gosta de compartilhar."
+          placeholder={t("verify.introPlaceholder")}
         />
       </Label>
 
-      <Label text="Link de consulta pública do conselho" hint="opcional, agiliza a análise">
+      <Label text={t("verify.lookupLabel")} hint={t("verify.optionalFaster")}>
         <input
           type="url"
           className={inputClass}
@@ -325,14 +320,14 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
 
       <div className="grid gap-4 sm:grid-cols-2">
         <ImageUpload
-          label="Carteira ou registro profissional"
-          hint="frente, com número e nome legíveis"
+          label={t("verify.docLabel")}
+          hint={t("verify.docHint")}
           value={documentImage}
           onChange={setDocumentImage}
         />
         <ImageUpload
-          label="Selfie segurando o documento"
-          hint="rosto e documento visíveis"
+          label={t("verify.selfieLabel")}
+          hint={t("verify.selfieHint")}
           value={selfieImage}
           onChange={setSelfieImage}
         />
@@ -345,10 +340,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
           onChange={(e) => setDeclared(e.target.checked)}
           className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
         />
-        <span>
-          Declaro que as informações são verdadeiras e autorizo a plataforma a conferi-las junto ao
-          conselho profissional.
-        </span>
+        <span>{t("verify.declare")}</span>
       </label>
 
       <button
@@ -356,7 +348,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
         disabled={submitting}
         className="rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-accent-foreground shadow-soft transition hover:bg-accent/90 disabled:opacity-60"
       >
-        Enviar para verificação
+        {t("verify.submit")}
       </button>
     </form>
   );
@@ -374,6 +366,7 @@ function ImageUpload({
   onChange: (dataUrl: string) => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const { t } = useI18n();
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -382,7 +375,7 @@ function ImageUpload({
     try {
       onChange(await fileToDataUrl(file));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível usar essa imagem.");
+      toast.error(err instanceof Error ? err.message : t("verify.imageError"));
     }
   };
 
@@ -400,7 +393,7 @@ function ImageUpload({
             onClick={() => ref.current?.click()}
             className="absolute bottom-2 right-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white transition hover:bg-black/80"
           >
-            Trocar
+            {t("verify.replace")}
           </button>
         </div>
       ) : (
@@ -410,7 +403,7 @@ function ImageUpload({
           className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background text-sm text-muted-foreground transition hover:bg-secondary"
         >
           <ImagePlus className="h-6 w-6" />
-          <span>Enviar imagem</span>
+          <span>{t("verify.uploadImage")}</span>
         </button>
       )}
     </div>

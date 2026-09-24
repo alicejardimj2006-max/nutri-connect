@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AuthLayout, Field } from "./login";
+import { useI18n } from "@/hooks/use-i18n";
 import { KeyRound, Mail, CheckCircle2, ArrowRight, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/recuperar-senha")({
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/recuperar-senha")({
 
 function Recuperar() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -20,49 +22,49 @@ function Recuperar() {
 
   const handleSendEmail = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return toast.error("Informe o seu e-mail cadastrado.");
+    if (!email) return toast.error(t("reset.enterEmail"));
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      toast.success("Código de 6 dígitos enviado para " + email);
+      toast.success(t("reset.codeSent") + " " + email);
       setStep(2);
     }, 800);
   };
 
   const handleVerifyCode = (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.length < 4) return toast.error("Por favor, digite o código completo.");
+    if (code.length < 4) return toast.error(t("reset.enterCode"));
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      toast.success("Código validado com sucesso!");
+      toast.success(t("reset.codeOk"));
       setStep(3);
     }, 800);
   };
 
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (novaSenha !== conf) return toast.error("As senhas não coincidem.");
-    if (novaSenha.length < 6) return toast.error("A senha deve ter no mínimo 6 caracteres.");
+    if (novaSenha !== conf) return toast.error(t("signup.mismatch"));
+    if (novaSenha.length < 6) return toast.error(t("reset.minLength"));
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      toast.success("Sua senha foi redefinida!");
+      toast.success(t("reset.done"));
       setStep(4);
     }, 800);
   };
 
   return (
     <AuthLayout
-      title="Recuperar senha"
+      title={t("reset.title")}
       subtitle={
         step === 1
-          ? "Enviaremos um código de verificação para o seu e-mail."
+          ? t("reset.sub1")
           : step === 2
-            ? `Digite o código enviado para ${email}`
+            ? `${t("reset.sub2")} ${email}`
             : step === 3
-              ? "Crie uma nova senha segura para sua conta."
-              : "Tudo pronto!"
+              ? t("reset.sub3")
+              : t("reset.sub4")
       }
     >
       {/* INDICADOR DE PASSOS */}
@@ -81,7 +83,11 @@ function Recuperar() {
               {step > s ? "✓" : s}
             </span>
             <span className="text-xs font-medium hidden sm:inline">
-              {s === 1 ? "E-mail" : s === 2 ? "Código" : "Nova Senha"}
+              {s === 1
+                ? t("reset.step.email")
+                : s === 2
+                  ? t("reset.step.code")
+                  : t("reset.step.password")}
             </span>
           </div>
         ))}
@@ -89,7 +95,7 @@ function Recuperar() {
 
       {step === 1 && (
         <form onSubmit={handleSendEmail} className="space-y-4">
-          <Field label="Seu e-mail cadastrado">
+          <Field label={t("reset.registeredEmail")}>
             <div className="relative">
               <input
                 type="email"
@@ -107,12 +113,12 @@ function Recuperar() {
             disabled={loading}
             className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover transition disabled:opacity-50"
           >
-            {loading ? "Enviando..." : "Enviar código de verificação"}
+            {loading ? t("reset.sending") : t("reset.sendCode")}
           </button>
           <p className="text-center text-xs text-muted-foreground">
-            Lembrou a senha?{" "}
+            {t("reset.remembered")}{" "}
             <Link to="/login" className="text-primary font-semibold hover:underline">
-              Voltar ao login
+              {t("reset.backToLogin")}
             </Link>
           </p>
         </form>
@@ -120,7 +126,7 @@ function Recuperar() {
 
       {step === 2 && (
         <form onSubmit={handleVerifyCode} className="space-y-4">
-          <Field label="Código de 6 dígitos">
+          <Field label={t("reset.code6")}>
             <input
               type="text"
               required
@@ -136,7 +142,7 @@ function Recuperar() {
             disabled={loading}
             className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover transition disabled:opacity-50"
           >
-            {loading ? "Verificando..." : "Verificar Código"}
+            {loading ? t("reset.verifying") : t("reset.verify")}
           </button>
           <div className="flex justify-between items-center text-xs">
             <button
@@ -144,14 +150,14 @@ function Recuperar() {
               onClick={() => setStep(1)}
               className="text-muted-foreground hover:text-foreground"
             >
-              Trocar e-mail
+              {t("reset.changeEmail")}
             </button>
             <button
               type="button"
-              onClick={() => toast.success("Novo código reenviado!")}
+              onClick={() => toast.success(t("reset.resent"))}
               className="text-primary font-semibold hover:underline"
             >
-              Reenviar código
+              {t("reset.resend")}
             </button>
           </div>
         </form>
@@ -159,7 +165,7 @@ function Recuperar() {
 
       {step === 3 && (
         <form onSubmit={handleResetPassword} className="space-y-4">
-          <Field label="Nova Senha">
+          <Field label={t("reset.newPassword")}>
             <input
               type="password"
               required
@@ -170,7 +176,7 @@ function Recuperar() {
               placeholder="••••••••"
             />
           </Field>
-          <Field label="Confirmar Nova Senha">
+          <Field label={t("reset.confirmNew")}>
             <input
               type="password"
               required
@@ -185,7 +191,7 @@ function Recuperar() {
             disabled={loading}
             className="w-full rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary-hover transition disabled:opacity-50"
           >
-            {loading ? "Salvando..." : "Redefinir Senha"}
+            {loading ? t("reset.saving") : t("reset.submit")}
           </button>
         </form>
       )}
@@ -195,15 +201,13 @@ function Recuperar() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600">
             <CheckCircle2 className="h-8 w-8" />
           </div>
-          <h3 className="font-display text-xl font-bold">Senha alterada com sucesso!</h3>
-          <p className="text-xs text-muted-foreground">
-            Sua conta já está segura com a nova senha. Clique abaixo para fazer login.
-          </p>
+          <h3 className="font-display text-xl font-bold">{t("reset.successTitle")}</h3>
+          <p className="text-xs text-muted-foreground">{t("reset.successText")}</p>
           <button
             onClick={() => navigate({ to: "/login" })}
             className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
           >
-            Ir para o Login <ArrowRight className="h-4 w-4" />
+            {t("reset.goLogin")} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       )}

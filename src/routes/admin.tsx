@@ -6,6 +6,7 @@ import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { PostImage } from "@/components/post-image";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { useI18n } from "@/hooks/use-i18n";
 import { formatDate, type Community, type VerificationRequest } from "@/lib/community";
 import {
   designateAdminUser,
@@ -26,6 +27,7 @@ type Tab = "verificacoes" | "comunidades";
 
 function AdminPage() {
   const { user, hydrated } = useRequireAuth();
+  const { t } = useI18n();
   const state = useCommunity();
   const [tab, setTab] = useState<Tab>("verificacoes");
 
@@ -37,10 +39,8 @@ function AdminPage() {
         <SiteHeader />
         <main className="mx-auto w-full max-w-xl flex-1 px-4 py-16 text-center">
           <ShieldAlert className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h1 className="mt-3 font-display text-2xl font-bold">Acesso restrito</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Esta área é exclusiva para administradores da plataforma.
-          </p>
+          <h1 className="mt-3 font-display text-2xl font-bold">{t("admin.restricted")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("admin.restrictedText")}</p>
         </main>
       </div>
     );
@@ -54,15 +54,13 @@ function AdminPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="font-display text-3xl font-extrabold text-foreground">
-          Painel da plataforma
-        </h1>
+        <h1 className="font-display text-3xl font-extrabold text-foreground">{t("admin.title")}</h1>
 
         <div className="mt-5 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
           {(
             [
-              ["verificacoes", `Verificações (${pending.length})`],
-              ["comunidades", `Comunidades (${attention.length})`],
+              ["verificacoes", `${t("admin.tab.verifications")} (${pending.length})`],
+              ["comunidades", `${t("admin.tab.communities")} (${attention.length})`],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -84,11 +82,11 @@ function AdminPage() {
           <div className="mt-6 space-y-6">
             <section className="space-y-4">
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                Aguardando análise
+                {t("admin.awaiting")}
               </h2>
               {pending.length === 0 ? (
                 <p className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
-                  Nenhum pedido pendente.
+                  {t("admin.noPending")}
                 </p>
               ) : (
                 pending.map((v) => (
@@ -104,7 +102,7 @@ function AdminPage() {
             {reviewed.length > 0 && (
               <section className="space-y-2">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  Já analisados
+                  {t("admin.reviewed")}
                 </h2>
                 <ul className="divide-y divide-border/60 rounded-2xl border border-border/70 bg-card">
                   {reviewed.map((v) => (
@@ -125,7 +123,7 @@ function AdminPage() {
                             : "bg-destructive/10 text-destructive"
                         }`}
                       >
-                        {v.status === "aprovado" ? "Aprovado" : "Recusado"}
+                        {v.status === "aprovado" ? t("admin.approved") : t("admin.rejectedLabel")}
                       </span>
                     </li>
                   ))}
@@ -137,7 +135,7 @@ function AdminPage() {
           <div className="mt-6 space-y-4">
             {attention.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
-                Todas as comunidades estão com a administração completa.
+                {t("admin.allComplete")}
               </p>
             ) : (
               attention.map((c) => <CommunityCase key={c.id} community={c} />)
@@ -167,6 +165,7 @@ function VerificationCard({
   request: VerificationRequest;
   reviewer: { id: string; name: string };
 }) {
+  const { t } = useI18n();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -175,15 +174,15 @@ function VerificationCard({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-display text-lg font-bold text-foreground">{v.fullName}</h3>
         <span className="text-xs text-muted-foreground">
-          Enviado em {formatDate(v.submittedAt)}
+          {t("admin.sentOn")} {formatDate(v.submittedAt)}
         </span>
       </div>
 
       <dl className="mt-3 grid gap-3 sm:grid-cols-2">
-        <Row label="Conta" value={v.userName} />
-        <Row label="Profissão" value={v.profession} />
-        <Row label="Registro" value={`${v.council} ${v.registration}/${v.uf}`} />
-        <Row label="Áreas de atuação" value={v.specialties.join(", ")} />
+        <Row label={t("admin.account")} value={v.userName} />
+        <Row label={t("verify.profession")} value={v.profession} />
+        <Row label={t("verify.registration")} value={`${v.council} ${v.registration}/${v.uf}`} />
+        <Row label={t("verify.fields")} value={v.specialties.join(", ")} />
       </dl>
       {v.bio && <p className="mt-3 text-sm text-muted-foreground">{v.bio}</p>}
       {v.publicLookupUrl && (
@@ -193,21 +192,21 @@ function VerificationCard({
           rel="noopener noreferrer"
           className="mt-2 inline-block text-xs font-semibold text-accent hover:underline"
         >
-          Consulta pública do conselho
+          {t("admin.publicLookup")}
         </a>
       )}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <figure>
-          <PostImage src={v.documentImage} alt="Documento profissional" className="rounded-xl" />
+          <PostImage src={v.documentImage} alt={t("admin.docAlt")} className="rounded-xl" />
           <figcaption className="mt-1 text-[11px] text-muted-foreground">
-            Documento (clique para ampliar)
+            {t("admin.docCaption")}
           </figcaption>
         </figure>
         <figure>
-          <PostImage src={v.selfieImage} alt="Selfie com o documento" className="rounded-xl" />
+          <PostImage src={v.selfieImage} alt={t("admin.selfieAlt")} className="rounded-xl" />
           <figcaption className="mt-1 text-[11px] text-muted-foreground">
-            Selfie com o documento
+            {t("admin.selfieAlt")}
           </figcaption>
         </figure>
       </div>
@@ -218,7 +217,7 @@ function VerificationCard({
             rows={2}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Motivo da recusa (a pessoa verá esta mensagem)"
+            placeholder={t("admin.rejectReason")}
             className="w-full resize-none rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-destructive"
           />
           <div className="flex gap-2">
@@ -231,18 +230,18 @@ function VerificationCard({
                   approve: false,
                   reason,
                 });
-                toast.success("Pedido recusado.");
+                toast.success(t("admin.rejectedToast"));
               }}
               className="rounded-full bg-destructive px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              Confirmar recusa
+              {t("admin.confirmReject")}
             </button>
             <button
               type="button"
               onClick={() => setRejecting(false)}
               className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-foreground"
             >
-              Cancelar
+              {t("common.cancel")}
             </button>
           </div>
         </div>
@@ -252,18 +251,18 @@ function VerificationCard({
             type="button"
             onClick={() => {
               reviewVerification({ requestId: v.id, reviewer, approve: true });
-              toast.success(`${v.fullName} agora é profissional verificado.`);
+              toast.success(`${v.fullName} ${t("admin.approvedToast")}`);
             }}
             className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
           >
-            <Check className="h-4 w-4" /> Aprovar
+            <Check className="h-4 w-4" /> {t("admin.approve")}
           </button>
           <button
             type="button"
             onClick={() => setRejecting(true)}
             className="inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-sm font-semibold text-foreground transition hover:bg-secondary"
           >
-            <X className="h-4 w-4" /> Recusar
+            <X className="h-4 w-4" /> {t("admin.reject")}
           </button>
         </div>
       )}
@@ -272,6 +271,7 @@ function VerificationCard({
 }
 
 function CommunityCase({ community: c }: { community: Community }) {
+  const { t } = useI18n();
   const state = useCommunity();
   const invited = needsProfessional(c) ? rankProfessionalsFor(c, state) : [];
   const candidates = needsAdminUser(c) ? rankEngagedMembers(c, state) : [];
@@ -281,7 +281,9 @@ function CommunityCase({ community: c }: { community: Community }) {
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-display text-lg font-bold text-foreground">{c.name}</h3>
         <span className="rounded-full bg-warning/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground">
-          {c.status === "pendente" ? "Aguardando profissional" : "Suspensa"}
+          {c.status === "pendente"
+            ? t("comunidades.status.pendente")
+            : t("comunidades.status.suspensa")}
         </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{c.category}</p>
@@ -289,16 +291,14 @@ function CommunityCase({ community: c }: { community: Community }) {
       {needsProfessional(c) && (
         <div className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-            Falta o admin profissional
+            {t("admin.missingPro")}
           </p>
           {invited.length === 0 ? (
-            <p className="mt-1 text-sm text-muted-foreground">
-              Nenhum profissional disponível para convidar agora.
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("admin.noProAvailable")}</p>
           ) : (
             <p className="mt-1 text-sm text-muted-foreground">
-              Convite enviado a: {invited.map((r) => r.profile.name).join(", ")}. O primeiro que
-              aceitar assume a comunidade.
+              {t("admin.invitedTo")} {invited.map((r) => r.profile.name).join(", ")}.{" "}
+              {t("admin.firstToAccept")}
             </p>
           )}
         </div>
@@ -307,12 +307,10 @@ function CommunityCase({ community: c }: { community: Community }) {
       {needsAdminUser(c) && (
         <div className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-            Falta o admin usuário — membros mais engajados
+            {t("admin.missingUser")}
           </p>
           {candidates.length === 0 ? (
-            <p className="mt-1 text-sm text-muted-foreground">
-              Nenhum membro elegível (todos já administram outra comunidade ou são profissionais).
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("admin.noEligible")}</p>
           ) : (
             <ul className="mt-2 divide-y divide-border/60 rounded-xl border border-border/70">
               {candidates.map((m) => (
@@ -323,7 +321,8 @@ function CommunityCase({ community: c }: { community: Community }) {
                   <span className="text-sm text-foreground">
                     {m.name}{" "}
                     <span className="text-xs text-muted-foreground">
-                      · {m.posts} publicações, {m.comments} comentários, {m.supports} apoios
+                      · {m.posts} {t("admin.stats")}, {m.comments} {t("admin.statsComments")},{" "}
+                      {m.supports} {t("admin.statsSupports")}
                     </span>
                   </span>
                   <button
@@ -331,16 +330,14 @@ function CommunityCase({ community: c }: { community: Community }) {
                     onClick={() => {
                       try {
                         designateAdminUser(c.id, m.userId);
-                        toast.success(`${m.name} agora é admin usuário de ${c.name}.`);
+                        toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`);
                       } catch (err) {
-                        toast.error(
-                          err instanceof Error ? err.message : "Não foi possível indicar.",
-                        );
+                        toast.error(err instanceof Error ? err.message : t("admin.designateError"));
                       }
                     }}
                     className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition hover:bg-accent/90"
                   >
-                    Indicar como admin
+                    {t("admin.designate")}
                   </button>
                 </li>
               ))}

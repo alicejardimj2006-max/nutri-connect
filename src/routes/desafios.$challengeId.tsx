@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { useI18n } from "@/hooks/use-i18n";
 import {
   addChallengeTip,
   formatDate,
@@ -38,6 +39,7 @@ function resolveDisplayName(
   profiles: PublicProfile[],
   posts: Post[],
   currentUser: AuthUser | null,
+  memberLabel: string,
 ) {
   if (currentUser && currentUser.id === userId) return currentUser.name;
   const profile = profiles.find((p) => p.userId === userId);
@@ -45,14 +47,15 @@ function resolveDisplayName(
   const post = posts.find((p) => p.authorId === userId);
   if (post) return post.authorName;
   if (userId.startsWith("user-demo-")) {
-    return `Membro da comunidade #${userId.replace("user-demo-", "")}`;
+    return `${memberLabel} #${userId.replace("user-demo-", "")}`;
   }
-  return "Membro da comunidade";
+  return memberLabel;
 }
 
 function ChallengeDetailPage() {
   const { challengeId } = useParams({ from: "/desafios/$challengeId" });
   const { user } = useAuth();
+  const { t } = useI18n();
   const { challenges, profiles, posts, hydrated } = useCommunity();
   const [tipText, setTipText] = useState("");
 
@@ -62,7 +65,7 @@ function ChallengeDetailPage() {
   if (!hydrated) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-center text-sm text-muted-foreground">
-        Carregando desafio…
+        {t("cd.loading")}
       </div>
     );
   }
@@ -70,9 +73,9 @@ function ChallengeDetailPage() {
   if (!challenge) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-primary mb-2">Desafio não encontrado</h1>
+        <h1 className="text-2xl font-bold text-primary mb-2">{t("cd.notFound")}</h1>
         <Link to="/desafios" className="text-sm font-semibold text-accent hover:underline">
-          Voltar para desafios
+          {t("cd.backToChallenges")}
         </Link>
       </div>
     );
@@ -87,20 +90,16 @@ function ChallengeDetailPage() {
 
   const handleJoin = () => {
     if (!user) {
-      toast.info("Faça login para entrar no desafio.");
+      toast.info(t("challenge.loginToJoin"));
       return;
     }
     toggleJoinChallenge(challenge.id, user.id);
-    toast[isJoined ? "info" : "success"](
-      isJoined
-        ? "Você saiu do desafio. Seu progresso foi zerado."
-        : "Você entrou no desafio! Marque os passos conforme for avançando.",
-    );
+    toast[isJoined ? "info" : "success"](isJoined ? t("cd.leftToast") : t("cd.joinedToast"));
   };
 
   const handleToggleStep = (index: number) => {
     if (!user) {
-      toast.info("Faça login para acompanhar seu progresso.");
+      toast.info(t("cd.loginProgress"));
       return;
     }
     const willComplete =
@@ -110,14 +109,12 @@ function ChallengeDetailPage() {
       !myCompletedSteps.includes(index);
     toggleChallengeStep(challenge.id, user.id, index);
     if (willComplete) {
-      toast.success(
-        `Desafio concluído! Você ganhou o distintivo ${challenge.badgeIcon} ${challenge.badgeLabel}.`,
-      );
+      toast.success(`${t("cd.doneToast")} ${challenge.badgeIcon} ${challenge.badgeLabel}.`);
       sendBrowserNotification(
         user.id,
         "achievements",
-        "Desafio concluído! 🏆",
-        `Você ganhou o distintivo ${challenge.badgeIcon} ${challenge.badgeLabel}.`,
+        t("cd.doneNotifTitle"),
+        `${t("cd.notifBody")} ${challenge.badgeIcon} ${challenge.badgeLabel}.`,
       );
     }
   };
@@ -125,15 +122,15 @@ function ChallengeDetailPage() {
   const handleAddTip = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.info("Faça login para compartilhar uma dica.");
+      toast.info(t("cd.loginTip"));
       return;
     }
     try {
       addChallengeTip(challenge.id, { id: user.id, name: user.name }, tipText);
       setTipText("");
-      toast.success("Dica compartilhada com a comunidade!");
+      toast.success(t("cd.tipShared"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível enviar a dica.");
+      toast.error(err instanceof Error ? err.message : t("cd.tipError"));
     }
   };
 
@@ -142,7 +139,7 @@ function ChallengeDetailPage() {
       const completed = (challenge.progress[participantId] || []).length;
       return {
         userId: participantId,
-        name: resolveDisplayName(participantId, profiles, posts, user),
+        name: resolveDisplayName(participantId, profiles, posts, user, t("cd.member")),
         completed,
         pct: totalSteps > 0 ? Math.round((completed / totalSteps) * 100) : 0,
         isDone: challenge.completedBy.includes(participantId),
@@ -157,7 +154,7 @@ function ChallengeDetailPage() {
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition mb-6"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        <span>Voltar para todos os desafios</span>
+        <span>{t("cd.backAll")}</span>
       </Link>
 
       {/* Cabeçalho do Desafio */}
@@ -177,7 +174,7 @@ function ChallengeDetailPage() {
                 </span>
                 {isCompleted && (
                   <span className="flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-bold text-primary-foreground">
-                    <Award className="h-3 w-3" /> Concluído
+                    <Award className="h-3 w-3" /> {t("challenge.completed")}
                   </span>
                 )}
               </div>
@@ -189,8 +186,8 @@ function ChallengeDetailPage() {
               </p>
               <p className="mt-3 text-xs text-muted-foreground flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5" />
-                {challenge.participants.length} pessoas participando ·{" "}
-                {challenge.completedBy.length} já concluíram
+                {challenge.participants.length} {t("cd.peopleParticipating")} ·{" "}
+                {challenge.completedBy.length} {t("cd.alreadyDone")}
               </p>
             </div>
           </div>
@@ -204,16 +201,16 @@ function ChallengeDetailPage() {
                 : "bg-accent text-accent-foreground hover:bg-accent/90 shadow-soft"
             }`}
           >
-            {isJoined ? "Participando ✓ (sair)" : "Participar do desafio"}
+            {isJoined ? t("cd.joinedLeave") : t("cd.joinChallenge")}
           </button>
         </div>
 
         {isJoined && totalSteps > 0 && (
           <div className="mt-6 border-t border-border/60 pt-5">
             <div className="flex items-center justify-between text-xs font-semibold text-foreground mb-1.5">
-              <span>Seu progresso</span>
+              <span>{t("challenge.yourProgress")}</span>
               <span>
-                {myCompletedSteps.length}/{totalSteps} passos · {progressPct}%
+                {myCompletedSteps.length}/{totalSteps} {t("challenge.steps")} · {progressPct}%
               </span>
             </div>
             <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
@@ -232,12 +229,10 @@ function ChallengeDetailPage() {
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
             <h2 className="text-lg font-bold font-display text-foreground mb-1 flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-accent" />
-              <span>Passo a passo</span>
+              <span>{t("cd.stepsTitle")}</span>
             </h2>
             <p className="text-xs text-muted-foreground mb-5">
-              {isJoined
-                ? "Marque cada passo conforme for colocando em prática."
-                : "Participe do desafio para acompanhar seu progresso em cada passo."}
+              {isJoined ? t("cd.stepsJoined") : t("cd.stepsNotJoined")}
             </p>
 
             <ul className="space-y-2.5">
@@ -277,7 +272,7 @@ function ChallengeDetailPage() {
                 onClick={handleJoin}
                 className="mt-5 w-full rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-accent-foreground hover:bg-accent/90 transition shadow-xs"
               >
-                Participar e começar a marcar meus passos
+                {t("cd.joinAndStart")}
               </button>
             )}
           </section>
@@ -286,7 +281,7 @@ function ChallengeDetailPage() {
           <section className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
             <h2 className="text-lg font-bold font-display text-foreground mb-5 flex items-center gap-2">
               <Lightbulb className="h-5 w-5 text-accent" />
-              <span>Dicas para ir bem</span>
+              <span>{t("cd.tips")}</span>
             </h2>
 
             {challenge.tips.length > 0 && (
@@ -304,7 +299,7 @@ function ChallengeDetailPage() {
             )}
 
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-              Dicas da comunidade
+              {t("cd.communityTips")}
             </h3>
             {challenge.communityTips.length > 0 ? (
               <div className="space-y-3 mb-5">
@@ -321,9 +316,7 @@ function ChallengeDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground mb-5">
-                Nenhuma dica da comunidade ainda. Seja a primeira pessoa a compartilhar uma!
-              </p>
+              <p className="text-xs text-muted-foreground mb-5">{t("cd.noTips")}</p>
             )}
 
             <form onSubmit={handleAddTip} className="flex gap-2">
@@ -331,7 +324,7 @@ function ChallengeDetailPage() {
                 type="text"
                 value={tipText}
                 onChange={(e) => setTipText(e.target.value)}
-                placeholder="Compartilhe uma dica que funcionou para você..."
+                placeholder={t("cd.tipPlaceholder")}
                 className="flex-1 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent transition-colors shadow-sm"
               />
               <button
@@ -351,7 +344,7 @@ function ChallengeDetailPage() {
           <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
             <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
               <Users className="h-4 w-4 text-accent" />
-              <span>Progresso da comunidade</span>
+              <span>{t("cd.communityProgress")}</span>
             </h3>
 
             {participantsProgress.length > 0 ? (
@@ -364,7 +357,7 @@ function ChallengeDetailPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-semibold text-foreground truncate">
-                          {p.userId === currentUserId ? "Você" : p.name}
+                          {p.userId === currentUserId ? t("cd.you") : p.name}
                         </span>
                         {p.isDone ? (
                           <Award className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -385,9 +378,7 @@ function ChallengeDetailPage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-4">
-                Ninguém entrou neste desafio ainda. Seja a primeira pessoa!
-              </p>
+              <p className="text-xs text-muted-foreground text-center py-4">{t("cd.nobody")}</p>
             )}
           </div>
 
@@ -395,7 +386,7 @@ function ChallengeDetailPage() {
           <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
             <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
               <Trophy className="h-4 w-4 text-accent" />
-              <span>Recompensa deste desafio</span>
+              <span>{t("cd.reward")}</span>
             </h3>
             <div
               className={`flex items-center gap-3 rounded-2xl border p-4 mb-4 ${
@@ -406,13 +397,13 @@ function ChallengeDetailPage() {
               <div>
                 <p className="text-sm font-bold text-foreground">{challenge.badgeLabel}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {isCompleted ? "Conquistado! Parabéns." : "Complete todos os passos para ganhar"}
+                  {isCompleted ? t("cd.earned") : t("cd.completeAll")}
                 </p>
               </div>
             </div>
 
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
-              Seus distintivos gerais
+              {t("cd.generalBadges")}
             </h4>
             <div className="space-y-2">
               {earnedBadges.map((badge) => (
