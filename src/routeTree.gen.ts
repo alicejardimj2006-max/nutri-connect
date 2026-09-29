@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApresentacaoRouteImport } from './routes/apresentacao'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ContatoRouteImport } from './routes/contato'
@@ -49,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApresentacaoRoute = ApresentacaoRouteImport.update({
+  id: '/apresentacao',
+  path: '/apresentacao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -205,6 +211,7 @@ const PerfilConfiguracoesPrivacidadeRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apresentacao': typeof ApresentacaoRoute
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apresentacao': typeof ApresentacaoRoute
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apresentacao': typeof ApresentacaoRoute
   '/cadastro': typeof CadastroRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/apresentacao'
     | '/cadastro'
     | '/comunidades'
     | '/contato'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/apresentacao'
     | '/cadastro'
     | '/contato'
     | '/convites'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/apresentacao'
     | '/cadastro'
     | '/comunidades'
     | '/contato'
@@ -401,6 +413,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ApresentacaoRoute: typeof ApresentacaoRoute
   CadastroRoute: typeof CadastroRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
@@ -436,6 +449,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apresentacao': {
+      id: '/apresentacao'
+      path: '/apresentacao'
+      fullPath: '/apresentacao'
+      preLoaderRoute: typeof ApresentacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -706,6 +726,7 @@ const PerfilConfiguracoesRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ApresentacaoRoute: ApresentacaoRoute,
   CadastroRoute: CadastroRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,

@@ -1,5 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Leaf, Sparkles, Users, ChefHat, Award, Compass } from "lucide-react";
+import {
+  Leaf,
+  Sparkles,
+  Users,
+  ChefHat,
+  Award,
+  Compass,
+  Presentation,
+  ArrowRight,
+} from "lucide-react";
 import { useState } from "react";
 import { loginUser } from "@/lib/auth";
 import { toast } from "sonner";
@@ -148,6 +157,21 @@ export function AuthLayout({
           <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
           {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
           <div className="mt-8 rounded-2xl border bg-card p-6 shadow-card">{children}</div>
+          <Link
+            to="/apresentacao"
+            className="group mt-4 flex items-center gap-3 rounded-2xl border border-dashed border-accent/50 bg-accent-soft/60 p-4 transition hover:border-accent hover:bg-accent-soft"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground">
+              <Presentation className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-foreground">
+                {t("auth.discover")}
+              </span>
+              <span className="block text-xs text-muted-foreground">{t("auth.discoverHint")}</span>
+            </span>
+            <ArrowRight className="h-4 w-4 text-accent transition group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </div>
       <style>{`.input{width:100%;border:1px solid var(--border);background:var(--background);border-radius:0.75rem;padding:0.65rem 0.9rem;font-size:0.875rem;outline:none;transition:all .15s} .input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent)}`}</style>

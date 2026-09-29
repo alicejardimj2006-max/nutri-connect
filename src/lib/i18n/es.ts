@@ -212,6 +212,8 @@ const es: Record<DictKey, string> = {
   "auth.heroText":
     "Comparte recetas, participa en comunidades temáticas y desafíos de hábitos — y construye una relación más ligera con la comida, junto a otras personas.",
   "auth.footer": "Tu camino, a tu ritmo.",
+  "auth.discover": "Conoce NutriConnect",
+  "auth.discoverHint": "Mira la presentación del proyecto antes de entrar",
   "signup.title": "Empezar mi camino",
   "signup.subtitle": "Forma parte de una comunidad que cuida la alimentación de verdad.",
   "signup.fullName": "Nombre completo",

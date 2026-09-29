@@ -224,6 +224,8 @@ const ptBR = {
   "auth.heroText":
     "Compartilhe receitas, participe de comunidades temáticas e desafios de hábitos — e construa uma relação mais leve com a comida, junto com outras pessoas.",
   "auth.footer": "Sua caminhada, no seu ritmo.",
+  "auth.discover": "Conheça o NutriConnect",
+  "auth.discoverHint": "Veja a apresentação do projeto antes de entrar",
   "signup.title": "Começar minha jornada",
   "signup.subtitle": "Faça parte de uma comunidade que cuida da alimentação de verdade.",
   "signup.fullName": "Nome completo",
