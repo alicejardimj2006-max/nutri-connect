@@ -186,7 +186,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
       current.includes(name) ? current.filter((s) => s !== name) : [...current, name],
     );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || registration.trim().length < 3) {
       toast.error(t("verify.errNameReg"));
@@ -206,7 +206,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
     }
     setSubmitting(true);
     try {
-      submitVerification({
+      await submitVerification({
         userId,
         userName,
         fullName: fullName.trim(),
@@ -221,6 +221,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
         selfieImage,
       });
       toast.success(t("verify.sent"));
+      setSubmitting(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("verify.sendError"));
       setSubmitting(false);

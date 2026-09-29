@@ -541,6 +541,8 @@ const fr: Record<DictKey, string> = {
   "reset.minLength": "Le mot de passe doit contenir au moins 6 caractères.",
   "reset.done": "Votre mot de passe a été réinitialisé !",
   "reset.title": "Récupérer le mot de passe",
+  "reset.invalidCode": "Code invalide ou expiré. Demandez-en un nouveau.",
+  "reset.error": "Une erreur est survenue. Réessayez.",
   "reset.sub1": "Nous enverrons un code de vérification à votre e-mail.",
   "reset.sub2": "Saisissez le code envoyé à",
   "reset.sub3": "Créez un nouveau mot de passe sécurisé pour votre compte.",
@@ -1150,6 +1152,10 @@ const fr: Record<DictKey, string> = {
     "Les profils enfants utilisent le compte du responsable et n'ont pas accès aux communautés, publications ou défis sociaux : seulement aux parcours d'apprentissage.",
 
   "err.emailTaken": "E-mail déjà enregistré",
+  "err.emailNotConfirmed":
+    "Confirmez votre e-mail avant de vous connecter. Nous vous avons envoyé un lien.",
+  "err.weakPassword": "Le mot de passe doit contenir au moins 6 caractères.",
+  "auth.checkEmail": "Compte créé ! Confirmez votre e-mail via le lien envoyé pour commencer.",
   "err.emailNotFound": "E-mail introuvable. Vérifiez-le ou créez votre compte.",
   "err.wrongPassword": "Mot de passe incorrect.",
   "err.noAccount": "Aucun compte connecté.",

@@ -529,6 +529,8 @@ const en: Record<DictKey, string> = {
   "reset.minLength": "The password must have at least 6 characters.",
   "reset.done": "Your password has been reset!",
   "reset.title": "Recover password",
+  "reset.invalidCode": "Invalid or expired code. Request a new one.",
+  "reset.error": "Something went wrong. Please try again.",
   "reset.sub1": "We'll send a verification code to your email.",
   "reset.sub2": "Enter the code sent to",
   "reset.sub3": "Create a new secure password for your account.",
@@ -1128,6 +1130,10 @@ const en: Record<DictKey, string> = {
     "Child profiles use the guardian's account and have no access to communities, posts or social challenges: only to the learning trails.",
 
   "err.emailTaken": "Email already registered",
+  "err.emailNotConfirmed":
+    "Please confirm your email before signing in. We sent a link to your inbox.",
+  "err.weakPassword": "Password must be at least 6 characters.",
+  "auth.checkEmail": "Account created! Confirm your email using the link we sent to get started.",
   "err.emailNotFound": "Email not found. Check it or create your account.",
   "err.wrongPassword": "Incorrect password.",
   "err.noAccount": "No signed-in account.",

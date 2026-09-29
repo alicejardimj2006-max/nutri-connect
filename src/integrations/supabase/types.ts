@@ -6,6 +6,7 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+
   public: {
     Tables: {
       anamneses: {
@@ -1668,6 +1669,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
       diary_entry_patient: { Args: { p_entry: string }; Returns: string };
       duplicate_meal_plan: {
         Args: { p_plan: string };

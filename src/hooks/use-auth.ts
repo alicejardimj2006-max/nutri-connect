@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { getUser, type AuthUser } from "@/lib/auth";
+import { AUTH_EVENT, getUser, initAuth, isAuthReady, type AuthUser } from "@/lib/auth";
 
 export function useAuth() {
   const [user, setUserState] = useState<AuthUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setUserState(getUser());
-    setHydrated(true);
-    const onChange = () => setUserState(getUser());
-    window.addEventListener("auth-change", onChange);
-    window.addEventListener("storage", onChange);
-    return () => {
-      window.removeEventListener("auth-change", onChange);
-      window.removeEventListener("storage", onChange);
+    const sync = () => {
+      setUserState(getUser());
+      setHydrated(isAuthReady());
     };
+    sync();
+    window.addEventListener(AUTH_EVENT, sync);
+    void initAuth().then(sync);
+    return () => window.removeEventListener(AUTH_EVENT, sync);
   }, []);
 
   return { user, hydrated };

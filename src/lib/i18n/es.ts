@@ -535,6 +535,8 @@ const es: Record<DictKey, string> = {
   "reset.minLength": "La contraseña debe tener al menos 6 caracteres.",
   "reset.done": "¡Tu contraseña fue restablecida!",
   "reset.title": "Recuperar contraseña",
+  "reset.invalidCode": "Código inválido o vencido. Solicita uno nuevo.",
+  "reset.error": "No se pudo completar. Inténtalo de nuevo.",
   "reset.sub1": "Enviaremos un código de verificación a tu correo.",
   "reset.sub2": "Escribe el código enviado a",
   "reset.sub3": "Crea una nueva contraseña segura para tu cuenta.",
@@ -1140,6 +1142,11 @@ const es: Record<DictKey, string> = {
     "Los perfiles infantiles usan la cuenta del responsable y no tienen acceso a comunidades, publicaciones ni desafíos sociales: solo a las rutas de aprendizaje.",
 
   "err.emailTaken": "Correo ya registrado",
+  "err.emailNotConfirmed":
+    "Confirma tu correo antes de entrar. Te enviamos un enlace a tu bandeja de entrada.",
+  "err.weakPassword": "La contraseña debe tener al menos 6 caracteres.",
+  "auth.checkEmail":
+    "¡Cuenta creada! Confirma tu correo con el enlace que te enviamos para empezar.",
   "err.emailNotFound": "Correo no encontrado. Verifícalo o crea tu cuenta.",
   "err.wrongPassword": "Contraseña incorrecta.",
   "err.noAccount": "Ninguna cuenta autenticada.",

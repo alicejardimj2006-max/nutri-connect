@@ -1,9 +1,10 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Check, ShieldAlert, X } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { syncVerifications } from "@/lib/profile-sync";
 import { PostImage } from "@/components/post-image";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
@@ -31,6 +32,11 @@ function AdminPage() {
   const { t } = useI18n();
   const state = useCommunity();
   const [tab, setTab] = useState<Tab>("verificacoes");
+
+  // Admins veem todos os pedidos, com links temporários para as imagens privadas.
+  useEffect(() => {
+    if (user?.isAdmin) void syncVerifications(true);
+  }, [user]);
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
@@ -224,14 +230,18 @@ function VerificationCard({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => {
-                reviewVerification({
-                  requestId: v.id,
-                  reviewer,
-                  approve: false,
-                  reason,
-                });
-                toast.success(t("admin.rejectedToast"));
+              onClick={async () => {
+                try {
+                  await reviewVerification({
+                    requestId: v.id,
+                    reviewer,
+                    approve: false,
+                    reason,
+                  });
+                  toast.success(t("admin.rejectedToast"));
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : t("reset.error"));
+                }
               }}
               className="rounded-full bg-destructive px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
             >
@@ -250,9 +260,13 @@ function VerificationCard({
         <div className="mt-4 flex gap-2">
           <button
             type="button"
-            onClick={() => {
-              reviewVerification({ requestId: v.id, reviewer, approve: true });
-              toast.success(`${v.fullName} ${t("admin.approvedToast")}`);
+            onClick={async () => {
+              try {
+                await reviewVerification({ requestId: v.id, reviewer, approve: true });
+                toast.success(`${v.fullName} ${t("admin.approvedToast")}`);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : t("reset.error"));
+              }
             }}
             className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
           >

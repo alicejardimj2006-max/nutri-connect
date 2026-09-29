@@ -1,5 +1,6 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ChefHat,
   Award,
@@ -31,7 +32,7 @@ import {
   isPlatformAdmin,
 } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
-import { getStoredUserById, signOut } from "@/lib/auth";
+import { fetchContactInfo, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { blockUser, isUserBlocked, loadPrivacySettings, unblockUser } from "@/lib/settings";
@@ -73,15 +74,14 @@ function PublicProfilePage() {
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    await signOut();
     toast.success(t("settings.signout.success"));
     navigate({ to: "/login" });
   };
 
   const isSelf = user?.id === userId;
 
-  const viewedAccount = !isSelf ? getStoredUserById(userId) : null;
   const privacy = !isSelf ? loadPrivacySettings(userId) : null;
   const iBlockedThem = !isSelf && user ? isUserBlocked(user.id, userId) : false;
   const theyBlockedMe = !isSelf && user ? isUserBlocked(userId, user.id) : false;
@@ -306,21 +306,7 @@ function PublicProfilePage() {
                         📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
                       </p>
                     )}
-                    {!isSelf && privacy && viewedAccount && !unavailable && (
-                      <>
-                        {(privacy.showEmail || privacy.showPhone) && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {privacy.showEmail && `📧 ${viewedAccount.email}`}
-                            {privacy.showEmail && privacy.showPhone && viewedAccount.phone
-                              ? " · "
-                              : ""}
-                            {privacy.showPhone && viewedAccount.phone
-                              ? `📞 ${viewedAccount.phone}`
-                              : ""}
-                          </p>
-                        )}
-                      </>
-                    )}
+                    {!isSelf && !unavailable && <RemoteContact userId={userId} />}
                   </div>
 
                   {isSelf && (
@@ -625,5 +611,25 @@ function PublicProfilePage() {
         )}
       </main>
     </div>
+  );
+}
+
+/** Contato de outra pessoa: o Supabase só devolve para profissionais vinculados e admins. */
+function RemoteContact({ userId }: { userId: string }) {
+  const [contact, setContact] = useState<{ email?: string; phone?: string } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void fetchContactInfo(userId).then((c) => alive && setContact(c));
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
+  if (!contact || (!contact.email && !contact.phone)) return null;
+  return (
+    <p className="text-xs text-muted-foreground mt-1">
+      {contact.email && `📧 ${contact.email}`}
+      {contact.email && contact.phone ? " · " : ""}
+      {contact.phone ? `📞 ${contact.phone}` : ""}
+    </p>
   );
 }

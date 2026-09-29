@@ -77,8 +77,8 @@ function ConfiguracoesPage() {
 
   if (!user) return null;
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    await signOut();
     toast.success(t("settings.signout.success"));
     navigate({ to: "/login" });
   };

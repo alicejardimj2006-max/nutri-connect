@@ -37,26 +37,33 @@ function EditProfilePage() {
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanName = name.trim();
     if (!cleanName) {
       toast.error(t("edit.blankName"));
       return;
     }
-    updateCurrentUser({
+    try {
+      await updateCurrentUser({
+        name: cleanName,
+        bio: bio.trim(),
+        phone: phone.trim(),
+        goal,
+        journeyGoal: goal,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("reset.error"));
+      return;
+    }
+
+    // Espelha o perfil público (nome e bio) no estado local das comunidades.
+    const publicProfile = loadState().profiles.find((p) => p.userId === user.id);
+    upsertProfile({
+      ...(publicProfile ?? { userId: user.id, role: user.role }),
       name: cleanName,
       bio: bio.trim(),
-      phone: phone.trim(),
-      goal,
-      journeyGoal: goal,
     });
-
-    // Mantém o perfil público (nome e bio mostrados a todos) em sincronia.
-    const publicProfile = loadState().profiles.find((p) => p.userId === user.id);
-    if (publicProfile) {
-      upsertProfile({ ...publicProfile, name: cleanName, bio: bio.trim() || publicProfile.bio });
-    }
 
     toast.success(t("edit.updated"));
     navigate({ to: "/perfil/$userId", params: { userId: user.id } });
