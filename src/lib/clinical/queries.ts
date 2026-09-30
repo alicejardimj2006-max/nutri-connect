@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import * as api from "./api";
+import * as records from "./records";
 
 export const qk = {
   all: ["clinical"] as const,
@@ -18,6 +19,16 @@ export const qk = {
   people: (ids: string[]) => ["clinical", "people", [...ids].sort().join(",")] as const,
   payments: (ids: string[]) => ["clinical", "payments", [...ids].sort().join(",")] as const,
   patientPrivate: (id: string) => ["clinical", "patient-private", id] as const,
+  anamnesis: (patientId: string, proId: string) =>
+    ["clinical", "anamnesis", patientId, proId] as const,
+  notes: (patientId: string) => ["clinical", "notes", patientId] as const,
+  anthropometrics: (patientId: string) => ["clinical", "anthropometrics", patientId] as const,
+  plans: (patientId: string) => ["clinical", "plans", patientId] as const,
+  plan: (planId: string) => ["clinical", "plan", planId] as const,
+  activePlan: (patientId: string) => ["clinical", "active-plan", patientId] as const,
+  goals: (patientId: string) => ["clinical", "goals", patientId] as const,
+  checkins: (patientId: string, from: string) => ["clinical", "checkins", patientId, from] as const,
+  foods: (q: string) => ["clinical", "foods", q] as const,
 };
 
 export function useDirectory() {
@@ -153,4 +164,73 @@ export function useClinicalRealtime(userId: string | undefined) {
       void supabase.removeChannel(channel);
     };
   }, [userId, qc]);
+}
+
+// ---------------------------------------------------------------------------
+// Prontuário
+// ---------------------------------------------------------------------------
+
+export function useAnamnesis(patientId: string, professionalId: string | undefined) {
+  return useQuery({
+    queryKey: qk.anamnesis(patientId, professionalId ?? ""),
+    queryFn: () => records.getAnamnesis(patientId, professionalId!),
+    enabled: !!professionalId,
+  });
+}
+
+export function useNotes(patientId: string) {
+  return useQuery({ queryKey: qk.notes(patientId), queryFn: () => records.listNotes(patientId) });
+}
+
+export function useAnthropometrics(patientId: string | undefined) {
+  return useQuery({
+    queryKey: qk.anthropometrics(patientId ?? ""),
+    queryFn: () => records.listAnthropometrics(patientId!),
+    enabled: !!patientId,
+  });
+}
+
+export function useMealPlans(patientId: string) {
+  return useQuery({
+    queryKey: qk.plans(patientId),
+    queryFn: () => records.listMealPlans(patientId),
+  });
+}
+
+export function useMealPlan(planId: string) {
+  return useQuery({ queryKey: qk.plan(planId), queryFn: () => records.getMealPlan(planId) });
+}
+
+export function useActivePlan(patientId: string | undefined) {
+  return useQuery({
+    queryKey: qk.activePlan(patientId ?? ""),
+    queryFn: () => records.getActivePlan(patientId!),
+    enabled: !!patientId,
+  });
+}
+
+export function useGoals(patientId: string | undefined) {
+  return useQuery({
+    queryKey: qk.goals(patientId ?? ""),
+    queryFn: () => records.listGoals(patientId!),
+    enabled: !!patientId,
+  });
+}
+
+export function useCheckins(patientId: string | undefined, fromDay: string) {
+  return useQuery({
+    queryKey: qk.checkins(patientId ?? "", fromDay),
+    queryFn: () => records.listCheckins(patientId!, fromDay),
+    enabled: !!patientId,
+  });
+}
+
+export function useFoodSearch(query: string) {
+  const q = query.trim().toLowerCase();
+  return useQuery({
+    queryKey: qk.foods(q),
+    queryFn: () => records.searchFoods(q),
+    enabled: q.length >= 2,
+    staleTime: 10 * 60 * 1000,
+  });
 }

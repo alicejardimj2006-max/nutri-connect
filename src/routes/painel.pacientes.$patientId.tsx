@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, Mail, Phone, Plus } from "lucide-react";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { NewAppointmentDialog } from "@/components/clinical/new-appointment-dialog";
+import { AnamnesisForm } from "@/components/clinical/anamnesis-form";
+import { AnthropometryPanel } from "@/components/clinical/anthropometry-panel";
+import { GoalsPanel } from "@/components/clinical/goals-panel";
+import { MealPlansPanel } from "@/components/clinical/meal-plans-panel";
+import { NotesPanel } from "@/components/clinical/notes-panel";
+import { RecordSummary } from "@/components/clinical/record-summary";
 import {
   Avatar,
   Card,
@@ -26,17 +32,33 @@ import {
 import { ageFrom, formatDate } from "@/lib/clinical/format";
 import { useClinicalI18n, type ClinicalKey } from "@/lib/clinical/i18n";
 
+const RECORD_TABS = [
+  "resumo",
+  "anamnese",
+  "evolucao",
+  "antropometria",
+  "plano",
+  "metas",
+  "consultas",
+] as const;
+type RecordTab = (typeof RECORD_TABS)[number];
+
 export const Route = createFileRoute("/painel/pacientes/$patientId")({
+  validateSearch: (search: Record<string, unknown>): { aba?: RecordTab } => ({
+    aba: RECORD_TABS.includes(search.aba as RecordTab) ? (search.aba as RecordTab) : undefined,
+  }),
   component: PatientRecordPage,
 });
-
-type RecordTab = "consultas";
 
 function PatientRecordPage() {
   const { patientId } = Route.useParams();
   const { user } = useAuth();
   const { t, locale } = useClinicalI18n();
-  const [tab, setTab] = useState<RecordTab>("consultas");
+  const { aba } = Route.useSearch();
+  const tab: RecordTab = aba ?? "resumo";
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setTab = (next: RecordTab) =>
+    navigate({ search: { aba: next === "resumo" ? undefined : next }, replace: true });
   const [creating, setCreating] = useState(false);
 
   const people = usePeople([patientId]);
@@ -132,9 +154,27 @@ function PatientRecordPage() {
       <Tabs
         value={tab}
         onChange={setTab}
-        items={[{ value: "consultas", label: t("record.tab.appointments") }]}
+        items={RECORD_TABS.map((v) => ({ value: v, label: t(`record.tab.${v}` as ClinicalKey) }))}
       />
 
+      {tab === "resumo" && (
+        <RecordSummary patientId={patientId} birthDate={priv.data?.birth_date} onOpenTab={setTab} />
+      )}
+      {tab === "anamnese" && user && (
+        <AnamnesisForm patientId={patientId} professionalId={user.id} readOnly={!isActive} />
+      )}
+      {tab === "evolucao" && <NotesPanel patientId={patientId} readOnly={!isActive} />}
+      {tab === "antropometria" && user && (
+        <AnthropometryPanel
+          patientId={patientId}
+          birthDate={priv.data?.birth_date}
+          sex={priv.data?.sex}
+          readOnly={!isActive}
+          currentProfessionalId={user.id}
+        />
+      )}
+      {tab === "plano" && <MealPlansPanel patientId={patientId} readOnly={!isActive} />}
+      {tab === "metas" && <GoalsPanel patientId={patientId} readOnly={!isActive} />}
       {tab === "consultas" && <PatientAppointments patientId={patientId} />}
 
       {creating && user && (

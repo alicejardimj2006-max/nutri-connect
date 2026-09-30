@@ -48,6 +48,7 @@ import { Route as ProfissionaisProfessionalIdRouteImport } from './routes/profis
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 import { Route as PainelPacientesIndexRouteImport } from './routes/painel.pacientes.index'
 import { Route as PainelPacientesPatientIdRouteImport } from './routes/painel.pacientes.$patientId'
+import { Route as PainelPlanosPlanIdRouteImport } from './routes/painel.planos.$planId'
 import { Route as PerfilConfiguracoesIndexRouteImport } from './routes/perfil.configuracoes.index'
 import { Route as PerfilConfiguracoesContaRouteImport } from './routes/perfil.configuracoes.conta'
 import { Route as PerfilConfiguracoesIdiomaRouteImport } from './routes/perfil.configuracoes.idioma'
@@ -251,6 +252,11 @@ const PainelPacientesPatientIdRoute =
     path: '/pacientes/$patientId',
     getParentRoute: () => PainelRoute,
   } as any)
+const PainelPlanosPlanIdRoute = PainelPlanosPlanIdRouteImport.update({
+  id: '/planos/$planId',
+  path: '/planos/$planId',
+  getParentRoute: () => PainelRoute,
+} as any)
 const PerfilConfiguracoesIndexRoute =
   PerfilConfiguracoesIndexRouteImport.update({
     id: '/',
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
+  '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
@@ -362,6 +369,7 @@ export interface FileRoutesByTo {
   '/painel': typeof PainelIndexRoute
   '/profissionais': typeof ProfissionaisIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
+  '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
@@ -409,6 +417,7 @@ export interface FileRoutesById {
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
+  '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
@@ -457,6 +466,7 @@ export interface FileRouteTypes {
     | '/painel/'
     | '/profissionais/'
     | '/painel/pacientes/$patientId'
+    | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
@@ -498,6 +508,7 @@ export interface FileRouteTypes {
     | '/painel'
     | '/profissionais'
     | '/painel/pacientes/$patientId'
+    | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
@@ -544,6 +555,7 @@ export interface FileRouteTypes {
     | '/painel/'
     | '/profissionais/'
     | '/painel/pacientes/$patientId'
+    | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
@@ -857,6 +869,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelPacientesPatientIdRouteImport
       parentRoute: typeof PainelRoute
     }
+    '/painel/planos/$planId': {
+      id: '/painel/planos/$planId'
+      path: '/planos/$planId'
+      fullPath: '/painel/planos/$planId'
+      preLoaderRoute: typeof PainelPlanosPlanIdRouteImport
+      parentRoute: typeof PainelRoute
+    }
     '/perfil/configuracoes/': {
       id: '/perfil/configuracoes/'
       path: '/'
@@ -942,6 +961,7 @@ interface PainelRouteChildren {
   PainelConfiguracoesRoute: typeof PainelConfiguracoesRoute
   PainelIndexRoute: typeof PainelIndexRoute
   PainelPacientesPatientIdRoute: typeof PainelPacientesPatientIdRoute
+  PainelPlanosPlanIdRoute: typeof PainelPlanosPlanIdRoute
   PainelPacientesIndexRoute: typeof PainelPacientesIndexRoute
 }
 
@@ -950,6 +970,7 @@ const PainelRouteChildren: PainelRouteChildren = {
   PainelConfiguracoesRoute: PainelConfiguracoesRoute,
   PainelIndexRoute: PainelIndexRoute,
   PainelPacientesPatientIdRoute: PainelPacientesPatientIdRoute,
+  PainelPlanosPlanIdRoute: PainelPlanosPlanIdRoute,
   PainelPacientesIndexRoute: PainelPacientesIndexRoute,
 }
 
