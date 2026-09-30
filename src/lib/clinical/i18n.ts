@@ -12,7 +12,7 @@ import fr from "@/lib/i18n/clinical-fr";
 export type { ClinicalKey };
 export type Vars = Record<string, string | number>;
 
-const DICTS: Record<Locale, Partial<Record<ClinicalKey, string>>> = {
+const DICTS: Record<Locale, Record<ClinicalKey, string>> = {
   "pt-BR": ptBR,
   en,
   es,

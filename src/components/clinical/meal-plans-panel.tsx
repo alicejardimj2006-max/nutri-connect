@@ -16,6 +16,14 @@ import { useClinicalI18n, type ClinicalKey } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
 import { Card, EmptyState, Field, Loading, buttonPrimary, buttonSecondary, inputClass } from "./ui";
 
+const DEFAULT_MEALS = [
+  { key: "cafe_da_manha", time: "07:30" },
+  { key: "lanche_da_manha", time: "10:00" },
+  { key: "almoco", time: "12:30" },
+  { key: "lanche_da_tarde", time: "16:00" },
+  { key: "jantar", time: "19:30" },
+] as const;
+
 const STATUS_STYLE = {
   ativo: "bg-primary-soft text-primary",
   rascunho: "bg-warning/15 text-warning",
@@ -102,6 +110,7 @@ function NewPlanDialog({ patientId, onClose }: { patientId: string; onClose: () 
         patientId,
         title: title.trim() || t("plan.defaultTitle"),
         targetKcal: kcalValue ? Math.round(Number(kcalValue)) : null,
+        mealNames: DEFAULT_MEALS.map((m) => ({ name: t(`diary.meal.${m.key}`), time: m.time })),
       }),
     {
       invalidate: [qk.plans(patientId)],
