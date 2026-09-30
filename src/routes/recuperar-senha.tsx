@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthLayout, Field } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
+import { supabase } from "@/integrations/supabase/client";
+import { requestPasswordReset, setNewPassword, signOut, verifyRecoveryCode } from "@/lib/auth";
 import { KeyRound, Mail, CheckCircle2, ArrowRight, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/recuperar-senha")({
@@ -20,38 +22,55 @@ function Recuperar() {
   const [conf, setConf] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Quem chega pelo link do e-mail já vem com a sessão de recuperação.
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setStep(3);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  const run = async (fn: () => Promise<void>) => {
+    setLoading(true);
+    try {
+      await fn();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("reset.error"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSendEmail = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return toast.error(t("reset.enterEmail"));
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    void run(async () => {
+      await requestPasswordReset(email);
       toast.success(t("reset.codeSent") + " " + email);
       setStep(2);
-    }, 800);
+    });
   };
 
   const handleVerifyCode = (e: React.FormEvent) => {
     e.preventDefault();
-    if (code.length < 4) return toast.error(t("reset.enterCode"));
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    if (code.length < 6) return toast.error(t("reset.enterCode"));
+    void run(async () => {
+      await verifyRecoveryCode(email, code);
       toast.success(t("reset.codeOk"));
       setStep(3);
-    }, 800);
+    });
   };
 
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (novaSenha !== conf) return toast.error(t("signup.mismatch"));
     if (novaSenha.length < 6) return toast.error(t("reset.minLength"));
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    void run(async () => {
+      await setNewPassword(novaSenha);
+      await signOut();
       toast.success(t("reset.done"));
       setStep(4);
-    }, 800);
+    });
   };
 
   return (
@@ -133,7 +152,8 @@ function Recuperar() {
               maxLength={6}
               className="input tracking-[0.5em] text-center text-xl font-bold uppercase"
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              inputMode="numeric"
+              onChange={(e) => setCode(e.target.value.replace(/D/g, ""))}
               placeholder="123456"
             />
           </Field>
@@ -154,7 +174,13 @@ function Recuperar() {
             </button>
             <button
               type="button"
-              onClick={() => toast.success(t("reset.resent"))}
+              disabled={loading}
+              onClick={() =>
+                void run(async () => {
+                  await requestPasswordReset(email);
+                  toast.success(t("reset.resent"));
+                })
+              }
               className="text-primary font-semibold hover:underline"
             >
               {t("reset.resend")}

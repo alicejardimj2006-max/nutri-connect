@@ -1,7 +1,7 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
+import { CalendarCheck, Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPerson } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
@@ -185,6 +185,17 @@ function CommunityFeed() {
                   vacantText={t("comunidades.status.pendente")}
                 />
               </div>
+              {community.professionalId && actor && community.professionalId !== actor.id && (
+                <Link
+                  to="/profissionais/$professionalId"
+                  params={{ professionalId: community.professionalId }}
+                  search={{ comunidade: community.slug }}
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-accent/40 px-4 py-2 text-xs font-semibold text-accent transition hover:bg-accent-soft"
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  {t("comunidades.bookWithPro").replace("{name}", community.professionalName ?? "")}
+                </Link>
+              )}
             </div>
 
             <div className="flex flex-col items-end gap-3 w-full sm:w-auto">

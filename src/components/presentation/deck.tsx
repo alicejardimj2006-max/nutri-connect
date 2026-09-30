@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Download, Maximize, Minimize, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mascot } from "@/components/mascots";
+import { NinaLive } from "@/components/nina-live";
 import { useI18n } from "@/hooks/use-i18n";
 import { LOCALES, isLocale } from "@/lib/i18n";
 import { presentationCopy } from "@/lib/i18n/presentation";
 import { StaticContext } from "./effects";
-import { SLIDES, type SlideApi } from "./slides";
+import { PRESENTERS, PresenterAvatar } from "./parts";
+import { PART_STARTS, SLIDES, type SlideApi } from "./slides";
 
 const SWIPE_MIN = 60;
 
@@ -29,6 +30,7 @@ export function PresentationDeck() {
 
   const total = SLIDES.length;
   const slide = SLIDES[index];
+  const presenter = PRESENTERS[slide.part];
 
   const goTo = useCallback((target: number) => {
     setPosition((cur) => {
@@ -102,6 +104,12 @@ export function PresentationDeck() {
         case "F":
           toggleFullscreen();
           break;
+        default:
+          // 1 a 5: vai direto para a parte de cada integrante.
+          if (/^[1-9]$/.test(e.key) && Number(e.key) <= PART_STARTS.length) {
+            e.preventDefault();
+            goTo(PART_STARTS[Number(e.key) - 1]);
+          }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -171,8 +179,26 @@ export function PresentationDeck() {
           <span className="font-logo-serif text-base font-bold tracking-tight sm:text-lg">
             Nutri<span className="text-accent">Connect</span>
           </span>
-          <span className="hidden truncate rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground md:inline">
-            {copy.sections[slide.section]}
+          <span
+            key={slide.part}
+            className="nc-pop hidden min-w-0 items-center gap-2 rounded-full bg-secondary py-1 pl-1 pr-3 text-xs font-medium md:inline-flex"
+            title={copy.parts[slide.part].title}
+          >
+            <PresenterAvatar presenter={presenter} size="sm" />
+            <span className="truncate">
+              <span className="text-muted-foreground">
+                {copy.ui.partOf
+                  .replace("{n}", String(slide.part + 1))
+                  .replace("{total}", String(PRESENTERS.length))}{" "}
+                ·{" "}
+              </span>
+              <strong className="font-semibold" style={{ color: presenter.color }}>
+                {presenter.name}
+              </strong>
+              {presenter.leader && (
+                <span className="text-muted-foreground"> · {copy.ui.leader}</span>
+              )}
+            </span>
           </span>
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
             <label className="sr-only" htmlFor="deck-locale">
@@ -239,33 +265,52 @@ export function PresentationDeck() {
 
         {/* Rodapé: narradora, progresso e navegação */}
         <footer className="shrink-0 border-t border-border/70 bg-background/95 backdrop-blur">
-          <nav aria-label={copy.ui.goTo} className="flex gap-1 px-3 pt-2 sm:px-5">
-            {SLIDES.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => goTo(i)}
-                aria-label={`${copy.ui.goTo} ${i + 1}`}
-                aria-current={i === index ? "step" : undefined}
-                className="group flex h-4 flex-1 items-center"
+          {/* Progresso agrupado por parte: cada integrante tem sua cor. */}
+          <nav aria-label={copy.ui.goTo} className="flex gap-3 px-3 pt-2 sm:px-5">
+            {PRESENTERS.map((p, part) => (
+              <div
+                key={p.name}
+                className="flex min-w-0 gap-0.5"
+                style={{ flexGrow: SLIDES.filter((s) => s.part === part).length }}
+                title={`${part + 1} · ${copy.parts[part].title} · ${p.name}`}
               >
-                <span
-                  className={`h-1.5 w-full rounded-full transition-colors ${
-                    i < index
-                      ? "bg-primary"
-                      : i === index
-                        ? "bg-accent"
-                        : "bg-secondary group-hover:bg-border"
-                  }`}
-                />
-              </button>
+                {SLIDES.map((s, i) =>
+                  s.part !== part ? null : (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => goTo(i)}
+                      aria-label={`${copy.ui.goTo} ${i + 1}`}
+                      aria-current={i === index ? "step" : undefined}
+                      className="group flex h-4 flex-1 items-center"
+                    >
+                      <span
+                        className={`w-full rounded-full transition-all ${
+                          i === index ? "h-2.5" : "h-1.5"
+                        } ${i > index ? "bg-secondary group-hover:bg-border" : ""}`}
+                        style={
+                          i <= index
+                            ? { background: p.color, opacity: i < index ? 0.55 : 1 }
+                            : undefined
+                        }
+                      />
+                    </button>
+                  ),
+                )}
+              </div>
             ))}
           </nav>
           <div className="flex items-center gap-3 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 sm:px-5">
             <div className="flex min-h-[56px] min-w-0 flex-1 items-center gap-2" aria-live="polite">
+              {/* A Nina 3D do rodapé fica sempre montada (uma só cena WebGL) e só troca de ação. */}
+              <NinaLive
+                framing="bust"
+                action={slide.ninaAction ?? "talk"}
+                live={!printing}
+                className={`h-14 w-14 shrink-0 transition-opacity ${slide.hideNarrator ? "opacity-0" : ""}`}
+              />
               {!slide.hideNarrator && (
                 <>
-                  <Mascot id="nina" mood="talk" size={52} key={`nina-${index}`} />
                   <p
                     key={`say-${index}-${locale}`}
                     className="nc-rise relative line-clamp-3 rounded-2xl rounded-bl-sm border border-border bg-card px-3 py-2 text-xs leading-snug shadow-card sm:text-sm"

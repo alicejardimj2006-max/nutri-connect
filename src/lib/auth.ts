@@ -1,6 +1,12 @@
 import { t } from "./i18n";
-// Frontend auth stored in localStorage.
-// Ready for future API/DB integration.
+import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
+import { syncCommunityWithRemote } from "./profile-sync";
+import type { ProfessionalInfo, ProfileRole } from "./community";
+
+// Autenticação via Supabase Auth. O usuário logado (perfil + dados privados)
+// fica num cache em memória para que getUser() continue síncrono; mudanças
+// disparam o evento "auth-change", que o hook useAuth escuta.
 
 export interface AuthUser {
   id: string;
@@ -9,58 +15,128 @@ export interface AuthUser {
   phone?: string;
   cpf?: string;
   birthDate?: string;
+  sex?: "feminino" | "masculino";
   bio?: string;
   goal?: string;
   journeyGoal?: string;
+  avatarUrl?: string;
+  role: ProfileRole;
+  isAdmin: boolean;
+  /** Presente quando o perfil profissional foi verificado. */
+  professional?: ProfessionalInfo;
 }
 
-export interface StoredAccount extends AuthUser {
-  password?: string;
-}
+export const AUTH_EVENT = "auth-change";
 
-const AUTH_KEY = "nutriconnect_auth";
-const USERS_DB_KEY = "nutriconnect_users_db";
+let currentUser: AuthUser | null = null;
+let ready = false;
+let initPromise: Promise<void> | null = null;
+
+function emit() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(AUTH_EVENT));
+}
 
 export function getUser(): AuthUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(AUTH_KEY);
-    return raw ? (JSON.parse(raw) as AuthUser) : null;
-  } catch {
-    return null;
-  }
+  return currentUser;
 }
 
-export function setUser(user: AuthUser) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-  window.dispatchEvent(new Event("auth-change"));
+/** true depois que a sessão inicial foi verificada (logado ou não). */
+export function isAuthReady(): boolean {
+  return ready;
 }
 
-export function signOut() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(AUTH_KEY);
-  window.dispatchEvent(new Event("auth-change"));
+async function fetchAuthUser(id: string, email: string): Promise<AuthUser | null> {
+  const [profile, priv, admin, pro] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+    supabase.from("profile_private").select("*").eq("id", id).maybeSingle(),
+    supabase.from("platform_admins").select("user_id").eq("user_id", id).maybeSingle(),
+    supabase.from("professionals").select("*").eq("user_id", id).maybeSingle(),
+  ]);
+  if (!profile.data) return null;
+  const p = profile.data;
+  const v = priv.data;
+  return {
+    id,
+    email: v?.email ?? email,
+    name: p.name,
+    bio: p.bio || undefined,
+    goal: p.goal ?? undefined,
+    journeyGoal: p.journey_goal ?? p.goal ?? undefined,
+    avatarUrl: p.avatar_url ?? undefined,
+    phone: v?.phone ?? undefined,
+    cpf: v?.cpf ?? undefined,
+    birthDate: v?.birth_date ?? undefined,
+    sex: (v?.sex as AuthUser["sex"]) ?? undefined,
+    role: p.role,
+    isAdmin: !!admin.data,
+    professional: pro.data
+      ? {
+          profession: pro.data.profession,
+          council: pro.data.council,
+          registration: pro.data.registration,
+          uf: pro.data.uf,
+          specialties: pro.data.specialties,
+          verifiedAt: pro.data.verified_at,
+        }
+      : undefined,
+  };
 }
 
-export function getStoredUsers(): Record<string, StoredAccount> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(USERS_DB_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+async function loadSessionUser() {
+  const { data } = await supabase.auth.getSession();
+  const session = data.session;
+  currentUser = session?.user
+    ? await fetchAuthUser(session.user.id, session.user.email ?? "")
+    : null;
 }
 
-export function saveStoredUser(account: StoredAccount) {
-  if (typeof window === "undefined") return;
-  const users = getStoredUsers();
-  users[account.email.toLowerCase().trim()] = account;
-  localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
+/** Carrega a sessão uma única vez e passa a acompanhar login/logout. */
+export function initAuth(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    try {
+      await loadSessionUser();
+    } catch (err) {
+      console.error("[auth] falha ao carregar sessão", err);
+      currentUser = null;
+    }
+    ready = true;
+    emit();
+    void syncCommunityWithRemote();
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
+      // Não usar await dentro do callback (trava o cliente do Supabase).
+      setTimeout(async () => {
+        currentUser = session?.user
+          ? await fetchAuthUser(session.user.id, session.user.email ?? "")
+          : null;
+        emit();
+        void syncCommunityWithRemote(true);
+      }, 0);
+    });
+  })();
+  return initPromise;
 }
 
-export function registerUser(data: {
+/** Recarrega o usuário do banco (após editar perfil, virar profissional etc.). */
+export async function refreshUser(): Promise<AuthUser | null> {
+  await loadSessionUser();
+  emit();
+  return currentUser;
+}
+
+function translateAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login credentials")) return t("err.invalidCredentials");
+  if (m.includes("already registered") || m.includes("already been registered"))
+    return t("err.emailTaken");
+  if (m.includes("email not confirmed")) return t("err.emailNotConfirmed");
+  if (m.includes("password")) return t("err.weakPassword");
+  return message;
+}
+
+export async function registerUser(data: {
   name: string;
   email: string;
   phone?: string;
@@ -69,119 +145,136 @@ export function registerUser(data: {
   password?: string;
   goal?: string;
   journeyGoal?: string;
-}): AuthUser {
-  const cleanEmail = data.email.toLowerCase().trim();
-
-  const existingUsers = getStoredUsers();
-  if (existingUsers[cleanEmail]) {
-    throw new Error(t("err.emailTaken"));
-  }
-
-  const id =
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2);
-
-  const newUser: StoredAccount = {
-    id,
-    name: data.name.trim(),
-    email: cleanEmail,
-    phone: data.phone?.trim() || "",
-    cpf: data.cpf?.trim() || "",
-    birthDate: data.birthDate || "",
-    password: data.password,
-    goal: data.goal || "Comer melhor e com prazer",
-    journeyGoal: data.journeyGoal || data.goal || "Comer melhor e com prazer",
-  };
-
-  saveStoredUser(newUser);
-  setUser(newUser);
-  return newUser;
+}): Promise<{ user: AuthUser | null; needsConfirmation: boolean }> {
+  const { data: res, error } = await supabase.auth.signUp({
+    email: data.email.toLowerCase().trim(),
+    password: data.password ?? "",
+    options: {
+      emailRedirectTo: typeof window !== "undefined" ? `${location.origin}/espaco` : undefined,
+      data: {
+        name: data.name.trim(),
+        phone: data.phone?.trim() || "",
+        cpf: data.cpf?.trim() || "",
+        birth_date: data.birthDate || "",
+        goal: data.goal || "Comer melhor e com prazer",
+        journey_goal: data.journeyGoal || data.goal || "Comer melhor e com prazer",
+      },
+    },
+  });
+  if (error) throw new Error(translateAuthError(error.message));
+  // Com confirmação de e-mail ligada, o Supabase devolve usuário sem sessão
+  // (e, se o e-mail já existe, um usuário sem identidades).
+  if (res.user && res.user.identities?.length === 0) throw new Error(t("err.emailTaken"));
+  if (!res.session) return { user: null, needsConfirmation: true };
+  await refreshUser();
+  return { user: currentUser, needsConfirmation: false };
 }
 
-export function loginUser(email: string, password?: string): AuthUser {
-  const cleanEmail = email.toLowerCase().trim();
-  const users = getStoredUsers();
-  const existing = users[cleanEmail];
-
-  if (!existing) {
-    throw new Error(t("err.emailNotFound"));
-  }
-
-  if (existing.password !== password) {
-    throw new Error(t("err.wrongPassword"));
-  }
-
-  const activeUser: AuthUser = {
-    ...existing,
-  };
-
-  setUser(activeUser);
-  return activeUser;
+export async function loginUser(email: string, password?: string): Promise<AuthUser> {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.toLowerCase().trim(),
+    password: password ?? "",
+  });
+  if (error) throw new Error(translateAuthError(error.message));
+  const user = await refreshUser();
+  if (!user) throw new Error(t("auth.loginError"));
+  return user;
 }
 
-export function updateCurrentUser(updates: Partial<AuthUser>): AuthUser | null {
-  const current = getUser();
+export async function signOut() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  emit();
+}
+
+export async function updateCurrentUser(
+  updates: Partial<
+    Pick<
+      AuthUser,
+      "name" | "bio" | "goal" | "journeyGoal" | "avatarUrl" | "phone" | "cpf" | "birthDate" | "sex"
+    >
+  >,
+): Promise<AuthUser | null> {
+  const current = currentUser;
   if (!current) return null;
 
-  const updated: AuthUser = {
-    ...current,
-    ...updates,
-  };
+  const profile: TablesUpdate<"profiles"> = {};
+  if (updates.name !== undefined) profile.name = updates.name;
+  if (updates.bio !== undefined) profile.bio = updates.bio;
+  if (updates.goal !== undefined) profile.goal = updates.goal;
+  if (updates.journeyGoal !== undefined) profile.journey_goal = updates.journeyGoal;
+  if (updates.avatarUrl !== undefined) profile.avatar_url = updates.avatarUrl || null;
 
-  setUser(updated);
+  const priv: TablesUpdate<"profile_private"> = {};
+  if (updates.phone !== undefined) priv.phone = updates.phone || null;
+  if (updates.cpf !== undefined) priv.cpf = updates.cpf || null;
+  if (updates.birthDate !== undefined) priv.birth_date = updates.birthDate || null;
+  if (updates.sex !== undefined) priv.sex = updates.sex || null;
 
-  // Sync with stored users database
-  const users = getStoredUsers();
-  const key = current.email.toLowerCase().trim();
-  const existing = users[key] || {};
-  users[key] = {
-    ...existing,
-    ...updated,
-  };
+  const ops = [];
+  if (Object.keys(profile).length)
+    ops.push(supabase.from("profiles").update(profile).eq("id", current.id));
+  if (Object.keys(priv).length)
+    ops.push(supabase.from("profile_private").update(priv).eq("id", current.id));
+  const results = await Promise.all(ops);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
 
-  if (typeof window !== "undefined") {
-    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
-  }
-
-  return updated;
+  return refreshUser();
 }
 
-export function mockLogin(email: string): AuthUser {
-  return loginUser(email);
-}
-
-export function getStoredUserById(id: string): StoredAccount | null {
-  const users = getStoredUsers();
-  return Object.values(users).find((u) => u.id === id) ?? null;
-}
-
-export function changePassword(currentPassword: string, newPassword: string) {
-  const current = getUser();
+export async function changePassword(currentPassword: string, newPassword: string) {
+  const current = currentUser;
   if (!current) throw new Error(t("err.noAccount"));
-
-  const key = current.email.toLowerCase().trim();
-  const users = getStoredUsers();
-  const stored = users[key];
-  if (!stored || stored.password !== currentPassword) {
-    throw new Error(t("err.wrongCurrent"));
-  }
-
-  users[key] = { ...stored, password: newPassword };
-  if (typeof window !== "undefined") {
-    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
-  }
+  // Confirma a senha atual antes de trocar.
+  const check = await supabase.auth.signInWithPassword({
+    email: current.email,
+    password: currentPassword,
+  });
+  if (check.error) throw new Error(t("err.wrongCurrent"));
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(translateAuthError(error.message));
 }
 
-export function deleteAccount() {
-  const current = getUser();
-  if (!current) return;
+export async function requestPasswordReset(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
+    redirectTo: typeof window !== "undefined" ? `${location.origin}/recuperar-senha` : undefined,
+  });
+  if (error) throw new Error(translateAuthError(error.message));
+}
 
-  const key = current.email.toLowerCase().trim();
-  const users = getStoredUsers();
-  delete users[key];
-  if (typeof window !== "undefined") {
-    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
-  }
-  signOut();
+/** Valida o código de 6 dígitos do e-mail de recuperação (abre uma sessão de recuperação). */
+export async function verifyRecoveryCode(email: string, code: string) {
+  const { error } = await supabase.auth.verifyOtp({
+    email: email.toLowerCase().trim(),
+    token: code.trim(),
+    type: "recovery",
+  });
+  if (error) throw new Error(t("reset.invalidCode"));
+}
+
+/** Define a nova senha na sessão de recuperação aberta pelo link do e-mail. */
+export async function setNewPassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(translateAuthError(error.message));
+}
+
+export async function deleteAccount() {
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) throw new Error(error.message);
+  await supabase.auth.signOut();
+  currentUser = null;
+  emit();
+}
+
+/** Contato de outra pessoa — só retorna algo quando o RLS permite (vínculo ativo/admin). */
+export async function fetchContactInfo(
+  userId: string,
+): Promise<{ email?: string; phone?: string } | null> {
+  const { data } = await supabase
+    .from("profile_private")
+    .select("email, phone")
+    .eq("id", userId)
+    .maybeSingle();
+  return data ? { email: data.email ?? undefined, phone: data.phone ?? undefined } : null;
 }

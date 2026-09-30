@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, RotateCcw, User, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Mascot } from "@/components/mascots";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
 import { Tape, useDelayedFlag, useStatic } from "./effects";
+import { StageNina } from "./layout";
 
 // Peças visuais únicas de cada slide (gráficos vivos, Venn, órbita, editor de código, mapa...).
 
@@ -180,7 +180,7 @@ export function Venn({
         className="nc-pop absolute left-1/2 top-[48%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
         style={{ animationDelay: "700ms" }}
       >
-        <Mascot id="nina" mood="happy" size={74} />
+        <StageNina action="happy" framing="bust" className="h-20 w-20" />
         <span className="-mt-1 rounded-full bg-card px-3 py-1 font-logo-serif text-xs font-bold shadow-card">
           Nutri<span className="text-accent">Connect</span>
         </span>
@@ -876,86 +876,7 @@ export function TrailMap({
         </button>
       ))}
       <div className="absolute -left-2 top-[48%] -translate-y-full">
-        <Mascot id="nina" mood="cheer" size={78} />
-      </div>
-    </div>
-  );
-}
-
-// ───────────────────────── Equipe: varal de polaroides ─────────────────────────
-
-const TEAM_FLAVOR = [
-  { emoji: "🥑", bg: "from-[#e3e5ce] to-[#b9c28f]" },
-  { emoji: "🍓", bg: "from-[#faece5] to-[#f0b69b]" },
-  { emoji: "🥕", bg: "from-[#fbe6c8] to-[#e8a57e]" },
-  { emoji: "🍋", bg: "from-[#fbf3c8] to-[#e5cf6b]" },
-];
-
-export function TeamLine({ names, role }: { names: string[]; role: string }) {
-  return (
-    <div className="relative">
-      <svg
-        viewBox="0 0 1000 60"
-        preserveAspectRatio="none"
-        className="absolute inset-x-0 top-0 hidden h-14 w-full text-foreground/40 lg:block"
-        aria-hidden
-      >
-        <path
-          d="M0 10 Q 500 70 1000 10"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="nc-draw"
-          style={{ "--nc-len": 1100 } as React.CSSProperties}
-        />
-      </svg>
-      <div className="relative grid gap-6 pt-2 sm:grid-cols-2 lg:grid-cols-4 lg:pt-6">
-        {names.map((name, i) => {
-          const flavor = TEAM_FLAVOR[i % TEAM_FLAVOR.length];
-          const initials = name
-            .split(" ")
-            .map((w) => w[0])
-            .slice(0, 2)
-            .join("");
-          return (
-            <div
-              key={name}
-              className="nc-drop-in flex justify-center"
-              style={
-                {
-                  animationDelay: `${300 + i * 200}ms`,
-                  "--nc-rot": "0deg",
-                  marginTop: i % 3 === 0 ? 0 : 18,
-                } as React.CSSProperties
-              }
-            >
-              <div
-                className="nc-swing relative"
-                style={{ animationDuration: `${3.6 + i * 0.5}s`, animationDelay: `${i * 0.3}s` }}
-              >
-                <span className="absolute -top-3 left-1/2 z-10 h-6 w-3 -translate-x-1/2 rounded-sm bg-[#b4532a] shadow" />
-                <figure className="w-52 bg-[#fffdf8] p-3 pb-4 shadow-[0_18px_40px_-18px_rgb(52_45_36/0.55)]">
-                  <div
-                    className={`relative grid aspect-square place-items-center bg-gradient-to-br ${flavor.bg}`}
-                  >
-                    <span className="font-display text-5xl font-bold text-[#342d24]/80">
-                      {initials}
-                    </span>
-                    <span className="nc-floaty absolute bottom-2 right-3 text-3xl">
-                      {flavor.emoji}
-                    </span>
-                  </div>
-                  <figcaption className="mt-3 text-center">
-                    <span className="block font-display text-base font-bold leading-snug text-[#342d24]">
-                      {name}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-[#6d6355]">{role}</span>
-                  </figcaption>
-                </figure>
-              </div>
-            </div>
-          );
-        })}
+        <StageNina action="dance" className="h-28 w-20" />
       </div>
     </div>
   );

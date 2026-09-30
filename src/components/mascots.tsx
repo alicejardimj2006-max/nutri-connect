@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { CharacterId } from "@/lib/trail-types";
-import { Nina3D } from "@/components/nina-3d";
+import { NinaLive, type NinaAction } from "@/components/nina-live";
 
 export type MascotMood = "idle" | "talk" | "happy" | "sad" | "cheer";
 
@@ -306,6 +306,15 @@ const DRAW: Record<CharacterId, (p: { mood: MascotMood }) => React.ReactNode> = 
   nina: Nina,
 };
 
+/** Humor dos personagens → ação da Nina 3D ("happy" é um pulinho só, como nos outros personagens). */
+const NINA_ACTION: Record<MascotMood, NinaAction> = {
+  idle: "idle",
+  talk: "talk",
+  happy: "hop",
+  cheer: "cheer",
+  sad: "sad",
+};
+
 const MOOD_CLASS: Record<MascotMood, string> = {
   idle: "nc-bob",
   talk: "nc-bob-fast",
@@ -339,33 +348,33 @@ export function Mascot({
   const nina = id === "nina";
   const bust = size <= 110;
   const height = nina && !bust ? size * 1.5 : nina ? (size * 233) / 200 : (size * 140) / 120;
+  if (nina) {
+    // Os movimentos vêm da própria cena 3D; sem as animações CSS dos outros personagens.
+    return (
+      <NinaLive
+        action={NINA_ACTION[mood]}
+        framing={bust ? "bust" : "full"}
+        entrance={false}
+        className={`inline-block shrink-0 select-none ${className}`}
+        style={{ width: size, height, ...(flip ? { transform: "scaleX(-1)" } : null), ...style }}
+      />
+    );
+  }
   return (
     <div
       className={`inline-block shrink-0 select-none ${MOOD_CLASS[mood]} ${className}`}
       style={{ width: size, height, ...style }}
       aria-hidden="true"
     >
-      {nina ? (
-        <div
-          style={
-            flip
-              ? { transform: "scaleX(-1)", width: "100%", height: "100%" }
-              : { width: "100%", height: "100%" }
-          }
-        >
-          <Nina3D mood={mood} bust={bust} />
-        </div>
-      ) : (
-        <svg
-          viewBox="0 0 120 140"
-          width="100%"
-          height="100%"
-          style={flip ? { transform: "scaleX(-1)" } : undefined}
-          overflow="visible"
-        >
-          <Draw mood={mood} />
-        </svg>
-      )}
+      <svg
+        viewBox="0 0 120 140"
+        width="100%"
+        height="100%"
+        style={flip ? { transform: "scaleX(-1)" } : undefined}
+        overflow="visible"
+      >
+        <Draw mood={mood} />
+      </svg>
     </div>
   );
 }

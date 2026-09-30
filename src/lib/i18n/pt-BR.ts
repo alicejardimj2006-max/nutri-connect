@@ -23,6 +23,9 @@ const ptBR = {
   "nav.space": "Espaço",
   "nav.communities": "Comunidades",
   "nav.challenges": "Desafios",
+  "nav.care": "Acompanhamento",
+  "nav.clinic": "Painel clínico",
+  "nav.clinicShort": "Painel",
   "nav.profile": "Perfil",
   "nav.post": "Postar",
   "nav.search": "Pesquisar",
@@ -146,6 +149,7 @@ const ptBR = {
 
   // Comunidades -----------------------------------------------------------------
   "comunidades.featured": "Comunidades em destaque",
+  "comunidades.bookWithPro": "Agendar consulta com {name}",
   "comunidades.searchPlaceholder": "Buscar comunidades...",
   "comunidades.categories": "Categorias temáticas",
   "comunidades.categoryAll": "Todas",
@@ -261,6 +265,7 @@ const ptBR = {
   "edit.myJourney": "Minha jornada",
   "edit.saveChanges": "Salvar alterações",
   "profile.unavailable": "Perfil indisponível",
+  "profile.bookConsultation": "Agendar consulta",
   "profile.unavailableText": "Este perfil não está disponível para você no momento.",
   "profile.backToCommunities": "Voltar para comunidades",
   "profile.notFound": "Perfil não encontrado",
@@ -547,6 +552,8 @@ const ptBR = {
   "reset.minLength": "A senha deve ter no mínimo 6 caracteres.",
   "reset.done": "Sua senha foi redefinida!",
   "reset.title": "Recuperar senha",
+  "reset.invalidCode": "Código inválido ou expirado. Peça um novo código.",
+  "reset.error": "Não foi possível concluir. Tente novamente.",
   "reset.sub1": "Enviaremos um código de verificação para o seu e-mail.",
   "reset.sub2": "Digite o código enviado para",
   "reset.sub3": "Crie uma nova senha segura para sua conta.",
@@ -1148,8 +1155,13 @@ const ptBR = {
     "Perfis infantis usam a conta do responsável e não têm acesso a comunidades, publicações ou desafios sociais: só às trilhas de aprendizado.",
 
   "err.emailTaken": "E-mail já cadastrado",
+  "err.emailNotConfirmed":
+    "Confirme seu e-mail antes de entrar. Enviamos um link para a sua caixa de entrada.",
+  "err.weakPassword": "A senha precisa ter pelo menos 6 caracteres.",
+  "auth.checkEmail": "Conta criada! Confirme seu e-mail pelo link que enviamos para começar.",
   "err.emailNotFound": "E-mail não encontrado. Verifique ou crie sua conta.",
   "err.wrongPassword": "Senha incorreta.",
+  "err.invalidCredentials": "E-mail ou senha incorretos.",
   "err.noAccount": "Nenhuma conta autenticada.",
   "err.wrongCurrent": "Senha atual incorreta.",
   "err.alreadyPro": "Seu perfil já é profissional verificado.",

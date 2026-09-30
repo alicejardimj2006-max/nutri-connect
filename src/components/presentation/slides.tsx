@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Mascot } from "@/components/mascots";
+import type { NinaAction } from "@/components/nina-live";
 import { ACCENT_PRESETS } from "@/lib/appearance";
 import { fireConfetti } from "@/lib/confetti";
 import type { Persona, PresentationCopy, TourSlide } from "@/lib/i18n/presentation";
@@ -55,13 +56,23 @@ import {
   ProBadge,
   ProblemVisual,
   StickyNote,
-  TeamLine,
   ThoughtBubbles,
   TrailMap,
   Venn,
 } from "./scenes";
-
-export type SectionId = keyof PresentationCopy["sections"];
+import {
+  Blob,
+  Eyebrow,
+  FRUITS,
+  Frame,
+  Heading,
+  IconBadge,
+  Scene,
+  SpeechBubble,
+  StageNina,
+  Words,
+} from "./layout";
+import { NinaIntroSlide, PartDivider, PRESENTERS, TeamRoster } from "./parts";
 
 export interface SlideApi {
   next: () => void;
@@ -70,137 +81,17 @@ export interface SlideApi {
 
 export interface SlideDef {
   id: string;
-  section: SectionId;
+  /** Parte da apresentação (0–4), ou seja, qual integrante apresenta. */
+  part: number;
   nina: (c: PresentationCopy) => string;
+  /** O que a Nina do rodapé faz neste slide (padrão: falar). */
+  ninaAction?: NinaAction;
+  /** Nome curto do assunto, usado no roteiro da divisória de cada parte. */
+  label?: (c: PresentationCopy) => string;
   /** O slide já mostra a Nina grande; o rodapé não repete a personagem. */
   hideNarrator?: boolean;
   render: (c: PresentationCopy, api: SlideApi) => React.ReactNode;
 }
-
-// ───────────────────────── Peças comuns ─────────────────────────
-
-/** Cada palavra entra com um pequeno atraso: dá ritmo aos títulos. */
-function Words({ text, delay = 0 }: { text: string; delay?: number }) {
-  return (
-    <>
-      {text.split(" ").map((word, i) => (
-        <Fragment key={i}>
-          <span className="nc-rise inline-block" style={{ animationDelay: `${delay + i * 70}ms` }}>
-            {word}
-          </span>{" "}
-        </Fragment>
-      ))}
-    </>
-  );
-}
-
-function Eyebrow({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
-  return (
-    <span
-      className={`nc-pop inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
-        light ? "bg-white/15 text-white" : "bg-accent-soft text-accent"
-      }`}
-    >
-      {children}
-    </span>
-  );
-}
-
-function Heading({
-  eyebrow,
-  title,
-  lead,
-  light = false,
-}: {
-  eyebrow: string;
-  title: string;
-  lead?: string;
-  light?: boolean;
-}) {
-  return (
-    <div className="max-w-3xl">
-      <Eyebrow light={light}>{eyebrow}</Eyebrow>
-      <h2
-        className={`mt-3 text-3xl font-bold leading-tight sm:text-4xl lg:text-[2.75rem] ${
-          light ? "text-primary-foreground" : ""
-        }`}
-      >
-        <Words text={title} delay={120} />
-      </h2>
-      {lead && (
-        <p
-          className={`nc-rise mt-3 text-base leading-relaxed sm:text-lg ${
-            light ? "text-primary-foreground/85" : "text-muted-foreground"
-          }`}
-          style={{ animationDelay: "350ms" }}
-        >
-          {lead}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function Frame({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
-  return (
-    <div
-      className={`relative z-10 mx-auto flex w-full flex-1 flex-col justify-center px-4 py-8 sm:px-8 ${
-        wide ? "max-w-7xl" : "max-w-6xl"
-      }`}
-    >
-      {children}
-    </div>
-  );
-}
-
-/** Palco de cada slide: ocupa a altura toda e recorta os enfeites que passam da borda. */
-function Scene({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`relative flex flex-1 flex-col overflow-hidden ${className}`}>{children}</div>
-  );
-}
-
-function Blob({ className, style }: { className: string; style?: React.CSSProperties }) {
-  return (
-    <div
-      aria-hidden
-      className={`nc-parallax pointer-events-none absolute rounded-full blur-3xl ${className}`}
-      style={{ "--depth": "-24px", ...style } as React.CSSProperties}
-    />
-  );
-}
-
-function IconBadge({
-  icon: Icon,
-  tone = "primary",
-}: {
-  icon: LucideIcon;
-  tone?: "primary" | "accent";
-}) {
-  return (
-    <span
-      className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
-        tone === "primary" ? "bg-primary-soft text-primary" : "bg-accent-soft text-accent"
-      }`}
-    >
-      <Icon className="h-5 w-5" />
-    </span>
-  );
-}
-
-function SpeechBubble({ text, delay = 300 }: { text: string; delay?: number }) {
-  return (
-    <div
-      className="nc-pop relative z-20 mb-3 max-w-xs rounded-2xl border border-border bg-card px-4 py-3 text-center text-sm font-medium shadow-card"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {text}
-      <span className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-b border-r border-border bg-card" />
-    </div>
-  );
-}
-
-const FRUITS = ["🥑", "🍓", "🥕", "🥦", "🍋", "🍅", "🌽", "🍇", "🥗", "🍎"];
 
 // ───────────────────────── 1. Capa ─────────────────────────
 
@@ -260,7 +151,7 @@ function Cover(c: PresentationCopy, api: SlideApi) {
               style={{ "--depth": "14px" } as React.CSSProperties}
             >
               <Polaroid
-                src="/images/hero/hero-table.jpg"
+                src="/images/presentation/market.jpg"
                 className="nc-drop-in"
                 style={{ "--nc-rot": "-9deg", animationDelay: "300ms" } as React.CSSProperties}
                 rotate={-9}
@@ -272,7 +163,7 @@ function Cover(c: PresentationCopy, api: SlideApi) {
               style={{ "--depth": "22px" } as React.CSSProperties}
             >
               <Polaroid
-                src="/images/experiences/cooking.jpg"
+                src="/images/presentation/breakfast-plate.jpg"
                 className="nc-drop-in"
                 style={{ "--nc-rot": "7deg", animationDelay: "500ms" } as React.CSSProperties}
                 rotate={7}
@@ -284,7 +175,7 @@ function Cover(c: PresentationCopy, api: SlideApi) {
               style={{ "--depth": "10px" } as React.CSSProperties}
             >
               <Polaroid
-                src="/images/challenges/salad-bowl.jpg"
+                src="/images/presentation/salad-dark.jpg"
                 className="nc-drop-in"
                 style={{ "--nc-rot": "-4deg", animationDelay: "700ms" } as React.CSSProperties}
                 rotate={-4}
@@ -294,12 +185,12 @@ function Cover(c: PresentationCopy, api: SlideApi) {
             </div>
             <div className="absolute bottom-0 left-[18%] flex flex-col items-center">
               <SpeechBubble text={c.cover.nina} delay={1100} />
-              <Mascot id="nina" mood="happy" size={190} />
+              <StageNina action="wave" className="h-[300px] w-[220px]" />
             </div>
           </div>
           <div className="flex flex-col items-center sm:hidden">
             <SpeechBubble text={c.cover.nina} />
-            <Mascot id="nina" mood="happy" size={150} />
+            <StageNina action="wave" className="h-60 w-44" />
           </div>
         </div>
       </Frame>
@@ -811,7 +702,16 @@ function Course(c: PresentationCopy) {
     <Scene>
       <Blob className="-right-20 bottom-0 h-96 w-96 bg-primary/15" />
       <Frame wide>
-        <Heading eyebrow={k.eyebrow} title={k.title} lead={k.intro} />
+        <div className="flex items-start justify-between gap-8">
+          <Heading eyebrow={k.eyebrow} title={k.title} lead={k.intro} />
+          <Polaroid
+            src="/images/presentation/meeting.jpg"
+            className="nc-drop-in hidden shrink-0 lg:block"
+            style={{ "--nc-rot": "4deg", animationDelay: "300ms" } as React.CSSProperties}
+            rotate={4}
+            imgClassName="h-32 w-44"
+          />
+        </div>
         <div className="mt-7">
           <CodeEditor
             items={k.items}
@@ -846,7 +746,7 @@ const TOUR_ORDER: { key: TourKey; icon: LucideIcon }[] = [
   { key: "discover", icon: Compass },
 ];
 
-function TourIntro(c: PresentationCopy, api: SlideApi, firstTourIndex: number) {
+function TourIntro(c: PresentationCopy, goToStop: (i: number) => void) {
   const stops = TOUR_ORDER.map(({ key, icon }) => ({ label: c.tour[key].eyebrow, icon }));
   return (
     <Scene className="bg-primary text-primary-foreground">
@@ -861,14 +761,14 @@ function TourIntro(c: PresentationCopy, api: SlideApi, firstTourIndex: number) {
           light
         />
         <div className="mt-10 hidden md:block">
-          <TrailMap stops={stops} onPick={(i) => api.goTo(firstTourIndex + i)} />
+          <TrailMap stops={stops} onPick={(i) => goToStop(i)} />
         </div>
         <ol className="mt-8 grid gap-2 sm:grid-cols-2 md:hidden">
           {stops.map(({ label, icon: Icon }, i) => (
             <li key={label}>
               <button
                 type="button"
-                onClick={() => api.goTo(firstTourIndex + i)}
+                onClick={() => goToStop(i)}
                 className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 text-left text-sm font-medium backdrop-blur transition hover:bg-white/20"
               >
                 <span className="grid h-8 w-8 place-items-center rounded-full bg-accent">
@@ -1051,24 +951,6 @@ function tourSlide(key: TourKey, c: PresentationCopy, flip: boolean) {
   }
 }
 
-// ───────────────────────── 19. Equipe ─────────────────────────
-
-const TEAM = ["Cainã Lopes de Andrade", "Maria Clara", "Alice Jardim", "Marcius Leandro Junior"];
-
-function Team(c: PresentationCopy) {
-  return (
-    <Scene>
-      <FoodField items={["💻", "☕", "🎨", "🚀", "🥑"]} count={5} opacity={0.5} />
-      <Frame wide>
-        <Heading eyebrow={c.team.eyebrow} title={c.team.title} lead={c.team.text} />
-        <div className="mt-8">
-          <TeamLine names={TEAM} role={c.team.role} />
-        </div>
-      </Frame>
-    </Scene>
-  );
-}
-
 // ───────────────────────── 20. Convite ─────────────────────────
 
 function Celebrate() {
@@ -1146,7 +1028,7 @@ function Join(c: PresentationCopy, api: SlideApi) {
           <div className="relative mx-auto flex h-[420px] w-full max-w-[420px] flex-col items-center justify-end">
             <div className="absolute left-0 top-4 hidden sm:block">
               <Polaroid
-                src="/images/communities/friends-dinner.jpg"
+                src="/images/presentation/friends.jpg"
                 className="nc-drop-in"
                 style={{ "--nc-rot": "-8deg", animationDelay: "400ms" } as React.CSSProperties}
                 rotate={-8}
@@ -1155,7 +1037,7 @@ function Join(c: PresentationCopy, api: SlideApi) {
             </div>
             <div className="absolute right-0 top-16 hidden sm:block">
               <Polaroid
-                src="/images/experiences/default-experience.jpg"
+                src="/images/presentation/cooking-together.jpg"
                 className="nc-drop-in"
                 style={{ "--nc-rot": "6deg", animationDelay: "600ms" } as React.CSSProperties}
                 rotate={6}
@@ -1163,7 +1045,7 @@ function Join(c: PresentationCopy, api: SlideApi) {
               />
             </div>
             <SpeechBubble text={j.nina} delay={900} />
-            <Mascot id="nina" mood="cheer" size={190} />
+            <StageNina action="cheer" className="h-[300px] w-[240px]" />
           </div>
         </div>
       </Frame>
@@ -1171,53 +1053,159 @@ function Join(c: PresentationCopy, api: SlideApi) {
   );
 }
 
-// ───────────────────────── Sequência ─────────────────────────
+// ───────────────────────── Sequência: 5 partes, uma por integrante ─────────────────────────
 
-const BEFORE_TOUR: SlideDef[] = [
-  { id: "capa", section: "intro", nina: (c) => c.cover.nina, hideNarrator: true, render: Cover },
-  { id: "problema", section: "problem", nina: (c) => c.problem.nina, render: Problem },
-  { id: "solucao", section: "problem", nina: (c) => c.solution.nina, render: Solution },
-  {
-    id: "diferenciais",
-    section: "problem",
-    nina: (c) => c.differentials.nina,
-    render: Differentials,
-  },
-  {
-    id: "persona-usuario",
-    section: "market",
-    nina: (c) => c.personas.ninaUser,
-    render: PersonaUser,
-  },
-  {
-    id: "persona-profissional",
-    section: "market",
-    nina: (c) => c.personas.ninaPro,
-    render: PersonaPro,
-  },
-  { id: "concorrentes", section: "market", nina: (c) => c.competitors.nina, render: Competitors },
-  { id: "comparativo", section: "market", nina: (c) => c.comparison.nina, render: Comparison },
-  { id: "canvas", section: "market", nina: (c) => c.canvas.nina, render: Canvas },
-  { id: "curso", section: "learning", nina: (c) => c.course.nina, render: Course },
+type Draft = Omit<SlideDef, "part">;
+
+const divider = (index: number): Draft => ({
+  id: `parte-${index + 1}`,
+  nina: (c) => c.parts[index].subtitle,
+  hideNarrator: true,
+  render: (c) => <PartDivider c={c} index={index} topics={topicsFor(index, c)} />,
+});
+
+const tour = (key: TourKey, flip: boolean, ninaAction?: NinaAction): Draft => ({
+  id: `tour-${key}`,
+  nina: (c) => c.tour[key].nina,
+  ninaAction,
+  label: (c) => c.tour[key].eyebrow,
+  render: (c) => tourSlide(key, c, flip),
+});
+
+const PART_SLIDES: Draft[][] = [
+  // 1 · Maria Stella (líder): abertura, equipe e o problema.
+  [
+    { id: "capa", nina: (c) => c.cover.nina, hideNarrator: true, render: Cover },
+    divider(0),
+    {
+      id: "equipe",
+      nina: (c) => c.team.nina,
+      ninaAction: "wave",
+      label: (c) => c.team.eyebrow,
+      render: (c, api) => <TeamRoster c={c} api={api} partStarts={PART_STARTS} />,
+    },
+    {
+      id: "problema",
+      nina: (c) => c.problem.nina,
+      ninaAction: "sad",
+      label: (c) => c.problem.eyebrow,
+      render: Problem,
+    },
+  ],
+  // 2 · Cainã: a solução, diferenciais, a Nina e o modelo de negócio.
+  [
+    divider(1),
+    {
+      id: "solucao",
+      nina: (c) => c.solution.nina,
+      ninaAction: "happy",
+      label: (c) => c.solution.eyebrow,
+      render: Solution,
+    },
+    {
+      id: "diferenciais",
+      nina: (c) => c.differentials.nina,
+      ninaAction: "present",
+      label: (c) => c.differentials.eyebrow,
+      render: Differentials,
+    },
+    {
+      id: "nina",
+      nina: (c) => c.ninaIntro.nina,
+      hideNarrator: true,
+      label: (c) => c.ninaIntro.eyebrow,
+      render: (c) => <NinaIntroSlide c={c} />,
+    },
+    {
+      id: "canvas",
+      nina: (c) => c.canvas.nina,
+      ninaAction: "think",
+      label: (c) => c.canvas.eyebrow,
+      render: Canvas,
+    },
+  ],
+  // 3 · Alice: mercado (personas e concorrentes).
+  [
+    divider(2),
+    {
+      id: "persona-usuario",
+      nina: (c) => c.personas.ninaUser,
+      label: (c) => c.personas.eyebrow,
+      render: PersonaUser,
+    },
+    {
+      id: "persona-profissional",
+      nina: (c) => c.personas.ninaPro,
+      label: (c) => c.personas.eyebrow,
+      render: PersonaPro,
+    },
+    {
+      id: "concorrentes",
+      nina: (c) => c.competitors.nina,
+      ninaAction: "point",
+      label: (c) => c.competitors.eyebrow,
+      render: Competitors,
+    },
+    {
+      id: "comparativo",
+      nina: (c) => c.comparison.nina,
+      ninaAction: "happy",
+      label: (c) => c.comparison.eyebrow,
+      render: Comparison,
+    },
+  ],
+  // 4 · Maria Clara: a plataforma, parte 1.
+  [
+    divider(3),
+    {
+      id: "tour",
+      nina: (c) => c.tourIntro.nina,
+      hideNarrator: true,
+      label: (c) => c.tourIntro.eyebrow,
+      render: (c, api) =>
+        TourIntro(c, (i) =>
+          api.goTo(SLIDES.findIndex((sl) => sl.id === `tour-${TOUR_ORDER[i].key}`)),
+        ),
+    },
+    tour("feed", false),
+    tour("profile", true, "happy"),
+    tour("appearance", false, "present"),
+    tour("trails", true, "happy"),
+  ],
+  // 5 · Emilly: a plataforma, parte 2, aprendizados e o convite final.
+  [
+    divider(4),
+    tour("communities", false, "wave"),
+    tour("challenges", true),
+    tour("discover", false, "think"),
+    {
+      id: "curso",
+      nina: (c) => c.course.nina,
+      ninaAction: "present",
+      label: (c) => c.course.eyebrow,
+      render: Course,
+    },
+    {
+      id: "convite",
+      nina: (c) => c.join.nina,
+      hideNarrator: true,
+      label: (c) => c.join.eyebrow,
+      render: Join,
+    },
+  ],
 ];
 
-const FIRST_TOUR_INDEX = BEFORE_TOUR.length + 1;
+export const SLIDES: SlideDef[] = PART_SLIDES.flatMap((slides, part) =>
+  slides.map((slide) => ({ ...slide, part })),
+);
 
-export const SLIDES: SlideDef[] = [
-  ...BEFORE_TOUR,
-  {
-    id: "tour",
-    section: "tour",
-    nina: (c) => c.tourIntro.nina,
-    hideNarrator: true,
-    render: (c, api) => TourIntro(c, api, FIRST_TOUR_INDEX),
-  },
-  ...TOUR_ORDER.map(({ key }, i): SlideDef => ({
-    id: `tour-${key}`,
-    section: "tour",
-    nina: (c) => c.tour[key].nina,
-    render: (c) => tourSlide(key, c, i % 2 === 1),
-  })),
-  { id: "equipe", section: "join", nina: (c) => c.team.nina, render: Team },
-  { id: "convite", section: "join", nina: (c) => c.join.nina, hideNarrator: true, render: Join },
-];
+/** Índice da divisória de cada parte (atalhos 1–5 e cliques no "Quem somos"). */
+export const PART_STARTS = PRESENTERS.map((_, i) =>
+  SLIDES.findIndex((s) => s.id === `parte-${i + 1}`),
+);
+
+/** Assuntos de uma parte, sem repetir (as duas personas contam como um). */
+function topicsFor(part: number, c: PresentationCopy) {
+  const labels = SLIDES.filter((s) => s.part === part && s.label).map((s) => s.label!(c));
+  return [...new Set(labels)];
+}

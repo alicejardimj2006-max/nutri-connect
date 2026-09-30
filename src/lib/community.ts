@@ -292,12 +292,43 @@ function id() {
     : Math.random().toString(36).slice(2);
 }
 
-const MARIA_ID = "seed-maria";
-const PAC_ID = "seed-paciente-ana";
-const PEDRO_ID = "seed-pedro";
-const PAC_CARLOS_ID = "seed-paciente-carlos";
-const PAC_BEA_ID = "seed-paciente-beatriz";
-const HELENA_ID = "seed-helena";
+/**
+ * Ids das contas de demonstração no Supabase (supabase/seed.sql). Os dados
+ * locais de comunidades usam os mesmos ids para casar autores e perfis reais.
+ */
+export const SEED_USER_IDS = {
+  maria: "00000000-0000-4000-a000-000000000001",
+  pedro: "00000000-0000-4000-a000-000000000002",
+  helena: "00000000-0000-4000-a000-000000000003",
+  ana: "00000000-0000-4000-a000-000000000101",
+  carlos: "00000000-0000-4000-a000-000000000102",
+  beatriz: "00000000-0000-4000-a000-000000000103",
+} as const;
+
+/** Ids antigos (antes do Supabase) → novos, aplicados ao estado já salvo no navegador. */
+const LEGACY_SEED_IDS: Record<string, string> = {
+  "seed-maria": SEED_USER_IDS.maria,
+  "seed-pedro": SEED_USER_IDS.pedro,
+  "seed-helena": SEED_USER_IDS.helena,
+  "seed-paciente-ana": SEED_USER_IDS.ana,
+  "seed-paciente-carlos": SEED_USER_IDS.carlos,
+  "seed-paciente-beatriz": SEED_USER_IDS.beatriz,
+};
+
+function migrateLegacyIds(raw: string): string {
+  let out = raw;
+  for (const [from, to] of Object.entries(LEGACY_SEED_IDS)) {
+    out = out.split(`"${from}"`).join(`"${to}"`);
+  }
+  return out;
+}
+
+const MARIA_ID = SEED_USER_IDS.maria;
+const PAC_ID = SEED_USER_IDS.ana;
+const PEDRO_ID = SEED_USER_IDS.pedro;
+const PAC_CARLOS_ID = SEED_USER_IDS.carlos;
+const PAC_BEA_ID = SEED_USER_IDS.beatriz;
+const HELENA_ID = SEED_USER_IDS.helena;
 
 function seed(): CommunityState {
   const now = Date.now();
@@ -989,7 +1020,7 @@ export function loadState(): CommunityState {
       localStorage.setItem(KEY, JSON.stringify(initial));
       return initial;
     }
-    const parsed = JSON.parse(raw) as Partial<CommunityState>;
+    const parsed = JSON.parse(migrateLegacyIds(raw)) as Partial<CommunityState>;
     const defaultSeed = seed();
     // Merge defensively to ensure new models exist
     const state: CommunityState = {
