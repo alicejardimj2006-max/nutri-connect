@@ -23,6 +23,9 @@ const ptBR = {
   "nav.space": "Espaço",
   "nav.communities": "Comunidades",
   "nav.challenges": "Desafios",
+  "nav.care": "Acompanhamento",
+  "nav.clinic": "Painel clínico",
+  "nav.clinicShort": "Painel",
   "nav.profile": "Perfil",
   "nav.post": "Postar",
   "nav.search": "Pesquisar",
@@ -146,6 +149,7 @@ const ptBR = {
 
   // Comunidades -----------------------------------------------------------------
   "comunidades.featured": "Comunidades em destaque",
+  "comunidades.bookWithPro": "Agendar consulta com {name}",
   "comunidades.searchPlaceholder": "Buscar comunidades...",
   "comunidades.categories": "Categorias temáticas",
   "comunidades.categoryAll": "Todas",
@@ -261,6 +265,7 @@ const ptBR = {
   "edit.myJourney": "Minha jornada",
   "edit.saveChanges": "Salvar alterações",
   "profile.unavailable": "Perfil indisponível",
+  "profile.bookConsultation": "Agendar consulta",
   "profile.unavailableText": "Este perfil não está disponível para você no momento.",
   "profile.backToCommunities": "Voltar para comunidades",
   "profile.notFound": "Perfil não encontrado",

@@ -4,16 +4,20 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { registerUser } from "@/lib/auth";
 import { JOURNEY_GOALS } from "@/lib/community";
-import { AuthLayout, Field } from "./login";
+import { AuthLayout, Field, safeRedirect } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/cadastro")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: safeRedirect(search.redirect),
+  }),
   head: () => ({ meta: [{ title: "Criar conta — NutriConnect" }] }),
   component: Cadastro,
 });
 
 function Cadastro() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const { t } = useI18n();
   const [form, setForm] = useState({
     nome: "",
@@ -61,11 +65,11 @@ function Cadastro() {
       });
       if (needsConfirmation) {
         toast.success(t("auth.checkEmail"), { duration: 8000 });
-        navigate({ to: "/login" });
+        navigate({ to: "/login", search: { redirect } });
         return;
       }
       toast.success(t("signup.success"));
-      navigate({ to: "/espaco" });
+      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("signup.error"));
     } finally {

@@ -15,13 +15,24 @@ import { toast } from "sonner";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 
+/** Aceita só caminhos internos (evita redirecionar para outro site). */
+export function safeRedirect(value: unknown): string | undefined {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
+    ? value
+    : undefined;
+}
+
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: safeRedirect(search.redirect),
+  }),
   head: () => ({ meta: [{ title: "Entrar — NutriConnect" }] }),
   component: Login,
 });
 
 function Login() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +49,7 @@ function Login() {
     try {
       await loginUser(cleanEmail, password);
       toast.success(t("auth.loginWelcome"));
-      navigate({ to: "/espaco" });
+      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("auth.loginError"));
     } finally {

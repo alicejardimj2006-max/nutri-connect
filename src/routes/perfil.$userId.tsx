@@ -2,6 +2,7 @@ import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
+  CalendarCheck,
   ChefHat,
   Award,
   Plus,
@@ -289,6 +290,15 @@ function PublicProfilePage() {
                       </p>
                     )}
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{profile.bio}</p>
+                    {isProfessional && !isSelf && (
+                      <Link
+                        to="/profissionais/$professionalId"
+                        params={{ professionalId: userId }}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
+                      >
+                        <CalendarCheck className="h-4 w-4" /> {t("profile.bookConsultation")}
+                      </Link>
+                    )}
                     {isProfessional && professionalInfo && (
                       <ul className="mt-2 flex flex-wrap gap-1.5">
                         {professionalInfo.specialties.map((sp) => (

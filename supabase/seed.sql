@@ -153,7 +153,7 @@ begin
     (ana, helena, 'ativo', 'comunidade', now() - interval '20 days', now() - interval '19 days'),
     (carlos, pedro, 'ativo', 'solicitacao', now() - interval '40 days', now() - interval '39 days');
   insert into public.care_links (patient_id, professional_id, status, origin, community_slug, message, created_at) values
-    (bea, maria, 'pendente', 'comunidade', 'alimentacao-em-familia',
+    (bea, maria, 'pendente', 'comunidade', 'educacao-alimentar',
      'Oi, Maria! Te acompanho na comunidade e queria começar um acompanhamento para organizar a alimentação da família.',
      now() - interval '1 day');
 
