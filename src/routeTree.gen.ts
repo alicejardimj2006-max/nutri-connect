@@ -31,6 +31,12 @@ import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
 import { Route as VerificacaoRouteImport } from './routes/verificacao'
 import { Route as AcompanhamentoIndexRouteImport } from './routes/acompanhamento.index'
 import { Route as AcompanhamentoConsultasRouteImport } from './routes/acompanhamento.consultas'
+import { Route as AcompanhamentoDiarioRouteImport } from './routes/acompanhamento.diario'
+import { Route as AcompanhamentoEvolucaoRouteImport } from './routes/acompanhamento.evolucao'
+import { Route as AcompanhamentoExamesRouteImport } from './routes/acompanhamento.exames'
+import { Route as AcompanhamentoMensagensRouteImport } from './routes/acompanhamento.mensagens'
+import { Route as AcompanhamentoMetasRouteImport } from './routes/acompanhamento.metas'
+import { Route as AcompanhamentoPlanoRouteImport } from './routes/acompanhamento.plano'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
 import { Route as ConviteCodeRouteImport } from './routes/convite.$code'
@@ -39,6 +45,7 @@ import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$chal
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
 import { Route as PainelAgendaRouteImport } from './routes/painel.agenda'
 import { Route as PainelConfiguracoesRouteImport } from './routes/painel.configuracoes'
+import { Route as PainelMensagensRouteImport } from './routes/painel.mensagens'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
 import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
@@ -165,6 +172,36 @@ const AcompanhamentoConsultasRoute = AcompanhamentoConsultasRouteImport.update({
   path: '/consultas',
   getParentRoute: () => AcompanhamentoRoute,
 } as any)
+const AcompanhamentoDiarioRoute = AcompanhamentoDiarioRouteImport.update({
+  id: '/diario',
+  path: '/diario',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
+const AcompanhamentoEvolucaoRoute = AcompanhamentoEvolucaoRouteImport.update({
+  id: '/evolucao',
+  path: '/evolucao',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
+const AcompanhamentoExamesRoute = AcompanhamentoExamesRouteImport.update({
+  id: '/exames',
+  path: '/exames',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
+const AcompanhamentoMensagensRoute = AcompanhamentoMensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
+const AcompanhamentoMetasRoute = AcompanhamentoMetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
+const AcompanhamentoPlanoRoute = AcompanhamentoPlanoRouteImport.update({
+  id: '/plano',
+  path: '/plano',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
 const ComunidadesIndexRoute = ComunidadesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -203,6 +240,11 @@ const PainelAgendaRoute = PainelAgendaRouteImport.update({
 const PainelConfiguracoesRoute = PainelConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
+  getParentRoute: () => PainelRoute,
+} as any)
+const PainelMensagensRoute = PainelMensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
   getParentRoute: () => PainelRoute,
 } as any)
 const PerfilUserIdRoute = PerfilUserIdRouteImport.update({
@@ -310,11 +352,18 @@ export interface FileRoutesByFullPath {
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
+  '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
+  '/acompanhamento/evolucao': typeof AcompanhamentoEvolucaoRoute
+  '/acompanhamento/exames': typeof AcompanhamentoExamesRoute
+  '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
+  '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
+  '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
+  '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
   '/perfil/editar': typeof PerfilEditarRoute
@@ -353,11 +402,18 @@ export interface FileRoutesByTo {
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
+  '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
+  '/acompanhamento/evolucao': typeof AcompanhamentoEvolucaoRoute
+  '/acompanhamento/exames': typeof AcompanhamentoExamesRoute
+  '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
+  '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
+  '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
+  '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/editar': typeof PerfilEditarRoute
   '/perfil/personalizacao': typeof PerfilPersonalizacaoRoute
@@ -400,11 +456,18 @@ export interface FileRoutesById {
   '/tema-da-semana': typeof TemaDaSemanaRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
+  '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
+  '/acompanhamento/evolucao': typeof AcompanhamentoEvolucaoRoute
+  '/acompanhamento/exames': typeof AcompanhamentoExamesRoute
+  '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
+  '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
+  '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
+  '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
   '/perfil/editar': typeof PerfilEditarRoute
@@ -449,11 +512,18 @@ export interface FileRouteTypes {
     | '/tema-da-semana'
     | '/verificacao'
     | '/acompanhamento/consultas'
+    | '/acompanhamento/diario'
+    | '/acompanhamento/evolucao'
+    | '/acompanhamento/exames'
+    | '/acompanhamento/mensagens'
+    | '/acompanhamento/metas'
+    | '/acompanhamento/plano'
     | '/comunidades/$slug'
     | '/convite/$code'
     | '/desafios/$challengeId'
     | '/painel/agenda'
     | '/painel/configuracoes'
+    | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/perfil/editar'
@@ -492,11 +562,18 @@ export interface FileRouteTypes {
     | '/tema-da-semana'
     | '/verificacao'
     | '/acompanhamento/consultas'
+    | '/acompanhamento/diario'
+    | '/acompanhamento/evolucao'
+    | '/acompanhamento/exames'
+    | '/acompanhamento/mensagens'
+    | '/acompanhamento/metas'
+    | '/acompanhamento/plano'
     | '/comunidades/$slug'
     | '/convite/$code'
     | '/desafios/$challengeId'
     | '/painel/agenda'
     | '/painel/configuracoes'
+    | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/editar'
     | '/perfil/personalizacao'
@@ -538,11 +615,18 @@ export interface FileRouteTypes {
     | '/tema-da-semana'
     | '/verificacao'
     | '/acompanhamento/consultas'
+    | '/acompanhamento/diario'
+    | '/acompanhamento/evolucao'
+    | '/acompanhamento/exames'
+    | '/acompanhamento/mensagens'
+    | '/acompanhamento/metas'
+    | '/acompanhamento/plano'
     | '/comunidades/$slug'
     | '/convite/$code'
     | '/desafios/$challengeId'
     | '/painel/agenda'
     | '/painel/configuracoes'
+    | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
     | '/perfil/editar'
@@ -750,6 +834,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcompanhamentoConsultasRouteImport
       parentRoute: typeof AcompanhamentoRoute
     }
+    '/acompanhamento/diario': {
+      id: '/acompanhamento/diario'
+      path: '/diario'
+      fullPath: '/acompanhamento/diario'
+      preLoaderRoute: typeof AcompanhamentoDiarioRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
+    '/acompanhamento/evolucao': {
+      id: '/acompanhamento/evolucao'
+      path: '/evolucao'
+      fullPath: '/acompanhamento/evolucao'
+      preLoaderRoute: typeof AcompanhamentoEvolucaoRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
+    '/acompanhamento/exames': {
+      id: '/acompanhamento/exames'
+      path: '/exames'
+      fullPath: '/acompanhamento/exames'
+      preLoaderRoute: typeof AcompanhamentoExamesRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
+    '/acompanhamento/mensagens': {
+      id: '/acompanhamento/mensagens'
+      path: '/mensagens'
+      fullPath: '/acompanhamento/mensagens'
+      preLoaderRoute: typeof AcompanhamentoMensagensRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
+    '/acompanhamento/metas': {
+      id: '/acompanhamento/metas'
+      path: '/metas'
+      fullPath: '/acompanhamento/metas'
+      preLoaderRoute: typeof AcompanhamentoMetasRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
+    '/acompanhamento/plano': {
+      id: '/acompanhamento/plano'
+      path: '/plano'
+      fullPath: '/acompanhamento/plano'
+      preLoaderRoute: typeof AcompanhamentoPlanoRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
     '/comunidades/': {
       id: '/comunidades/'
       path: '/'
@@ -804,6 +930,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/painel/configuracoes'
       preLoaderRoute: typeof PainelConfiguracoesRouteImport
+      parentRoute: typeof PainelRoute
+    }
+    '/painel/mensagens': {
+      id: '/painel/mensagens'
+      path: '/mensagens'
+      fullPath: '/painel/mensagens'
+      preLoaderRoute: typeof PainelMensagensRouteImport
       parentRoute: typeof PainelRoute
     }
     '/perfil/$userId': {
@@ -916,11 +1049,23 @@ declare module '@tanstack/react-router' {
 
 interface AcompanhamentoRouteChildren {
   AcompanhamentoConsultasRoute: typeof AcompanhamentoConsultasRoute
+  AcompanhamentoDiarioRoute: typeof AcompanhamentoDiarioRoute
+  AcompanhamentoEvolucaoRoute: typeof AcompanhamentoEvolucaoRoute
+  AcompanhamentoExamesRoute: typeof AcompanhamentoExamesRoute
+  AcompanhamentoMensagensRoute: typeof AcompanhamentoMensagensRoute
+  AcompanhamentoMetasRoute: typeof AcompanhamentoMetasRoute
+  AcompanhamentoPlanoRoute: typeof AcompanhamentoPlanoRoute
   AcompanhamentoIndexRoute: typeof AcompanhamentoIndexRoute
 }
 
 const AcompanhamentoRouteChildren: AcompanhamentoRouteChildren = {
   AcompanhamentoConsultasRoute: AcompanhamentoConsultasRoute,
+  AcompanhamentoDiarioRoute: AcompanhamentoDiarioRoute,
+  AcompanhamentoEvolucaoRoute: AcompanhamentoEvolucaoRoute,
+  AcompanhamentoExamesRoute: AcompanhamentoExamesRoute,
+  AcompanhamentoMensagensRoute: AcompanhamentoMensagensRoute,
+  AcompanhamentoMetasRoute: AcompanhamentoMetasRoute,
+  AcompanhamentoPlanoRoute: AcompanhamentoPlanoRoute,
   AcompanhamentoIndexRoute: AcompanhamentoIndexRoute,
 }
 
@@ -959,6 +1104,7 @@ const DesafiosRouteWithChildren = DesafiosRoute._addFileChildren(
 interface PainelRouteChildren {
   PainelAgendaRoute: typeof PainelAgendaRoute
   PainelConfiguracoesRoute: typeof PainelConfiguracoesRoute
+  PainelMensagensRoute: typeof PainelMensagensRoute
   PainelIndexRoute: typeof PainelIndexRoute
   PainelPacientesPatientIdRoute: typeof PainelPacientesPatientIdRoute
   PainelPlanosPlanIdRoute: typeof PainelPlanosPlanIdRoute
@@ -968,6 +1114,7 @@ interface PainelRouteChildren {
 const PainelRouteChildren: PainelRouteChildren = {
   PainelAgendaRoute: PainelAgendaRoute,
   PainelConfiguracoesRoute: PainelConfiguracoesRoute,
+  PainelMensagensRoute: PainelMensagensRoute,
   PainelIndexRoute: PainelIndexRoute,
   PainelPacientesPatientIdRoute: PainelPacientesPatientIdRoute,
   PainelPlanosPlanIdRoute: PainelPlanosPlanIdRoute,

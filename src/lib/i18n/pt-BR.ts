@@ -1161,6 +1161,7 @@ const ptBR = {
   "auth.checkEmail": "Conta criada! Confirme seu e-mail pelo link que enviamos para começar.",
   "err.emailNotFound": "E-mail não encontrado. Verifique ou crie sua conta.",
   "err.wrongPassword": "Senha incorreta.",
+  "err.invalidCredentials": "E-mail ou senha incorretos.",
   "err.noAccount": "Nenhuma conta autenticada.",
   "err.wrongCurrent": "Senha atual incorreta.",
   "err.alreadyPro": "Seu perfil já é profissional verificado.",

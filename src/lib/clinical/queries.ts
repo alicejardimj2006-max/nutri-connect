@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import * as api from "./api";
 import * as records from "./records";
+import * as care from "./care";
 
 export const qk = {
   all: ["clinical"] as const,
@@ -29,6 +30,15 @@ export const qk = {
   goals: (patientId: string) => ["clinical", "goals", patientId] as const,
   checkins: (patientId: string, from: string) => ["clinical", "checkins", patientId, from] as const,
   foods: (q: string) => ["clinical", "foods", q] as const,
+  diary: (patientId: string) => ["clinical", "diary", patientId] as const,
+  diaryComments: (ids: string[]) =>
+    ["clinical", "diary-comments", [...ids].sort().join(",")] as const,
+  messages: (patientId: string, proId: string) =>
+    ["clinical", "messages", patientId, proId] as const,
+  conversations: () => ["clinical", "conversations"] as const,
+  documents: (patientId: string) => ["clinical", "documents", patientId] as const,
+  signed: (bucket: string, paths: string[]) =>
+    ["clinical", "signed", bucket, [...paths].sort().join(",")] as const,
 };
 
 export function useDirectory() {
@@ -143,7 +153,13 @@ export function useClinicalMutation<TVars, TResult = unknown>(
   });
 }
 
-const REALTIME_TABLES = ["appointments", "care_links", "payments"] as const;
+const REALTIME_TABLES = [
+  "appointments",
+  "care_links",
+  "payments",
+  "messages",
+  "diary_comments",
+] as const;
 
 /** Atualiza as telas quando a outra ponta agenda, confirma, paga ou responde um pedido. */
 export function useClinicalRealtime(userId: string | undefined) {
@@ -153,6 +169,15 @@ export function useClinicalRealtime(userId: string | undefined) {
     const channel = supabase.channel(`clinical-${userId}`);
     for (const table of REALTIME_TABLES) {
       channel.on("postgres_changes", { event: "*", schema: "public", table }, () => {
+        if (table === "messages") {
+          void qc.invalidateQueries({ queryKey: ["clinical", "messages"] });
+          void qc.invalidateQueries({ queryKey: ["clinical", "conversations"] });
+          return;
+        }
+        if (table === "diary_comments") {
+          void qc.invalidateQueries({ queryKey: ["clinical", "diary-comments"] });
+          return;
+        }
         void qc.invalidateQueries({ queryKey: ["clinical", "appointments"] });
         void qc.invalidateQueries({ queryKey: ["clinical", "slots"] });
         void qc.invalidateQueries({ queryKey: ["clinical", "links"] });
@@ -179,7 +204,11 @@ export function useAnamnesis(patientId: string, professionalId: string | undefin
 }
 
 export function useNotes(patientId: string) {
-  return useQuery({ queryKey: qk.notes(patientId), queryFn: () => records.listNotes(patientId) });
+  return useQuery({
+    queryKey: qk.notes(patientId),
+    queryFn: () => records.listNotes(patientId),
+    enabled: !!patientId,
+  });
 }
 
 export function useAnthropometrics(patientId: string | undefined) {
@@ -194,11 +223,16 @@ export function useMealPlans(patientId: string) {
   return useQuery({
     queryKey: qk.plans(patientId),
     queryFn: () => records.listMealPlans(patientId),
+    enabled: !!patientId,
   });
 }
 
 export function useMealPlan(planId: string) {
-  return useQuery({ queryKey: qk.plan(planId), queryFn: () => records.getMealPlan(planId) });
+  return useQuery({
+    queryKey: qk.plan(planId),
+    queryFn: () => records.getMealPlan(planId),
+    enabled: !!planId,
+  });
 }
 
 export function useActivePlan(patientId: string | undefined) {
@@ -232,5 +266,61 @@ export function useFoodSearch(query: string) {
     queryFn: () => records.searchFoods(q),
     enabled: q.length >= 2,
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Acompanhamento (diário, mensagens, documentos)
+// ---------------------------------------------------------------------------
+
+export function useDiary(patientId: string | undefined) {
+  return useQuery({
+    queryKey: qk.diary(patientId ?? ""),
+    queryFn: () => care.listDiary(patientId!),
+    enabled: !!patientId,
+  });
+}
+
+export function useDiaryComments(entryIds: string[]) {
+  return useQuery({
+    queryKey: qk.diaryComments(entryIds),
+    queryFn: () => care.listDiaryComments(entryIds),
+    enabled: entryIds.length > 0,
+  });
+}
+
+export function useMessages(patientId: string | undefined, professionalId: string | undefined) {
+  return useQuery({
+    queryKey: qk.messages(patientId ?? "", professionalId ?? ""),
+    queryFn: () => care.listMessages(patientId!, professionalId!),
+    enabled: !!patientId && !!professionalId,
+  });
+}
+
+export function useConversations(enabled = true) {
+  return useQuery({
+    queryKey: qk.conversations(),
+    queryFn: care.listConversationSummaries,
+    enabled,
+  });
+}
+
+export function useDocuments(patientId: string | undefined) {
+  return useQuery({
+    queryKey: qk.documents(patientId ?? ""),
+    queryFn: () => care.listDocuments(patientId!),
+    enabled: !!patientId,
+  });
+}
+
+/** Links assinados (1 h) para arquivos privados; renovados a cada 50 min. */
+export function useSignedUrls(bucket: care.Bucket, paths: (string | null | undefined)[]) {
+  const list = paths.filter((p): p is string => !!p);
+  return useQuery({
+    queryKey: qk.signed(bucket, list),
+    queryFn: () => care.signedUrls(bucket, list),
+    enabled: list.length > 0,
+    staleTime: 50 * 60 * 1000,
+    refetchInterval: 50 * 60 * 1000,
   });
 }

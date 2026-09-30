@@ -128,7 +128,7 @@ export async function refreshUser(): Promise<AuthUser | null> {
 
 function translateAuthError(message: string): string {
   const m = message.toLowerCase();
-  if (m.includes("invalid login credentials")) return t("err.wrongPassword");
+  if (m.includes("invalid login credentials")) return t("err.invalidCredentials");
   if (m.includes("already registered") || m.includes("already been registered"))
     return t("err.emailTaken");
   if (m.includes("email not confirmed")) return t("err.emailNotConfirmed");

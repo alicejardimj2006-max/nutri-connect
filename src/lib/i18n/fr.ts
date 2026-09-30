@@ -1163,6 +1163,7 @@ const fr: Record<DictKey, string> = {
   "auth.checkEmail": "Compte créé ! Confirmez votre e-mail via le lien envoyé pour commencer.",
   "err.emailNotFound": "E-mail introuvable. Vérifiez-le ou créez votre compte.",
   "err.wrongPassword": "Mot de passe incorrect.",
+  "err.invalidCredentials": "E-mail ou mot de passe incorrect.",
   "err.noAccount": "Aucun compte connecté.",
   "err.wrongCurrent": "Le mot de passe actuel est incorrect.",
   "err.alreadyPro": "Votre profil est déjà celui d'un professionnel vérifié.",

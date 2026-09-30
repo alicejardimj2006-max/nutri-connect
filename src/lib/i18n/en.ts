@@ -1141,6 +1141,7 @@ const en: Record<DictKey, string> = {
   "auth.checkEmail": "Account created! Confirm your email using the link we sent to get started.",
   "err.emailNotFound": "Email not found. Check it or create your account.",
   "err.wrongPassword": "Incorrect password.",
+  "err.invalidCredentials": "Incorrect email or password.",
   "err.noAccount": "No signed-in account.",
   "err.wrongCurrent": "Current password is incorrect.",
   "err.alreadyPro": "Your profile is already a verified professional.",

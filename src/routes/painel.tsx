@@ -1,10 +1,17 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { CalendarDays, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
+import {
+  CalendarDays,
+  LayoutDashboard,
+  MessageCircle,
+  Settings,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { ClinicalLayout, type ClinicalNavItem } from "@/components/clinical/layout";
 import { EmptyState, buttonPrimary } from "@/components/clinical/ui";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useClinicalRealtime, useLinks } from "@/lib/clinical/queries";
+import { useClinicalRealtime, useConversations, useLinks } from "@/lib/clinical/queries";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 
 export const Route = createFileRoute("/painel")({
@@ -18,6 +25,7 @@ function ProfessionalPanelLayout() {
   const isPro = !!user?.professional;
   useClinicalRealtime(isPro ? user?.id : undefined);
   const links = useLinks("professional", isPro);
+  const conversations = useConversations(isPro);
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
@@ -46,6 +54,14 @@ function ProfessionalPanelLayout() {
     { to: "/painel", label: t("panelNav.overview"), icon: LayoutDashboard, exact: true },
     { to: "/painel/agenda", label: t("panelNav.schedule"), icon: CalendarDays },
     { to: "/painel/pacientes", label: t("panelNav.patients"), icon: Users, badge: pending },
+    {
+      to: "/painel/mensagens",
+      label: t("panelNav.messages"),
+      icon: MessageCircle,
+      badge: (conversations.data ?? [])
+        .filter((c) => c.professionalId === user.id)
+        .reduce((a, c) => a + c.unread, 0),
+    },
     { to: "/painel/configuracoes", label: t("panelNav.settings"), icon: Settings },
   ];
 

@@ -1154,6 +1154,7 @@ const es: Record<DictKey, string> = {
     "¡Cuenta creada! Confirma tu correo con el enlace que te enviamos para empezar.",
   "err.emailNotFound": "Correo no encontrado. Verifícalo o crea tu cuenta.",
   "err.wrongPassword": "Contraseña incorrecta.",
+  "err.invalidCredentials": "Correo o contraseña incorrectos.",
   "err.noAccount": "Ninguna cuenta autenticada.",
   "err.wrongCurrent": "La contraseña actual es incorrecta.",
   "err.alreadyPro": "Tu perfil ya es profesional verificado.",

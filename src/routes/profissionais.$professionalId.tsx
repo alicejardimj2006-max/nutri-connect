@@ -387,7 +387,11 @@ function LinkCard({
           </p>
           <LinkStatusBadge status="ativo" />
         </div>
-        <Link to="/acompanhamento" className={cn(buttonSecondary, "mt-3")}>
+        <Link
+          to="/acompanhamento/mensagens"
+          search={{ com: professionalId }}
+          className={cn(buttonSecondary, "mt-3")}
+        >
           <MessageCircle className="h-4 w-4" /> {t("link.sendMessage")}
         </Link>
       </Card>

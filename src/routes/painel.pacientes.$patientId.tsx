@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, Mail, Phone, Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, Mail, MessageCircle, Phone, Plus } from "lucide-react";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { NewAppointmentDialog } from "@/components/clinical/new-appointment-dialog";
 import { AnamnesisForm } from "@/components/clinical/anamnesis-form";
@@ -9,6 +9,8 @@ import { GoalsPanel } from "@/components/clinical/goals-panel";
 import { MealPlansPanel } from "@/components/clinical/meal-plans-panel";
 import { NotesPanel } from "@/components/clinical/notes-panel";
 import { RecordSummary } from "@/components/clinical/record-summary";
+import { DiaryFeed } from "@/components/clinical/diary";
+import { DocumentsPanel } from "@/components/clinical/documents-panel";
 import {
   Avatar,
   Card,
@@ -18,6 +20,7 @@ import {
   Tabs,
   buttonGhost,
   buttonPrimary,
+  buttonSecondary,
 } from "@/components/clinical/ui";
 import { useAuth } from "@/hooks/use-auth";
 import * as api from "@/lib/clinical/api";
@@ -39,6 +42,8 @@ const RECORD_TABS = [
   "antropometria",
   "plano",
   "metas",
+  "diario",
+  "documentos",
   "consultas",
 ] as const;
 type RecordTab = (typeof RECORD_TABS)[number];
@@ -132,6 +137,9 @@ function PatientRecordPage() {
                 <Plus className="h-4 w-4" /> {t("schedule.new")}
               </button>
             )}
+            <Link to="/painel/mensagens" search={{ com: patientId }} className={buttonSecondary}>
+              <MessageCircle className="h-4 w-4" /> {t("record.message")}
+            </Link>
             {isActive && (
               <button
                 type="button"
@@ -175,6 +183,12 @@ function PatientRecordPage() {
       )}
       {tab === "plano" && <MealPlansPanel patientId={patientId} readOnly={!isActive} />}
       {tab === "metas" && <GoalsPanel patientId={patientId} readOnly={!isActive} />}
+      {tab === "diario" && user && (
+        <DiaryFeed patientId={patientId} meId={user.id} canComment={isActive} isOwner={false} />
+      )}
+      {tab === "documentos" && user && (
+        <DocumentsPanel patientId={patientId} meId={user.id} canUpload={isActive} />
+      )}
       {tab === "consultas" && <PatientAppointments patientId={patientId} />}
 
       {creating && user && (

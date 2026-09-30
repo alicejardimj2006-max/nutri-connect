@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, HeartHandshake, Stethoscope } from "lucide-react";
+import { CalendarDays, HeartHandshake, MessageCircle, Stethoscope, Utensils } from "lucide-react";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
+import { TodayGoals } from "@/components/clinical/goals-today";
+import { NextMeal } from "@/components/clinical/next-meal";
 import {
   Avatar,
   Card,
@@ -14,7 +16,14 @@ import {
 } from "@/components/clinical/ui";
 import { useAuth } from "@/hooks/use-auth";
 import * as api from "@/lib/clinical/api";
-import { useAppointments, useClinicalMutation, useLinks, usePeople } from "@/lib/clinical/queries";
+import {
+  useActivePlan,
+  useAppointments,
+  useClinicalMutation,
+  useConversations,
+  useLinks,
+  usePeople,
+} from "@/lib/clinical/queries";
 import { formatDate } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 
@@ -45,6 +54,12 @@ function PatientHome() {
   });
 
   const firstName = user?.name.split(" ")[0] ?? "";
+  const plan = useActivePlan(user?.id);
+  const conversations = useConversations(!!user);
+  const unread = (conversations.data ?? [])
+    .filter((c) => c.patientId === user?.id)
+    .reduce((a, c) => a + c.unread, 0);
+  const hasCare = visibleLinks.some((l) => l.status === "ativo");
 
   return (
     <>
@@ -52,6 +67,43 @@ function PatientHome() {
         title={t("patientHome.hello", { name: firstName })}
         subtitle={t("patientHome.subtitle")}
       />
+
+      {hasCare && user && (
+        <div className="mb-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <Card
+            title={t("patientHome.today")}
+            action={
+              <Link to="/acompanhamento/plano" className={buttonGhost}>
+                <Utensils className="h-4 w-4" /> {t("patientHome.fullPlan")}
+              </Link>
+            }
+          >
+            {plan.data ? (
+              <NextMeal plan={plan.data} />
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("patientHome.noPlanYet")}</p>
+            )}
+            {unread > 0 && (
+              <Link
+                to="/acompanhamento/mensagens"
+                className="mt-3 flex items-center gap-2 rounded-xl bg-primary-soft px-4 py-3 text-sm font-semibold text-primary hover:opacity-90"
+              >
+                <MessageCircle className="h-4 w-4" /> {t("patientHome.unread", { n: unread })}
+              </Link>
+            )}
+          </Card>
+          <Card
+            title={t("patientHome.goalsToday")}
+            action={
+              <Link to="/acompanhamento/metas" className={buttonGhost}>
+                {t("common.seeAll")}
+              </Link>
+            }
+          >
+            <TodayGoals patientId={user.id} compact />
+          </Card>
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card
