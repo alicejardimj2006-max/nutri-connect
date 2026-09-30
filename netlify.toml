@@ -1,0 +1,6 @@
+# A URL, o ID do projeto e a chave publishable/anon do Supabase são públicos por
+# natureza (vão para o JavaScript do navegador; os dados são protegidos por RLS).
+# Sem isto, o secrets scanning do Netlify derruba o build por encontrá-los no repo.
+# Nunca coloque aqui chaves de serviço (service_role/sb_secret) nem do Mercado Pago.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_PROJECT_ID,SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL,VITE_SUPABASE_PROJECT_ID,VITE_SUPABASE_PUBLISHABLE_KEY,VITE_SUPABASE_URL"

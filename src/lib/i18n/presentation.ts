@@ -74,14 +74,24 @@ export interface PresentationCopy {
     goTo: string;
     ninaSays: string;
     flipHint: string;
+    /** "{n}" e "{total}" são substituídos. */
+    partOf: string;
+    presentedBy: string;
+    leader: string;
+    inThisPart: string;
+    partsHint: string;
   };
-  sections: {
-    intro: string;
-    problem: string;
-    market: string;
-    learning: string;
-    tour: string;
-    join: string;
+  /** As 5 partes da apresentação, uma por integrante (mesma ordem de PRESENTERS em slides.tsx). */
+  parts: { title: string; subtitle: string }[];
+  ninaIntro: SlideHeading & {
+    text: string;
+    role: string;
+    traits: Titled[];
+    actionsLabel: string;
+    actions: Record<
+      "wave" | "talk" | "think" | "present" | "dance" | "cheer" | "spin" | "jump",
+      string
+    >;
   };
   cover: {
     eyebrow: string;
@@ -190,7 +200,7 @@ export interface PresentationCopy {
     search: string;
     weekly: string;
   };
-  team: SlideHeading & { text: string; role: string };
+  team: SlideHeading & { text: string; role: string; leaderRole: string; pickHint: string };
   join: SlideHeading & {
     text: string;
     primary: string;

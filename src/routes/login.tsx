@@ -15,29 +15,45 @@ import { toast } from "sonner";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 
+/** Aceita só caminhos internos (evita redirecionar para outro site). */
+export function safeRedirect(value: unknown): string | undefined {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
+    ? value
+    : undefined;
+}
+
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: safeRedirect(search.redirect),
+  }),
   head: () => ({ meta: [{ title: "Entrar — NutriConnect" }] }),
   component: Login,
 });
 
 function Login() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const submit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail) return toast.error(t("auth.fillEmail"));
     if (!password) return toast.error(t("auth.fillPassword"));
 
+    setSubmitting(true);
     try {
-      loginUser(cleanEmail, password);
+      await loginUser(cleanEmail, password);
       toast.success(t("auth.loginWelcome"));
-      navigate({ to: "/espaco" });
+      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("auth.loginError"));
+    } finally {
+      setSubmitting(false);
     }
   };
   return (
@@ -61,7 +77,10 @@ function Login() {
             placeholder="••••••••"
           />
         </Field>
-        <button className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer">
+        <button
+          disabled={submitting}
+          className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90 cursor-pointer disabled:opacity-60"
+        >
           {t("auth.loginSubmit")}
         </button>
         <div className="flex items-center justify-between text-sm">

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Download, Pencil, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -28,15 +28,27 @@ function ContaPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // Preenche os campos quando a sessão termina de carregar.
+  useEffect(() => {
+    if (!user) return;
+    setPhone(user.phone ?? "");
+    setCpf(user.cpf ?? "");
+    setBirthDate(user.birthDate ?? "");
+  }, [user]);
+
   if (!user) return null;
 
-  const handleSaveContact = (e: React.FormEvent) => {
+  const handleSaveContact = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateCurrentUser({ phone: phone.trim(), cpf: cpf.trim(), birthDate });
-    toast.success(t("settings.account.contactInfo.saved"));
+    try {
+      await updateCurrentUser({ phone: phone.trim(), cpf: cpf.trim(), birthDate });
+      toast.success(t("settings.account.contactInfo.saved"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("reset.error"));
+    }
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
       toast.error(t("settings.account.password.tooShort"));
@@ -47,7 +59,7 @@ function ContaPage() {
       return;
     }
     try {
-      changePassword(currentPassword, newPassword);
+      await changePassword(currentPassword, newPassword);
       toast.success(t("settings.account.password.success"));
       setCurrentPassword("");
       setNewPassword("");
@@ -67,10 +79,14 @@ function ContaPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleDeleteAccount = () => {
-    deleteAccount();
-    toast.success(t("settings.account.danger.delete.success"));
-    navigate({ to: "/login" });
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount();
+      toast.success(t("settings.account.danger.delete.success"));
+      navigate({ to: "/login" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("reset.error"));
+    }
   };
 
   return (

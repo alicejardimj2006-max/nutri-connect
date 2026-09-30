@@ -14,6 +14,8 @@ import {
   type VerificationRequest,
 } from "@/lib/community";
 import type { AuthUser } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { syncRemoteProfiles, syncVerifications } from "@/lib/profile-sync";
 
 /** Quantos profissionais (os mais habilitados) recebem o convite de uma comunidade. */
 export const INVITE_LIMIT = 5;
@@ -59,19 +61,9 @@ export const BR_STATES = [
   "TO",
 ] as const;
 
-/**
- * Administradores da plataforma (quem analisa as verificações e indica admins).
- * Configurável por VITE_PLATFORM_ADMIN_EMAILS (e-mails separados por vírgula).
- */
-const ADMIN_EMAILS = (
-  (import.meta.env?.VITE_PLATFORM_ADMIN_EMAILS as string | undefined) ?? "admin@nutriconnect.com.br"
-)
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
-
-export function isPlatformAdmin(user: Pick<AuthUser, "email"> | null | undefined): boolean {
-  return !!user && ADMIN_EMAILS.includes(user.email.toLowerCase().trim());
+/** Administradores da plataforma (tabela platform_admins no Supabase). */
+export function isPlatformAdmin(user: Pick<AuthUser, "isAdmin"> | null | undefined): boolean {
+  return !!user?.isAdmin;
 }
 
 function update(fn: (state: CommunityState) => CommunityState) {
@@ -114,7 +106,28 @@ export type VerificationInput = Omit<
   "id" | "status" | "submittedAt" | "reviewedAt" | "reviewedById" | "rejectionReason"
 >;
 
-export function submitVerification(input: VerificationInput) {
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [head, body] = dataUrl.split(",");
+  const mime = /data:([^;]+)/.exec(head)?.[1] ?? "image/jpeg";
+  const bytes = atob(body);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
+async function uploadVerificationImage(userId: string, name: string, dataUrl: string) {
+  const blob = dataUrlToBlob(dataUrl);
+  const ext = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
+  const path = `${userId}/${Date.now()}-${name}.${ext}`;
+  const { error } = await supabase.storage
+    .from("verification-docs")
+    .upload(path, blob, { contentType: blob.type, upsert: false });
+  if (error) throw new Error(error.message);
+  return path;
+}
+
+/** Envia o pedido (imagens vão para o bucket privado verification-docs). */
+export async function submitVerification(input: VerificationInput) {
   const state = loadState();
   if (isVerifiedProfessional(state.profiles, input.userId)) {
     throw new Error(t("err.alreadyPro"));
@@ -122,63 +135,43 @@ export function submitVerification(input: VerificationInput) {
   if (getLatestVerification(state.verifications, input.userId)?.status === "em_analise") {
     throw new Error(t("err.pendingRequest"));
   }
-  const request: VerificationRequest = {
-    ...input,
-    id: newId(),
-    status: "em_analise",
-    submittedAt: new Date().toISOString(),
-  };
-  saveState({ ...state, verifications: [request, ...state.verifications] });
-  return request;
+  const [documentPath, selfiePath] = await Promise.all([
+    uploadVerificationImage(input.userId, "documento", input.documentImage),
+    uploadVerificationImage(input.userId, "selfie", input.selfieImage),
+  ]);
+  const { error } = await supabase.from("verification_requests").insert({
+    user_id: input.userId,
+    full_name: input.fullName,
+    profession: input.profession,
+    council: input.council,
+    registration: input.registration,
+    uf: input.uf,
+    specialties: input.specialties,
+    bio: input.bio ?? null,
+    public_lookup_url: input.publicLookupUrl ?? null,
+    document_path: documentPath,
+    selfie_path: selfiePath,
+  });
+  if (error) {
+    throw new Error(error.code === "23505" ? t("err.pendingRequest") : error.message);
+  }
+  await syncVerifications();
 }
 
 /** Aprova ou recusa um pedido. Aprovado, o perfil vira profissional verificado. */
-export function reviewVerification(input: {
+export async function reviewVerification(input: {
   requestId: string;
   reviewer: Actor;
   approve: boolean;
   reason?: string;
 }) {
-  update((s) => {
-    const request = s.verifications.find((v) => v.id === input.requestId);
-    if (!request || request.status !== "em_analise") return s;
-
-    const now = new Date().toISOString();
-    const verifications = s.verifications.map((v) =>
-      v.id === request.id
-        ? {
-            ...v,
-            status: input.approve ? ("aprovado" as const) : ("recusado" as const),
-            reviewedAt: now,
-            reviewedById: input.reviewer.id,
-            rejectionReason: input.approve ? undefined : input.reason?.trim() || undefined,
-          }
-        : v,
-    );
-
-    let profiles = s.profiles;
-    if (input.approve) {
-      const existing = profiles.find((p) => p.userId === request.userId);
-      const verified: PublicProfile = {
-        userId: request.userId,
-        name: existing?.name ?? request.userName,
-        bio: existing?.bio || request.bio || "Profissional verificado da comunidade NutriConnect.",
-        role: "profissional",
-        professional: {
-          profession: request.profession,
-          council: request.council,
-          registration: request.registration,
-          uf: request.uf,
-          specialties: request.specialties,
-          verifiedAt: now,
-        },
-      };
-      profiles = existing
-        ? profiles.map((p) => (p.userId === request.userId ? { ...p, ...verified } : p))
-        : [...profiles, verified];
-    }
-    return { ...s, verifications, profiles };
+  const { error } = await supabase.rpc("review_verification", {
+    p_request: input.requestId,
+    p_approve: input.approve,
+    p_reason: input.approve ? undefined : input.reason?.trim() || undefined,
   });
+  if (error) throw new Error(error.message);
+  await Promise.all([syncVerifications(true), syncRemoteProfiles()]);
 }
 
 // ---------------------------------------------------------------------------

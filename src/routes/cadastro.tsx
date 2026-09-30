@@ -4,16 +4,20 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { registerUser } from "@/lib/auth";
 import { JOURNEY_GOALS } from "@/lib/community";
-import { AuthLayout, Field } from "./login";
+import { AuthLayout, Field, safeRedirect } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/cadastro")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: safeRedirect(search.redirect),
+  }),
   head: () => ({ meta: [{ title: "Criar conta — NutriConnect" }] }),
   component: Cadastro,
 });
 
 function Cadastro() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const { t } = useI18n();
   const [form, setForm] = useState({
     nome: "",
@@ -29,7 +33,9 @@ function Cadastro() {
   const upd = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
 
-  const submit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanNome = form.nome.trim();
     const cleanEmail = form.email.trim();
@@ -45,8 +51,9 @@ function Cadastro() {
     if (cleanSenha.length < 6) return toast.error(t("signup.shortPassword"));
     if (cleanSenha !== cleanConf) return toast.error(t("signup.mismatch"));
 
+    setSubmitting(true);
     try {
-      registerUser({
+      const { needsConfirmation } = await registerUser({
         name: cleanNome,
         email: cleanEmail,
         phone: cleanTel,
@@ -56,10 +63,17 @@ function Cadastro() {
         goal: selectedGoal,
         journeyGoal: selectedGoal,
       });
+      if (needsConfirmation) {
+        toast.success(t("auth.checkEmail"), { duration: 8000 });
+        navigate({ to: "/login", search: { redirect } });
+        return;
+      }
       toast.success(t("signup.success"));
-      navigate({ to: "/espaco" });
+      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("signup.error"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -147,7 +161,10 @@ function Cadastro() {
             />
           </Field>
         </div>
-        <button className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft hover:bg-accent/90 transition">
+        <button
+          disabled={submitting}
+          className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft hover:bg-accent/90 transition disabled:opacity-60"
+        >
           {t("signup.submit")}
         </button>
         <p className="text-center text-sm text-muted-foreground">

@@ -19,14 +19,69 @@ const es: PresentationCopy = {
     goTo: "Ir a la diapositiva",
     ninaSays: "Nutri Nina dice",
     flipHint: "Toca para girar",
+    partOf: "Parte {n} de {total}",
+    presentedBy: "Presenta",
+    leader: "Líder",
+    inThisPart: "En esta parte",
+    partsHint: "Las teclas 1 a 5 llevan directo a cada parte",
   },
-  sections: {
-    intro: "Introducción",
-    problem: "El problema",
-    market: "Mercado",
-    learning: "Aprendizaje",
-    tour: "Recorrido por la plataforma",
-    join: "Únete",
+  parts: [
+    {
+      title: "Apertura",
+      subtitle: "Quiénes somos y el problema que nos movió",
+    },
+    {
+      title: "La solución",
+      subtitle: "NutriConnect, los diferenciales, Nina y el modelo de negocio",
+    },
+    {
+      title: "Mercado",
+      subtitle: "Para quién lo creamos y con quién competimos",
+    },
+    {
+      title: "La plataforma · parte 1",
+      subtitle: "Feed, perfil, personalización y rutas",
+    },
+    {
+      title: "La plataforma · parte 2",
+      subtitle: "Comunidades, desafíos, aprendizajes y la invitación final",
+    },
+  ],
+  ninaIntro: {
+    eyebrow: "Nuestro personaje",
+    title: "¡Mucho gusto, soy Nutri Nina!",
+    text: "Nina es la nutricionista virtual de NutriConnect. Guía las rutas, explica cada concepto con cariño y celebra cada logro contigo.",
+    role: "Nutricionista virtual · guía de las rutas",
+    nina: "¡Puedes apretar los botones, me encanta moverme!",
+    traits: [
+      {
+        title: "Guía de las rutas",
+        text: "Presenta cada lección y da una pista cuando te equivocas.",
+      },
+      {
+        title: "Lenguaje acogedor",
+        text: "Explica nutrición sin términos difíciles y sin juicios.",
+      },
+      {
+        title: "Celebra contigo",
+        text: "Salta, baila y lanza confeti en cada parada completada.",
+      },
+      {
+        title: "Siempre cerca",
+        text: "Aparece en el feed, en las rutas y hasta en esta presentación.",
+      },
+    ],
+    actionsLabel: "Toca para ver a Nina en acción",
+    actions: {
+      wave: "Saludar",
+      talk: "Hablar",
+      think: "Pensar",
+      present: "Mostrar la tableta",
+      dance: "Bailar",
+      cheer: "Celebrar",
+      spin: "Girar",
+      jump: "Saltar",
+    },
   },
   cover: {
     eyebrow: "Proyecto Transforme-se · Serasa",
@@ -503,8 +558,10 @@ const es: PresentationCopy = {
   team: {
     eyebrow: "Equipo",
     title: "Quién hizo NutriConnect",
-    text: "Cuatro personas, un curso y las ganas de hacer la alimentación saludable más accesible y acogedora.",
+    text: "Cinco personas, un curso y las ganas de hacer la alimentación saludable más accesible y acogedora. Cada integrante presenta una parte.",
     role: "Desarrollador(a) Front-end",
+    leaderRole: "Líder del proyecto · Front-end",
+    pickHint: "Toca una foto para ir directo a esa parte",
     nina: "¡Y este es el equipo que me creó!",
   },
   join: {
