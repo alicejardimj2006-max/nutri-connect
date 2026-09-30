@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
@@ -9,7 +10,14 @@ import { useAppointments, usePayments, usePeople } from "@/lib/clinical/queries"
 import { startCheckout } from "@/lib/clinical/payments";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 
+type PaymentReturn = "sucesso" | "pendente" | "falha";
+
 export const Route = createFileRoute("/acompanhamento/consultas")({
+  validateSearch: (search: Record<string, unknown>): { pagamento?: PaymentReturn } => ({
+    pagamento: ["sucesso", "pendente", "falha"].includes(search.pagamento as string)
+      ? (search.pagamento as PaymentReturn)
+      : undefined,
+  }),
   component: PatientAppointmentsPage,
 });
 
@@ -17,6 +25,19 @@ function PatientAppointmentsPage() {
   const { t } = useClinicalI18n();
   const [tab, setTab] = useState<"proximas" | "anteriores">("proximas");
   const { data, isLoading } = useAppointments({ role: "patient", ascending: true });
+  const { pagamento } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const qc = useQueryClient();
+
+  // Volta do checkout do Mercado Pago (a confirmação definitiva chega pelo webhook).
+  useEffect(() => {
+    if (!pagamento) return;
+    if (pagamento === "sucesso") toast.success(t("payment.returnSuccess"));
+    else if (pagamento === "pendente") toast.message(t("payment.returnPending"));
+    else toast.error(t("payment.returnFailure"));
+    void qc.invalidateQueries({ queryKey: ["clinical"] });
+    navigate({ search: {}, replace: true });
+  }, [pagamento]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { upcoming, past } = useMemo(() => {
     const now = Date.now();

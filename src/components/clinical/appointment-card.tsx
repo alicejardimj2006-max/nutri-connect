@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import * as api from "@/lib/clinical/api";
 import type { Appointment, Payment, PersonSummary, Slot } from "@/lib/clinical/api";
 import { useClinicalMutation } from "@/lib/clinical/queries";
+import { requestRefund } from "@/lib/clinical/payments";
 import { formatDate, formatMoney, formatTime } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { methodLabel } from "@/lib/clinical/labels";
@@ -40,6 +41,24 @@ import {
 } from "./ui";
 
 const ACTIVE: Appointment["status"][] = ["aguardando_pagamento", "agendada", "confirmada"];
+
+const paidOnline = (payment?: Payment) =>
+  payment?.status === "aprovado" && payment.provider === "mercado_pago";
+
+/** Cancela e, se a consulta foi paga on-line, pede o estorno. Devolve o aviso para o usuário. */
+async function cancelWithRefund(
+  appt: Appointment,
+  payment: Payment | undefined,
+  reason: string,
+  t: ReturnType<typeof useClinicalI18n>["t"],
+): Promise<string> {
+  await api.cancelAppointment(appt.id, reason);
+  if (!paidOnline(payment)) return t("appt.cancelled");
+  const result = await requestRefund(appt.id).catch(() => null);
+  if (result?.refunded) return t("appt.cancelledRefunded");
+  if (result?.reason === "fora do prazo") return t("appt.cancelledNoRefund", { h: result.minHours ?? 24 });
+  return t("appt.cancelledRefundFailed");
+}
 
 /** Janela para entrar na chamada: 15 min antes até o fim da consulta. */
 function canJoin(appt: Appointment): boolean {
@@ -167,7 +186,7 @@ export function AppointmentCard({
         )}
       </div>
 
-      {dialog === "cancel" && <CancelDialog appt={appt} onClose={() => setDialog(null)} />}
+      {dialog === "cancel" && <CancelDialog appt={appt} payment={payment} onClose={() => setDialog(null)} />}
       {dialog === "reschedule" && <RescheduleDialog appt={appt} onClose={() => setDialog(null)} />}
       {dialog === "manage" && (
         <ManageAppointmentDialog
@@ -190,11 +209,19 @@ function PersonLine({ person }: { person?: PersonSummary }) {
   );
 }
 
-function CancelDialog({ appt, onClose }: { appt: Appointment; onClose: () => void }) {
+function CancelDialog({
+  appt,
+  payment,
+  onClose,
+}: {
+  appt: Appointment;
+  payment?: Payment;
+  onClose: () => void;
+}) {
   const { t } = useClinicalI18n();
   const [reason, setReason] = useState("");
-  const cancel = useClinicalMutation(() => api.cancelAppointment(appt.id, reason), {
-    success: t("appt.cancelled"),
+  const cancel = useClinicalMutation(() => cancelWithRefund(appt, payment, reason, t), {
+    success: (msg) => msg,
     onSuccess: onClose,
   });
   return (
@@ -202,7 +229,9 @@ function CancelDialog({ appt, onClose }: { appt: Appointment; onClose: () => voi
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("appt.cancelTitle")}</DialogTitle>
-          <DialogDescription>{t("appt.cancelText")}</DialogDescription>
+          <DialogDescription>
+            {t("appt.cancelText")} {paidOnline(payment) && t("appt.refundPolicyPatient")}
+          </DialogDescription>
         </DialogHeader>
         <Field label={t("appt.cancelReason")} hint={t("common.optional")}>
           <textarea
@@ -309,8 +338,8 @@ export function ManageAppointmentDialog({
   const pay = useClinicalMutation(() => api.registerManualPayment(appt.id, method), {
     success: t("appt.paymentRegistered"),
   });
-  const cancel = useClinicalMutation(() => api.cancelAppointment(appt.id, reason), {
-    success: t("appt.cancelled"),
+  const cancel = useClinicalMutation(() => cancelWithRefund(appt, payment, reason, t), {
+    success: (msg) => msg,
     onSuccess: onClose,
   });
 
@@ -472,6 +501,9 @@ export function ManageAppointmentDialog({
         {isActive &&
           (cancelling ? (
             <div className="space-y-2 rounded-xl border border-destructive/30 p-3">
+              {paidOnline(payment) && (
+                <p className="text-xs text-muted-foreground">{t("appt.refundPolicyPro")}</p>
+              )}
               <Field label={t("appt.cancelReason")}>
                 <input
                   className={inputClass}
