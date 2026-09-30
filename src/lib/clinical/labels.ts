@@ -9,6 +9,10 @@ const KNOWN_METHODS = [
   "debit_card",
   "account_money",
   "ticket",
+  "bank_transfer",
+  "master",
+  "visa",
+  "elo",
 ];
 
 /** Nome legível do meio de pagamento (manual ou vindo do Mercado Pago). */

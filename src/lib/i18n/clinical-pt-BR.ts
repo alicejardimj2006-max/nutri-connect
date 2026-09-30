@@ -732,6 +732,43 @@ const clinicalPtBR = {
   "mp.connectedToast":
     "Mercado Pago conectado! Os próximos agendamentos já podem ser pagos on-line.",
   "mp.errorToast": "Não foi possível conectar o Mercado Pago. Tente novamente.",
+
+  // Financeiro --------------------------------------------------------
+  "panelNav.finance": "Financeiro",
+  "finance.title": "Financeiro",
+  "finance.subtitle": "O que você recebeu, as taxas e o que ainda falta receber.",
+  "finance.prevMonth": "Mês anterior",
+  "finance.nextMonth": "Próximo mês",
+  "finance.net": "Recebido (líquido)",
+  "finance.netHint": "{n} pagamento(s) aprovado(s)",
+  "finance.gross": "Faturamento bruto",
+  "finance.ticket": "ticket médio {value}",
+  "finance.fees": "Taxas da plataforma",
+  "finance.refunded": "{value} estornado(s)",
+  "finance.receivable": "A receber",
+  "finance.receivableHint": "{n} consulta(s) sem pagamento",
+  "finance.chartTitle": "Recebido por mês (líquido)",
+  "finance.chartHint":
+    "Valores líquidos: pagamentos aprovados menos a taxa da plataforma. Registros manuais entram integralmente.",
+  "finance.payments": "Pagamentos do mês",
+  "finance.noPayments": "Nenhum pagamento neste mês",
+  "finance.toReceive": "Consultas a receber",
+  "finance.allPaid": "Tudo em dia! Nenhuma consulta sem pagamento neste mês.",
+  "finance.register": "Registrar",
+  "finance.manual": "Registro manual",
+  "finance.feeShort": "taxa {value}",
+  "finance.csv.date": "Data",
+  "finance.csv.patient": "Paciente",
+  "finance.csv.method": "Forma de pagamento",
+  "finance.csv.status": "Situação",
+  "finance.csv.gross": "Bruto (R$)",
+  "finance.csv.fee": "Taxa (R$)",
+  "finance.csv.net": "Líquido (R$)",
+
+  "payment.method.bank_transfer": "Pix",
+  "payment.method.master": "Mastercard",
+  "payment.method.visa": "Visa",
+  "payment.method.elo": "Elo",
 } as const;
 
 export default clinicalPtBR;

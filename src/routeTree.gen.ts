@@ -45,6 +45,7 @@ import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$chal
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
 import { Route as PainelAgendaRouteImport } from './routes/painel.agenda'
 import { Route as PainelConfiguracoesRouteImport } from './routes/painel.configuracoes'
+import { Route as PainelFinanceiroRouteImport } from './routes/painel.financeiro'
 import { Route as PainelMensagensRouteImport } from './routes/painel.mensagens'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
@@ -242,6 +243,11 @@ const PainelConfiguracoesRoute = PainelConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => PainelRoute,
 } as any)
+const PainelFinanceiroRoute = PainelFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => PainelRoute,
+} as any)
 const PainelMensagensRoute = PainelMensagensRouteImport.update({
   id: '/mensagens',
   path: '/mensagens',
@@ -363,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
+  '/painel/financeiro': typeof PainelFinanceiroRoute
   '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
+  '/painel/financeiro': typeof PainelFinanceiroRoute
   '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -467,6 +475,7 @@ export interface FileRoutesById {
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
+  '/painel/financeiro': typeof PainelFinanceiroRoute
   '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/desafios/$challengeId'
     | '/painel/agenda'
     | '/painel/configuracoes'
+    | '/painel/financeiro'
     | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
@@ -573,6 +583,7 @@ export interface FileRouteTypes {
     | '/desafios/$challengeId'
     | '/painel/agenda'
     | '/painel/configuracoes'
+    | '/painel/financeiro'
     | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/editar'
@@ -626,6 +637,7 @@ export interface FileRouteTypes {
     | '/desafios/$challengeId'
     | '/painel/agenda'
     | '/painel/configuracoes'
+    | '/painel/financeiro'
     | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
@@ -932,6 +944,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelConfiguracoesRouteImport
       parentRoute: typeof PainelRoute
     }
+    '/painel/financeiro': {
+      id: '/painel/financeiro'
+      path: '/financeiro'
+      fullPath: '/painel/financeiro'
+      preLoaderRoute: typeof PainelFinanceiroRouteImport
+      parentRoute: typeof PainelRoute
+    }
     '/painel/mensagens': {
       id: '/painel/mensagens'
       path: '/mensagens'
@@ -1104,6 +1123,7 @@ const DesafiosRouteWithChildren = DesafiosRoute._addFileChildren(
 interface PainelRouteChildren {
   PainelAgendaRoute: typeof PainelAgendaRoute
   PainelConfiguracoesRoute: typeof PainelConfiguracoesRoute
+  PainelFinanceiroRoute: typeof PainelFinanceiroRoute
   PainelMensagensRoute: typeof PainelMensagensRoute
   PainelIndexRoute: typeof PainelIndexRoute
   PainelPacientesPatientIdRoute: typeof PainelPacientesPatientIdRoute
@@ -1114,6 +1134,7 @@ interface PainelRouteChildren {
 const PainelRouteChildren: PainelRouteChildren = {
   PainelAgendaRoute: PainelAgendaRoute,
   PainelConfiguracoesRoute: PainelConfiguracoesRoute,
+  PainelFinanceiroRoute: PainelFinanceiroRoute,
   PainelMensagensRoute: PainelMensagensRoute,
   PainelIndexRoute: PainelIndexRoute,
   PainelPacientesPatientIdRoute: PainelPacientesPatientIdRoute,

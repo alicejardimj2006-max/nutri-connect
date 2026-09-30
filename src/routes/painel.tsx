@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   MessageCircle,
   Settings,
+  Wallet,
   ShieldCheck,
   Users,
 } from "lucide-react";
@@ -62,6 +63,7 @@ function ProfessionalPanelLayout() {
         .filter((c) => c.professionalId === user.id)
         .reduce((a, c) => a + c.unread, 0),
     },
+    { to: "/painel/financeiro", label: t("panelNav.finance"), icon: Wallet },
     { to: "/painel/configuracoes", label: t("panelNav.settings"), icon: Settings },
   ];
 

@@ -38,7 +38,7 @@ serve(async (req) => {
   const patch: Record<string, unknown> = {
     status,
     mp_payment_id: String(payment.id),
-    method: payment.payment_type_id ?? payment.payment_method_id ?? null,
+    method: payment.payment_method_id ?? payment.payment_type_id ?? null,
     paid_at: payment.date_approved ?? null,
     raw: payment,
   };
