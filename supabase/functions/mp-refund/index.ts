@@ -11,7 +11,11 @@ serve(async (req) => {
   if (!appointmentId) throw new HttpError(400, "Consulta não informada.");
 
   const db = adminClient();
-  const { data: appt } = await db.from("appointments").select("*").eq("id", appointmentId).maybeSingle();
+  const { data: appt } = await db
+    .from("appointments")
+    .select("*")
+    .eq("id", appointmentId)
+    .maybeSingle();
   if (!appt || (appt.patient_id !== user.id && appt.professional_id !== user.id)) {
     throw new HttpError(404, "Consulta não encontrada.");
   }
@@ -28,7 +32,8 @@ serve(async (req) => {
 
   const minHours = await settingInt("refund_min_notice_hours", 24);
   const byProfessional = appt.cancelled_by === appt.professional_id;
-  const notice = new Date(appt.starts_at).getTime() - new Date(appt.cancelled_at ?? Date.now()).getTime();
+  const notice =
+    new Date(appt.starts_at).getTime() - new Date(appt.cancelled_at ?? Date.now()).getTime();
   if (!byProfessional && notice < minHours * 3_600_000) {
     return json({ refunded: false, reason: "fora do prazo", minHours });
   }

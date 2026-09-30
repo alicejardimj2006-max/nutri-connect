@@ -46,7 +46,9 @@ export function PaymentsCard({ professionalId }: { professionalId: string }) {
             <p className="font-semibold text-foreground">{t("mp.notConnected")}</p>
           )}
           <p className="mt-0.5 text-muted-foreground">
-            {connected ? t("mp.connectedText", { fee: fee.data ?? 10 }) : t("mp.notConnectedText", { fee: fee.data ?? 10 })}
+            {connected
+              ? t("mp.connectedText", { fee: fee.data ?? 10 })
+              : t("mp.notConnectedText", { fee: fee.data ?? 10 })}
           </p>
           {connected && !hasPrice && <p className="mt-1 text-xs text-warning">{t("mp.noPrice")}</p>}
         </div>
@@ -55,12 +57,19 @@ export function PaymentsCard({ professionalId }: { professionalId: string }) {
             type="button"
             className={buttonGhost}
             disabled={disconnect.isPending}
-            onClick={() => window.confirm(t("mp.disconnectConfirm")) && disconnect.mutate(undefined)}
+            onClick={() =>
+              window.confirm(t("mp.disconnectConfirm")) && disconnect.mutate(undefined)
+            }
           >
             <Unplug className="h-4 w-4" /> {t("mp.disconnect")}
           </button>
         ) : (
-          <button type="button" className={buttonPrimary} disabled={connect.isPending} onClick={() => connect.mutate(undefined)}>
+          <button
+            type="button"
+            className={buttonPrimary}
+            disabled={connect.isPending}
+            onClick={() => connect.mutate(undefined)}
+          >
             {t("mp.connect")}
           </button>
         )}

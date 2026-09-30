@@ -18,17 +18,29 @@ serve(async (req) => {
   if (!appUrl) throw new HttpError(400, "Origem inválida.");
 
   const db = adminClient();
-  const { data: appt } = await db.from("appointments").select("*").eq("id", appointmentId).maybeSingle();
+  const { data: appt } = await db
+    .from("appointments")
+    .select("*")
+    .eq("id", appointmentId)
+    .maybeSingle();
   if (!appt || appt.patient_id !== user.id) throw new HttpError(404, "Consulta não encontrada.");
-  if (appt.status !== "aguardando_pagamento") throw new HttpError(409, "Esta consulta não está aguardando pagamento.");
+  if (appt.status !== "aguardando_pagamento")
+    throw new HttpError(409, "Esta consulta não está aguardando pagamento.");
   if (!appt.hold_expires_at || new Date(appt.hold_expires_at) <= new Date()) {
     await db.rpc("expire_payment_holds", { p_professional: appt.professional_id });
-    throw new HttpError(410, "O tempo para pagar expirou e o horário foi liberado. Agende novamente.");
+    throw new HttpError(
+      410,
+      "O tempo para pagar expirou e o horário foi liberado. Agende novamente.",
+    );
   }
 
   const [{ data: pro }, { data: account }] = await Promise.all([
     db.from("profiles").select("name").eq("id", appt.professional_id).single(),
-    db.from("professional_mp_accounts").select("live_mode").eq("professional_id", appt.professional_id).maybeSingle(),
+    db
+      .from("professional_mp_accounts")
+      .select("live_mode")
+      .eq("professional_id", appt.professional_id)
+      .maybeSingle(),
   ]);
   const token = await sellerToken(appt.professional_id);
 

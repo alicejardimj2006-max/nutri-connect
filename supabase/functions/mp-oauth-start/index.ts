@@ -4,9 +4,7 @@ import { authUrl, signState } from "../_shared/mp.ts";
 import { adminClient, requireUser } from "../_shared/supabase.ts";
 
 function callbackUrl() {
-  return (
-    Deno.env.get("MP_REDIRECT_URI") ?? `${env("SUPABASE_URL")}/functions/v1/mp-oauth-callback`
-  );
+  return Deno.env.get("MP_REDIRECT_URI") ?? `${env("SUPABASE_URL")}/functions/v1/mp-oauth-callback`;
 }
 
 serve(async (req) => {

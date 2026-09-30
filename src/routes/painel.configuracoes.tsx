@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { PaymentsCard } from "@/components/clinical/payments-card";
 import { ExternalLink } from "lucide-react";
 import {
@@ -45,13 +46,14 @@ function ProfessionalSettingsPage() {
   const pro = useProfessional(user?.id);
   const { mp } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
+  const qc = useQueryClient();
 
   // Retorno da autorização do Mercado Pago.
   useEffect(() => {
     if (!mp) return;
-    if (mp === "conectado") toast.success(t("mp.connectedToast"));
-    else toast.error(t("mp.errorToast"));
-    void pro.refetch();
+    if (mp === "conectado") toast.success(t("mp.connectedToast"), { id: "mp-return" });
+    else toast.error(t("mp.errorToast"), { id: "mp-return" });
+    void qc.invalidateQueries({ queryKey: ["clinical", "professional"] });
     navigate({ search: {}, replace: true });
   }, [mp]); // eslint-disable-line react-hooks/exhaustive-deps
 

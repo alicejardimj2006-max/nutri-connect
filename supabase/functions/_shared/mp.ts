@@ -80,7 +80,9 @@ export async function saveAccount(professionalId: string, token: OAuthToken) {
     refresh_token: token.refresh_token ?? null,
     public_key: token.public_key ?? null,
     live_mode: !!token.live_mode,
-    expires_at: token.expires_in ? new Date(Date.now() + token.expires_in * 1000).toISOString() : null,
+    expires_at: token.expires_in
+      ? new Date(Date.now() + token.expires_in * 1000).toISOString()
+      : null,
     updated_at: new Date().toISOString(),
   });
   if (error) throw new HttpError(500, error.message);
@@ -116,7 +118,13 @@ const b64url = (buf: ArrayBuffer | Uint8Array) =>
     .replace(/=+$/, "");
 
 async function hmac(secret: string, message: string): Promise<ArrayBuffer> {
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
   return crypto.subtle.sign("HMAC", key, enc.encode(message));
 }
 
@@ -210,7 +218,9 @@ export async function verifyWebhook(req: Request, dataId: string): Promise<boole
   }
   const header = req.headers.get("x-signature") ?? "";
   const requestId = req.headers.get("x-request-id") ?? "";
-  const parts = Object.fromEntries(header.split(",").map((p) => p.trim().split("=") as [string, string]));
+  const parts = Object.fromEntries(
+    header.split(",").map((p) => p.trim().split("=") as [string, string]),
+  );
   if (!parts.ts || !parts.v1) return false;
   const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${parts.ts};`;
   const digest = Array.from(new Uint8Array(await hmac(secret, manifest)))

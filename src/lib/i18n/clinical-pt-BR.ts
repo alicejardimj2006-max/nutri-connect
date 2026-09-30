@@ -700,6 +700,38 @@ const clinicalPtBR = {
   "docs.emptyText": "Envie exames laboratoriais, laudos ou outros documentos.",
   "docs.open": "Abrir",
   "docs.byYou": "enviado por você",
+
+  // Pagamentos --------------------------------------------------------
+  "errors.payment": "Não foi possível falar com o Mercado Pago. Tente novamente em instantes.",
+  "appt.cancelledRefunded": "Consulta cancelada. O estorno foi solicitado ao Mercado Pago.",
+  "appt.cancelledNoRefund":
+    "Consulta cancelada. Como faltavam menos de {h} horas, o valor não é estornado automaticamente — fale com o profissional.",
+  "appt.cancelledRefundFailed":
+    "Consulta cancelada, mas o estorno não pôde ser feito agora. O profissional foi avisado para resolver.",
+  "appt.refundPolicyPatient":
+    "Pagamentos on-line são estornados automaticamente quando o cancelamento é feito com pelo menos 24 horas de antecedência.",
+  "appt.refundPolicyPro":
+    "Esta consulta foi paga on-line: ao cancelar, o paciente recebe o estorno integral.",
+  "payment.returnSuccess": "Pagamento aprovado! Sua consulta está confirmada.",
+  "payment.returnPending": "Pagamento em processamento. Avisamos por aqui assim que for aprovado.",
+  "payment.returnFailure":
+    "O pagamento não foi concluído. Você pode tentar de novo enquanto o horário estiver reservado.",
+  "mp.title": "Pagamentos on-line",
+  "mp.connected": "Mercado Pago conectado",
+  "mp.notConnected": "Receba pelo Mercado Pago",
+  "mp.connectedText":
+    "Os pacientes pagam por Pix ou cartão ao agendar e o valor cai direto na sua conta. A plataforma retém {fee}% por consulta.",
+  "mp.notConnectedText":
+    "Conecte sua conta para cobrar por Pix ou cartão no agendamento. O dinheiro vai direto para você; a plataforma retém {fee}% por consulta.",
+  "mp.noPrice": "Defina um valor de consulta acima de zero para cobrar on-line.",
+  "mp.connect": "Conectar Mercado Pago",
+  "mp.disconnect": "Desconectar",
+  "mp.disconnectConfirm":
+    "Desconectar o Mercado Pago? Novos agendamentos deixam de exigir pagamento on-line.",
+  "mp.disconnected": "Mercado Pago desconectado.",
+  "mp.connectedToast":
+    "Mercado Pago conectado! Os próximos agendamentos já podem ser pagos on-line.",
+  "mp.errorToast": "Não foi possível conectar o Mercado Pago. Tente novamente.",
 } as const;
 
 export default clinicalPtBR;

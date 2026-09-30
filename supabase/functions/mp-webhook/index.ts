@@ -11,15 +11,22 @@ serve(async (req) => {
     topic?: string;
     data?: { id?: string | number };
   };
-  const type = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic");
-  const paymentId = String(body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "");
+  const type =
+    body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic");
+  const paymentId = String(
+    body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "",
+  );
   const appointmentId = url.searchParams.get("appointment");
 
   if (type !== "payment" || !paymentId || !appointmentId) return json({ ignored: true });
   if (!(await verifyWebhook(req, paymentId))) return json({ error: "assinatura inválida" }, 401);
 
   const db = adminClient();
-  const { data: appt } = await db.from("appointments").select("*").eq("id", appointmentId).maybeSingle();
+  const { data: appt } = await db
+    .from("appointments")
+    .select("*")
+    .eq("id", appointmentId)
+    .maybeSingle();
   if (!appt) return json({ ignored: "consulta inexistente" });
 
   const token = await sellerToken(appt.professional_id);
@@ -38,12 +45,23 @@ serve(async (req) => {
 
   if (status === "aprovado") {
     if (appt.status === "aguardando_pagamento") {
-      await db.from("appointments").update({ status: "agendada", hold_expires_at: null }).eq("id", appt.id);
-    } else if (appt.status === "cancelada" && appt.cancel_reason === "Pagamento não concluído a tempo") {
+      await db
+        .from("appointments")
+        .update({ status: "agendada", hold_expires_at: null })
+        .eq("id", appt.id);
+    } else if (
+      appt.status === "cancelada" &&
+      appt.cancel_reason === "Pagamento não concluído a tempo"
+    ) {
       // Pagou depois de o horário expirar: tenta recuperar a reserva; se já foi ocupada, estorna.
       const { error } = await db
         .from("appointments")
-        .update({ status: "agendada", hold_expires_at: null, cancel_reason: null, cancelled_at: null })
+        .update({
+          status: "agendada",
+          hold_expires_at: null,
+          cancel_reason: null,
+          cancelled_at: null,
+        })
         .eq("id", appt.id);
       if (error) {
         await refundPayment(token, String(payment.id));

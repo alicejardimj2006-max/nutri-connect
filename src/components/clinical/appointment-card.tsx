@@ -56,7 +56,8 @@ async function cancelWithRefund(
   if (!paidOnline(payment)) return t("appt.cancelled");
   const result = await requestRefund(appt.id).catch(() => null);
   if (result?.refunded) return t("appt.cancelledRefunded");
-  if (result?.reason === "fora do prazo") return t("appt.cancelledNoRefund", { h: result.minHours ?? 24 });
+  if (result?.reason === "fora do prazo")
+    return t("appt.cancelledNoRefund", { h: result.minHours ?? 24 });
   return t("appt.cancelledRefundFailed");
 }
 
@@ -186,7 +187,9 @@ export function AppointmentCard({
         )}
       </div>
 
-      {dialog === "cancel" && <CancelDialog appt={appt} payment={payment} onClose={() => setDialog(null)} />}
+      {dialog === "cancel" && (
+        <CancelDialog appt={appt} payment={payment} onClose={() => setDialog(null)} />
+      )}
       {dialog === "reschedule" && <RescheduleDialog appt={appt} onClose={() => setDialog(null)} />}
       {dialog === "manage" && (
         <ManageAppointmentDialog

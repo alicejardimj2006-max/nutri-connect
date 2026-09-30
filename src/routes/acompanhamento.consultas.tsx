@@ -32,9 +32,10 @@ function PatientAppointmentsPage() {
   // Volta do checkout do Mercado Pago (a confirmação definitiva chega pelo webhook).
   useEffect(() => {
     if (!pagamento) return;
-    if (pagamento === "sucesso") toast.success(t("payment.returnSuccess"));
-    else if (pagamento === "pendente") toast.message(t("payment.returnPending"));
-    else toast.error(t("payment.returnFailure"));
+    const id = "payment-return";
+    if (pagamento === "sucesso") toast.success(t("payment.returnSuccess"), { id });
+    else if (pagamento === "pendente") toast.message(t("payment.returnPending"), { id });
+    else toast.error(t("payment.returnFailure"), { id });
     void qc.invalidateQueries({ queryKey: ["clinical"] });
     navigate({ search: {}, replace: true });
   }, [pagamento]); // eslint-disable-line react-hooks/exhaustive-deps
