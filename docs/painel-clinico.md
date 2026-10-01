@@ -81,6 +81,13 @@ Outros comandos úteis:
    npx supabase db push
    ```
 
+   O banco do projeto já tinha tabelas criadas à mão, entre elas uma `profiles` em outro
+   formato. A migration `20260929115900_legacy_profiles.sql` a renomeia para `profiles_legacy`
+   sem apagar nada. A `20260930140000_backfill_profiles.sql` cria o perfil novo de cada conta que
+   já existia no Auth e copia nome, CPF, telefone, nascimento e gênero da tabela antiga. Qualquer
+   código que ainda leia a `profiles` antiga precisa passar a usar `profiles_legacy` ou os perfis
+   novos. As outras tabelas antigas (`posts`, `coments`, `conversations`…) não foram tocadas.
+
    Para ter as contas de demonstração no banco remoto (útil na apresentação), rode
    `npx supabase db push --include-seed`. **Não faça isso num banco com usuários reais:** o seed
    cria contas com senha conhecida.
