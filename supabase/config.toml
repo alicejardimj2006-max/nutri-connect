@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.mp-oauth-callback]
 verify_jwt = false
+
+[functions.weekly-theme]
+verify_jwt = false

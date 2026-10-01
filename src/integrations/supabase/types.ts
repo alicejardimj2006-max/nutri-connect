@@ -336,6 +336,53 @@ export type Database = {
           },
         ];
       };
+      blocks: {
+        Row: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at: string;
+        };
+        Insert: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at?: string;
+        };
+        Update: {
+          blocked_id?: string;
+          blocker_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "blocks_blocked_id_fkey";
+            columns: ["blocked_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blocks_blocked_id_fkey";
+            columns: ["blocked_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey";
+            columns: ["blocker_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey";
+            columns: ["blocker_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       care_invites: {
         Row: {
           code: string;
@@ -475,6 +522,191 @@ export type Database = {
           },
         ];
       };
+      challenge_participants: {
+        Row: {
+          challenge_id: string;
+          completed_at: string | null;
+          completed_steps: number[];
+          joined_at: string;
+          user_id: string;
+        };
+        Insert: {
+          challenge_id: string;
+          completed_at?: string | null;
+          completed_steps?: number[];
+          joined_at?: string;
+          user_id: string;
+        };
+        Update: {
+          challenge_id?: string;
+          completed_at?: string | null;
+          completed_steps?: number[];
+          joined_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participants_challenge_id_fkey";
+            columns: ["challenge_id"];
+            isOneToOne: false;
+            referencedRelation: "challenges";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenge_participants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenge_participants_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      challenge_tips: {
+        Row: {
+          author_id: string;
+          body: string;
+          challenge_id: string;
+          created_at: string;
+          id: string;
+        };
+        Insert: {
+          author_id: string;
+          body: string;
+          challenge_id: string;
+          created_at?: string;
+          id?: string;
+        };
+        Update: {
+          author_id?: string;
+          body?: string;
+          challenge_id?: string;
+          created_at?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "challenge_tips_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenge_tips_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenge_tips_challenge_id_fkey";
+            columns: ["challenge_id"];
+            isOneToOne: false;
+            referencedRelation: "challenges";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      challenges: {
+        Row: {
+          badge_icon: string;
+          badge_label: string;
+          category: string;
+          community_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          duration: string;
+          id: string;
+          position: number;
+          required_challenge_id: string | null;
+          steps: string[];
+          theme_id: string | null;
+          tips: string[];
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          badge_icon?: string;
+          badge_label: string;
+          category: string;
+          community_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description: string;
+          duration: string;
+          id?: string;
+          position?: number;
+          required_challenge_id?: string | null;
+          steps: string[];
+          theme_id?: string | null;
+          tips?: string[];
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          badge_icon?: string;
+          badge_label?: string;
+          category?: string;
+          community_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          duration?: string;
+          id?: string;
+          position?: number;
+          required_challenge_id?: string | null;
+          steps?: string[];
+          theme_id?: string | null;
+          tips?: string[];
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "challenges_community_id_fkey";
+            columns: ["community_id"];
+            isOneToOne: false;
+            referencedRelation: "communities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenges_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "professionals";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "challenges_required_challenge_id_fkey";
+            columns: ["required_challenge_id"];
+            isOneToOne: false;
+            referencedRelation: "challenges";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenges_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "current_theme";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "challenges_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "weekly_themes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clinical_notes: {
         Row: {
           appointment_id: string | null;
@@ -540,6 +772,233 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "professionals";
             referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      comments: {
+        Row: {
+          author_id: string;
+          body: string;
+          created_at: string;
+          hidden: boolean;
+          id: string;
+          post_id: string;
+        };
+        Insert: {
+          author_id: string;
+          body: string;
+          created_at?: string;
+          hidden?: boolean;
+          id?: string;
+          post_id: string;
+        };
+        Update: {
+          author_id?: string;
+          body?: string;
+          created_at?: string;
+          hidden?: boolean;
+          id?: string;
+          post_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      communities: {
+        Row: {
+          admin_user_id: string | null;
+          category: string;
+          cover_image_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          former_professional_ids: string[];
+          id: string;
+          name: string;
+          objective: string | null;
+          professional_id: string | null;
+          slug: string;
+          status: Database["public"]["Enums"]["community_status"];
+          updated_at: string;
+        };
+        Insert: {
+          admin_user_id?: string | null;
+          category: string;
+          cover_image_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          former_professional_ids?: string[];
+          id?: string;
+          name: string;
+          objective?: string | null;
+          professional_id?: string | null;
+          slug: string;
+          status?: Database["public"]["Enums"]["community_status"];
+          updated_at?: string;
+        };
+        Update: {
+          admin_user_id?: string | null;
+          category?: string;
+          cover_image_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          former_professional_ids?: string[];
+          id?: string;
+          name?: string;
+          objective?: string | null;
+          professional_id?: string | null;
+          slug?: string;
+          status?: Database["public"]["Enums"]["community_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "communities_admin_user_id_fkey";
+            columns: ["admin_user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communities_admin_user_id_fkey";
+            columns: ["admin_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communities_professional_id_fkey";
+            columns: ["professional_id"];
+            isOneToOne: false;
+            referencedRelation: "professionals";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      community_members: {
+        Row: {
+          community_id: string;
+          joined_at: string;
+          user_id: string;
+        };
+        Insert: {
+          community_id: string;
+          joined_at?: string;
+          user_id: string;
+        };
+        Update: {
+          community_id?: string;
+          joined_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "community_members_community_id_fkey";
+            columns: ["community_id"];
+            isOneToOne: false;
+            referencedRelation: "communities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "community_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contact_messages: {
+        Row: {
+          created_at: string;
+          email: string;
+          id: string;
+          message: string;
+          name: string;
+          phone: string | null;
+          status: string;
+          subject: string;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+          id?: string;
+          message: string;
+          name: string;
+          phone?: string | null;
+          status?: string;
+          subject: string;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+          id?: string;
+          message?: string;
+          name?: string;
+          phone?: string | null;
+          status?: string;
+          subject?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contact_messages_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contact_messages_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -646,6 +1105,46 @@ export type Database = {
           },
         ];
       };
+      follows: {
+        Row: {
+          created_at: string;
+          followee_id: string;
+          follower_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          followee_id: string;
+          follower_id: string;
+        };
+        Update: {
+          created_at?: string;
+          followee_id?: string;
+          follower_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follows_followee_id_fkey";
+            columns: ["followee_id"];
+            isOneToOne: false;
+            referencedRelation: "professionals";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       foods: {
         Row: {
           calcium_mg: number | null;
@@ -708,6 +1207,62 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "professionals";
             referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      friendships: {
+        Row: {
+          addressee_id: string;
+          created_at: string;
+          id: string;
+          requester_id: string;
+          responded_at: string | null;
+          status: Database["public"]["Enums"]["friendship_status"];
+        };
+        Insert: {
+          addressee_id: string;
+          created_at?: string;
+          id?: string;
+          requester_id: string;
+          responded_at?: string | null;
+          status?: Database["public"]["Enums"]["friendship_status"];
+        };
+        Update: {
+          addressee_id?: string;
+          created_at?: string;
+          id?: string;
+          requester_id?: string;
+          responded_at?: string | null;
+          status?: Database["public"]["Enums"]["friendship_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "friendships_addressee_id_fkey";
+            columns: ["addressee_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "friendships_addressee_id_fkey";
+            columns: ["addressee_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "friendships_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "friendships_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -1071,6 +1626,71 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          actor_id: string | null;
+          created_at: string;
+          data: NonNullable<Json>;
+          entity_id: string | null;
+          entity_type: string | null;
+          id: string;
+          read_at: string | null;
+          type: string;
+          user_id: string;
+        };
+        Insert: {
+          actor_id?: string | null;
+          created_at?: string;
+          data?: NonNullable<Json>;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          id?: string;
+          read_at?: string | null;
+          type: string;
+          user_id: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          created_at?: string;
+          data?: NonNullable<Json>;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          id?: string;
+          read_at?: string | null;
+          type?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       patient_documents: {
         Row: {
           created_at: string;
@@ -1264,6 +1884,145 @@ export type Database = {
         };
         Relationships: [];
       };
+      post_reactions: {
+        Row: {
+          created_at: string;
+          kind: Database["public"]["Enums"]["reaction_kind"];
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          kind: Database["public"]["Enums"]["reaction_kind"];
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          kind?: Database["public"]["Enums"]["reaction_kind"];
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_reactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_reactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      posts: {
+        Row: {
+          audience: Database["public"]["Enums"]["post_audience"];
+          author_id: string;
+          block_order: string[] | null;
+          body: string;
+          community_id: string | null;
+          created_at: string;
+          hidden: boolean;
+          id: string;
+          image_url: string | null;
+          pinned: boolean;
+          publish_at: string;
+          recipe: Json | null;
+          tags: string[];
+          theme_id: string | null;
+          title: string | null;
+          type: Database["public"]["Enums"]["post_type"];
+          updated_at: string;
+        };
+        Insert: {
+          audience?: Database["public"]["Enums"]["post_audience"];
+          author_id: string;
+          block_order?: string[] | null;
+          body?: string;
+          community_id?: string | null;
+          created_at?: string;
+          hidden?: boolean;
+          id?: string;
+          image_url?: string | null;
+          pinned?: boolean;
+          publish_at?: string;
+          recipe?: Json | null;
+          tags?: string[];
+          theme_id?: string | null;
+          title?: string | null;
+          type?: Database["public"]["Enums"]["post_type"];
+          updated_at?: string;
+        };
+        Update: {
+          audience?: Database["public"]["Enums"]["post_audience"];
+          author_id?: string;
+          block_order?: string[] | null;
+          body?: string;
+          community_id?: string | null;
+          created_at?: string;
+          hidden?: boolean;
+          id?: string;
+          image_url?: string | null;
+          pinned?: boolean;
+          publish_at?: string;
+          recipe?: Json | null;
+          tags?: string[];
+          theme_id?: string | null;
+          title?: string | null;
+          type?: Database["public"]["Enums"]["post_type"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_community_id_fkey";
+            columns: ["community_id"];
+            isOneToOne: false;
+            referencedRelation: "communities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "current_theme";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "weekly_themes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       professional_mp_accounts: {
         Row: {
           access_token: string;
@@ -1435,10 +2194,12 @@ export type Database = {
           created_at: string;
           goal: string | null;
           id: string;
+          is_private: boolean;
           journey_goal: string | null;
           name: string;
           role: Database["public"]["Enums"]["app_role"];
           updated_at: string;
+          username: string;
         };
         Insert: {
           avatar_url?: string | null;
@@ -1446,10 +2207,12 @@ export type Database = {
           created_at?: string;
           goal?: string | null;
           id: string;
+          is_private?: boolean;
           journey_goal?: string | null;
           name?: string;
           role?: Database["public"]["Enums"]["app_role"];
           updated_at?: string;
+          username: string;
         };
         Update: {
           avatar_url?: string | null;
@@ -1457,12 +2220,384 @@ export type Database = {
           created_at?: string;
           goal?: string | null;
           id?: string;
+          is_private?: boolean;
           journey_goal?: string | null;
           name?: string;
           role?: Database["public"]["Enums"]["app_role"];
           updated_at?: string;
+          username?: string;
         };
         Relationships: [];
+      };
+      reports: {
+        Row: {
+          created_at: string;
+          details: string | null;
+          id: string;
+          reason: string;
+          reporter_id: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: Database["public"]["Enums"]["report_status"];
+          target_id: string;
+          target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Insert: {
+          created_at?: string;
+          details?: string | null;
+          id?: string;
+          reason: string;
+          reporter_id: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: Database["public"]["Enums"]["report_status"];
+          target_id: string;
+          target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Update: {
+          created_at?: string;
+          details?: string | null;
+          id?: string;
+          reason?: string;
+          reporter_id?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: Database["public"]["Enums"]["report_status"];
+          target_id?: string;
+          target_type?: Database["public"]["Enums"]["report_target"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      saved_posts: {
+        Row: {
+          created_at: string;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_posts_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saved_posts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saved_posts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      search_term_stats: {
+        Row: {
+          day: string;
+          hits: number;
+          term: string;
+        };
+        Insert: {
+          day?: string;
+          hits?: number;
+          term: string;
+        };
+        Update: {
+          day?: string;
+          hits?: number;
+          term?: string;
+        };
+        Relationships: [];
+      };
+      theme_poll_options: {
+        Row: {
+          id: string;
+          position: number;
+          text: string;
+          theme_id: string;
+          translations: NonNullable<Json>;
+        };
+        Insert: {
+          id?: string;
+          position?: number;
+          text: string;
+          theme_id: string;
+          translations?: NonNullable<Json>;
+        };
+        Update: {
+          id?: string;
+          position?: number;
+          text?: string;
+          theme_id?: string;
+          translations?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "theme_poll_options_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "current_theme";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "theme_poll_options_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "weekly_themes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      theme_poll_votes: {
+        Row: {
+          created_at: string;
+          option_id: string;
+          theme_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          option_id: string;
+          theme_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          option_id?: string;
+          theme_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "theme_poll_votes_option_id_fkey";
+            columns: ["option_id"];
+            isOneToOne: false;
+            referencedRelation: "theme_poll_options";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "theme_poll_votes_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "current_theme";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "theme_poll_votes_theme_id_fkey";
+            columns: ["theme_id"];
+            isOneToOne: false;
+            referencedRelation: "weekly_themes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "theme_poll_votes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "theme_poll_votes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      trail_profiles: {
+        Row: {
+          avatar: string | null;
+          created_at: string;
+          id: string;
+          kind: Database["public"]["Enums"]["trail_profile_kind"];
+          name: string;
+          owner_id: string;
+        };
+        Insert: {
+          avatar?: string | null;
+          created_at?: string;
+          id?: string;
+          kind: Database["public"]["Enums"]["trail_profile_kind"];
+          name: string;
+          owner_id: string;
+        };
+        Update: {
+          avatar?: string | null;
+          created_at?: string;
+          id?: string;
+          kind?: Database["public"]["Enums"]["trail_profile_kind"];
+          name?: string;
+          owner_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trail_profiles_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trail_profiles_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      trail_progress: {
+        Row: {
+          data: NonNullable<Json>;
+          last_active_day: string | null;
+          profile_id: string;
+          streak: number;
+          total_xp: number;
+          updated_at: string;
+        };
+        Insert: {
+          data?: NonNullable<Json>;
+          last_active_day?: string | null;
+          profile_id: string;
+          streak?: number;
+          total_xp?: number;
+          updated_at?: string;
+        };
+        Update: {
+          data?: NonNullable<Json>;
+          last_active_day?: string | null;
+          profile_id?: string;
+          streak?: number;
+          total_xp?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trail_progress_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "trail_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      trail_xp_daily: {
+        Row: {
+          day: string;
+          profile_id: string;
+          xp: number;
+        };
+        Insert: {
+          day: string;
+          profile_id: string;
+          xp?: number;
+        };
+        Update: {
+          day?: string;
+          profile_id?: string;
+          xp?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trail_xp_daily_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "trail_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_settings: {
+        Row: {
+          appearance: Json | null;
+          id: string;
+          locale: string | null;
+          notification_prefs: NonNullable<Json>;
+          show_email: boolean;
+          show_phone: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          appearance?: Json | null;
+          id: string;
+          locale?: string | null;
+          notification_prefs?: NonNullable<Json>;
+          show_email?: boolean;
+          show_phone?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          appearance?: Json | null;
+          id?: string;
+          locale?: string | null;
+          notification_prefs?: NonNullable<Json>;
+          show_email?: boolean;
+          show_phone?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_settings_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       verification_requests: {
         Row: {
@@ -1553,8 +2688,158 @@ export type Database = {
           },
         ];
       };
+      weekly_themes: {
+        Row: {
+          activated_at: string | null;
+          badge: string | null;
+          created_at: string;
+          description: string;
+          edited_at: string | null;
+          edited_by: string | null;
+          featured_post_ids: string[];
+          id: string;
+          poll_question: string | null;
+          question: string | null;
+          source: string;
+          source_terms: NonNullable<Json>;
+          status: Database["public"]["Enums"]["theme_status"];
+          subtitle: string | null;
+          title: string;
+          translations: NonNullable<Json>;
+          week_start: string;
+        };
+        Insert: {
+          activated_at?: string | null;
+          badge?: string | null;
+          created_at?: string;
+          description: string;
+          edited_at?: string | null;
+          edited_by?: string | null;
+          featured_post_ids?: string[];
+          id?: string;
+          poll_question?: string | null;
+          question?: string | null;
+          source?: string;
+          source_terms?: NonNullable<Json>;
+          status?: Database["public"]["Enums"]["theme_status"];
+          subtitle?: string | null;
+          title: string;
+          translations?: NonNullable<Json>;
+          week_start: string;
+        };
+        Update: {
+          activated_at?: string | null;
+          badge?: string | null;
+          created_at?: string;
+          description?: string;
+          edited_at?: string | null;
+          edited_by?: string | null;
+          featured_post_ids?: string[];
+          id?: string;
+          poll_question?: string | null;
+          question?: string | null;
+          source?: string;
+          source_terms?: NonNullable<Json>;
+          status?: Database["public"]["Enums"]["theme_status"];
+          subtitle?: string | null;
+          title?: string;
+          translations?: NonNullable<Json>;
+          week_start?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "weekly_themes_edited_by_fkey";
+            columns: ["edited_by"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "weekly_themes_edited_by_fkey";
+            columns: ["edited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
+      current_theme: {
+        Row: {
+          activated_at: string | null;
+          badge: string | null;
+          created_at: string | null;
+          description: string | null;
+          edited_at: string | null;
+          edited_by: string | null;
+          featured_post_ids: string[] | null;
+          id: string | null;
+          poll_question: string | null;
+          question: string | null;
+          source: string | null;
+          source_terms: Json | null;
+          status: Database["public"]["Enums"]["theme_status"] | null;
+          subtitle: string | null;
+          title: string | null;
+          translations: Json | null;
+          week_start: string | null;
+        };
+        Insert: {
+          activated_at?: string | null;
+          badge?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          edited_at?: string | null;
+          edited_by?: string | null;
+          featured_post_ids?: string[] | null;
+          id?: string | null;
+          poll_question?: string | null;
+          question?: string | null;
+          source?: string | null;
+          source_terms?: Json | null;
+          status?: Database["public"]["Enums"]["theme_status"] | null;
+          subtitle?: string | null;
+          title?: string | null;
+          translations?: Json | null;
+          week_start?: string | null;
+        };
+        Update: {
+          activated_at?: string | null;
+          badge?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          edited_at?: string | null;
+          edited_by?: string | null;
+          featured_post_ids?: string[] | null;
+          id?: string | null;
+          poll_question?: string | null;
+          question?: string | null;
+          source?: string | null;
+          source_terms?: Json | null;
+          status?: Database["public"]["Enums"]["theme_status"] | null;
+          subtitle?: string | null;
+          title?: string | null;
+          translations?: Json | null;
+          week_start?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "weekly_themes_edited_by_fkey";
+            columns: ["edited_by"];
+            isOneToOne: false;
+            referencedRelation: "professional_directory";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "weekly_themes_edited_by_fkey";
+            columns: ["edited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       professional_directory: {
         Row: {
           accepting_patients: boolean | null;
@@ -1601,6 +2886,33 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      accept_community_professional: {
+        Args: { p_community: string };
+        Returns: {
+          admin_user_id: string | null;
+          category: string;
+          cover_image_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          former_professional_ids: string[];
+          id: string;
+          name: string;
+          objective: string | null;
+          professional_id: string | null;
+          slug: string;
+          status: Database["public"]["Enums"]["community_status"];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "communities";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      activate_weekly_theme: { Args: Record<PropertyKey, never>; Returns: string };
+      are_friends: { Args: { a: string; b: string }; Returns: boolean };
       book_appointment: {
         Args: {
           p_community_slug?: string;
@@ -1639,6 +2951,9 @@ export type Database = {
       };
       can_edit_meal_plan: { Args: { p_plan: string }; Returns: boolean };
       can_read_meal_plan: { Args: { p_plan: string }; Returns: boolean };
+      can_view_post: { Args: { p_post: string; p_viewer?: string }; Returns: boolean };
+      can_view_profile_content: { Args: { p_owner: string; p_viewer?: string }; Returns: boolean };
+      can_view_theme: { Args: { p_theme: string }; Returns: boolean };
       cancel_appointment: {
         Args: { p_appointment: string; p_reason?: string };
         Returns: {
@@ -1669,7 +2984,64 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      community_is_visible: { Args: { p_community: string; p_user?: string }; Returns: boolean };
+      create_community: {
+        Args: {
+          p_category: string;
+          p_cover_image_url?: string;
+          p_description: string;
+          p_name: string;
+          p_objective?: string;
+        };
+        Returns: {
+          admin_user_id: string | null;
+          category: string;
+          cover_image_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          former_professional_ids: string[];
+          id: string;
+          name: string;
+          objective: string | null;
+          professional_id: string | null;
+          slug: string;
+          status: Database["public"]["Enums"]["community_status"];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "communities";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
+      designate_community_admin_user: {
+        Args: { p_community: string; p_user: string };
+        Returns: {
+          admin_user_id: string | null;
+          category: string;
+          cover_image_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          former_professional_ids: string[];
+          id: string;
+          name: string;
+          objective: string | null;
+          professional_id: string | null;
+          slug: string;
+          status: Database["public"]["Enums"]["community_status"];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "communities";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       diary_entry_patient: { Args: { p_entry: string }; Returns: string };
       duplicate_meal_plan: {
         Args: { p_plan: string };
@@ -1719,8 +3091,41 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      ensure_adult_trail_profile: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          avatar: string | null;
+          created_at: string;
+          id: string;
+          kind: Database["public"]["Enums"]["trail_profile_kind"];
+          name: string;
+          owner_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "trail_profiles";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       ever_linked: { Args: { p_patient: string; p_professional?: string }; Returns: boolean };
       expire_payment_holds: { Args: { p_professional?: string }; Returns: number };
+      f_unaccent: { Args: { "": string }; Returns: string };
+      friend_ids: { Args: { p_user?: string }; Returns: string[] };
+      friends_weekly_ranking: {
+        Args: { p_week_start?: string };
+        Returns: {
+          avatar_url: string;
+          is_me: boolean;
+          name: string;
+          position: number;
+          streak: number;
+          user_id: string;
+          username: string;
+          xp: number;
+        }[];
+      };
+      generate_username: { Args: { p_email?: string; p_name: string }; Returns: string };
       get_available_slots: {
         Args: { p_from: string; p_professional: string; p_to: string };
         Returns: {
@@ -1739,10 +3144,144 @@ export type Database = {
           valid: boolean;
         }[];
       };
+      get_feed: {
+        Args: {
+          p_author?: string;
+          p_before?: string;
+          p_community?: string;
+          p_limit?: number;
+          p_query?: string;
+          p_scope?: string;
+          p_theme?: string;
+          p_type?: Database["public"]["Enums"]["post_type"];
+        };
+        Returns: {
+          audience: Database["public"]["Enums"]["post_audience"];
+          author_avatar: string;
+          author_id: string;
+          author_name: string;
+          author_role: Database["public"]["Enums"]["app_role"];
+          author_username: string;
+          block_order: string[];
+          body: string;
+          comments: Json;
+          community_id: string;
+          community_name: string;
+          community_slug: string;
+          created_at: string;
+          hidden: boolean;
+          id: string;
+          image_url: string;
+          likes: string[];
+          pinned: boolean;
+          prepared: string[];
+          publish_at: string;
+          recipe: Json;
+          saved: boolean;
+          supports: string[];
+          tags: string[];
+          theme_id: string;
+          title: string;
+          type: Database["public"]["Enums"]["post_type"];
+        }[];
+      };
+      get_profile_contact: {
+        Args: { p_user: string };
+        Returns: {
+          email: string;
+          phone: string;
+        }[];
+      };
+      get_public_profile: {
+        Args: { p_key: string };
+        Returns: {
+          avatar_url: string;
+          bio: string;
+          can_view_content: boolean;
+          created_at: string;
+          followers_count: number;
+          following_count: number;
+          friends_count: number;
+          id: string;
+          is_private: boolean;
+          name: string;
+          relationship: string;
+          role: Database["public"]["Enums"]["app_role"];
+          username: string;
+        }[];
+      };
       has_active_link: { Args: { p_patient: string; p_professional?: string }; Returns: boolean };
+      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean };
+      is_community_admin: { Args: { p_community: string; p_user?: string }; Returns: boolean };
+      is_community_member: { Args: { p_community: string; p_user?: string }; Returns: boolean };
       is_platform_admin: { Args: { uid?: string }; Returns: boolean };
       is_verified_professional: { Args: { uid?: string }; Returns: boolean };
+      leave_community_admin: {
+        Args: { p_community: string };
+        Returns: {
+          admin_user_id: string | null;
+          category: string;
+          cover_image_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          former_professional_ids: string[];
+          id: string;
+          name: string;
+          objective: string | null;
+          professional_id: string | null;
+          slug: string;
+          status: Database["public"]["Enums"]["community_status"];
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "communities";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      log_search: { Args: { p_term: string }; Returns: undefined };
+      mark_all_notifications_read: { Args: Record<PropertyKey, never>; Returns: undefined };
       meal_plan_of_meal: { Args: { p_meal: string }; Returns: string };
+      moderation_queue: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          author_id: string;
+          author_name: string;
+          hidden: boolean;
+          last_report_at: string;
+          preview: string;
+          reasons: string[];
+          reports: number;
+          target_id: string;
+          target_type: Database["public"]["Enums"]["report_target"];
+        }[];
+      };
+      notification_category: { Args: { p_type: string }; Returns: string };
+      notify: {
+        Args: {
+          p_actor: string;
+          p_data?: Json;
+          p_entity_id: string;
+          p_entity_type: string;
+          p_type: string;
+          p_user: string;
+        };
+        Returns: undefined;
+      };
+      owns_trail_profile: { Args: { p_profile: string }; Returns: boolean };
+      post_is_visible: {
+        Args: {
+          p_audience: Database["public"]["Enums"]["post_audience"];
+          p_author: string;
+          p_community: string;
+          p_hidden: boolean;
+          p_publish_at: string;
+          p_viewer?: string;
+        };
+        Returns: boolean;
+      };
       publish_meal_plan: {
         Args: { p_plan: string };
         Returns: {
@@ -1797,6 +3336,26 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      relationship_with: { Args: { p_user: string }; Returns: string };
+      remove_friendship: { Args: { p_user: string }; Returns: undefined };
+      request_friendship: {
+        Args: { p_user: string };
+        Returns: {
+          addressee_id: string;
+          created_at: string;
+          id: string;
+          requester_id: string;
+          responded_at: string | null;
+          status: Database["public"]["Enums"]["friendship_status"];
+        };
+        SetofOptions: {
+          from: "*";
+          to: "friendships";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      request_weekly_theme_generation: { Args: Record<PropertyKey, never>; Returns: number };
       reschedule_appointment: {
         Args: { p_appointment: string; p_starts_at: string };
         Returns: {
@@ -1827,6 +3386,14 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      resolve_reports: {
+        Args: {
+          p_hide: boolean;
+          p_target_id: string;
+          p_target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Returns: undefined;
+      };
       respond_care_link: {
         Args: { p_accept: boolean; p_link: string };
         Returns: {
@@ -1845,6 +3412,23 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "care_links";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      respond_friendship: {
+        Args: { p_accept: boolean; p_friendship: string };
+        Returns: {
+          addressee_id: string;
+          created_at: string;
+          id: string;
+          requester_id: string;
+          responded_at: string | null;
+          status: Database["public"]["Enums"]["friendship_status"];
+        };
+        SetofOptions: {
+          from: "*";
+          to: "friendships";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -1877,20 +3461,81 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      save_trail_progress: {
+        Args: { p_data: Json; p_profile: string; p_xp_gained?: number };
+        Returns: undefined;
+      };
+      search_norm: { Args: { "": string }; Returns: string };
+      search_users: {
+        Args: {
+          p_limit?: number;
+          p_offset?: number;
+          p_profession?: string;
+          p_query?: string;
+          p_role?: Database["public"]["Enums"]["app_role"];
+          p_specialty?: string;
+          p_uf?: string;
+          p_verified_only?: boolean;
+        };
+        Returns: {
+          avatar_url: string;
+          bio: string;
+          council: string;
+          followers: number;
+          id: string;
+          is_private: boolean;
+          mutual_friends: number;
+          name: string;
+          profession: string;
+          registration: string;
+          relationship: string;
+          role: Database["public"]["Enums"]["app_role"];
+          specialties: string[];
+          uf: string;
+          username: string;
+          verified: boolean;
+        }[];
+      };
       setting_int: { Args: { p_default: number; p_key: string }; Returns: number };
       storage_owner: { Args: { p_name: string }; Returns: string };
+      theme_poll_results: {
+        Args: { p_theme: string };
+        Returns: {
+          mine: boolean;
+          option_id: string;
+          votes: number;
+        }[];
+      };
+      toggle_post_pin: { Args: { p_post: string }; Returns: boolean };
+      top_search_terms: {
+        Args: { p_from: string; p_limit?: number; p_to: string };
+        Returns: {
+          hits: number;
+          term: string;
+        }[];
+      };
+      unique_slug: { Args: { p_name: string }; Returns: string };
     };
     Enums: {
       app_role: "paciente" | "profissional";
       appointment_modality: "presencial" | "online";
       appointment_status:
         "aguardando_pagamento" | "agendada" | "confirmada" | "realizada" | "cancelada" | "faltou";
+      community_status: "pendente" | "ativa" | "suspensa";
       document_kind: "exame" | "documento" | "plano" | "outro";
+      friendship_status: "pendente" | "aceita" | "recusada";
       link_origin: "solicitacao" | "convite" | "comunidade" | "agendamento";
       link_status: "pendente" | "ativo" | "recusado" | "encerrado";
       meal_plan_status: "rascunho" | "ativo" | "arquivado";
       payment_status:
         "pendente" | "em_processamento" | "aprovado" | "recusado" | "reembolsado" | "cancelado";
+      post_audience: "publico" | "amigos";
+      post_type: "receita" | "experiencia" | "pergunta" | "geral";
+      reaction_kind: "curtir" | "apoiar" | "preparei";
+      report_status: "pendente" | "procedente" | "improcedente";
+      report_target: "post" | "comment" | "user";
+      theme_status: "previa" | "ativo" | "encerrado";
+      trail_profile_kind: "adult" | "kid";
       verification_status: "em_analise" | "aprovado" | "recusado";
     };
     CompositeTypes: {
@@ -2013,7 +3658,9 @@ export const Constants = {
         "cancelada",
         "faltou",
       ],
+      community_status: ["pendente", "ativa", "suspensa"],
       document_kind: ["exame", "documento", "plano", "outro"],
+      friendship_status: ["pendente", "aceita", "recusada"],
       link_origin: ["solicitacao", "convite", "comunidade", "agendamento"],
       link_status: ["pendente", "ativo", "recusado", "encerrado"],
       meal_plan_status: ["rascunho", "ativo", "arquivado"],
@@ -2025,6 +3672,13 @@ export const Constants = {
         "reembolsado",
         "cancelado",
       ],
+      post_audience: ["publico", "amigos"],
+      post_type: ["receita", "experiencia", "pergunta", "geral"],
+      reaction_kind: ["curtir", "apoiar", "preparei"],
+      report_status: ["pendente", "procedente", "improcedente"],
+      report_target: ["post", "comment", "user"],
+      theme_status: ["previa", "ativo", "encerrado"],
+      trail_profile_kind: ["adult", "kid"],
       verification_status: ["em_analise", "aprovado", "recusado"],
     },
   },
