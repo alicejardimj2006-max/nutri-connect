@@ -66,7 +66,7 @@ function FinancePage() {
   const since = useMemo(
     () => new Date(now.getFullYear(), now.getMonth() - (HISTORY_MONTHS - 1), 1),
     [],
-  ); // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const historyStart = range.from < since ? range.from : since;
 
   const payments = useQuery({

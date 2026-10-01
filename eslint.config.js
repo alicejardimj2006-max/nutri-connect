@@ -6,7 +6,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  {
+    // Arquivos gerados pela plataforma (Lovable) e Edge Functions (Deno) ficam fora do lint.
+    ignores: ["dist", ".output", ".vinxi", "src/integrations/supabase", "supabase/functions"],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

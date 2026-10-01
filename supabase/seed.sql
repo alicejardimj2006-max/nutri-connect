@@ -2,6 +2,10 @@
 -- NutriConnect — dados de demonstração.
 -- Todas as contas usam a senha: NutriDemo@2026
 --
+-- ATENÇÃO: esta senha é pública (está neste repositório). Use este seed só em
+-- banco local/de desenvolvimento. Nunca rode em produção sem trocar as senhas
+-- e desativar as contas que não forem usadas logo em seguida.
+--
 --   admin@nutriconnect.com.br                 admin da plataforma
 --   maria.lorena@demo.nutriconnect.com.br     nutricionista (CRN-3)
 --   pedro.costa@demo.nutriconnect.com.br      nutricionista (CRN-4)
