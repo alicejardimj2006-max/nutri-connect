@@ -846,7 +846,11 @@ function pixelRatio() {
 
 function getEngine(): Engine {
   if (engine) return engine;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true,
+    powerPreference: "low-power",
+  });
   renderer.setPixelRatio(1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
@@ -881,7 +885,17 @@ function getEngine(): Engine {
   );
   document.addEventListener("visibilitychange", wake);
 
-  engine = { renderer, instances: new Set(), byElement, io, ro, raf: 0, last: 0, bufferW: 0, bufferH: 0 };
+  engine = {
+    renderer,
+    instances: new Set(),
+    byElement,
+    io,
+    ro,
+    raf: 0,
+    last: 0,
+    bufferW: 0,
+    bufferH: 0,
+  };
   return engine;
 }
 
