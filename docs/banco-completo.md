@@ -51,8 +51,10 @@ Um admin também pode gerar ou refazer a prévia na hora, chamando a função co
 npx supabase db push
 ```
 
-Use `npx supabase db push --include-seed` se quiser as contas e o conteúdo de demonstração no
-banco real.
+Use `npx supabase db push --include-seed` só em banco de desenvolvimento. As contas de
+demonstração usam uma senha pública (está no `seed.sql`): se o seed for aplicado em um banco com
+usuários reais, troque as senhas do admin e dos profissionais demo e desative as demais contas
+imediatamente.
 
 As tabelas antigas criadas à mão são tratadas automaticamente. As vazias são apagadas. As que
 tiverem dados viram `<nome>_legacy` sem perder nada: é o caso da `profiles`, cujos dados são
