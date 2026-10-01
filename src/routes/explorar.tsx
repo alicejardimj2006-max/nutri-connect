@@ -1,12 +1,13 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
 import { useI18n } from "@/hooks/use-i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({
@@ -30,6 +31,19 @@ function ExplorarPage() {
   const { posts, challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
+
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 3) return;
+
+    const timer = setTimeout(() => {
+      supabase.rpc("log_search", { p_term: term }).then(({ error }) => {
+        if (error) console.error("Erro ao registrar termo de busca:", error);
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
