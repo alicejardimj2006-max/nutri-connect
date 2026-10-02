@@ -17,6 +17,7 @@ import { Mascot } from "@/components/mascots";
 import { Panel } from "@/components/page-layout";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { useFeed } from "@/lib/social/feed-queries";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 import { getEarnedBadges, getUserLevel, getUserStreak, getUserXP, initials } from "@/lib/community";
@@ -519,11 +520,12 @@ export function TopCommunitiesPanel() {
 /** Receitas que mais gente preparou. */
 export function TopRecipesPanel() {
   const { t } = useI18n();
-  const { posts } = useCommunity();
+  const { user } = useAuth();
+  const feed = useFeed({ scope: "todos", type: "receita", limit: 30 }, !!user);
+  const posts = feed.data;
   const top = useMemo(
     () =>
-      posts
-        .filter((p) => p.type === "receita")
+      [...(posts ?? [])]
         .sort((a, b) => (b.preparedBy?.length ?? 0) - (a.preparedBy?.length ?? 0))
         .slice(0, 4),
     [posts],
@@ -566,9 +568,9 @@ export function TopRecipesPanel() {
 export function MyPreparedRecipesPanel() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { posts } = useCommunity();
+  const feed = useFeed({ scope: "preparados", author: user?.id, limit: 5 }, !!user);
   if (!user) return null;
-  const mine = posts.filter((p) => p.type === "receita" && (p.preparedBy || []).includes(user.id));
+  const mine = feed.data ?? [];
   return (
     <Panel title={t("panel.myPrepared")}>
       {mine.length > 0 ? (
@@ -601,11 +603,12 @@ export function MyPreparedRecipesPanel() {
 /** Relatos que mais receberam apoio. */
 export function TopExperiencesPanel() {
   const { t } = useI18n();
-  const { posts } = useCommunity();
+  const { user } = useAuth();
+  const feed = useFeed({ scope: "todos", type: "experiencia", limit: 30 }, !!user);
+  const posts = feed.data;
   const top = useMemo(
     () =>
-      posts
-        .filter((p) => p.type === "experiencia")
+      [...(posts ?? [])]
         .sort((a, b) => (b.supports?.length ?? 0) - (a.supports?.length ?? 0))
         .slice(0, 4),
     [posts],

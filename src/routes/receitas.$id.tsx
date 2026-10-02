@@ -13,9 +13,14 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import { useCommunity } from "@/hooks/use-community";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { togglePrepared, toggleSupport, addComment, formatDate, initials } from "@/lib/community";
+import { formatDate, initials } from "@/lib/community";
+import {
+  useAddComment,
+  useFeedRealtime,
+  usePost,
+  useToggleReaction,
+} from "@/lib/social/feed-queries";
 import { toast } from "sonner";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -37,12 +42,17 @@ function ReceitaDetalhePage() {
   const { id } = useParams({ from: "/receitas/$id" });
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { posts, hydrated } = useCommunity();
+  // A receita (com comentários e contadores) vem do banco; null = não existe ou não pode ser vista.
+  const postQuery = usePost(user ? id : undefined);
+  const toggleReaction = useToggleReaction();
+  const addRemoteComment = useAddComment();
+  useFeedRealtime(user?.id);
+  const hydrated = !postQuery.isLoading;
 
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
   const [commentText, setCommentText] = useState("");
 
-  const recipe = posts.find((p) => p.id === id && p.type === "receita");
+  const recipe = postQuery.data?.type === "receita" ? postQuery.data : undefined;
 
   const currentUserId = user?.id || "guest";
   const hasPrepared = (recipe?.preparedBy || []).includes(currentUserId);
@@ -95,7 +105,12 @@ function ReceitaDetalhePage() {
       toast.info(t("common.loginToPrepared"));
       return;
     }
-    togglePrepared(recipe.id, user.id);
+    toggleReaction.mutate({
+      postId: recipe.id,
+      kind: "preparei",
+      on: !hasPrepared,
+      userId: user.id,
+    });
     if (!hasPrepared) {
       toast.success(t("recipe.prepared.success"));
     }
@@ -106,19 +121,28 @@ function ReceitaDetalhePage() {
       toast.info(t("recipe.loginToSupport"));
       return;
     }
-    toggleSupport(recipe.id, user.id);
+    toggleReaction.mutate({
+      postId: recipe.id,
+      kind: "apoiar",
+      on: !hasSupported,
+      userId: user.id,
+    });
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.info(t("common.loginToComment"));
       return;
     }
     if (!commentText.trim()) return;
-    addComment(recipe.id, { id: user.id, name: user.name }, commentText.trim());
-    setCommentText("");
-    toast.success(t("recipe.commentPublished"));
+    try {
+      await addRemoteComment.mutateAsync({ postId: recipe.id, text: commentText.trim() });
+      setCommentText("");
+      toast.success(t("recipe.commentPublished"));
+    } catch {
+      // o aviso de erro já é mostrado pelo hook
+    }
   };
 
   return (

@@ -22,7 +22,8 @@ export type FeedScope =
   | "salvos"
   | "agendados"
   | "tema"
-  | "post";
+  | "post"
+  | "preparados";
 
 export type PostAudience = "publico" | "amigos";
 export type ReactionKind = Database["public"]["Enums"]["reaction_kind"];
