@@ -1,7 +1,9 @@
-// Ponte entre o Supabase (fonte da verdade de perfis, profissionais verificados
+// Ponte TEMPORÁRIA entre o Supabase (fonte da verdade de perfis, profissionais verificados
 // e pedidos de verificação) e o estado local das comunidades, que ainda vive no
-// navegador. Os componentes de comunidade continuam lendo `profiles` e
-// `verifications` do useCommunity; aqui mantemos esses campos espelhados.
+// navegador. Os componentes de comunidade continuam lendo `profiles` (nome, papel e dados
+// de profissional) e `verifications` do useCommunity; aqui mantemos esses campos espelhados.
+// Bio, objetivos e demais dados de perfil NÃO são copiados: telas de perfil leem do banco
+// (src/lib/social). Some quando comunidades e feed migrarem (Etapas 3 a 5).
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -26,7 +28,7 @@ type ProfessionalRow = {
 /** Perfis públicos + profissionais verificados → state.profiles. */
 export async function syncRemoteProfiles(): Promise<void> {
   const [profiles, pros] = await Promise.all([
-    supabase.from("profiles").select("id, name, bio, role").limit(2000),
+    supabase.from("profiles").select("id, name, role").limit(2000),
     supabase
       .from("professionals")
       .select("user_id, profession, council, registration, uf, specialties, verified_at")
@@ -42,7 +44,6 @@ export async function syncRemoteProfiles(): Promise<void> {
     return {
       userId: p.id,
       name: p.name,
-      bio: p.bio,
       role: pro ? "profissional" : "paciente",
       professional: pro
         ? {

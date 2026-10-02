@@ -111,7 +111,7 @@ export interface ProfessionalInfo {
 export interface PublicProfile {
   userId: string;
   name: string;
-  bio: string;
+  bio?: string;
   role?: ProfileRole;
   /** Presente quando role === "profissional" (perfil profissional verificado). */
   professional?: ProfessionalInfo;
@@ -1390,15 +1390,6 @@ export function togglePin(postId: string) {
   update((s) => ({
     ...s,
     posts: s.posts.map((p) => (p.id === postId ? { ...p, pinned: !p.pinned } : p)),
-  }));
-}
-
-export function upsertProfile(profile: PublicProfile) {
-  update((s) => ({
-    ...s,
-    profiles: s.profiles.some((p) => p.userId === profile.userId)
-      ? s.profiles.map((p) => (p.userId === profile.userId ? { ...p, ...profile } : p))
-      : [...s.profiles, profile],
   }));
 }
 

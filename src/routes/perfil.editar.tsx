@@ -6,7 +6,8 @@ import { ArrowLeft, Heart, User } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { updateCurrentUser } from "@/lib/auth";
-import { JOURNEY_GOALS, loadState, upsertProfile } from "@/lib/community";
+import { JOURNEY_GOALS } from "@/lib/community";
+import { syncRemoteProfiles } from "@/lib/profile-sync";
 import { Field } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -28,9 +29,7 @@ function EditProfilePage() {
   useEffect(() => {
     if (!user) return;
     setName(user.name);
-    // A bio pública (que pode ter sido definida na verificação profissional) tem prioridade.
-    const publicBio = loadState().profiles.find((p) => p.userId === user.id)?.bio;
-    setBio(user.bio || publicBio || "");
+    setBio(user.bio || "");
     setPhone(user.phone || "");
     setGoal(user.journeyGoal || user.goal || JOURNEY_GOALS[0]);
   }, [user]);
@@ -57,13 +56,8 @@ function EditProfilePage() {
       return;
     }
 
-    // Espelha o perfil público (nome e bio) no estado local das comunidades.
-    const publicProfile = loadState().profiles.find((p) => p.userId === user.id);
-    upsertProfile({
-      ...(publicProfile ?? { userId: user.id, role: user.role }),
-      name: cleanName,
-      bio: bio.trim(),
-    });
+    // O banco é a fonte do perfil; só atualiza o nome exibido nas telas de comunidade.
+    void syncRemoteProfiles();
 
     toast.success(t("edit.updated"));
     navigate({ to: "/perfil/$userId", params: { userId: user.id } });
