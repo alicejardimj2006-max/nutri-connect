@@ -13,7 +13,8 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { getAuthorRole, getFriendIds, type Post } from "@/lib/community";
+import { getAuthorRole, type Post } from "@/lib/community";
+import { useFriends } from "@/lib/social/queries";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
@@ -55,7 +56,8 @@ export const Route = createFileRoute("/espaco")({
 function EspacoDeHojePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { posts, communities, profiles, hydrated } = useCommunity();
+  const { posts, profiles, hydrated } = useCommunity();
+  const friends = useFriends();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   // Guarda a posição de rolagem de cada aba para restaurar ao voltar,
@@ -106,10 +108,8 @@ function EspacoDeHojePage() {
     Boolean,
   ) as typeof posts;
 
-  const friendIds = useMemo(
-    () => (user ? getFriendIds(user.id, communities) : new Set<string>()),
-    [user, communities],
-  );
+  // Amigos de verdade (amizade aceita no banco), não "quem divide comunidade".
+  const friendIds = useMemo(() => new Set((friends.data ?? []).map((f) => f.id)), [friends.data]);
 
   const amigosPosts = useMemo(
     () =>

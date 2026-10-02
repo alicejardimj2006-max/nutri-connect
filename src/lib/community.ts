@@ -1458,23 +1458,6 @@ export function getAuthorRole(authorId: string, profiles: PublicProfile[]): Prof
   return profiles.find((p) => p.userId === authorId)?.role ?? "paciente";
 }
 
-/**
- * IDs de "amigos": pessoas com quem o usuário compartilha ao menos uma
- * comunidade. É a relação de conexão já existente no app (participação em
- * comunidades), usada como proxy até existir um sistema de amizade dedicado.
- */
-export function getFriendIds(userId: string, communities: Community[]): Set<string> {
-  const friendIds = new Set<string>();
-  for (const community of communities) {
-    const isMember = community.members.some((m) => m.userId === userId);
-    if (!isMember) continue;
-    for (const member of community.members) {
-      if (member.userId !== userId) friendIds.add(member.userId);
-    }
-  }
-  return friendIds;
-}
-
 // ── Gamificação: XP, Nível e Ofensiva ──────────────────────────────────
 
 const XP_PER_CHALLENGE = 100;

@@ -194,6 +194,9 @@ const es: Record<DictKey, string> = {
 
   "notif.title": "Notificaciones",
   "notif.empty": "Aún no hay notificaciones.",
+  "notif.friendRequests.title": "Solicitudes de amistad",
+  "notif.friendRequests.wants": "quiere ser tu amigo",
+  "notif.friendRequests.declined": "Solicitud rechazada.",
   "auth.email": "Correo electrónico",
   "auth.password": "Contraseña",
   "auth.fillEmail": "Escribe tu correo.",

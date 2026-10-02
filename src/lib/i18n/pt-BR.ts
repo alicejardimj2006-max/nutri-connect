@@ -206,6 +206,9 @@ const ptBR = {
 
   "notif.title": "Notificações",
   "notif.empty": "Nenhuma notificação ainda.",
+  "notif.friendRequests.title": "Pedidos de amizade",
+  "notif.friendRequests.wants": "quer ser seu amigo",
+  "notif.friendRequests.declined": "Pedido recusado.",
   "auth.email": "E-mail",
   "auth.password": "Senha",
   "auth.fillEmail": "Preencha seu e-mail.",
