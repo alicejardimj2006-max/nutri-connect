@@ -6,7 +6,6 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
-import { PAGE_CONTAINER } from "@/components/page-layout";
 import {
   Carousel,
   CarouselContent,
@@ -123,6 +122,30 @@ function PostList({
   );
 }
 
+/** Navegação entre as duas páginas: fica no topo de cada página e some junto com a rolagem. */
+function PagesNav({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="mx-auto mb-4 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
+      {PAGES.map((page, index) => (
+        <button
+          key={page.id}
+          type="button"
+          onClick={() => onSelect(index)}
+          className={cn(
+            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+            active === index
+              ? "bg-secondary text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {t(page.labelKey)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function EspacoDeHojePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t, locale } = useI18n();
@@ -142,24 +165,31 @@ function EspacoDeHojePage() {
     };
   }, [carouselApi]);
 
-  // Cada página tem a sua própria rolagem (a altura livre da tela), então rolar uma não mexe
-  // na outra e nenhuma "pula" ao trocar de página.
+  // Os filtros somem ao rolar o feed para baixo e voltam ao rolar para cima (ou no topo).
+  const [filtersVisible, setFiltersVisible] = useState(true);
+  const lastScrollTop = useRef(0);
+  const handleGeralScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const top = e.currentTarget.scrollTop;
+    const previous = lastScrollTop.current;
+    if (top <= 16) setFiltersVisible(true);
+    else if (top > previous + 4) setFiltersVisible(false);
+    else if (top < previous - 4) setFiltersVisible(true);
+    lastScrollTop.current = top;
+  };
+
+  // Só o feed rola: cada página ocupa a altura que a coluna central tem (medida ao vivo),
+  // então rolar uma não mexe na outra e a janela fica parada.
   const pagesRef = useRef<HTMLDivElement>(null);
   const [pageHeight, setPageHeight] = useState<number>();
   const ready = authHydrated && !!user;
   useLayoutEffect(() => {
-    if (!ready) return;
-    const measure = () => {
-      const el = pagesRef.current;
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      // No celular há a barra de navegação inferior; no computador, só uma folga.
-      const bottom = window.innerWidth < 1024 ? 96 : 24;
-      setPageHeight(Math.max(360, window.innerHeight - top - bottom));
-    };
+    const el = pagesRef.current;
+    if (!ready || !el) return;
+    const measure = () => setPageHeight(Math.max(320, el.clientHeight));
     measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [ready]);
 
   const enabled = !!user;
@@ -181,134 +211,123 @@ function EspacoDeHojePage() {
     setFilter(next);
     setLimit(PAGE_SIZE);
   };
+  const goToPage = (index: number) => carouselApi?.scrollTo(index);
 
   return (
-    // Altura fixa da tela: a janela não rola; só as duas páginas do feed rolam (cada uma por si).
+    // Altura fixa da tela: a janela não rola. Só o feed (cada página) rola; as colunas
+    // laterais ficam paradas e mostram só o que cabe.
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
 
-      <main className={`${PAGE_CONTAINER} flex-1 py-8`}>
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-          <div className="hidden xl:block">
-            <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-              <EspacoLeftColumn />
-            </div>
+      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
+        <div className="grid h-full min-h-0 w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+          <div className="hidden h-full min-h-0 overflow-hidden xl:block">
+            <EspacoLeftColumn />
           </div>
-          <div className="min-w-0">
-            {/* Páginas do feed */}
-            <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
-              {PAGES.map((page, index) => (
-                <button
-                  key={page.id}
-                  type="button"
-                  onClick={() => carouselApi?.scrollTo(index)}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                    activePage === index
-                      ? "bg-secondary text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t(page.labelKey)}
-                </button>
-              ))}
-            </div>
 
-            {/* Feed centralizado, deslizável entre páginas (arraste para o lado no celular).
-                Cada página é uma "tela" inteira, com um vão largo entre elas; a página que
-                não está em foco não estica a altura da que está. */}
-            <div ref={pagesRef} className="mx-auto w-full max-w-2xl overflow-x-clip">
-              <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
-                <CarouselContent className="-ml-12">
-                  <CarouselItem className="pl-12">
+          {/* Feed centralizado, deslizável entre páginas (arraste para o lado no celular).
+              Cada página é uma "tela" inteira, com um vão largo entre elas. */}
+          <div
+            ref={pagesRef}
+            className="mx-auto h-full min-h-0 w-full min-w-0 max-w-3xl overflow-x-clip"
+          >
+            <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
+              <CarouselContent className="-ml-12">
+                <CarouselItem className="pl-12">
+                  <div
+                    onScroll={handleGeralScroll}
+                    className="overflow-y-auto overscroll-contain px-2 pb-12"
+                    style={{ height: pageHeight }}
+                  >
+                    <PagesNav active={activePage} onSelect={goToPage} />
                     <div
-                      className="overflow-y-auto overscroll-contain px-2 pb-12"
-                      style={{ height: pageHeight }}
+                      className={cn(
+                        "sticky top-0 z-10 -mx-2 mb-4 flex flex-wrap items-center justify-center gap-2 bg-background/90 px-2 py-2 backdrop-blur transition-transform duration-200",
+                        !filtersVisible && "-translate-y-full",
+                      )}
                     >
-                      <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
-                        {FILTERS.map((f) => (
-                          <button
-                            key={f.id}
-                            type="button"
-                            aria-pressed={filter === f.id}
-                            onClick={() => changeFilter(f.id)}
-                            className={cn(
-                              "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                              filter === f.id
-                                ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                                : "bg-secondary text-muted-foreground hover:text-foreground",
-                            )}
-                          >
-                            {t(f.labelKey)}
-                          </button>
-                        ))}
+                      {FILTERS.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          aria-pressed={filter === f.id}
+                          onClick={() => changeFilter(f.id)}
+                          className={cn(
+                            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+                            filter === f.id
+                              ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+                              : "bg-secondary text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          {t(f.labelKey)}
+                        </button>
+                      ))}
+                    </div>
+                    <PostList
+                      posts={geralPosts}
+                      loading={geral.isLoading}
+                      emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
+                      hasMore={geralPosts.length >= limit}
+                      onMore={() => setLimit((n) => n + PAGE_SIZE)}
+                    />
+                  </div>
+                </CarouselItem>
+
+                <CarouselItem className="pl-12">
+                  <div
+                    className="overflow-y-auto overscroll-contain px-2 pb-12"
+                    style={{ height: pageHeight }}
+                  >
+                    <PagesNav active={activePage} onSelect={goToPage} />
+                    {text ? (
+                      <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
+                        <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
+                          <Sparkles className="h-4 w-4" /> {text.badge ?? t("weekly.badge")}
+                        </p>
+                        <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">
+                          {text.title}
+                        </h2>
+                        {text.description && (
+                          <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                            {text.description}
+                          </p>
+                        )}
+                        {text.question && (
+                          <p className="mt-3 text-sm font-semibold text-foreground">
+                            {text.question}
+                          </p>
+                        )}
+                        <Link
+                          to="/tema-da-semana"
+                          className="mt-4 inline-block text-xs font-semibold text-accent hover:underline"
+                        >
+                          {t("espaco.theme.open")}
+                        </Link>
                       </div>
+                    ) : (
+                      !theme.isLoading && (
+                        <p className="mb-6 rounded-2xl bg-secondary/30 p-4 text-center text-sm text-muted-foreground">
+                          {t("espaco.theme.none")}
+                        </p>
+                      )
+                    )}
+                    {text && (
                       <PostList
-                        posts={geralPosts}
-                        loading={geral.isLoading}
-                        emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
-                        hasMore={geralPosts.length >= limit}
-                        onMore={() => setLimit((n) => n + PAGE_SIZE)}
+                        posts={themePosts}
+                        loading={themeFeed.isLoading}
+                        emptyMessage={t("espaco.empty.tema")}
+                        hasMore={themePosts.length >= themeLimit}
+                        onMore={() => setThemeLimit((n) => n + PAGE_SIZE)}
                       />
-                    </div>
-                  </CarouselItem>
-
-                  <CarouselItem className="pl-12">
-                    <div
-                      className="overflow-y-auto overscroll-contain px-2 pb-12"
-                      style={{ height: pageHeight }}
-                    >
-                      {text ? (
-                        <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
-                          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
-                            <Sparkles className="h-4 w-4" /> {text.badge ?? t("weekly.badge")}
-                          </p>
-                          <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">
-                            {text.title}
-                          </h2>
-                          {text.description && (
-                            <p className="mt-2 text-sm leading-relaxed text-foreground/85">
-                              {text.description}
-                            </p>
-                          )}
-                          {text.question && (
-                            <p className="mt-3 text-sm font-semibold text-foreground">
-                              {text.question}
-                            </p>
-                          )}
-                          <Link
-                            to="/tema-da-semana"
-                            className="mt-4 inline-block text-xs font-semibold text-accent hover:underline"
-                          >
-                            {t("espaco.theme.open")}
-                          </Link>
-                        </div>
-                      ) : (
-                        !theme.isLoading && (
-                          <p className="mb-6 rounded-2xl bg-secondary/30 p-4 text-center text-sm text-muted-foreground">
-                            {t("espaco.theme.none")}
-                          </p>
-                        )
-                      )}
-                      {text && (
-                        <PostList
-                          posts={themePosts}
-                          loading={themeFeed.isLoading}
-                          emptyMessage={t("espaco.empty.tema")}
-                          hasMore={themePosts.length >= themeLimit}
-                          onMore={() => setThemeLimit((n) => n + PAGE_SIZE)}
-                        />
-                      )}
-                    </div>
-                  </CarouselItem>
-                </CarouselContent>
-              </Carousel>
-            </div>
+                    )}
+                  </div>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
           </div>
-          <div className="hidden lg:block">
-            <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-              <EspacoRightColumn />
-            </div>
+
+          <div className="hidden h-full min-h-0 overflow-hidden lg:block">
+            <EspacoRightColumn />
           </div>
         </div>
       </main>

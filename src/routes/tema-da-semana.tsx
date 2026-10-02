@@ -15,13 +15,6 @@ import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-quer
 import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { useI18n } from "@/hooks/use-i18n";
-import { CARD_GRID, PAGE_CONTAINER, PageColumns, Panel } from "@/components/page-layout";
-import {
-  ChallengesPanel,
-  MyCommunitiesPanel,
-  SuggestedCommunitiesPanel,
-  TopRecipesPanel,
-} from "@/components/side-panels";
 import type { DictKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/tema-da-semana")({
@@ -90,235 +83,197 @@ function TemaDaSemanaPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
-      <main className={`${PAGE_CONTAINER} flex-1 py-8`}>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {!hydrated || !weeklyTheme ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
             {t("theme.loading")}
           </div>
         ) : (
-          <PageColumns
-            left={
-              <>
-                {linkedChallenge && (
-                  <Panel title={t("theme.challengeOfWeek")}>
-                    <ChallengeCard challenge={linkedChallenge} />
-                  </Panel>
-                )}
-                <ChallengesPanel />
-                <MyCommunitiesPanel />
-              </>
-            }
-            right={
-              <>
-                <Panel title={t("theme.archive")}>
-                  <ul className="space-y-2">
-                    {pastThemes.map((pt) => (
-                      <li key={pt.title} className="rounded-xl bg-secondary/50 p-3">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          {t(pt.week)}
-                        </p>
-                        <p className="mt-0.5 text-sm font-bold font-display text-foreground">
-                          {t(pt.title)}
-                        </p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
-                          🥗 {pt.recipesCount} {t("theme.recipesCount")} · 💬 {pt.reflectionsCount}{" "}
-                          {t("theme.storiesCount")}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </Panel>
-                <TopRecipesPanel />
-                <SuggestedCommunitiesPanel />
-              </>
-            }
-          >
-            <div className="space-y-12">
-              {/* Bloco Principal do Tema - Editorial */}
-              <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-card shadow-card flex flex-col">
-                <div className="h-64 sm:h-80 w-full relative">
-                  <img
-                    src="/images/challenges/salad-bowl.jpg"
-                    alt={weeklyTheme.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10 pr-6">
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider">
-                        {weeklyTheme.badge}
-                      </span>
-                      <span className="text-xs font-medium text-white/90">
-                        {weeklyTheme.currentWeek}
-                      </span>
-                    </div>
-                    <h1 className="text-3xl sm:text-5xl font-extrabold font-display text-white leading-tight">
-                      {weeklyTheme.title}
-                    </h1>
+          <div className="space-y-12">
+            {/* Bloco Principal do Tema - Editorial */}
+            <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-card shadow-card flex flex-col">
+              <div className="h-64 sm:h-80 w-full relative">
+                <img
+                  src="/images/challenges/salad-bowl.jpg"
+                  alt={weeklyTheme.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10 pr-6">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider">
+                      {weeklyTheme.badge}
+                    </span>
+                    <span className="text-xs font-medium text-white/90">
+                      {weeklyTheme.currentWeek}
+                    </span>
                   </div>
+                  <h1 className="text-3xl sm:text-5xl font-extrabold font-display text-white leading-tight">
+                    {weeklyTheme.title}
+                  </h1>
                 </div>
+              </div>
 
-                <div className="p-6 sm:p-10 bg-gradient-to-br from-card via-card to-accent-soft/30">
-                  <p className="text-base sm:text-lg text-foreground/90 leading-relaxed max-w-3xl">
-                    {weeklyTheme.description}
-                  </p>
+              <div className="p-6 sm:p-10 bg-gradient-to-br from-card via-card to-accent-soft/30">
+                <p className="text-base sm:text-lg text-foreground/90 leading-relaxed max-w-3xl">
+                  {weeklyTheme.description}
+                </p>
 
-                  {/* Destaque da Pergunta da Semana */}
-                  <div className="mt-8 rounded-2xl border border-accent/30 bg-card p-6 shadow-xs relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                      <HelpCircle className="w-24 h-24 text-accent" />
-                    </div>
-                    <div className="relative z-10 flex items-start gap-4">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
-                        <HelpCircle className="h-6 w-6" />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-accent mb-1">
-                          {t("weekly.questionOfWeek")}
-                        </h3>
-                        <p className="text-lg font-semibold text-foreground italic">
-                          “{weeklyTheme.questionOfTheWeek}”
-                        </p>
+                {/* Destaque da Pergunta da Semana */}
+                <div className="mt-8 rounded-2xl border border-accent/30 bg-card p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <HelpCircle className="w-24 h-24 text-accent" />
+                  </div>
+                  <div className="relative z-10 flex items-start gap-4">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
+                      <HelpCircle className="h-6 w-6" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-accent mb-1">
+                        {t("weekly.questionOfWeek")}
+                      </h3>
+                      <p className="text-lg font-semibold text-foreground italic">
+                        “{weeklyTheme.questionOfTheWeek}”
+                      </p>
 
-                        {/* Placeholder for the poll (Enquete) */}
-                        {weeklyTheme.poll && (
-                          <div className="mt-6 space-y-2">
-                            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                              {t("theme.vote")}
-                            </p>
-                            {weeklyTheme.poll.options.map((opt) => (
-                              <div
-                                key={opt.id}
-                                className="relative flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50 hover:bg-secondary/60 cursor-pointer transition"
-                              >
-                                <span className="text-sm font-medium text-foreground relative z-10">
-                                  {opt.text}
-                                </span>
-                                <span className="text-xs font-semibold text-muted-foreground relative z-10">
-                                  {opt.votes} {t("theme.votes")}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="mt-6 flex items-center gap-3">
-                          <ShareModal
-                            triggerButton={
-                              <button
-                                type="button"
-                                className="rounded-full bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-sm flex items-center gap-1.5 transition hover:-translate-y-0.5"
-                              >
-                                <MessageSquare className="h-4 w-4" />
-                                <span>{t("theme.leaveStory")}</span>
-                              </button>
-                            }
-                          />
+                      {/* Placeholder for the poll (Enquete) */}
+                      {weeklyTheme.poll && (
+                        <div className="mt-6 space-y-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                            {t("theme.vote")}
+                          </p>
+                          {weeklyTheme.poll.options.map((opt) => (
+                            <div
+                              key={opt.id}
+                              className="relative flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50 hover:bg-secondary/60 cursor-pointer transition"
+                            >
+                              <span className="text-sm font-medium text-foreground relative z-10">
+                                {opt.text}
+                              </span>
+                              <span className="text-xs font-semibold text-muted-foreground relative z-10">
+                                {opt.votes} {t("theme.votes")}
+                              </span>
+                            </div>
+                          ))}
                         </div>
+                      )}
+
+                      <div className="mt-6 flex items-center gap-3">
+                        <ShareModal
+                          triggerButton={
+                            <button
+                              type="button"
+                              className="rounded-full bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-sm flex items-center gap-1.5 transition hover:-translate-y-0.5"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                              <span>{t("theme.leaveStory")}</span>
+                            </button>
+                          }
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Grid: Desafio Vinculado + Receitas Recomendadas para a Semana */}
-              <div className="grid gap-8 lg:grid-cols-[400px_1fr] min-[1440px]:grid-cols-1">
-                {/* Desafio Vinculado: a partir de 1440px fica na coluna da esquerda */}
-                <div className="space-y-4 min-[1440px]:hidden">
+            {/* Grid: Desafio Vinculado + Receitas Recomendadas para a Semana */}
+            <div className="grid gap-8 lg:grid-cols-[400px_1fr]">
+              {/* Desafio Vinculado */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-accent" />
+                  <h3 className="text-lg font-bold font-display text-foreground">
+                    {t("theme.challengeOfWeek")}
+                  </h3>
+                </div>
+                {linkedChallenge && <ChallengeCard challenge={linkedChallenge} />}
+              </div>
+
+              {/* Receitas Sugeridas do Tema */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Award className="h-5 w-5 text-accent" />
+                    <ChefHat className="h-5 w-5 text-accent" />
                     <h3 className="text-lg font-bold font-display text-foreground">
-                      {t("theme.challengeOfWeek")}
+                      {t("theme.inspiredRecipes")}
                     </h3>
                   </div>
-                  {linkedChallenge && <ChallengeCard challenge={linkedChallenge} />}
+                  <Link
+                    to="/receitas"
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    {t("theme.seeAllRecipes")}
+                  </Link>
                 </div>
 
-                {/* Receitas Sugeridas do Tema */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ChefHat className="h-5 w-5 text-accent" />
-                      <h3 className="text-lg font-bold font-display text-foreground">
-                        {t("theme.inspiredRecipes")}
-                      </h3>
-                    </div>
-                    <Link
-                      to="/receitas"
-                      className="text-xs font-semibold text-primary hover:underline"
-                    >
-                      {t("theme.seeAllRecipes")}
-                    </Link>
-                  </div>
-
-                  <div className={CARD_GRID}>
-                    {themeRecipes.slice(0, 6).map((r) => (
-                      <PostCard key={r.id} post={r} />
-                    ))}
-                  </div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {themeRecipes.slice(0, 2).map((r) => (
+                    <PostCard key={r.id} post={r} />
+                  ))}
                 </div>
               </div>
+            </div>
 
-              {/* Histórico de Temas Anteriores: a partir de 1024px fica na coluna da direita */}
-              <section className="border-t border-border pt-10 lg:hidden">
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold font-display text-foreground">
-                    {t("theme.archive")}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t("theme.archiveHint")}</p>
-                </div>
+            {/* Histórico de Temas Anteriores */}
+            <section className="border-t border-border pt-10">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold font-display text-foreground">
+                  {t("theme.archive")}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("theme.archiveHint")}</p>
+              </div>
 
-                <div className="grid gap-5 sm:grid-cols-3">
-                  {pastThemes.map((pt, index) => {
-                    const cover =
-                      index === 0
-                        ? "/images/hero/kitchen-prep.jpg"
-                        : index === 1
-                          ? "/images/recipes/default-recipe.jpg"
-                          : "/images/communities/friends-dinner.jpg";
+              <div className="grid gap-5 sm:grid-cols-3">
+                {pastThemes.map((pt, index) => {
+                  const cover =
+                    index === 0
+                      ? "/images/hero/kitchen-prep.jpg"
+                      : index === 1
+                        ? "/images/recipes/default-recipe.jpg"
+                        : "/images/communities/friends-dinner.jpg";
 
-                    return (
-                      <div
-                        key={pt.title}
-                        className="rounded-2xl border border-border bg-card shadow-xs transition hover:shadow-md overflow-hidden flex flex-col"
-                      >
-                        <div className="h-32 w-full relative">
-                          <img
-                            src={cover}
-                            alt={t(pt.title)}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                          <div className="absolute bottom-3 left-4">
-                            <span className="text-[10px] font-bold text-white/90 drop-shadow-md">
-                              {t(pt.week)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-5 flex flex-col flex-1">
-                          <h4 className="text-sm font-bold font-display text-foreground mb-2">
-                            {t(pt.title)}
-                          </h4>
-                          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed flex-1">
-                            {t(pt.summary)}
-                          </p>
-                          <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                            <span>
-                              🥗 {pt.recipesCount} {t("theme.recipesCount")}
-                            </span>
-                            <span>
-                              💬 {pt.reflectionsCount} {t("theme.storiesCount")}
-                            </span>
-                          </div>
+                  return (
+                    <div
+                      key={pt.title}
+                      className="rounded-2xl border border-border bg-card shadow-xs transition hover:shadow-md overflow-hidden flex flex-col"
+                    >
+                      <div className="h-32 w-full relative">
+                        <img
+                          src={cover}
+                          alt={t(pt.title)}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute bottom-3 left-4">
+                          <span className="text-[10px] font-bold text-white/90 drop-shadow-md">
+                            {t(pt.week)}
+                          </span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </section>
-            </div>
-          </PageColumns>
+                      <div className="p-5 flex flex-col flex-1">
+                        <h4 className="text-sm font-bold font-display text-foreground mb-2">
+                          {t(pt.title)}
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed flex-1">
+                          {t(pt.summary)}
+                        </p>
+                        <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                          <span>
+                            🥗 {pt.recipesCount} {t("theme.recipesCount")}
+                          </span>
+                          <span>
+                            💬 {pt.reflectionsCount} {t("theme.storiesCount")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
         )}
       </main>
     </div>

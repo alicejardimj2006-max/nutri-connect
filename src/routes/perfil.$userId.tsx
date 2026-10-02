@@ -48,9 +48,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { CARD_GRID, PAGE_CONTAINER, STICKY_COLUMN } from "@/components/page-layout";
-import { BadgesPanel, FriendsPanel, MyCommunitiesPanel } from "@/components/side-panels";
-
 export const Route = createFileRoute("/perfil/$userId")({
   head: () => ({
     meta: [
@@ -158,7 +155,7 @@ function PublicProfilePage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
-      <main className={`${PAGE_CONTAINER} flex-1 py-8`}>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {!hydrated || (!isSelf && remoteProfile.isLoading) ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
@@ -454,27 +451,8 @@ function PublicProfilePage() {
                   </div>
                 </div>
 
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] min-[1440px]:grid-cols-[300px_minmax(0,1fr)_320px]">
-                  {/* Coluna da esquerda: só a partir de 1440px */}
-                  <div className="hidden min-[1440px]:block">
-                    <div className={STICKY_COLUMN}>
-                      <MyCommunitiesPanel
-                        userId={userId}
-                        title={
-                          isSelf
-                            ? undefined
-                            : t("panel.communitiesOf").replace("{name}", profile.name)
-                        }
-                      />
-                      {isSelf && (
-                        <>
-                          <BadgesPanel />
-                          <FriendsPanel />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="min-w-0 space-y-8">
+                <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+                  <div className="space-y-8">
                     {/* Receitas que preparou */}
                     <section>
                       <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
@@ -493,7 +471,7 @@ function PublicProfilePage() {
                       </div>
 
                       {preparedRecipes.length > 0 ? (
-                        <div className={CARD_GRID}>
+                        <div className="grid gap-4 sm:grid-cols-2">
                           {preparedRecipes.map((r) => (
                             <PostCard key={r.id} post={r} />
                           ))}
