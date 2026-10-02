@@ -324,6 +324,24 @@ begin
   r := pg_temp.as_user(null, 'anon', 'select * from public.list_my_blocks()');
   res := res || jsonb_build_object('teste', 'anon NÃO usa list_my_blocks', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
 
+  -- ------------------------------------------------ log_search e privacidade
+  perform pg_temp.as_user(a, 'authenticated', 'select public.log_search(''marmita zzqx fit'')');
+  perform pg_temp.as_user(a, 'authenticated', 'select public.log_search(''zzqx bruno'')');
+  perform pg_temp.as_user(a, 'authenticated', 'select public.log_search(''zzqx.bruno'')');
+  perform pg_temp.as_user(a, 'authenticated', 'select public.log_search(''zzqx'')');
+  res := res || jsonb_build_object('teste', 'log_search registra assunto comum',
+    'ok', exists (select 1 from public.search_term_stats where term = 'marmita zzqx fit'),
+    'obtido', 'verificado como superusuário');
+  res := res || jsonb_build_object('teste', 'log_search IGNORA o nome completo de uma pessoa',
+    'ok', not exists (select 1 from public.search_term_stats where term = 'zzqx bruno'),
+    'obtido', 'verificado como superusuário');
+  res := res || jsonb_build_object('teste', 'log_search IGNORA o @ de uma pessoa',
+    'ok', not exists (select 1 from public.search_term_stats where term = 'zzqx.bruno'),
+    'obtido', 'verificado como superusuário');
+  res := res || jsonb_build_object('teste', 'log_search registra termo de uma palavra que não é nome completo',
+    'ok', exists (select 1 from public.search_term_stats where term = 'zzqx'),
+    'obtido', 'verificado como superusuário');
+
   -- ---------------------------------------------- BLOQUEAR LIMPA RELAÇÕES
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', b, a));
   res := res || jsonb_build_object('teste', 'B bloqueia A', 'ok', (r = 'OK:1'), 'obtido', r);

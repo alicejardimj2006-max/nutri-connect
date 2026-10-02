@@ -8,6 +8,10 @@ import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { RelationshipActions } from "@/components/relationship-actions";
+import { VerifiedBadge } from "@/components/person-chip";
+import { initials } from "@/lib/community";
+import { useSearchUsers } from "@/lib/social/queries";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({
@@ -23,7 +27,9 @@ export const Route = createFileRoute("/explorar")({
   component: ExplorarPage,
 });
 
-type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidades";
+type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidades" | "pessoas";
+
+const PEOPLE_PAGE = 20;
 
 function ExplorarPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
@@ -31,10 +37,34 @@ function ExplorarPage() {
   const { posts, challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [onlyPros, setOnlyPros] = useState(false);
+  const [peopleLimit, setPeopleLimit] = useState(PEOPLE_PAGE);
 
+  // A pesquisa de pessoas espera a pessoa parar de digitar (e volta à 1ª página).
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+      setPeopleLimit(PEOPLE_PAGE);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const people = useSearchUsers(
+    {
+      query: debouncedQuery,
+      role: onlyPros ? "profissional" : undefined,
+      limit: peopleLimit,
+    },
+    !!user,
+  );
+  const peopleList = people.data ?? [];
+  const peopleHasMore = peopleList.length >= peopleLimit;
+
+  // Buscas de conteúdo alimentam o tema da semana; buscas de pessoas (aba Pessoas ou @) não.
   useEffect(() => {
     const term = query.trim();
-    if (term.length < 3) return;
+    if (term.length < 3 || activeTab === "pessoas" || term.startsWith("@")) return;
 
     const timer = setTimeout(() => {
       supabase.rpc("log_search", { p_term: term }).then(({ error }) => {
@@ -43,7 +73,7 @@ function ExplorarPage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, activeTab]);
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
@@ -85,7 +115,7 @@ function ExplorarPage() {
       weeklyTheme.description.toLowerCase().includes(q))
       ? [weeklyTheme]
       : [];
-  const tabs: { id: SearchTab; label: string; count: number }[] = [
+  const tabs: { id: SearchTab; label: string; count: number | string }[] = [
     {
       id: "tudo",
       label: t("explore.tab.all"),
@@ -99,6 +129,11 @@ function ExplorarPage() {
     { id: "experiencias", label: t("explore.tab.experiences"), count: matchingExperiences.length },
     { id: "desafios", label: t("explore.tab.challenges"), count: matchingChallenges.length },
     { id: "comunidades", label: t("explore.tab.communities"), count: matchingCommunities.length },
+    {
+      id: "pessoas",
+      label: t("explore.tab.people"),
+      count: peopleHasMore ? `${peopleList.length}+` : peopleList.length,
+    },
   ];
 
   return (
@@ -162,6 +197,122 @@ function ExplorarPage() {
 
         {/* Resultados */}
         <div className="space-y-10">
+          {/* Pessoas (pesquisa de pessoas: nome, @, acento e erro de digitação) */}
+          {activeTab === "pessoas" && (
+            <div className="mx-auto max-w-3xl">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
+                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4 text-accent" />
+                  <span>
+                    {debouncedQuery ? t("explore.people.results") : t("explore.people.suggested")} (
+                    {peopleHasMore ? `${peopleList.length}+` : peopleList.length})
+                  </span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setOnlyPros((v) => !v)}
+                  aria-pressed={onlyPros}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition cursor-pointer ${
+                    onlyPros
+                      ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t("explore.people.onlyPros")}
+                </button>
+              </div>
+
+              {people.isLoading ? (
+                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+              ) : peopleList.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-border p-12 text-center">
+                  <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-base font-bold font-display text-foreground">
+                    {t("explore.noResults")} “{query}”
+                  </h3>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {peopleList.map((person) => (
+                    <li
+                      key={person.id}
+                      className="rounded-2xl border border-border bg-card p-4 shadow-xs"
+                    >
+                      <Link
+                        to="/perfil/$userId"
+                        params={{ userId: person.id }}
+                        className="flex items-start gap-3"
+                      >
+                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary text-sm font-extrabold text-primary-foreground">
+                          {person.avatar_url ? (
+                            <img
+                              src={person.avatar_url}
+                              alt={person.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            initials(person.name)
+                          )}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                            <span className="truncate">{person.name}</span>
+                            {person.verified && <VerifiedBadge />}
+                          </span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            @{person.username}
+                            {person.verified && person.profession
+                              ? ` · ${td(person.profession)} · ${person.council} ${person.registration}/${person.uf}`
+                              : ""}
+                          </span>
+                          {person.mutual_friends > 0 && (
+                            <span className="mt-0.5 block text-[11px] font-medium text-accent">
+                              {t("explore.people.mutual").replace(
+                                "{n}",
+                                String(person.mutual_friends),
+                              )}
+                            </span>
+                          )}
+                          {person.is_private ? (
+                            <span className="mt-1 block text-[11px] text-muted-foreground">
+                              {t("explore.people.privateBio")}
+                            </span>
+                          ) : (
+                            person.bio && (
+                              <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
+                                {person.bio}
+                              </span>
+                            )
+                          )}
+                        </span>
+                      </Link>
+                      <RelationshipActions
+                        userId={person.id}
+                        name={person.name}
+                        relationship={person.relationship}
+                        targetIsProfessional={person.verified}
+                        viewerIsProfessional={!!user.professional}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {peopleHasMore && !people.isLoading && (
+                <div className="mt-5 text-center">
+                  <button
+                    type="button"
+                    disabled={people.isFetching}
+                    onClick={() => setPeopleLimit((n) => n + PEOPLE_PAGE)}
+                    className="rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary disabled:opacity-60 cursor-pointer"
+                  >
+                    {t("explore.people.more")}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Seção de Tema da Semana */}
           {activeTab === "tudo" && matchingTheme.length > 0 && (
             <div className="mb-6">
@@ -275,7 +426,8 @@ function ExplorarPage() {
             )}
 
           {/* Caso vazio */}
-          {matchingPosts.length === 0 &&
+          {activeTab !== "pessoas" &&
+            matchingPosts.length === 0 &&
             matchingChallenges.length === 0 &&
             matchingCommunities.length === 0 &&
             matchingTheme.length === 0 && (
