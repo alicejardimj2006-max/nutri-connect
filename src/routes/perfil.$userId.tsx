@@ -18,6 +18,9 @@ import {
   Pencil,
   UserX,
   UserCheck,
+  UserPlus,
+  Clock,
+  Check,
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -36,7 +39,17 @@ import { VerifiedBadge } from "@/components/person-chip";
 import { fetchContactInfo, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
-import { useBlocked, useBlockUser, usePublicProfile, useUnblockUser } from "@/lib/social/queries";
+import {
+  useBlocked,
+  useBlockUser,
+  useFollowProfessional,
+  usePublicProfile,
+  useRemoveFriendship,
+  useRequestFriendship,
+  useUnblockUser,
+  useUnfollowProfessional,
+} from "@/lib/social/queries";
+import type { PublicProfile as RemoteProfile } from "@/lib/social/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,9 +85,8 @@ function PublicProfilePage() {
   const state = useCommunity();
   const { profiles, posts, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
-  const viewingOther = !!user && user.id !== userId;
-  // Privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
-  const remoteProfile = usePublicProfile(viewingOther ? userId : undefined);
+  // Perfil, privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
+  const remoteProfile = usePublicProfile(user ? userId : undefined);
   const blockedQuery = useBlocked();
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
@@ -110,24 +122,18 @@ function PublicProfilePage() {
     });
   };
 
+  // Registro local só para dados de profissional (vêm da tabela professionals, via profile-sync).
   const stored = profiles.find((p) => p.userId === userId);
-  const fromPost = posts.find((p) => p.authorId === userId);
+  const remote = remoteProfile.data ?? null;
 
   const profile =
-    stored ??
-    (isSelf && user
-      ? {
-          userId,
-          name: user.name,
-          bio: user.bio || t("profile.noBio"),
-        }
-      : fromPost
-        ? {
-            userId,
-            name: fromPost.authorName,
-            bio: t("profile.memberBio"),
-          }
-        : null);
+    isSelf && user
+      ? { userId, name: user.name, bio: user.bio || t("profile.noBio") }
+      : remote
+        ? { userId, name: remote.name, bio: remote.bio ?? "" }
+        : null;
+  const username = remote?.username;
+  const avatarUrl = isSelf ? user?.avatarUrl : (remote?.avatar_url ?? undefined);
 
   const myPosts = posts
     .filter((p) => p.authorId === userId)
@@ -140,7 +146,7 @@ function PublicProfilePage() {
   const administered = getAdministeredCommunity(userId, communities);
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
-  const isProfessional = stored?.role === "profissional";
+  const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
   const professionalInfo = getProfessionalInfo(profiles, userId);
   const inviteCount =
     isSelf && isProfessional && user ? getProfessionalInvites(user.id, state).length : 0;
@@ -158,7 +164,7 @@ function PublicProfilePage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {!hydrated ? (
+        {!hydrated || (!isSelf && remoteProfile.isLoading) ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
           <>
@@ -197,7 +203,15 @@ function PublicProfilePage() {
 
               <div className="p-6 sm:p-10 pt-12 sm:pt-14 relative bg-gradient-to-br from-card via-card to-accent-soft/20">
                 <div className="absolute -top-10 sm:-top-12 left-6 sm:left-10 grid h-20 w-20 sm:h-24 sm:w-24 place-items-center rounded-3xl bg-primary text-3xl font-extrabold text-primary-foreground shadow-card border-4 border-card">
-                  {initials(profile.name)}
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={profile.name}
+                      className="h-full w-full rounded-[1.1rem] object-cover"
+                    />
+                  ) : (
+                    initials(profile.name)
+                  )}
                 </div>
 
                 {/* Menu de opções: canto fixo, separado dos botões de ação para não quebrar
@@ -300,7 +314,22 @@ function PublicProfilePage() {
                         {professionalInfo.uf}
                       </p>
                     )}
+                    {username && (
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                        @{username}
+                      </p>
+                    )}
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{profile.bio}</p>
+                    {remote && <ProfileCounts remote={remote} isProfessional={isProfessional} />}
+                    {!isSelf && remote && (
+                      <RelationshipActions
+                        userId={userId}
+                        name={profile.name}
+                        remote={remote}
+                        targetIsProfessional={isProfessional}
+                        viewerIsProfessional={!!user.professional}
+                      />
+                    )}
                     {isProfessional && !isSelf && (
                       <Link
                         to="/profissionais/$professionalId"
@@ -652,5 +681,161 @@ function RemoteContact({ userId }: { userId: string }) {
       {contact.email && contact.phone ? " · " : ""}
       {contact.phone ? `📞 ${contact.phone}` : ""}
     </p>
+  );
+}
+
+function ProfileCounts({
+  remote,
+  isProfessional,
+}: {
+  remote: RemoteProfile;
+  isProfessional: boolean;
+}) {
+  const { t } = useI18n();
+  const parts = isProfessional
+    ? [t("profile.followersCount").replace("{n}", String(remote.followers_count))]
+    : [
+        t("profile.friendsCount").replace("{n}", String(remote.friends_count)),
+        t("profile.followingCount").replace("{n}", String(remote.following_count)),
+      ];
+  return <p className="mt-1.5 text-xs font-semibold text-foreground">{parts.join(" · ")}</p>;
+}
+
+/**
+ * Botões de relação. Regras do banco: usuário comum ↔ usuário comum = amizade (pedido + aceite);
+ * qualquer pessoa → profissional = seguir; profissional → usuário comum não existe.
+ */
+function RelationshipActions({
+  userId,
+  name,
+  remote,
+  targetIsProfessional,
+  viewerIsProfessional,
+}: {
+  userId: string;
+  name: string;
+  remote: RemoteProfile;
+  targetIsProfessional: boolean;
+  viewerIsProfessional: boolean;
+}) {
+  const { t } = useI18n();
+  const requestFriendship = useRequestFriendship();
+  const removeFriendship = useRemoveFriendship();
+  const follow = useFollowProfessional();
+  const unfollow = useUnfollowProfessional();
+  const busy =
+    requestFriendship.isPending ||
+    removeFriendship.isPending ||
+    follow.isPending ||
+    unfollow.isPending;
+
+  const base =
+    "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition disabled:opacity-60 cursor-pointer";
+  const primary = `${base} bg-accent text-accent-foreground shadow-soft hover:bg-accent/90`;
+  const outline = `${base} border border-border bg-card text-foreground shadow-xs hover:bg-secondary`;
+
+  if (targetIsProfessional) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {remote.relationship === "seguindo" ? (
+          <button
+            type="button"
+            disabled={busy}
+            className={outline}
+            onClick={() =>
+              unfollow.mutate(userId, {
+                onSuccess: () =>
+                  toast.success(t("profile.unfollowedToast").replace("{name}", name)),
+              })
+            }
+            title={t("profile.unfollow")}
+          >
+            <Check className="h-4 w-4" /> {t("profile.followingBadge")}
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            className={primary}
+            onClick={() =>
+              follow.mutate(userId, {
+                onSuccess: () => toast.success(t("profile.followedToast").replace("{name}", name)),
+              })
+            }
+          >
+            <UserPlus className="h-4 w-4" /> {t("profile.follow")}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Profissionais não têm amizade com usuários comuns.
+  if (viewerIsProfessional) return null;
+
+  const remove = (message: string) =>
+    removeFriendship.mutate(userId, { onSuccess: () => toast.success(message) });
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {remote.relationship === "amigo" ? (
+        <button
+          type="button"
+          disabled={busy}
+          className={outline}
+          onClick={() => remove(t("profile.friendRemovedToast"))}
+          title={t("profile.removeFriend")}
+        >
+          <UserCheck className="h-4 w-4" /> {t("profile.friendsBadge")}
+        </button>
+      ) : remote.relationship === "pedido_enviado" ? (
+        <button
+          type="button"
+          disabled={busy}
+          className={outline}
+          onClick={() => remove(t("profile.requestCancelledToast"))}
+          title={t("profile.cancelRequest")}
+        >
+          <Clock className="h-4 w-4" /> {t("profile.requestSent")}
+        </button>
+      ) : remote.relationship === "pedido_recebido" ? (
+        <>
+          {/* Pedir amizade a quem já pediu a você aceita o pedido (regra do banco). */}
+          <button
+            type="button"
+            disabled={busy}
+            className={primary}
+            onClick={() =>
+              requestFriendship.mutate(userId, {
+                onSuccess: () => toast.success(t("profile.friendAcceptedToast")),
+              })
+            }
+          >
+            <Check className="h-4 w-4" /> {t("profile.acceptRequest")}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            className={outline}
+            onClick={() => remove(t("profile.requestCancelledToast"))}
+          >
+            {t("profile.declineRequest")}
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          disabled={busy}
+          className={primary}
+          onClick={() =>
+            requestFriendship.mutate(userId, {
+              onSuccess: () => toast.success(t("profile.friendRequestSentToast")),
+            })
+          }
+        >
+          <UserPlus className="h-4 w-4" /> {t("profile.addFriend")}
+        </button>
+      )}
+    </div>
   );
 }
