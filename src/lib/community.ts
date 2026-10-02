@@ -62,6 +62,15 @@ export interface Post {
   themeId?: string;
   recipeData?: RecipeData;
   blockOrder?: PostBlock[];
+  // Campos que só vêm do banco (feed real); nos posts locais de comunidade ficam vazios.
+  /** Quem pode ver: público ou só amigos. */
+  audience?: "publico" | "amigos";
+  authorUsername?: string;
+  authorRole?: "paciente" | "profissional";
+  /** Quando o post vira visível (posts agendados de profissionais). */
+  publishAt?: string;
+  /** A pessoa logada salvou este post. */
+  saved?: boolean;
 }
 
 /**
