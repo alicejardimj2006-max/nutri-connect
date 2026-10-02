@@ -13,9 +13,7 @@ alimentares, oriente a procurar um(a) nutricionista ou médico(a). Responda em a
 idioma de quem perguntou.`;
 
 const schema = z.object({
-  messages: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() }))
-    .min(1),
+  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })).min(1),
 });
 
 export const askNutriAssistant = createServerFn({ method: "POST" })
@@ -54,7 +52,8 @@ export const askNutriAssistant = createServerFn({ method: "POST" })
       const text = await res.text().catch(() => "");
       console.error("nutri-assistant gateway", res.status, text.slice(0, 300));
       if (res.status === 429) return { error: "Muitas perguntas agora. Tente em instantes." };
-      if (res.status === 402) return { error: "Os créditos de IA acabaram. Avise o administrador." };
+      if (res.status === 402)
+        return { error: "Os créditos de IA acabaram. Avise o administrador." };
       if (res.status === 403) return { error: "A IA não está disponível no momento." };
       return { error: "A assistente não conseguiu responder. Tente novamente." };
     }

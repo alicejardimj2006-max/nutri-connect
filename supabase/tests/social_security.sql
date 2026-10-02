@@ -250,6 +250,31 @@ begin
   res := res || jsonb_build_object('teste', 'get_public_profile nega conteúdo de perfil privado a não-amigo',
     'ok', (r like 'f%' and r not like '%Bio privada%'), 'obtido', left(r, 120));
 
+  -- ---------------------------- OPERAÇÕES LEGÍTIMAS (usadas por src/lib/social/api.ts)
+  r := pg_temp.as_user(a, 'authenticated', format('update public.profiles set is_private = true where id = %L', a));
+  res := res || jsonb_build_object('teste', 'dono liga o próprio perfil privado', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('update public.user_settings set show_email = true, notification_prefs = ''{"social": false}'' where id = %L', a));
+  res := res || jsonb_build_object('teste', 'dono altera as próprias configurações', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select status from public.request_friendship(%L)', f));
+  res := res || jsonb_build_object('teste', 'pedido A→F fica pendente', 'ok', (r = 'pendente'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.friendships where addressee_id = %L and status = ''pendente''', f));
+  res := res || jsonb_build_object('teste', 'destinatário lista seus pedidos pendentes', 'ok', (r = '1'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', a, f));
+  res := res || jsonb_build_object('teste', 'dono bloqueia alguém', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.friendships where addressee_id = %L', f));
+  res := res || jsonb_build_object('teste', 'bloquear cancela o pedido pendente', 'ok', (r = '0'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('delete from public.blocks where blocker_id = %L and blocked_id = %L', a, f));
+  res := res || jsonb_build_object('teste', 'dono desbloqueia', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', format('delete from public.blocks where blocker_id = %L and blocked_id = %L', a, c));
+  res := res || jsonb_build_object('teste', 'terceiro NÃO apaga bloqueio alheio', 'ok', (r = 'OK:0' or r like 'ERRO%'), 'obtido', r);
+
   -- ---------------------------------------------- BLOQUEAR LIMPA RELAÇÕES
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', b, a));
   res := res || jsonb_build_object('teste', 'B bloqueia A', 'ok', (r = 'OK:1'), 'obtido', r);
