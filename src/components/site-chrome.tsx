@@ -81,7 +81,7 @@ export function SiteHeader() {
         </div>
 
         {/* Cabeçalho desktop — reúne os atalhos que no mobile ficam na barra inferior */}
-        <div className="relative mx-auto hidden h-16 max-w-7xl items-center justify-between gap-4 px-6 lg:flex">
+        <div className="relative mx-auto hidden h-16 max-w-[1800px] items-center justify-between gap-4 px-8 lg:flex">
           {user ? (
             <nav aria-label={t("nav.mainAria")} className="flex items-center gap-1">
               <Link

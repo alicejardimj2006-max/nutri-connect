@@ -6,6 +6,14 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useCommunity } from "@/hooks/use-community";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
+import { PAGE_CONTAINER, PageColumns, Panel } from "@/components/page-layout";
+import {
+  MyCommunitiesPanel,
+  ProfessionalsPanel,
+  ProfileSummaryCard,
+  TopExperiencesPanel,
+  WeeklyThemePanel,
+} from "@/components/side-panels";
 
 export const Route = createFileRoute("/experiencias")({
   head: () => ({
@@ -34,7 +42,7 @@ function ExperienciasPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 sm:px-6 py-8">
+      <main className={`${PAGE_CONTAINER} flex-1 py-8`}>
         {/* Cabeçalho */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/70 pb-6 mb-8">
           <div>
@@ -61,33 +69,57 @@ function ExperienciasPage() {
           />
         </div>
 
-        {/* Manifesto de Acolhimento */}
-        <div className="rounded-2xl border border-primary/20 bg-primary-soft/40 p-5 mb-8 text-xs text-foreground/90 flex items-center gap-3 shadow-xs">
-          <span className="text-2xl">🌿</span>
-          <p className="leading-relaxed">
-            <b>{t("exp.pact")}</b> {t("exp.pactText")}
-          </p>
-        </div>
+        <PageColumns
+          left={
+            <>
+              <ProfileSummaryCard />
+              <Panel title={t("exp.pact")}>
+                <p className="text-xs leading-relaxed text-foreground/90">
+                  <span className="mr-1.5 text-base">🌿</span>
+                  {t("exp.pactText")}
+                </p>
+              </Panel>
+              <MyCommunitiesPanel />
+            </>
+          }
+          right={
+            <>
+              <TopExperiencesPanel />
+              <WeeklyThemePanel />
+              <ProfessionalsPanel />
+            </>
+          }
+        >
+          {/* Manifesto de Acolhimento: a partir de 1440px fica na coluna da esquerda */}
+          <div className="rounded-2xl border border-primary/20 bg-primary-soft/40 p-5 mb-8 text-xs text-foreground/90 flex items-center gap-3 shadow-xs min-[1440px]:hidden">
+            <span className="text-2xl">🌿</span>
+            <p className="leading-relaxed">
+              <b>{t("exp.pact")}</b> {t("exp.pactText")}
+            </p>
+          </div>
 
-        {/* Lista de Experiências */}
-        {!hydrated ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">{t("exp.loading")}</div>
-        ) : experiences.length > 0 ? (
-          <div className="space-y-6">
-            {experiences.map((exp) => (
-              <PostCard key={exp.id} post={exp} />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-3xl border border-dashed border-border p-12 text-center max-w-md mx-auto">
-            <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-base font-bold text-foreground font-display">{t("exp.none")}</h3>
-            <p className="text-xs text-muted-foreground mt-1">{t("exp.noneHint")}</p>
-            <div className="mt-4">
-              <ShareModal />
+          {/* Lista de Experiências */}
+          {!hydrated ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              {t("exp.loading")}
             </div>
-          </div>
-        )}
+          ) : experiences.length > 0 ? (
+            <div className="grid items-start gap-6 min-[1700px]:grid-cols-2">
+              {experiences.map((exp) => (
+                <PostCard key={exp.id} post={exp} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border p-12 text-center max-w-md mx-auto">
+              <Sparkles className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-base font-bold text-foreground font-display">{t("exp.none")}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{t("exp.noneHint")}</p>
+              <div className="mt-4">
+                <ShareModal />
+              </div>
+            </div>
+          )}
+        </PageColumns>
       </main>
     </div>
   );

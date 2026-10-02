@@ -36,6 +36,15 @@ import {
 import { useTrailProfiles } from "@/lib/trail-profiles";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
+import { CARD_GRID, PAGE_CONTAINER, PageColumns } from "@/components/page-layout";
+import {
+  BadgesPanel,
+  ChallengesPanel,
+  MyCommunitiesPanel,
+  PopularChallengesPanel,
+  SuggestedCommunitiesPanel,
+  WeeklyThemePanel,
+} from "@/components/side-panels";
 
 export const Route = createFileRoute("/desafios/")({
   head: () => ({
@@ -180,7 +189,7 @@ function DesafiosIndexPage() {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8">
+      <div className={`${PAGE_CONTAINER} py-8`}>
         {/* Cabeçalho */}
         <div className="border-b border-border/70 pb-6 mb-8">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent mb-2">
@@ -193,217 +202,244 @@ function DesafiosIndexPage() {
           <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{t("dz.intro")}</p>
         </div>
 
-        {/* Barra de XP, nível, ofensiva e meta do dia (com o seletor de perfil embutido) */}
-        <TrailHeader
-          variant={active.kind}
-          name={displayName}
-          xp={totalXP}
-          level={levelInfo.level}
-          label={levelInfo.label}
-          xpInLevel={levelInfo.xpInLevel}
-          xpForNext={levelInfo.xpForNext}
-          streak={streak}
-          dailyXP={getDailyXP(trailProgress)}
-          dailyGoal={DAILY_GOAL_XP}
-          stars={totals.stars}
-          maxStars={totals.maxStars}
-          goldStops={totals.gold}
-          totalStops={totals.totalStops}
-          levelsDone={totals.levels}
-          totalLevels={totals.totalLevels}
-          profileSlot={
-            <ProfileSwitcher
-              profiles={profiles}
-              active={active}
-              onSelect={select}
-              onAddKid={addKid}
-              onRemoveKid={removeKid}
-            />
+        {/* Perfis infantis não têm rede social: sem painéis laterais */}
+        <PageColumns
+          left={
+            active.kind === "adult" ? (
+              <>
+                <BadgesPanel />
+                <MyCommunitiesPanel />
+              </>
+            ) : undefined
           }
-        />
+          right={
+            active.kind === "adult" ? (
+              <>
+                <ChallengesPanel />
+                <PopularChallengesPanel />
+                <WeeklyThemePanel />
+                <SuggestedCommunitiesPanel />
+              </>
+            ) : undefined
+          }
+        >
+          {/* Barra de XP, nível, ofensiva e meta do dia (com o seletor de perfil embutido) */}
+          <TrailHeader
+            variant={active.kind}
+            name={displayName}
+            xp={totalXP}
+            level={levelInfo.level}
+            label={levelInfo.label}
+            xpInLevel={levelInfo.xpInLevel}
+            xpForNext={levelInfo.xpForNext}
+            streak={streak}
+            dailyXP={getDailyXP(trailProgress)}
+            dailyGoal={DAILY_GOAL_XP}
+            stars={totals.stars}
+            maxStars={totals.maxStars}
+            goldStops={totals.gold}
+            totalStops={totals.totalStops}
+            levelsDone={totals.levels}
+            totalLevels={totals.totalLevels}
+            profileSlot={
+              <ProfileSwitcher
+                profiles={profiles}
+                active={active}
+                onSelect={select}
+                onAddKid={addKid}
+                onRemoveKid={removeKid}
+              />
+            }
+          />
 
-        {/* Conquistas compactas (só fazem sentido com desafios sociais, no perfil do responsável) */}
-        {active.kind === "adult" && (
-          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 mb-8 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <h2 className="text-sm font-bold font-display text-foreground flex items-center gap-2">
-                <Award className="h-4 w-4 text-accent" />
-                <span>{t("dz.achievements")}</span>
-              </h2>
-              <span className="text-[10px] text-muted-foreground font-medium">
-                {totals.levels} {t("dz.levelsAnd")}{" "}
-                {challenges.filter((c) => c.completedBy.includes(currentUserId)).length}{" "}
-                {t("dz.challengesDone")}
-              </span>
+          {/* Conquistas compactas (só fazem sentido com desafios sociais, no perfil do responsável).
+            A partir de 1440px elas ficam na coluna da esquerda. */}
+          {active.kind === "adult" && (
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 mb-8 shadow-xs min-[1440px]:hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="text-sm font-bold font-display text-foreground flex items-center gap-2">
+                  <Award className="h-4 w-4 text-accent" />
+                  <span>{t("dz.achievements")}</span>
+                </h2>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  {totals.levels} {t("dz.levelsAnd")}{" "}
+                  {challenges.filter((c) => c.completedBy.includes(currentUserId)).length}{" "}
+                  {t("dz.challengesDone")}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {earnedBadges.map((badge) => (
+                  <div
+                    key={badge.label}
+                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
+                      badge.achieved
+                        ? "border-accent/40 bg-accent-soft/40"
+                        : "border-border bg-secondary/30 opacity-60"
+                    }`}
+                  >
+                    <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
+                    <span className="text-[11px] font-bold text-foreground">{td(badge.label)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              {earnedBadges.map((badge) => (
-                <div
-                  key={badge.label}
-                  className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
-                    badge.achieved
-                      ? "border-accent/40 bg-accent-soft/40"
-                      : "border-border bg-secondary/30 opacity-60"
+          )}
+
+          {/* Navegação por Abas (perfis infantis não têm rede social: sem desafios ou comunidades) */}
+          <div className="flex items-center gap-1 rounded-2xl bg-secondary p-1 mb-8 overflow-x-auto no-scrollbar">
+            {(active.kind === "adult" ? TABS : TABS.filter((tb) => tb.key === "trilha")).map(
+              (tb) => (
+                <button
+                  key={tb.key}
+                  onClick={() => setTab(tb.key)}
+                  className={`flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
+                    tab === tb.key
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
                   }`}
                 >
-                  <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
-                  <span className="text-[11px] font-bold text-foreground">{td(badge.label)}</span>
-                </div>
-              ))}
+                  {tb.icon}
+                  <span>{t(tb.label)}</span>
+                  {tb.key === "populares" && (
+                    <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400">
+                      {popularChallenges.length}
+                    </span>
+                  )}
+                  {tb.key === "comunidades" && userCommunityChallenges.length > 0 && (
+                    <span className="rounded-full bg-accent/20 px-1.5 py-0.5 text-[9px] font-bold text-accent">
+                      {userCommunityChallenges.length}
+                    </span>
+                  )}
+                </button>
+              ),
+            )}
+          </div>
+
+          {/* Conteúdo da aba ativa */}
+          {!hydrated ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              {t("common.loading")}
             </div>
-          </div>
-        )}
+          ) : (
+            <>
+              {/* ── ABA: Minha Trilha (Lições Educativas) ── */}
+              {tab === "trilha" && trail && (
+                <div>
+                  <TrailHero variant={active.kind} name={displayName} />
 
-        {/* Navegação por Abas (perfis infantis não têm rede social: sem desafios ou comunidades) */}
-        <div className="flex items-center gap-1 rounded-2xl bg-secondary p-1 mb-8 overflow-x-auto no-scrollbar">
-          {(active.kind === "adult" ? TABS : TABS.filter((tb) => tb.key === "trilha")).map((tb) => (
-            <button
-              key={tb.key}
-              onClick={() => setTab(tb.key)}
-              className={`flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-semibold transition whitespace-nowrap ${
-                tab === tb.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-              }`}
-            >
-              {tb.icon}
-              <span>{t(tb.label)}</span>
-              {tb.key === "populares" && (
-                <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400">
-                  {popularChallenges.length}
-                </span>
-              )}
-              {tb.key === "comunidades" && userCommunityChallenges.length > 0 && (
-                <span className="rounded-full bg-accent/20 px-1.5 py-0.5 text-[9px] font-bold text-accent">
-                  {userCommunityChallenges.length}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+                  <TrailPicker
+                    trails={availableTrails}
+                    progress={trailProgress}
+                    selectedId={trail.id}
+                    onSelect={setTrailId}
+                    variant={active.kind}
+                  />
 
-        {/* Conteúdo da aba ativa */}
-        {!hydrated ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">
-            {t("common.loading")}
-          </div>
-        ) : (
-          <>
-            {/* ── ABA: Minha Trilha (Lições Educativas) ── */}
-            {tab === "trilha" && trail && (
-              <div>
-                <TrailHero variant={active.kind} name={displayName} />
+                  <LearningTrailMap
+                    trail={trail}
+                    progress={trailProgress}
+                    currentStopId={currentStopId}
+                    frozen={!!activeLesson}
+                    onOpenStop={(stop, unit) => setSheet({ stop, unit })}
+                  />
 
-                <TrailPicker
-                  trails={availableTrails}
-                  progress={trailProgress}
-                  selectedId={trail.id}
-                  onSelect={setTrailId}
-                  variant={active.kind}
-                />
-
-                <LearningTrailMap
-                  trail={trail}
-                  progress={trailProgress}
-                  currentStopId={currentStopId}
-                  frozen={!!activeLesson}
-                  onOpenStop={(stop, unit) => setSheet({ stop, unit })}
-                />
-
-                {active.kind === "adult" && (
-                  <div className="mt-10">
-                    <TrailAchievements unlocked={trailProgress.achievements} />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── ABA: Desafios Populares ── */}
-            {tab === "populares" && active.kind === "adult" && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                      <Flame className="h-5 w-5 text-amber-500" />
-                      {t("dz.popularTitle")}
-                    </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t("dz.popularHint")}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {popularChallenges.length} {t("dz.challengesCount")}
-                  </span>
+                  {active.kind === "adult" && (
+                    <div className="mt-10">
+                      <TrailAchievements unlocked={trailProgress.achievements} />
+                    </div>
+                  )}
                 </div>
+              )}
 
-                {popularChallenges.length === 0 ? (
-                  <div className="py-16 text-center rounded-3xl border bg-card p-8">
-                    <p className="text-sm text-muted-foreground">{t("dz.noPopular")}</p>
+              {/* ── ABA: Desafios Populares ── */}
+              {tab === "populares" && active.kind === "adult" && (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                        <Flame className="h-5 w-5 text-amber-500" />
+                        {t("dz.popularTitle")}
+                      </h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t("dz.popularHint")}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {popularChallenges.length} {t("dz.challengesCount")}
+                    </span>
                   </div>
-                ) : (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {popularChallenges.map((c) => (
-                      <div key={c.id} className="relative">
-                        {c.participants.length >= 10 && (
-                          <div className="absolute top-3 right-3 z-10">
-                            <PopularBadge />
-                          </div>
-                        )}
-                        <ChallengeCard challenge={c} />
-                        {c.createdByProfessionalName && (
-                          <div className="mt-2 px-2 text-[10px] text-muted-foreground flex items-center gap-1">
-                            <Sparkles className="h-3 w-3 text-accent" />
-                            {t("dz.createdBy")}{" "}
-                            <span className="font-semibold text-foreground">
-                              {c.createdByProfessionalName}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* ── ABA: Das Minhas Comunidades ── */}
-            {tab === "comunidades" && active.kind === "adult" && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                      <Users className="h-5 w-5 text-accent" />
-                      {t("dz.commTitle")}
-                    </h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t("dz.commHint")}</p>
-                  </div>
+                  {popularChallenges.length === 0 ? (
+                    <div className="py-16 text-center rounded-3xl border bg-card p-8">
+                      <p className="text-sm text-muted-foreground">{t("dz.noPopular")}</p>
+                    </div>
+                  ) : (
+                    <div className={CARD_GRID}>
+                      {popularChallenges.map((c) => (
+                        <div key={c.id} className="relative">
+                          {c.participants.length >= 10 && (
+                            <div className="absolute top-3 right-3 z-10">
+                              <PopularBadge />
+                            </div>
+                          )}
+                          <ChallengeCard challenge={c} />
+                          {c.createdByProfessionalName && (
+                            <div className="mt-2 px-2 text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Sparkles className="h-3 w-3 text-accent" />
+                              {t("dz.createdBy")}{" "}
+                              <span className="font-semibold text-foreground">
+                                {c.createdByProfessionalName}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              )}
 
-                {userCommunityChallenges.length === 0 ? (
-                  <div className="py-16 text-center rounded-3xl border bg-card p-8">
-                    <div className="text-4xl mb-3">👥</div>
-                    <p className="text-sm text-muted-foreground mb-4">{t("dz.noCommChallenges")}</p>
-                    <Link
-                      to="/comunidades"
-                      className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition"
-                    >
-                      {t("dz.exploreCommunities")}
-                    </Link>
+              {/* ── ABA: Das Minhas Comunidades ── */}
+              {tab === "comunidades" && active.kind === "adult" && (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
+                        <Users className="h-5 w-5 text-accent" />
+                        {t("dz.commTitle")}
+                      </h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t("dz.commHint")}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    {userCommunityChallenges.map(({ community, challenges: commChallenges }) => (
-                      <CommunityChallengeGroup
-                        key={community.id}
-                        community={community}
-                        challenges={commChallenges}
-                        userId={currentUserId}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+
+                  {userCommunityChallenges.length === 0 ? (
+                    <div className="py-16 text-center rounded-3xl border bg-card p-8">
+                      <div className="text-4xl mb-3">👥</div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {t("dz.noCommChallenges")}
+                      </p>
+                      <Link
+                        to="/comunidades"
+                        className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition"
+                      >
+                        {t("dz.exploreCommunities")}
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {userCommunityChallenges.map(({ community, challenges: commChallenges }) => (
+                        <CommunityChallengeGroup
+                          key={community.id}
+                          community={community}
+                          challenges={commChallenges}
+                          userId={currentUserId}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </PageColumns>
       </div>
 
       {trail && (

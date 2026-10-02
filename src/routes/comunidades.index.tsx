@@ -8,6 +8,13 @@ import { useCommunity } from "@/hooks/use-community";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import { CATEGORIES, type Community } from "@/lib/community";
 import { useI18n } from "@/hooks/use-i18n";
+import { CARD_GRID, PAGE_CONTAINER, PageColumns } from "@/components/page-layout";
+import {
+  ChallengesPanel,
+  MyCommunitiesPanel,
+  ProfessionalsPanel,
+  TopCommunitiesPanel,
+} from "@/components/side-panels";
 
 export const Route = createFileRoute("/comunidades/")({
   head: () => ({
@@ -61,60 +68,79 @@ function ComunidadesPage() {
   const featured = useMemo(() => communities.slice(0, 3), [communities]);
   const showFeatured = !searchTerm && category === "Todas" && featured.length > 0;
 
+  const filters = (
+    <>
+      <div className="rounded-2xl border bg-card p-5 shadow-card">
+        <h2 className="text-sm font-semibold text-foreground mb-4">{t("common.search")}</h2>
+        <input
+          type="text"
+          placeholder={t("comunidades.searchPlaceholder")}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+      </div>
+
+      <div className="rounded-2xl border bg-card p-5 shadow-card">
+        <h2 className="text-sm font-semibold text-foreground mb-4">
+          {t("comunidades.categories")}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {["Todas", ...CATEGORIES].map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`rounded-full px-4 py-2 text-xs font-medium transition ${
+                category === c
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-secondary text-secondary-foreground hover:bg-muted"
+              }`}
+            >
+              {c === "Todas" ? t("comunidades.categoryAll") : td(c)}
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
-      {/* Comunidades em destaque */}
-      {showFeatured && (
-        <section>
-          <h2 className="text-xl font-bold font-display text-foreground mb-6">
-            {t("comunidades.featured")}
-          </h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((c) => (
-              <CommunityCard key={c.id} community={c} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div
-        className={`grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)] ${showFeatured ? "mt-12 border-t border-border pt-12" : ""}`}
+    <div className={`${PAGE_CONTAINER} py-8`}>
+      <PageColumns
+        left={
+          <>
+            {filters}
+            <ChallengesPanel />
+          </>
+        }
+        right={
+          <>
+            <MyCommunitiesPanel />
+            <TopCommunitiesPanel />
+            <ProfessionalsPanel />
+          </>
+        }
       >
-        <aside className="min-w-0 space-y-6">
-          <div className="rounded-2xl border bg-card p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground mb-4">{t("common.search")}</h2>
-            <input
-              type="text"
-              placeholder={t("comunidades.searchPlaceholder")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-
-          <div className="rounded-2xl border bg-card p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground mb-4">
-              {t("comunidades.categories")}
+        {/* Comunidades em destaque */}
+        {showFeatured && (
+          <section>
+            <h2 className="text-xl font-bold font-display text-foreground mb-6">
+              {t("comunidades.featured")}
             </h2>
-            <div className="flex overflow-x-auto no-scrollbar gap-2 lg:flex-col lg:items-start pb-2 lg:pb-0">
-              {["Todas", ...CATEGORIES].map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`rounded-full px-4 py-2 text-xs font-medium transition ${
-                    category === c
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-secondary text-secondary-foreground hover:bg-muted"
-                  }`}
-                >
-                  {c === "Todas" ? t("comunidades.categoryAll") : td(c)}
-                </button>
+            <div className={CARD_GRID}>
+              {featured.map((c) => (
+                <CommunityCard key={c.id} community={c} />
               ))}
             </div>
-          </div>
-        </aside>
+          </section>
+        )}
 
-        <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
+        {/* Busca e categorias: a partir de 1440px ficam na coluna da esquerda */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 min-[1440px]:hidden">{filters}</div>
+
+        <section
+          className={`${CARD_GRID} min-w-0 ${showFeatured ? "mt-12 border-t border-border pt-12" : "mt-8"}`}
+        >
           {filtered.map((c) => (
             <CommunityCard key={c.id} community={c} />
           ))}
@@ -129,7 +155,7 @@ function ComunidadesPage() {
             </p>
           )}
         </section>
-      </div>
+      </PageColumns>
     </div>
   );
 }
