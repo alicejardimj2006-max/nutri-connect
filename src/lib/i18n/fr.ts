@@ -139,6 +139,11 @@ const fr: Record<DictKey, string> = {
   "espaco.empty.profissionais": "Aucun professionnel n'a encore publié ici.",
   "espaco.loading": "Chargement de l'Espace du Jour…",
   "espaco.firstPost": "Faire la première publication",
+  "espaco.filter.all": "Tous",
+  "espaco.loadMore": "Voir plus de publications",
+  "espaco.theme.open": "Voir le thème complet →",
+  "espaco.theme.none": "Il n'y a pas encore de thème de la semaine actif.",
+  "espaco.empty.tema": "Personne n'a encore publié sur ce thème. Soyez le premier !",
 
   "comunidades.featured": "Communautés à la une",
   "comunidades.bookWithPro": "Prendre rendez-vous avec {name}",

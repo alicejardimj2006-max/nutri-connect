@@ -135,6 +135,11 @@ const en: Record<DictKey, string> = {
   "espaco.empty.profissionais": "No professional has posted here yet.",
   "espaco.loading": "Loading Today's Space…",
   "espaco.firstPost": "Make the first post",
+  "espaco.filter.all": "All",
+  "espaco.loadMore": "Show more posts",
+  "espaco.theme.open": "See the full theme →",
+  "espaco.theme.none": "There is no active weekly theme yet.",
+  "espaco.empty.tema": "Nobody has posted on this theme yet. Be the first!",
 
   "comunidades.featured": "Featured communities",
   "comunidades.bookWithPro": "Book a consultation with {name}",

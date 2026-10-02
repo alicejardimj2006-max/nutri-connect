@@ -146,6 +146,11 @@ const ptBR = {
   "espaco.empty.profissionais": "Nenhum profissional publicou por aqui ainda.",
   "espaco.loading": "Carregando o Espaço de Hoje…",
   "espaco.firstPost": "Fazer primeira publicação",
+  "espaco.filter.all": "Todos",
+  "espaco.loadMore": "Ver mais publicações",
+  "espaco.theme.open": "Ver o tema completo →",
+  "espaco.theme.none": "Ainda não há um tema da semana ativo.",
+  "espaco.empty.tema": "Ninguém publicou neste tema ainda. Que tal ser a primeira pessoa?",
 
   // Comunidades -----------------------------------------------------------------
   "comunidades.featured": "Comunidades em destaque",

@@ -136,6 +136,11 @@ const es: Record<DictKey, string> = {
   "espaco.empty.profissionais": "Ningún profesional ha publicado por aquí todavía.",
   "espaco.loading": "Cargando el Espacio de Hoy…",
   "espaco.firstPost": "Hacer la primera publicación",
+  "espaco.filter.all": "Todos",
+  "espaco.loadMore": "Ver más publicaciones",
+  "espaco.theme.open": "Ver el tema completo →",
+  "espaco.theme.none": "Todavía no hay un tema de la semana activo.",
+  "espaco.empty.tema": "Nadie ha publicado en este tema todavía. ¡Sé la primera persona!",
 
   "comunidades.featured": "Comunidades destacadas",
   "comunidades.bookWithPro": "Agendar consulta con {name}",

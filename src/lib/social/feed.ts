@@ -164,6 +164,19 @@ export async function fetchActiveTheme(): Promise<ActiveTheme | null> {
   return { ...data, id: data.id, title: data.title, translations: data.translations ?? {} };
 }
 
+/** Textos do tema no idioma da pessoa (o português é o texto base; as outras línguas vêm de translations). */
+export function themeText(theme: ActiveTheme, locale: string) {
+  const all = theme.translations as Record<string, Record<string, string> | undefined> | null;
+  const tr = locale === "pt-BR" ? undefined : all?.[locale];
+  return {
+    title: tr?.title || theme.title,
+    subtitle: tr?.subtitle || theme.subtitle,
+    description: tr?.description || theme.description,
+    question: tr?.question || theme.question,
+    badge: tr?.badge || theme.badge,
+  };
+}
+
 // ── Publicar ─────────────────────────────────────────────────────────────────
 
 const IMAGE_BUCKET = "post-images";
