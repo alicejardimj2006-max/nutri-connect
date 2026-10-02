@@ -63,11 +63,16 @@ async function currentUserId(): Promise<string> {
   return id;
 }
 
-const CARD_COLUMNS = "id, name, username, avatar_url, role, is_private";
+interface CardRow {
+  id: string;
+  name: string;
+  username: string;
+  avatar_url: string | null;
+  role: AppRole;
+  is_private: boolean;
+}
 
-function toCard(
-  row: Pick<Tables<"profiles">, "id" | "name" | "username" | "avatar_url" | "role" | "is_private">,
-): PersonCard {
+function toCard(row: CardRow): PersonCard {
   return {
     id: row.id,
     name: row.name,
@@ -78,9 +83,13 @@ function toCard(
   };
 }
 
+/**
+ * Nome, @, foto e papel por id, inclusive de perfis privados (o banco só recusa quem tem
+ * bloqueio com a pessoa logada). Não lê a tabela profiles: bio e objetivos seguem protegidos.
+ */
 async function cardsByIds(ids: string[]): Promise<Map<string, PersonCard>> {
   if (ids.length === 0) return new Map();
-  const { data, error } = await supabase.from("profiles").select(CARD_COLUMNS).in("id", ids);
+  const { data, error } = await supabase.rpc("person_cards", { p_ids: ids });
   fail(error);
   return new Map((data ?? []).map((row) => [row.id, toCard(row)]));
 }
@@ -198,20 +207,11 @@ export async function unblockUser(userId: string): Promise<void> {
   fail(error);
 }
 
+/** Quem a pessoa logada bloqueou (a linha do bloqueado fica oculta pelo RLS, por isso a RPC). */
 export async function listBlocked(): Promise<(PersonCard & { blockedAt: string })[]> {
-  const me = await currentUserId();
-  const { data, error } = await supabase
-    .from("blocks")
-    .select("blocked_id, created_at")
-    .eq("blocker_id", me)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc("list_my_blocks");
   fail(error);
-  const rows = data ?? [];
-  const cards = await cardsByIds(rows.map((r) => r.blocked_id));
-  return rows.flatMap((r) => {
-    const card = cards.get(r.blocked_id);
-    return card ? [{ ...card, blockedAt: r.created_at }] : [];
-  });
+  return (data ?? []).map((row) => ({ ...toCard(row), blockedAt: row.blocked_at }));
 }
 
 // ── Configurações pessoais ──────────────────────────────────────────────────
@@ -238,4 +238,70 @@ export async function setPrivateProfile(isPrivate: boolean): Promise<void> {
   const me = await currentUserId();
   const { error } = await supabase.from("profiles").update({ is_private: isPrivate }).eq("id", me);
   fail(error);
+}
+
+// ── Privacidade (perfil privado + contato público) ──────────────────────────
+
+export interface PrivacySettings {
+  isPrivate: boolean;
+  showEmail: boolean;
+  showPhone: boolean;
+}
+
+export const DEFAULT_PRIVACY: PrivacySettings = {
+  isPrivate: false,
+  showEmail: false,
+  showPhone: false,
+};
+
+export async function getMyPrivacy(): Promise<PrivacySettings> {
+  const me = await currentUserId();
+  const [profile, settings] = await Promise.all([
+    supabase.from("profiles").select("is_private").eq("id", me).maybeSingle(),
+    getMySettings(),
+  ]);
+  fail(profile.error);
+  return {
+    isPrivate: profile.data?.is_private ?? DEFAULT_PRIVACY.isPrivate,
+    showEmail: settings?.show_email ?? DEFAULT_PRIVACY.showEmail,
+    showPhone: settings?.show_phone ?? DEFAULT_PRIVACY.showPhone,
+  };
+}
+
+export async function updateMyPrivacy(patch: Partial<PrivacySettings>): Promise<void> {
+  const settingsPatch: UserSettingsPatch = {};
+  if (patch.showEmail !== undefined) settingsPatch.show_email = patch.showEmail;
+  if (patch.showPhone !== undefined) settingsPatch.show_phone = patch.showPhone;
+  await Promise.all([
+    patch.isPrivate !== undefined ? setPrivateProfile(patch.isPrivate) : undefined,
+    Object.keys(settingsPatch).length > 0 ? updateMySettings(settingsPatch) : undefined,
+  ]);
+}
+
+// ── Preferências de notificação (as que valem em qualquer aparelho) ─────────
+
+export type NotificationCategory = "social" | "clinical" | "achievements" | "theme";
+
+export type NotificationPrefs = Partial<Record<NotificationCategory, boolean>>;
+
+/** Categoria ligada por padrão: só desliga se a pessoa desligou de propósito. */
+export function isCategoryOn(prefs: unknown, category: NotificationCategory): boolean {
+  if (prefs && typeof prefs === "object" && !Array.isArray(prefs)) {
+    return (prefs as NotificationPrefs)[category] !== false;
+  }
+  return true;
+}
+
+export async function setNotificationCategory(
+  category: NotificationCategory,
+  on: boolean,
+): Promise<void> {
+  const current = await getMySettings();
+  const prefs =
+    current?.notification_prefs &&
+    typeof current.notification_prefs === "object" &&
+    !Array.isArray(current.notification_prefs)
+      ? (current.notification_prefs as NotificationPrefs)
+      : {};
+  await updateMySettings({ notification_prefs: { ...prefs, [category]: on } });
 }

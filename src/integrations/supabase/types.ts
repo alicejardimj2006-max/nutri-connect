@@ -3306,6 +3306,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      list_my_blocks: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          blocked_at: string
+          id: string
+          is_private: boolean
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+          username: string
+        }[]
+      }
       log_search: { Args: { p_term: string }; Returns: undefined }
       mark_all_notifications_read: { Args: never; Returns: undefined }
       meal_plan_of_meal: { Args: { p_meal: string }; Returns: string }
@@ -3336,6 +3348,17 @@ export type Database = {
         Returns: undefined
       }
       owns_trail_profile: { Args: { p_profile: string }; Returns: boolean }
+      person_cards: {
+        Args: { p_ids: string[] }
+        Returns: {
+          avatar_url: string
+          id: string
+          is_private: boolean
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+          username: string
+        }[]
+      }
       post_is_visible: {
         Args: {
           p_audience: Database["public"]["Enums"]["post_audience"]

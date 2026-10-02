@@ -65,6 +65,7 @@ begin
   insert into public.friendships (requester_id, addressee_id, status) values
     (a, b, 'aceita'), (b, c, 'aceita');
   insert into public.blocks (blocker_id, blocked_id) values (a, d);
+  insert into public.care_links (patient_id, professional_id) values (c, p); -- p atende c (pendente)
 
   insert into public.posts (author_id, body, audience) values (a, 'post só para amigos de A', 'amigos')
     returning id into post_amigos;
@@ -77,7 +78,8 @@ begin
   -- --------------------------------------------------------------- ANÔNIMO
   foreach tbl in array array['profile_private','professionals','posts','comments','friendships',
                              'follows','blocks','notifications','user_settings','post_reactions',
-                             'saved_posts','care_links','messages','reports'] loop
+                             'saved_posts','care_links','messages','reports','profiles',
+                             'professional_directory'] loop
     r := pg_temp.as_user(null, 'anon', format('select * from public.%I limit 3', tbl));
     res := res || jsonb_build_object('teste', 'anon não lê ' || tbl,
       'ok', (r = '<vazio>' or r like 'ERRO%'), 'obtido', left(r, 80));
@@ -274,6 +276,53 @@ begin
 
   r := pg_temp.as_user(f, 'authenticated', format('delete from public.blocks where blocker_id = %L and blocked_id = %L', a, c));
   res := res || jsonb_build_object('teste', 'terceiro NÃO apaga bloqueio alheio', 'ok', (r = 'OK:0' or r like 'ERRO%'), 'obtido', r);
+
+  -- ------------------------------------------------ LEITURA DE PERFIS (profiles)
+  -- (neste ponto A está com perfil privado e não tem vínculo com P)
+  r := pg_temp.as_user(b, 'authenticated', format('select name from public.profiles where id = %L', c));
+  res := res || jsonb_build_object('teste', 'amigo lê a linha de um perfil privado', 'ok', (r like '%Carla%'), 'obtido', r);
+
+  r := pg_temp.as_user(p, 'authenticated', format('select name from public.profiles where id = %L', c));
+  res := res || jsonb_build_object('teste', 'profissional com vínculo lê o paciente privado', 'ok', (r like '%Carla%'), 'obtido', r);
+
+  r := pg_temp.as_user(p, 'authenticated', format('select name from public.profiles where id = %L', a));
+  res := res || jsonb_build_object('teste', 'profissional SEM vínculo NÃO lê perfil privado', 'ok', (r = '<vazio>'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', format('select name from public.profiles where id = %L', e));
+  res := res || jsonb_build_object('teste', 'logado lê perfil não privado', 'ok', (r like '%Eva%'), 'obtido', r);
+
+  r := pg_temp.as_user(c, 'authenticated', format('select name from public.profiles where id = %L', c));
+  res := res || jsonb_build_object('teste', 'dono sempre lê o próprio perfil privado', 'ok', (r like '%Carla%'), 'obtido', r);
+
+  r := pg_temp.as_user(d, 'authenticated', format('select name from public.profiles where id = %L', a));
+  res := res || jsonb_build_object('teste', 'bloqueado NÃO lê a linha de quem o bloqueou', 'ok', (r = '<vazio>'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.professionals');
+  res := res || jsonb_build_object('teste', 'logado lê a vitrine de profissionais', 'ok', (r::bigint >= 1), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.professional_directory');
+  res := res || jsonb_build_object('teste', 'logado lê professional_directory', 'ok', (r::bigint >= 1), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select name, username from public.person_cards(array[%L::uuid])', c));
+  res := res || jsonb_build_object('teste', 'person_cards mostra nome e @ de perfil privado', 'ok', (r like '%Carla%'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select bio from public.person_cards(array[%L::uuid])', c));
+  res := res || jsonb_build_object('teste', 'person_cards NÃO tem coluna bio', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+
+  r := pg_temp.as_user(a, 'authenticated', format('select name from public.person_cards(array[%L::uuid])', d));
+  res := res || jsonb_build_object('teste', 'person_cards não devolve quem tem bloqueio com A', 'ok', (r = '<vazio>'), 'obtido', r);
+
+  r := pg_temp.as_user(null, 'anon', format('select name from public.person_cards(array[%L::uuid])', c));
+  res := res || jsonb_build_object('teste', 'anon NÃO usa person_cards', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+
+  r := pg_temp.as_user(a, 'authenticated', 'select name from public.list_my_blocks()');
+  res := res || jsonb_build_object('teste', 'list_my_blocks mostra o bloqueado com nome', 'ok', (r like '%Daniel%'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', 'select name from public.list_my_blocks()');
+  res := res || jsonb_build_object('teste', 'list_my_blocks NÃO mostra bloqueios de outras pessoas', 'ok', (r = '<vazio>'), 'obtido', r);
+
+  r := pg_temp.as_user(null, 'anon', 'select * from public.list_my_blocks()');
+  res := res || jsonb_build_object('teste', 'anon NÃO usa list_my_blocks', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
 
   -- ---------------------------------------------- BLOQUEAR LIMPA RELAÇÕES
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', b, a));

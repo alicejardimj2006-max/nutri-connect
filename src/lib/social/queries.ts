@@ -10,6 +10,7 @@ export const qk = {
   requests: () => ["social", "requests"] as const,
   blocked: () => ["social", "blocked"] as const,
   settings: () => ["social", "settings"] as const,
+  privacy: () => ["social", "privacy"] as const,
 };
 
 export function useSearchUsers(params: api.SearchParams, enabled = true) {
@@ -44,6 +45,10 @@ export function useBlocked() {
 
 export function useMySettings() {
   return useQuery({ queryKey: qk.settings(), queryFn: api.getMySettings });
+}
+
+export function useMyPrivacy() {
+  return useQuery({ queryKey: qk.privacy(), queryFn: api.getMyPrivacy });
 }
 
 interface MutationOptions<TResult, TVars> {
@@ -113,4 +118,18 @@ export function useUpdateSettings(opts?: MutationOptions<void, api.UserSettingsP
 
 export function useSetPrivateProfile(opts?: MutationOptions<void, boolean>) {
   return useSocialMutation(api.setPrivateProfile, opts);
+}
+
+export function useUpdatePrivacy(opts?: MutationOptions<void, Partial<api.PrivacySettings>>) {
+  return useSocialMutation(api.updateMyPrivacy, opts);
+}
+
+export function useSetNotificationCategory(
+  opts?: MutationOptions<void, { category: api.NotificationCategory; on: boolean }>,
+) {
+  return useSocialMutation(
+    ({ category, on }: { category: api.NotificationCategory; on: boolean }) =>
+      api.setNotificationCategory(category, on),
+    opts,
+  );
 }

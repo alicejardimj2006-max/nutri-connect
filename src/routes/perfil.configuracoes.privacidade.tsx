@@ -1,19 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 import { ArrowLeft, Ban } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { Switch } from "@/components/ui/switch";
-import {
-  DEFAULT_PRIVACY,
-  loadBlockedUsers,
-  loadPrivacySettings,
-  savePrivacySettings,
-  unblockUser,
-  type BlockedUser,
-  type PrivacySettings,
-} from "@/lib/settings";
+import { DEFAULT_PRIVACY, type PrivacySettings } from "@/lib/social/api";
+import { useBlocked, useMyPrivacy, useUnblockUser, useUpdatePrivacy } from "@/lib/social/queries";
 
 export const Route = createFileRoute("/perfil/configuracoes/privacidade")({
   head: () => ({ meta: [{ title: "Privacidade — NutriConnect" }] }),
@@ -24,11 +16,13 @@ function Row({
   title,
   hint,
   checked,
+  disabled,
   onChange,
 }: {
   title: string;
   hint: string;
   checked: boolean;
+  disabled?: boolean;
   onChange: (v: boolean) => void;
 }) {
   return (
@@ -37,7 +31,7 @@ function Row({
         <p className="text-sm font-semibold text-foreground">{title}</p>
         {hint && <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p>}
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch checked={checked} disabled={disabled} onCheckedChange={onChange} />
     </div>
   );
 }
@@ -46,27 +40,21 @@ function PrivacidadePage() {
   const { user } = useAuth();
   const { t } = useI18n();
 
-  const [privacy, setPrivacy] = useState<PrivacySettings>(DEFAULT_PRIVACY);
-  const [blocked, setBlocked] = useState<BlockedUser[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-    setPrivacy(loadPrivacySettings(user.id));
-    setBlocked(loadBlockedUsers(user.id));
-  }, [user]);
+  const privacyQuery = useMyPrivacy();
+  const blockedQuery = useBlocked();
+  // Mostra a mudança na hora; o banco confirma em seguida (e a tela volta ao valor salvo se falhar).
+  const [pending, setPending] = useState<Partial<PrivacySettings>>({});
+  const updatePrivacy = useUpdatePrivacy({ onSuccess: () => setPending({}) });
+  const unblock = useUnblockUser({ success: t("settings.privacy.blocked.unblocked") });
 
   if (!user) return null;
 
-  const update = (patch: Partial<PrivacySettings>) => {
-    const next = { ...privacy, ...patch };
-    setPrivacy(next);
-    savePrivacySettings(user.id, next);
-  };
+  const privacy: PrivacySettings = { ...DEFAULT_PRIVACY, ...privacyQuery.data, ...pending };
+  const blocked = blockedQuery.data ?? [];
 
-  const handleUnblock = (targetId: string) => {
-    unblockUser(user.id, targetId);
-    setBlocked((prev) => prev.filter((b) => b.userId !== targetId));
-    toast.success(t("settings.privacy.blocked.unblocked"));
+  const update = (patch: Partial<PrivacySettings>) => {
+    setPending((prev) => ({ ...prev, ...patch }));
+    updatePrivacy.mutate(patch, { onError: () => setPending({}) });
   };
 
   return (
@@ -92,8 +80,9 @@ function PrivacidadePage() {
             <Row
               title={t("settings.privacy.profile.private")}
               hint={t("settings.privacy.profile.privateHint")}
-              checked={privacy.privateProfile}
-              onChange={(v) => update({ privateProfile: v })}
+              checked={privacy.isPrivate}
+              disabled={privacyQuery.isLoading}
+              onChange={(v) => update({ isPrivate: v })}
             />
           </div>
         </section>
@@ -107,12 +96,14 @@ function PrivacidadePage() {
               title={t("settings.privacy.contact.showEmail")}
               hint=""
               checked={privacy.showEmail}
+              disabled={privacyQuery.isLoading}
               onChange={(v) => update({ showEmail: v })}
             />
             <Row
               title={t("settings.privacy.contact.showPhone")}
               hint=""
               checked={privacy.showPhone}
+              disabled={privacyQuery.isLoading}
               onChange={(v) => update({ showPhone: v })}
             />
           </div>
@@ -133,7 +124,7 @@ function PrivacidadePage() {
             <ul className="mt-4 space-y-2">
               {blocked.map((b) => (
                 <li
-                  key={b.userId}
+                  key={b.id}
                   className="flex items-center justify-between gap-3 rounded-xl bg-secondary/40 px-3.5 py-2.5"
                 >
                   <span className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -142,8 +133,9 @@ function PrivacidadePage() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => handleUnblock(b.userId)}
-                    className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary"
+                    disabled={unblock.isPending}
+                    onClick={() => unblock.mutate(b.id)}
+                    className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-60"
                   >
                     {t("settings.privacy.blocked.unblock")}
                   </button>

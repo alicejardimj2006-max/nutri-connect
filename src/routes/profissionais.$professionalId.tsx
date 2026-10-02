@@ -10,7 +10,7 @@ import {
   Settings,
   Video,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { VerifiedBadge } from "@/components/person-chip";
 import { SlotPicker } from "@/components/clinical/slot-picker";
 import {
@@ -33,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/hooks/use-auth";
+import { useRequireAuth } from "@/hooks/use-auth";
 import * as api from "@/lib/clinical/api";
 import type { AppointmentModality, Slot } from "@/lib/clinical/api";
 import {
@@ -60,10 +60,13 @@ function ProfessionalPage() {
   const { professionalId } = Route.useParams();
   const { comunidade } = Route.useSearch();
   const { t, locale } = useClinicalI18n();
-  const { user, hydrated } = useAuth();
+  const { user, hydrated } = useRequireAuth();
   const entry = useDirectoryEntry(professionalId);
   const pro = useProfessional(professionalId);
   const links = useLinks("patient", !!user);
+
+  // Só quem está logado vê o perfil do profissional (os perfis não são públicos).
+  if (!hydrated || !user) return <AuthGateLoading />;
 
   if (entry.isLoading || pro.isLoading) {
     return (

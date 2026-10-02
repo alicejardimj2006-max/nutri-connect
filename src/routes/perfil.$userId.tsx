@@ -36,7 +36,7 @@ import { VerifiedBadge } from "@/components/person-chip";
 import { fetchContactInfo, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
-import { blockUser, isUserBlocked, loadPrivacySettings, unblockUser } from "@/lib/settings";
+import { useBlocked, useBlockUser, usePublicProfile, useUnblockUser } from "@/lib/social/queries";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,6 +72,12 @@ function PublicProfilePage() {
   const state = useCommunity();
   const { profiles, posts, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
+  const viewingOther = !!user && user.id !== userId;
+  // Privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
+  const remoteProfile = usePublicProfile(viewingOther ? userId : undefined);
+  const blockedQuery = useBlocked();
+  const blockMutation = useBlockUser();
+  const unblockMutation = useUnblockUser();
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
@@ -83,20 +89,25 @@ function PublicProfilePage() {
 
   const isSelf = user?.id === userId;
 
-  const privacy = !isSelf ? loadPrivacySettings(userId) : null;
-  const iBlockedThem = !isSelf && user ? isUserBlocked(user.id, userId) : false;
-  const theyBlockedMe = !isSelf && user ? isUserBlocked(userId, user.id) : false;
+  const iBlockedThem = !isSelf && (blockedQuery.data ?? []).some((b) => b.id === userId);
+  // get_public_profile devolve nada quando há bloqueio entre as duas pessoas (em qualquer sentido).
+  const theyBlockedMe = !isSelf && remoteProfile.isFetched && remoteProfile.data === null;
   const unavailable = !isSelf && (iBlockedThem || theyBlockedMe);
+  // Perfil privado de quem não é amigo: nome e foto aparecem, mas jornada e publicações não.
+  const contentLocked =
+    !isSelf && !!remoteProfile.data && remoteProfile.data.can_view_content === false;
 
   const handleBlock = () => {
     if (!user || !profile) return;
-    blockUser(user.id, { userId, name: profile.name });
-    toast.success(t("profile.blockedToast").replace("{name}", profile.name));
+    blockMutation.mutate(userId, {
+      onSuccess: () => toast.success(t("profile.blockedToast").replace("{name}", profile.name)),
+    });
   };
   const handleUnblock = () => {
     if (!user || !profile) return;
-    unblockUser(user.id, userId);
-    toast.success(t("profile.unblockedToast").replace("{name}", profile.name));
+    unblockMutation.mutate(userId, {
+      onSuccess: () => toast.success(t("profile.unblockedToast").replace("{name}", profile.name)),
+    });
   };
 
   const stored = profiles.find((p) => p.userId === userId);
@@ -345,7 +356,7 @@ function PublicProfilePage() {
               </div>
             </div>
 
-            {!isSelf && privacy?.privateProfile && (
+            {contentLocked && (
               <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center mb-8">
                 <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm font-semibold text-foreground">{t("profile.privateTitle")}</p>
@@ -354,7 +365,7 @@ function PublicProfilePage() {
                 </p>
               </div>
             )}
-            {(isSelf || !privacy?.privateProfile) && (
+            {!contentLocked && (
               <>
                 {/* Métricas da Jornada */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">

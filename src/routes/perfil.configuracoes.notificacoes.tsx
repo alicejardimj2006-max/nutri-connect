@@ -11,6 +11,8 @@ import {
   saveNotificationSettings,
   type NotificationSettings,
 } from "@/lib/settings";
+import { isCategoryOn } from "@/lib/social/api";
+import { useMySettings, useSetNotificationCategory } from "@/lib/social/queries";
 
 export const Route = createFileRoute("/perfil/configuracoes/notificacoes")({
   head: () => ({ meta: [{ title: "Notificações — NutriConnect" }] }),
@@ -25,6 +27,10 @@ function NotificacoesPage() {
 
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS);
   const [permission, setPermission] = useState<PermissionState>("unsupported");
+  const serverSettings = useMySettings();
+  const setCategory = useSetNotificationCategory();
+  // Categoria "conquistas": a verdade fica no servidor; o espelho local só serve ao navegador.
+  const achievements = isCategoryOn(serverSettings.data?.notification_prefs, "achievements");
 
   useEffect(() => {
     if (!user) return;
@@ -33,6 +39,16 @@ function NotificacoesPage() {
       setPermission(Notification.permission as PermissionState);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !serverSettings.data) return;
+    const local = loadNotificationSettings(user.id);
+    if (local.achievements !== achievements) {
+      const next = { ...local, achievements };
+      saveNotificationSettings(user.id, next);
+      setSettings(next);
+    }
+  }, [user, serverSettings.data, achievements]);
 
   if (!user) return null;
 
@@ -154,8 +170,12 @@ function NotificacoesPage() {
               </p>
             </div>
             <Switch
-              checked={settings.achievements}
-              onCheckedChange={(v) => update({ achievements: v })}
+              checked={achievements}
+              disabled={serverSettings.isLoading || setCategory.isPending}
+              onCheckedChange={(v) => {
+                update({ achievements: v });
+                setCategory.mutate({ category: "achievements", on: v });
+              }}
             />
           </div>
         </section>

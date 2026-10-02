@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MapPin, Search, Stethoscope, Video } from "lucide-react";
-import { SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { useRequireAuth } from "@/hooks/use-auth";
 import { VerifiedBadge } from "@/components/person-chip";
 import { Avatar, EmptyState, Loading, inputClass, plainText } from "@/components/clinical/ui";
 import { useDirectory } from "@/lib/clinical/queries";
@@ -20,6 +21,7 @@ type ModalityFilter = "todos" | "online" | "presencial";
 
 function DirectoryPage() {
   const { t, locale } = useClinicalI18n();
+  const { user, hydrated: authHydrated } = useRequireAuth();
   const { data, isLoading } = useDirectory();
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState<string | null>(null);
@@ -39,6 +41,9 @@ function DirectoryPage() {
         .some((v) => v!.toLowerCase().includes(q));
     });
   }, [data, query, specialty, modality, onlyAccepting]);
+
+  // Só quem está logado vê a vitrine (os perfis não são públicos).
+  if (!authHydrated || !user) return <AuthGateLoading />;
 
   return (
     <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
