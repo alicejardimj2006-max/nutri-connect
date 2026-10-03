@@ -9,6 +9,7 @@ import {
   Info,
   LogOut,
   MessageCircle,
+  FileText,
   Palette,
   ShieldCheck,
   UserCog,
@@ -191,6 +192,27 @@ function ConfiguracoesPage() {
             >
               <MessageCircle className="h-4 w-4 text-accent" />
               {t("settings.section.about.link.contact")}
+            </Link>
+            <Link
+              to="/termos"
+              className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+            >
+              <FileText className="h-4 w-4 text-accent" />
+              Termos de Uso
+            </Link>
+            <Link
+              to="/privacidade"
+              className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+            >
+              <ShieldCheck className="h-4 w-4 text-accent" />
+              Política de Privacidade
+            </Link>
+            <Link
+              to="/diretrizes"
+              className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+            >
+              <Heart className="h-4 w-4 text-accent" />
+              Diretrizes da Comunidade
             </Link>
           </div>
           <p className="mt-4 text-[11px] text-muted-foreground">

@@ -470,26 +470,6 @@ const en: Record<DictKey, string> = {
   "theme.past3.summary":
     "Breathing practices and observing fullness signals at the table, with no screens around.",
 
-  "about.stat1.label": "Active Members",
-  "about.stat1.hint": "across Brazil",
-  "about.stat2.label": "Themed Communities",
-  "about.stat2.hint": "created by the network",
-  "about.stat3.label": "Recipes Shared",
-  "about.stat3.hint": "posted and cooked",
-  "about.stat4.label": "Satisfaction Rate",
-  "about.stat4.hint": "positive rating",
-  "about.tl1.title": "The Start of the Journey",
-  "about.tl1.desc":
-    "Founded to create a space where talking about food wasn't synonymous with guilt or comparison.",
-  "about.tl2.title": "Themed Communities",
-  "about.tl2.desc":
-    "Launch of the first themed communities, bringing together people with similar goals and eating routines.",
-  "about.tl3.title": "Challenges & Theme of the Week",
-  "about.tl3.desc":
-    "Arrival of habit challenges and the Theme of the Week, bringing more consistency and lightness to everyone's journey.",
-  "about.tl4.title": "Network Expansion",
-  "about.tl4.desc":
-    "We reached more than 45,000 members sharing recipes, experiences and achievements every day.",
   "about.val1.title": "Humanization First",
   "about.val1.desc":
     "We believe food is affection, culture and habit. We don't impose punitive restrictive diets.",
@@ -501,15 +481,6 @@ const en: Record<DictKey, string> = {
   "about.val4.title": "Welcoming Community",
   "about.val4.desc":
     "We foster a judgment-free environment where individual progress is celebrated by all.",
-  "about.team1.role": "Co-founder & Director of Nutrition",
-  "about.team1.bio":
-    "Clinical nutritionist with over 12 years of experience in dietary re-education and sports nutrition.",
-  "about.team2.role": "Co-founder & CTO",
-  "about.team2.bio":
-    "Specialist in artificial intelligence applied to health and secure software architecture.",
-  "about.team3.role": "Head of Research & AI",
-  "about.team3.bio":
-    "PhD in Food Science from USP, focused on nutritional recommendation algorithms.",
   "about.badge": "Learn our story",
   "about.hero1": "Reinventing the connection between",
   "about.hero2": "you and your food",
@@ -521,12 +492,8 @@ const en: Record<DictKey, string> = {
   "about.vision": "Our Vision",
   "about.visionText":
     "To be the leading reference in digital food communities, transforming people's relationship with food through real connection and mutual support.",
-  "about.trajectory": "Our Story",
-  "about.howWeGotHere": "How we got here",
   "about.valuesTitle": "Our Core Values",
   "about.valuesHint": "What guides us in every line of code and decision",
-  "about.leadership": "Leadership",
-  "about.whoMakesItHappen": "Who makes it happen",
   "about.join": "Be part of this transformation",
   "about.joinText":
     "Whether to reach your best physical self or to find people who understand your journey, NutriConnect is your place.",

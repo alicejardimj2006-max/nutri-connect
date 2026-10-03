@@ -985,6 +985,41 @@ export type Database = {
           },
         ]
       }
+      consents: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          kind: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          kind: string
+          user_id: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          kind?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -3230,6 +3265,7 @@ export type Database = {
         Args: { p_patient: string; p_professional?: string }
         Returns: boolean
       }
+      export_my_data: { Args: never; Returns: Json }
       expire_payment_holds: {
         Args: { p_professional?: string }
         Returns: number
@@ -3560,6 +3596,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      record_consent: {
+        Args: { p_granted?: boolean; p_kind: string; p_version: string }
+        Returns: undefined
       }
       relationship_with: { Args: { p_user: string }; Returns: string }
       remove_friendship: { Args: { p_user: string }; Returns: undefined }

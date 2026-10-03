@@ -1,16 +1,4 @@
 import { getRequest } from "@tanstack/react-start/server";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-
-export function createLovableAiGatewayProvider(lovableApiKey: string) {
-  return createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
-  });
-}
 
 export type AiKind = "nina" | "summary";
 export type AiChatResult = { ok: true; text: string } | { ok: false; status: number; limit?: boolean };

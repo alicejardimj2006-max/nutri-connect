@@ -1,22 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { SiteHeader } from "@/components/site-chrome";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  MessageCircle,
-  Send,
-  CheckCircle2,
-  HelpCircle,
-  Sparkles,
-} from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { SiteHeader } from "@/components/site-chrome";
+import { SiteFooter } from "@/components/site-footer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import type { DictKey } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+import { COMPANY } from "@/lib/legal";
 
 export const Route = createFileRoute("/contato")({
   head: () => ({
@@ -25,7 +18,7 @@ export const Route = createFileRoute("/contato")({
       {
         name: "description",
         content:
-          "Precisa de ajuda ou tem dúvidas sobre a plataforma NutriConnect? Entre em contato com nosso time de atendimento.",
+          "Dúvidas, suporte, denúncias de conteúdo e pedidos sobre seus dados pessoais (LGPD): fale com a equipe do NutriConnect.",
       },
       { property: "og:title", content: "Fale Conosco — NutriConnect" },
       {
@@ -37,47 +30,48 @@ export const Route = createFileRoute("/contato")({
   component: Contato,
 });
 
-const contactChannels: { icon: typeof Mail; title: DictKey; value: string; hint: DictKey }[] = [
-  {
-    icon: Mail,
-    title: "contact.ch1.title",
-    value: "suporte@nutriconnect.com.br",
-    hint: "contact.ch1.hint",
-  },
-  {
-    icon: Phone,
-    title: "contact.ch2.title",
-    value: "0800 770 9988 / (11) 4002-8922",
-    hint: "contact.ch2.hint",
-  },
-  {
-    icon: MessageCircle,
-    title: "contact.ch3.title",
-    value: "+55 (11) 98888-2026",
-    hint: "contact.ch3.hint",
-  },
-  {
-    icon: MapPin,
-    title: "contact.ch4.title",
-    value: "Av. Paulista, 1000, Cj. 1402 — São Paulo/SP",
-    hint: "contact.ch4.hint",
-  },
-];
-
 function Contato() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [subject, setSubject] = useState("duvida-geral");
+  const [subject, setSubject] = useState("Dúvida geral");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const subjects = [
+    t("contact.subject.general"),
+    t("contact.subject.account"),
+    "Privacidade e dados pessoais (LGPD)",
+    "Denúncia de conteúdo",
+    "Pedir revisão de uma moderação",
+    t("contact.subject.partners"),
+    t("contact.subject.press"),
+  ];
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      toast.success(t("contact.ticketSent") + " #NC-" + Math.floor(1000 + Math.random() * 9000));
-    }, 1000);
+    const { error } = await supabase.from("contact_messages").insert({
+      user_id: user?.id ?? null,
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim() || null,
+      subject,
+      message: message.trim(),
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(
+        `Não foi possível enviar agora. Escreva para ${COMPANY.supportEmail} se o problema continuar.`,
+      );
+      return;
+    }
+    setSubmitted(true);
+    setMessage("");
+    toast.success(t("contact.received"));
   };
 
   return (
@@ -85,7 +79,6 @@ function Contato() {
       <SiteHeader />
 
       <main className="flex-1">
-        {/* HERO HEADER */}
         <section className="bg-gradient-to-b from-secondary/60 to-background py-14">
           <div className="mx-auto max-w-5xl px-4 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-soft/50 px-4 py-1.5 text-xs font-semibold text-primary">
@@ -98,80 +91,70 @@ function Contato() {
           </div>
         </section>
 
-        {/* CONTENT GRID */}
         <section className="mx-auto max-w-6xl px-4 py-12">
           <div className="grid gap-10 lg:grid-cols-[1fr_1.3fr]">
-            {/* CHANNELS & STATUS */}
-            <div className="space-y-6">
-              {/* LIVE STATUS CARD */}
-              <div className="rounded-3xl border bg-card p-6 shadow-card flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="relative flex h-3.5 w-3.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
-                  </span>
-                  <div>
-                    <div className="text-sm font-bold">{t("contact.live")}</div>
-                    <div className="text-xs text-muted-foreground">{t("contact.wait")}</div>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-card">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
+                  <Mail className="h-5 w-5" />
                 </div>
-                <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                  {t("contact.online")}
-                </span>
-              </div>
-
-              {/* CHANNELS LIST */}
-              <div className="space-y-4">
-                {contactChannels.map((c) => (
-                  <div
-                    key={c.title}
-                    className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-card hover:border-primary/40 transition"
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    {t("contact.ch1.title")}
+                  </div>
+                  <a
+                    href={`mailto:${COMPANY.supportEmail}`}
+                    className="mt-0.5 block text-sm font-bold text-foreground hover:underline"
                   >
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
-                      <c.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        {t(c.title)}
-                      </div>
-                      <div className="text-sm font-bold text-foreground mt-0.5">{c.value}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{t(c.hint)}</div>
-                    </div>
-                  </div>
-                ))}
+                    {COMPANY.supportEmail}
+                  </a>
+                </div>
               </div>
 
-              {/* HOURS CARD */}
-              <div className="rounded-3xl border bg-secondary/40 p-6">
-                <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <Clock className="h-4 w-4 text-primary" /> {t("contact.hours")}
+              {COMPANY.address && (
+                <div className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-card">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {t("contact.ch4.title")}
+                    </div>
+                    <div className="mt-0.5 text-sm font-bold text-foreground">
+                      {COMPANY.address}
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-3 text-xs text-muted-foreground space-y-1.5">
-                  <div className="flex justify-between">
-                    <span>{t("contact.weekdays")}</span>
-                    <span className="font-semibold text-foreground">
-                      {t("contact.weekdaysTime")}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{t("contact.saturdays")}</span>
-                    <span className="font-semibold text-foreground">
-                      {t("contact.saturdaysTime")}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{t("contact.sundays")}</span>
-                    <span className="font-semibold text-foreground">NutriAI 24h</span>
-                  </div>
+              )}
+
+              <div className="flex items-start gap-4 rounded-3xl border bg-secondary/40 p-5">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div className="text-xs leading-relaxed text-muted-foreground">
+                  <p className="text-sm font-bold text-foreground">Seus dados e denúncias</p>
+                  <p className="mt-1">
+                    Para pedidos da LGPD (acesso, correção, exclusão) escolha o assunto
+                    “Privacidade e dados pessoais”. Você também pode baixar seus dados e excluir a
+                    conta em Configurações. Para denunciar um conteúdo, use o botão de denúncia ou o
+                    assunto “Denúncia de conteúdo”. Veja as{" "}
+                    <Link to="/diretrizes" className="underline">
+                      Diretrizes
+                    </Link>{" "}
+                    e a{" "}
+                    <Link to="/privacidade" className="underline">
+                      Política de Privacidade
+                    </Link>
+                    .
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* FORM */}
             <div className="rounded-3xl border bg-card p-8 shadow-xl">
               {submitted ? (
-                <div className="py-12 text-center space-y-4">
-                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600">
+                <div className="space-y-4 py-12 text-center">
+                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60">
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
                   <h3 className="font-display text-2xl font-bold">{t("contact.received")}</h3>
@@ -191,27 +174,45 @@ function Contato() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label={t("contact.fullName")}>
-                      <Input required placeholder={t("contact.namePlaceholder")} />
+                      <Input
+                        required
+                        minLength={2}
+                        maxLength={120}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder={t("contact.namePlaceholder")}
+                      />
                     </Field>
                     <Field label={t("auth.email")}>
-                      <Input required type="email" placeholder="voce@exemplo.com" />
+                      <Input
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="voce@exemplo.com"
+                      />
                     </Field>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label={t("contact.phone")}>
-                      <Input placeholder="(11) 99999-9999" />
+                      <Input
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="(11) 99999-9999"
+                      />
                     </Field>
                     <Field label={t("contact.subject")}>
                       <select
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:border-primary outline-none"
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                       >
-                        <option value="duvida-geral">{t("contact.subject.general")}</option>
-                        <option value="suporte-conta">{t("contact.subject.account")}</option>
-                        <option value="parcerias">{t("contact.subject.partners")}</option>
-                        <option value="imprensa">{t("contact.subject.press")}</option>
+                        {subjects.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
                       </select>
                     </Field>
                   </div>
@@ -219,8 +220,12 @@ function Contato() {
                   <Field label={t("contact.message")}>
                     <Textarea
                       required
+                      minLength={5}
+                      maxLength={5000}
                       rows={5}
                       className="resize-none"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                       placeholder={t("contact.messagePlaceholder")}
                     />
                   </Field>
@@ -228,7 +233,7 @@ function Contato() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary-hover disabled:opacity-50"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary-hover disabled:opacity-50"
                   >
                     {loading ? (
                       <span>{t("contact.sending")}</span>
@@ -244,6 +249,7 @@ function Contato() {
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

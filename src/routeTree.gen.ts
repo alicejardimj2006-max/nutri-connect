@@ -18,17 +18,19 @@ import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ConvitesRouteImport } from './routes/convites'
 import { Route as DesafiosRouteImport } from './routes/desafios'
+import { Route as DiretrizesRouteImport } from './routes/diretrizes'
 import { Route as EspacoRouteImport } from './routes/espaco'
-import { Route as ExperienciasRouteImport } from './routes/experiencias'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ReceitasRouteImport } from './routes/receitas'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as VerificacaoRouteImport } from './routes/verificacao'
 import { Route as AcompanhamentoIndexRouteImport } from './routes/acompanhamento.index'
 import { Route as AcompanhamentoConsultasRouteImport } from './routes/acompanhamento.consultas'
@@ -110,14 +112,14 @@ const DesafiosRoute = DesafiosRouteImport.update({
   path: '/desafios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiretrizesRoute = DiretrizesRouteImport.update({
+  id: '/diretrizes',
+  path: '/diretrizes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EspacoRoute = EspacoRouteImport.update({
   id: '/espaco',
   path: '/espaco',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperienciasRoute = ExperienciasRouteImport.update({
-  id: '/experiencias',
-  path: '/experiencias',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorarRoute = ExplorarRouteImport.update({
@@ -145,6 +147,11 @@ const PainelRoute = PainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasRoute = ReceitasRouteImport.update({
   id: '/receitas',
   path: '/receitas',
@@ -163,6 +170,11 @@ const SobreRoute = SobreRouteImport.update({
 const TemaDaSemanaRoute = TemaDaSemanaRouteImport.update({
   id: '/tema-da-semana',
   path: '/tema-da-semana',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerificacaoRoute = VerificacaoRouteImport.update({
@@ -358,17 +370,19 @@ export interface FileRoutesByFullPath {
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
   '/desafios': typeof DesafiosRouteWithChildren
+  '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
-  '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/termos': typeof TermosRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
   '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
@@ -412,16 +426,18 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
+  '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
-  '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/termos': typeof TermosRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
   '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
@@ -468,17 +484,19 @@ export interface FileRoutesById {
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
   '/desafios': typeof DesafiosRouteWithChildren
+  '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
-  '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/termos': typeof TermosRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
   '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
@@ -527,17 +545,19 @@ export interface FileRouteTypes {
     | '/contato'
     | '/convites'
     | '/desafios'
+    | '/diretrizes'
     | '/espaco'
-    | '/experiencias'
     | '/explorar'
     | '/login'
     | '/nina'
     | '/notificacoes'
     | '/painel'
+    | '/privacidade'
     | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/termos'
     | '/verificacao'
     | '/acompanhamento/consultas'
     | '/acompanhamento/diario'
@@ -581,16 +601,18 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/contato'
     | '/convites'
+    | '/diretrizes'
     | '/espaco'
-    | '/experiencias'
     | '/explorar'
     | '/login'
     | '/nina'
     | '/notificacoes'
+    | '/privacidade'
     | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/termos'
     | '/verificacao'
     | '/acompanhamento/consultas'
     | '/acompanhamento/diario'
@@ -636,17 +658,19 @@ export interface FileRouteTypes {
     | '/contato'
     | '/convites'
     | '/desafios'
+    | '/diretrizes'
     | '/espaco'
-    | '/experiencias'
     | '/explorar'
     | '/login'
     | '/nina'
     | '/notificacoes'
     | '/painel'
+    | '/privacidade'
     | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/termos'
     | '/verificacao'
     | '/acompanhamento/consultas'
     | '/acompanhamento/diario'
@@ -694,17 +718,19 @@ export interface RootRouteChildren {
   ContatoRoute: typeof ContatoRoute
   ConvitesRoute: typeof ConvitesRoute
   DesafiosRoute: typeof DesafiosRouteWithChildren
+  DiretrizesRoute: typeof DiretrizesRoute
   EspacoRoute: typeof EspacoRoute
-  ExperienciasRoute: typeof ExperienciasRoute
   ExplorarRoute: typeof ExplorarRoute
   LoginRoute: typeof LoginRoute
   NinaRoute: typeof NinaRoute
   NotificacoesRoute: typeof NotificacoesRoute
   PainelRoute: typeof PainelRouteWithChildren
+  PrivacidadeRoute: typeof PrivacidadeRoute
   ReceitasRoute: typeof ReceitasRouteWithChildren
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SobreRoute: typeof SobreRoute
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
+  TermosRoute: typeof TermosRoute
   VerificacaoRoute: typeof VerificacaoRoute
   ConviteCodeRoute: typeof ConviteCodeRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
@@ -781,18 +807,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DesafiosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diretrizes': {
+      id: '/diretrizes'
+      path: '/diretrizes'
+      fullPath: '/diretrizes'
+      preLoaderRoute: typeof DiretrizesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/espaco': {
       id: '/espaco'
       path: '/espaco'
       fullPath: '/espaco'
       preLoaderRoute: typeof EspacoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiencias': {
-      id: '/experiencias'
-      path: '/experiencias'
-      fullPath: '/experiencias'
-      preLoaderRoute: typeof ExperienciasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorar': {
@@ -830,6 +856,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receitas': {
       id: '/receitas'
       path: '/receitas'
@@ -856,6 +889,13 @@ declare module '@tanstack/react-router' {
       path: '/tema-da-semana'
       fullPath: '/tema-da-semana'
       preLoaderRoute: typeof TemaDaSemanaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verificacao': {
@@ -1226,17 +1266,19 @@ const rootRouteChildren: RootRouteChildren = {
   ContatoRoute: ContatoRoute,
   ConvitesRoute: ConvitesRoute,
   DesafiosRoute: DesafiosRouteWithChildren,
+  DiretrizesRoute: DiretrizesRoute,
   EspacoRoute: EspacoRoute,
-  ExperienciasRoute: ExperienciasRoute,
   ExplorarRoute: ExplorarRoute,
   LoginRoute: LoginRoute,
   NinaRoute: NinaRoute,
   NotificacoesRoute: NotificacoesRoute,
   PainelRoute: PainelRouteWithChildren,
+  PrivacidadeRoute: PrivacidadeRoute,
   ReceitasRoute: ReceitasRouteWithChildren,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   SobreRoute: SobreRoute,
   TemaDaSemanaRoute: TemaDaSemanaRoute,
+  TermosRoute: TermosRoute,
   VerificacaoRoute: VerificacaoRoute,
   ConviteCodeRoute: ConviteCodeRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,

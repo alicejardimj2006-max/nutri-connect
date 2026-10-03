@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { VerifiedBadge } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
 import { PostImage } from "@/components/post-image";
+import { ReportButton } from "@/components/report-button";
 import {
   Dialog,
   DialogContent,
@@ -272,6 +273,9 @@ export function PostCard({ post }: PostCardProps) {
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-foreground/90">{c.text}</p>
+                {remote && user && c.authorId !== user.id && (
+                  <ReportButton targetType="comment" targetId={c.id} className="mt-2" />
+                )}
               </div>
             ))
           ) : (
@@ -368,6 +372,10 @@ export function PostCard({ post }: PostCardProps) {
             active: hasSupported,
             activeClass: "bg-accent-soft text-accent",
           })}
+
+        {remote && user && !isOwnPost && (
+          <ReportButton targetType="post" targetId={post.id} className="mt-2" />
+        )}
       </div>
     );
   };

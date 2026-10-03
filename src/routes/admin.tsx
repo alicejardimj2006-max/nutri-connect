@@ -6,6 +6,7 @@ import { Check, ShieldAlert, X } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { syncVerifications } from "@/lib/profile-sync";
 import { PostImage } from "@/components/post-image";
+import { ModerationPanel } from "@/components/moderation-panel";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
@@ -25,13 +26,14 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "verificacoes" | "comunidades";
+type Tab = "verificacoes" | "comunidades" | "denuncias";
 
 function AdminPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
   const state = useCommunity();
   const [tab, setTab] = useState<Tab>("verificacoes");
+  const [reportCount, setReportCount] = useState(0);
 
   // Admins veem todos os pedidos, com links temporários para as imagens privadas.
   useEffect(() => {
@@ -68,6 +70,7 @@ function AdminPage() {
             [
               ["verificacoes", `${t("admin.tab.verifications")} (${pending.length})`],
               ["comunidades", `${t("admin.tab.communities")} (${attention.length})`],
+              ["denuncias", `Denúncias (${reportCount})`],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -137,6 +140,10 @@ function AdminPage() {
                 </ul>
               </section>
             )}
+          </div>
+        ) : tab === "denuncias" ? (
+          <div className="mt-6">
+            <ModerationPanel onCount={setReportCount} />
           </div>
         ) : (
           <div className="mt-6 space-y-4">

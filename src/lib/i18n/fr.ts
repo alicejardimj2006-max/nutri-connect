@@ -480,26 +480,6 @@ const fr: Record<DictKey, string> = {
   "theme.past3.summary":
     "Pratiques de respiration et observation des signaux de satiété à table, sans écrans à proximité.",
 
-  "about.stat1.label": "Membres Actifs",
-  "about.stat1.hint": "dans tout le Brésil",
-  "about.stat2.label": "Communautés Thématiques",
-  "about.stat2.hint": "créées par le réseau",
-  "about.stat3.label": "Recettes Partagées",
-  "about.stat3.hint": "publiées et cuisinées",
-  "about.stat4.label": "Taux de Satisfaction",
-  "about.stat4.hint": "avis positifs",
-  "about.tl1.title": "Le Début du Parcours",
-  "about.tl1.desc":
-    "Fondée pour créer un espace où parler de nourriture ne rimerait pas avec culpabilité ou comparaison.",
-  "about.tl2.title": "Communautés Thématiques",
-  "about.tl2.desc":
-    "Lancement des premières communautés thématiques, réunissant des personnes aux objectifs et routines alimentaires proches.",
-  "about.tl3.title": "Défis et Thème de la Semaine",
-  "about.tl3.desc":
-    "Arrivée des défis d'habitudes et du Thème de la Semaine, apportant plus de régularité et de légèreté au parcours de chacun.",
-  "about.tl4.title": "Expansion du Réseau",
-  "about.tl4.desc":
-    "Nous avons dépassé les 45 000 membres qui partagent chaque jour recettes, expériences et réussites.",
   "about.val1.title": "L'Humain d'Abord",
   "about.val1.desc":
     "Nous croyons que l'alimentation est affection, culture et habitude. Nous n'imposons pas de régimes restrictifs punitifs.",
@@ -512,15 +492,6 @@ const fr: Record<DictKey, string> = {
   "about.val4.title": "Communauté Accueillante",
   "about.val4.desc":
     "Nous favorisons un environnement sans jugement, où les progrès de chacun sont célébrés par tous.",
-  "about.team1.role": "Cofondatrice et Directrice de la Nutrition",
-  "about.team1.bio":
-    "Nutritionniste clinique avec plus de 12 ans d'expérience en rééducation alimentaire et nutrition sportive.",
-  "about.team2.role": "Cofondateur et CTO",
-  "about.team2.bio":
-    "Spécialiste de l'intelligence artificielle appliquée à la santé et de l'architecture logicielle sécurisée.",
-  "about.team3.role": "Responsable Recherche et IA",
-  "about.team3.bio":
-    "Docteure en sciences des aliments de l'USP, spécialisée dans les algorithmes de recommandation nutritionnelle.",
   "about.badge": "Découvrez notre histoire",
   "about.hero1": "Réinventer le lien entre",
   "about.hero2": "vous et votre alimentation",
@@ -532,12 +503,8 @@ const fr: Record<DictKey, string> = {
   "about.vision": "Notre Vision",
   "about.visionText":
     "Devenir la référence des communautés numériques autour de l'alimentation, en transformant le rapport des gens à la nourriture grâce à un vrai lien et à l'entraide.",
-  "about.trajectory": "Notre Parcours",
-  "about.howWeGotHere": "Comment nous en sommes arrivés là",
   "about.valuesTitle": "Nos Valeurs Fondamentales",
   "about.valuesHint": "Ce qui nous guide dans chaque ligne de code et chaque décision",
-  "about.leadership": "Direction",
-  "about.whoMakesItHappen": "Ceux qui font avancer les choses",
   "about.join": "Prenez part à cette transformation",
   "about.joinText":
     "Que ce soit pour atteindre votre meilleure forme ou pour rencontrer des personnes qui comprennent votre parcours, NutriConnect est votre place.",

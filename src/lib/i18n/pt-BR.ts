@@ -487,26 +487,6 @@ const ptBR = {
   "theme.past3.summary":
     "Práticas de respiração e observação de sinais de saciedade à mesa sem telas por perto.",
 
-  "about.stat1.label": "Membros Ativos",
-  "about.stat1.hint": "em todo o Brasil",
-  "about.stat2.label": "Comunidades Temáticas",
-  "about.stat2.hint": "criadas pela rede",
-  "about.stat3.label": "Receitas Compartilhadas",
-  "about.stat3.hint": "publicadas e preparadas",
-  "about.stat4.label": "Índice de Satisfação",
-  "about.stat4.hint": "avaliação positiva",
-  "about.tl1.title": "O Início da Jornada",
-  "about.tl1.desc":
-    "Fundada com o propósito de criar um espaço onde falar sobre comida não fosse sinônimo de culpa ou comparação.",
-  "about.tl2.title": "Comunidades Temáticas",
-  "about.tl2.desc":
-    "Lançamento das primeiras comunidades temáticas, unindo pessoas em torno de objetivos e rotinas alimentares parecidas.",
-  "about.tl3.title": "Desafios & Tema da Semana",
-  "about.tl3.desc":
-    "Chegada dos desafios de hábitos e do Tema da Semana, trazendo mais constância e leveza para a jornada de cada pessoa.",
-  "about.tl4.title": "Expansão da Rede",
-  "about.tl4.desc":
-    "Alcançamos a marca de mais de 45 mil membros compartilhando receitas, experiências e conquistas todos os dias.",
   "about.val1.title": "Humanização em Primeiro Lugar",
   "about.val1.desc":
     "Acreditamos que a alimentação é afeto, cultura e hábito. Não impomos dietas restritivas punitivas.",
@@ -519,15 +499,6 @@ const ptBR = {
   "about.val4.title": "Comunidade Acolhedora",
   "about.val4.desc":
     "Promovemos um ambiente livre de julgamentos, onde a evolução individual é celebrada por todos.",
-  "about.team1.role": "Co-fundadora & Diretora de Nutrição",
-  "about.team1.bio":
-    "Nutricionista clínica com mais de 12 anos de experiência em reeducação alimentar e nutrição esportiva.",
-  "about.team2.role": "Co-fundador & CTO",
-  "about.team2.bio":
-    "Especialista em inteligência artificial aplicada à saúde e arquitetura de software seguro.",
-  "about.team3.role": "Head de Pesquisa & IA",
-  "about.team3.bio":
-    "Doutora em Ciências dos Alimentos pela USP com foco em algoritmos de recomendação nutricional.",
   "about.badge": "Conheça nossa história",
   "about.hero1": "Reinventando a conexão entre",
   "about.hero2": "você e sua alimentação",
@@ -539,12 +510,8 @@ const ptBR = {
   "about.vision": "Nossa Visão",
   "about.visionText":
     "Ser a principal referência em comunidade digital sobre alimentação, transformando a relação das pessoas com a comida através de conexão real e apoio mútuo.",
-  "about.trajectory": "Nossa Trajetória",
-  "about.howWeGotHere": "Como chegamos até aqui",
   "about.valuesTitle": "Nossos Valores Fundamentais",
   "about.valuesHint": "O que nos guia em cada linha de código e decisão",
-  "about.leadership": "Liderança",
-  "about.whoMakesItHappen": "Quem faz acontecer",
   "about.join": "Faça parte desta transformação",
   "about.joinText":
     "Seja para alcançar sua melhor versão física ou para encontrar pessoas que entendem a sua jornada, o NutriConnect é o seu lugar.",
@@ -560,7 +527,7 @@ const ptBR = {
   "contact.ch4.title": "Sede Corporativa",
   "contact.ch4.hint": "CEP 01310-100",
   "contact.ticketSent": "Mensagem enviada com sucesso! Código do ticket:",
-  "contact.badge": "Estamos online e prontos para ajudar",
+  "contact.badge": "Estamos aqui para ajudar",
   "contact.title": "Fale com a gente",
   "contact.subtitle":
     "Dúvidas, suporte técnico, sugestões ou parcerias? Envie sua mensagem para nossa equipe.",

@@ -5,6 +5,7 @@ import { ArrowLeft, Download, Pencil, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { changePassword, deleteAccount, updateCurrentUser } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { Field } from "./login";
 
 export const Route = createFileRoute("/perfil/configuracoes/conta")({
@@ -69,8 +70,10 @@ function ContaPage() {
     }
   };
 
-  const handleExportData = () => {
-    const blob = new Blob([JSON.stringify(user, null, 2)], { type: "application/json" });
+  const handleExportData = async () => {
+    const { data, error } = await supabase.rpc("export_my_data");
+    if (error || !data) return void toast.error(t("reset.error"));
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

@@ -4,6 +4,7 @@ import { ArrowLeft, Ban } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { Switch } from "@/components/ui/switch";
+import { HealthConsentCard } from "@/components/health-consent-card";
 import { DEFAULT_PRIVACY, type PrivacySettings } from "@/lib/social/api";
 import { useBlocked, useMyPrivacy, useUnblockUser, useUpdatePrivacy } from "@/lib/social/queries";
 
@@ -144,6 +145,8 @@ function PrivacidadePage() {
             </ul>
           )}
         </section>
+
+        <HealthConsentCard />
       </div>
     </div>
   );

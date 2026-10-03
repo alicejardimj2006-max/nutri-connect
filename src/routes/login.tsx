@@ -191,6 +191,20 @@ export function AuthLayout({
             </span>
             <ArrowRight className="h-4 w-4 text-accent transition group-hover:translate-x-0.5" />
           </Link>
+          <nav className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+            <Link to="/termos" className="hover:text-foreground hover:underline">
+              Termos de Uso
+            </Link>
+            <Link to="/privacidade" className="hover:text-foreground hover:underline">
+              Privacidade
+            </Link>
+            <Link to="/diretrizes" className="hover:text-foreground hover:underline">
+              Diretrizes
+            </Link>
+            <Link to="/contato" className="hover:text-foreground hover:underline">
+              Fale conosco
+            </Link>
+          </nav>
         </div>
       </div>
       <style>{`.input{width:100%;border:1px solid var(--border);background:var(--background);border-radius:0.75rem;padding:0.65rem 0.9rem;font-size:0.875rem;outline:none;transition:all .15s} .input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent)}`}</style>

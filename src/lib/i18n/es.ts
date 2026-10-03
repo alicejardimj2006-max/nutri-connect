@@ -474,26 +474,6 @@ const es: Record<DictKey, string> = {
   "theme.past3.summary":
     "Prácticas de respiración y observación de señales de saciedad en la mesa, sin pantallas cerca.",
 
-  "about.stat1.label": "Miembros Activos",
-  "about.stat1.hint": "en todo Brasil",
-  "about.stat2.label": "Comunidades Temáticas",
-  "about.stat2.hint": "creadas por la red",
-  "about.stat3.label": "Recetas Compartidas",
-  "about.stat3.hint": "publicadas y preparadas",
-  "about.stat4.label": "Índice de Satisfacción",
-  "about.stat4.hint": "valoración positiva",
-  "about.tl1.title": "El Inicio del Camino",
-  "about.tl1.desc":
-    "Fundada con el propósito de crear un espacio donde hablar de comida no fuera sinónimo de culpa o comparación.",
-  "about.tl2.title": "Comunidades Temáticas",
-  "about.tl2.desc":
-    "Lanzamiento de las primeras comunidades temáticas, uniendo a personas con objetivos y rutinas alimentarias parecidas.",
-  "about.tl3.title": "Desafíos y Tema de la Semana",
-  "about.tl3.desc":
-    "Llegada de los desafíos de hábitos y del Tema de la Semana, aportando más constancia y ligereza al camino de cada persona.",
-  "about.tl4.title": "Expansión de la Red",
-  "about.tl4.desc":
-    "Alcanzamos más de 45 mil miembros compartiendo recetas, experiencias y logros todos los días.",
   "about.val1.title": "La Humanización Primero",
   "about.val1.desc":
     "Creemos que la alimentación es afecto, cultura y hábito. No imponemos dietas restrictivas punitivas.",
@@ -506,15 +486,6 @@ const es: Record<DictKey, string> = {
   "about.val4.title": "Comunidad Acogedora",
   "about.val4.desc":
     "Promovemos un ambiente libre de juicios, donde la evolución individual es celebrada por todos.",
-  "about.team1.role": "Cofundadora y Directora de Nutrición",
-  "about.team1.bio":
-    "Nutricionista clínica con más de 12 años de experiencia en reeducación alimentaria y nutrición deportiva.",
-  "about.team2.role": "Cofundador y CTO",
-  "about.team2.bio":
-    "Especialista en inteligencia artificial aplicada a la salud y arquitectura de software seguro.",
-  "about.team3.role": "Directora de Investigación e IA",
-  "about.team3.bio":
-    "Doctora en Ciencias de los Alimentos por la USP, con foco en algoritmos de recomendación nutricional.",
   "about.badge": "Conoce nuestra historia",
   "about.hero1": "Reinventando la conexión entre",
   "about.hero2": "tú y tu alimentación",
@@ -526,12 +497,8 @@ const es: Record<DictKey, string> = {
   "about.vision": "Nuestra Visión",
   "about.visionText":
     "Ser la principal referencia en comunidad digital sobre alimentación, transformando la relación de las personas con la comida a través de la conexión real y el apoyo mutuo.",
-  "about.trajectory": "Nuestra Trayectoria",
-  "about.howWeGotHere": "Cómo llegamos hasta aquí",
   "about.valuesTitle": "Nuestros Valores Fundamentales",
   "about.valuesHint": "Lo que nos guía en cada línea de código y decisión",
-  "about.leadership": "Liderazgo",
-  "about.whoMakesItHappen": "Quién lo hace posible",
   "about.join": "Sé parte de esta transformación",
   "about.joinText":
     "Ya sea para alcanzar tu mejor versión física o para encontrar personas que entienden tu camino, NutriConnect es tu lugar.",

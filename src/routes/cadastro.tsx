@@ -6,6 +6,7 @@ import { registerUser } from "@/lib/auth";
 import { JOURNEY_GOALS } from "@/lib/community";
 import { AuthLayout, Field, safeRedirect } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
+import { isAdult, MIN_AGE } from "@/lib/legal";
 
 export const Route = createFileRoute("/cadastro")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
@@ -34,6 +35,7 @@ function Cadastro() {
     setForm({ ...form, [k]: e.target.value });
 
   const [submitting, setSubmitting] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +49,10 @@ function Cadastro() {
     if (!cleanEmail) return toast.error(t("auth.fillEmail"));
     if (!/\S+@\S+\.\S+/.test(cleanEmail)) return toast.error(t("signup.invalidEmail"));
     if (!cleanTel) return toast.error(t("signup.fillPhone"));
+    if (!form.nasc) return toast.error("Informe sua data de nascimento.");
+    if (!isAdult(form.nasc))
+      return toast.error(`O NutriConnect é para maiores de ${MIN_AGE} anos.`);
+    if (!accepted) return toast.error("Aceite os Termos de Uso e a Política de Privacidade.");
     if (!cleanSenha) return toast.error(t("auth.fillPassword"));
     if (cleanSenha.length < 6) return toast.error(t("signup.shortPassword"));
     if (cleanSenha !== cleanConf) return toast.error(t("signup.mismatch"));
@@ -161,6 +167,25 @@ function Cadastro() {
             />
           </Field>
         </div>
+        <label className="flex cursor-pointer items-start gap-2.5 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-primary)]"
+          />
+          <span>
+            Tenho {MIN_AGE} anos ou mais e li e aceito os{" "}
+            <Link to="/termos" target="_blank" className="text-accent underline">
+              Termos de Uso
+            </Link>{" "}
+            e a{" "}
+            <Link to="/privacidade" target="_blank" className="text-accent underline">
+              Política de Privacidade
+            </Link>
+            .
+          </span>
+        </label>
         <button
           disabled={submitting}
           className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-soft hover:bg-accent/90 transition disabled:opacity-60"
