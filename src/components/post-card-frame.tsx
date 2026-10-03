@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
+import { useAppearance } from "@/hooks/use-appearance";
 
 const PADDING = {
   md: {
@@ -96,7 +97,8 @@ export function PostCardFrame({
     // A barra inferior só existe com usuário logado, então a medição refaz quando ele muda.
   }, [userId]);
 
-  const isExpanded = expanded;
+  const { appearance } = useAppearance();
+  const isExpanded = expanded || appearance.expandPosts;
   const clamped = !isExpanded && overflowing;
   const pad = PADDING[size];
 
@@ -104,7 +106,7 @@ export function PostCardFrame({
     <article
       ref={articleRef}
       style={isExpanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
-      className={`flex min-w-0 flex-col overflow-hidden ${className}`}
+      className={`post-card flex min-w-0 flex-col overflow-hidden ${className}`}
     >
       <div ref={regionRef} className={`relative min-h-0 overflow-hidden ${pad.top}`}>
         <div ref={innerRef} className="flow-root">

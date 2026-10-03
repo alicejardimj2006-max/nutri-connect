@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { playSound } from "@/lib/sounds";
 import * as care from "@/lib/clinical/care";
 import { suggestReply } from "@/lib/pro-ai.functions";
 import { qk, useClinicalMutation, useMessages, useSignedUrls } from "@/lib/clinical/queries";
@@ -73,6 +74,7 @@ export function ChatThread({
     {
       invalidate: [qk.messages(patientId, professionalId), qk.conversations()],
       onSuccess: () => {
+        playSound("send");
         setBody("");
         setFile(null);
       },

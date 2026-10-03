@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Fragment, useState, type ReactNode } from "react";
 import { toast } from "sonner";
+import { playSound } from "@/lib/sounds";
 import { VerifiedBadge } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
 import { PostImage } from "@/components/post-image";
@@ -79,6 +80,7 @@ export function PostCard({ post }: PostCardProps) {
   const preparedCount = (post.preparedBy || []).length;
 
   const handleSupport = () => {
+    playSound("support");
     if (!user) {
       toast.info(t("common.loginToSupport"));
       return;

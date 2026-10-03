@@ -4,6 +4,7 @@ import { Compass, Sparkles } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useAppearance } from "@/hooks/use-appearance";
+import { loadAppearance } from "@/lib/appearance";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
@@ -42,7 +43,7 @@ const EMPTY_FILTER_KEYS: Record<Filter, DictKey> = {
   seguindo: "espaco.empty.profissionais",
 };
 
-const PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 20;
 
 export const Route = createFileRoute("/espaco")({
   head: () => ({
@@ -153,8 +154,9 @@ function EspacoDeHojePage() {
   const [activePage, setActivePage] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [filter, setFilter] = useState<Filter>("todos");
-  const [limit, setLimit] = useState(PAGE_SIZE);
-  const [themeLimit, setThemeLimit] = useState(PAGE_SIZE);
+  const [pageSize] = useState(() => loadAppearance().feedPageSize || DEFAULT_PAGE_SIZE);
+  const [limit, setLimit] = useState(pageSize);
+  const [themeLimit, setThemeLimit] = useState(pageSize);
 
   useEffect(() => {
     if (!carouselApi) return;
@@ -212,7 +214,7 @@ function EspacoDeHojePage() {
 
   const changeFilter = (next: Filter) => {
     setFilter(next);
-    setLimit(PAGE_SIZE);
+    setLimit(pageSize);
   };
   const goToPage = (index: number) => carouselApi?.scrollTo(index);
 
@@ -279,7 +281,7 @@ function EspacoDeHojePage() {
                       loading={geral.isLoading}
                       emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
                       hasMore={geralPosts.length >= limit}
-                      onMore={() => setLimit((n) => n + PAGE_SIZE)}
+                      onMore={() => setLimit((n) => n + pageSize)}
                     />
                   </div>
                 </CarouselItem>
@@ -328,7 +330,7 @@ function EspacoDeHojePage() {
                         loading={themeFeed.isLoading}
                         emptyMessage={t("espaco.empty.tema")}
                         hasMore={themePosts.length >= themeLimit}
-                        onMore={() => setThemeLimit((n) => n + PAGE_SIZE)}
+                        onMore={() => setThemeLimit((n) => n + pageSize)}
                       />
                     )}
                   </div>

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Mascot } from "@/components/mascots";
 import { useI18n } from "@/hooks/use-i18n";
-import { ACCENT_PRESETS, HEADING_FONTS } from "@/lib/appearance";
+import { ACCENT_PRESETS, HEADING_FONTS } from "@/lib/appearance-data";
 import type { DictKey } from "@/lib/i18n";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
 
@@ -292,14 +292,14 @@ export function AppearanceMock({
         <div>
           <p className="mb-2 text-xs font-semibold">{mock.accentLabel}</p>
           <div className="flex flex-wrap gap-2">
-            {ACCENT_PRESETS.map((p) => (
+            {ACCENT_PRESETS.slice(0, 8).map((p) => (
               <button
                 key={p.value}
                 type="button"
                 onClick={() => setAccent(p.value)}
-                aria-label={p.name}
+                aria-label={p.names[0]}
                 aria-pressed={accent === p.value}
-                title={p.name}
+                title={p.names[0]}
                 className={`h-7 w-7 rounded-full transition hover:scale-110 ${
                   accent === p.value ? "ring-2 ring-foreground ring-offset-2 ring-offset-card" : ""
                 }`}

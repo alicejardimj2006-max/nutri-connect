@@ -1,6 +1,7 @@
 import { td } from "@/lib/i18n/data";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { loadAppearance } from "@/lib/appearance";
 import {
   Sparkles,
   ChefHat,
@@ -279,7 +280,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
   const [isCommunity, setIsCommunity] = useState(false);
 
   // Quem pode ver e participação no tema da semana (só para publicações, não para comunidades).
-  const [audience, setAudience] = useState<PostAudience>("publico");
+  const [audience, setAudience] = useState<PostAudience>(() => loadAppearance().defaultAudience);
   const [joinTheme, setJoinTheme] = useState(false);
   const activeTheme = useActiveTheme(open && !isCommunity);
   const createPost = useCreatePost();

@@ -27,7 +27,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Mascot } from "@/components/mascots";
 import type { NinaAction } from "@/components/nina-live";
-import { ACCENT_PRESETS } from "@/lib/appearance";
+import { ACCENT_PRESETS } from "@/lib/appearance-data";
 import { fireConfetti } from "@/lib/confetti";
 import type { Persona, PresentationCopy, TourSlide } from "@/lib/i18n/presentation";
 import {

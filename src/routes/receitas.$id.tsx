@@ -330,7 +330,7 @@ function ReceitaDetalhePage() {
 
           {/* Tags */}
           {recipe.tags && recipe.tags.length > 0 && (
-            <div className="mt-8 pt-4 border-t border-border flex flex-wrap gap-2">
+            <div className="post-tags mt-8 pt-4 border-t border-border flex flex-wrap gap-2">
               {recipe.tags.map((tag) => (
                 <span
                   key={tag}

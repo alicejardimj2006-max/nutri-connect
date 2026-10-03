@@ -47,7 +47,7 @@ export function PostImage({ src, alt, className = "" }: PostImageProps) {
         // Foto limitada pela altura: o próprio botão encolhe até a largura da foto, então
         // cantos arredondados e sombra acompanham a foto (sem faixas ao redor).
         style={ratio ? { maxWidth: `calc(${MAX_HEIGHT} * ${ratio})` } : undefined}
-        className={`mx-auto block cursor-zoom-in overflow-hidden p-0 ${className}`}
+        className={`post-image mx-auto block cursor-zoom-in overflow-hidden p-0 ${className}`}
       >
         <img
           src={src}

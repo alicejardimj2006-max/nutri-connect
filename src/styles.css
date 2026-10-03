@@ -313,6 +313,171 @@ html[data-images="large"] {
   --post-image-max: clamp(14rem, calc(100dvh - 20rem), 40rem);
 }
 
+/* ── Personalização: texto ── */
+html[data-hcolor] :is(h1, h2, h3, h4, .font-display) {
+  color: var(--user-heading-color) !important;
+}
+html[data-hw] :is(h1, h2, h3, h4, .font-display) {
+  font-weight: var(--user-hw) !important;
+}
+html[data-hs] :is(h1, h2, h3) {
+  zoom: var(--user-hs);
+}
+html[data-hcase="upper"] :is(h1, h2, h3, h4, .font-display) {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+html[data-hcase="capitalize"] :is(h1, h2, h3, h4, .font-display) {
+  text-transform: capitalize;
+}
+html[data-bodyw] body {
+  font-weight: var(--user-bodyw);
+}
+html[data-talign="left"] :is(p, li, dd, blockquote) {
+  text-align: left !important;
+  hyphens: manual !important;
+}
+html[data-talign="justify"] :is(p, li, dd) {
+  text-align: justify !important;
+  hyphens: auto;
+}
+
+/* ── Personalização: formatos ── */
+html[data-buttons="rounded"]
+  :is(button, a).rounded-full:not(.avatar-shape):not([class*="h-8"]):not([class*="h-9"]):not([class*="h-10"]):not([class*="h-11"]):not([class*="h-12"]) {
+  border-radius: 0.65rem !important;
+}
+html[data-buttons="square"]
+  :is(button, a).rounded-full:not(.avatar-shape):not([class*="h-8"]):not([class*="h-9"]):not([class*="h-10"]):not([class*="h-11"]):not([class*="h-12"]) {
+  border-radius: 0.2rem !important;
+}
+html[data-inputs="filled"]
+  :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, select) {
+  background-color: var(--secondary) !important;
+  border-color: transparent !important;
+}
+html[data-inputs="underline"]
+  :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), textarea, select) {
+  background-color: transparent !important;
+  border-width: 0 0 2px 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+html[data-bwidth] .border {
+  border-width: var(--user-bwidth) !important;
+}
+html[data-icons] svg.lucide {
+  stroke-width: var(--user-icon-stroke) !important;
+}
+html[data-anim="slow"] *,
+html[data-anim="slow"] *::before,
+html[data-anim="slow"] *::after {
+  transition-duration: 0.5s !important;
+}
+html[data-anim="fast"] *,
+html[data-anim="fast"] *::before,
+html[data-anim="fast"] *::after {
+  transition-duration: 0.06s !important;
+}
+html[data-scroll="thin"],
+html[data-scroll="thin"] * {
+  scrollbar-width: thin;
+}
+html[data-scroll="accent"],
+html[data-scroll="accent"] * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+/* ── Personalização: cores do cabeçalho ── */
+html[data-header="solid"] [data-site-header] {
+  background-color: var(--card) !important;
+  backdrop-filter: none !important;
+}
+html[data-header="tint"] [data-site-header] {
+  background-color: var(--primary-soft) !important;
+  backdrop-filter: none !important;
+}
+
+/* ── Personalização: layout ── */
+html[data-sticky="off"] [data-site-header] {
+  position: relative !important;
+}
+html[data-smooth] {
+  scroll-behavior: smooth;
+}
+html[data-maxw] main[class*="max-w-"] {
+  max-width: var(--user-content-max) !important;
+}
+html[data-pagebg] body > div[class*="bg-background"] {
+  background-color: transparent !important;
+}
+html[data-pagebg="dots"] body {
+  background-image: radial-gradient(color-mix(in oklab, var(--foreground) 16%, transparent) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+html[data-pagebg="grid"] body {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--foreground) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--foreground) 8%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+html[data-pagebg="paper"] body {
+  background-image: radial-gradient(color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+html[data-pagebg="aurora"] body {
+  background-image:
+    radial-gradient(60rem 36rem at 12% -8%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%),
+    radial-gradient(52rem 34rem at 92% 0%, color-mix(in oklab, var(--primary) 20%, transparent), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ── Personalização: acessibilidade ── */
+html[data-cursor="big"],
+html[data-cursor="big"] * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24'><path d='M4 2l15 9-6.5 1.6L9 19z' fill='black' stroke='white' stroke-width='1.5' stroke-linejoin='round'/></svg>") 4 2, auto !important;
+}
+html[data-cursor="big"] :is(a, button, [role="button"], [role="switch"], select, summary, label[for]) {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24'><path d='M4 2l15 9-6.5 1.6L9 19z' fill='%23b4532a' stroke='white' stroke-width='1.5' stroke-linejoin='round'/></svg>") 4 2, pointer !important;
+}
+html[data-targets="large"]
+  :is(button, [role="button"], select, input:not([type="range"], [type="checkbox"], [type="radio"], [type="color"])) {
+  min-height: 2.75rem;
+}
+html[data-cfilter="grayscale"] {
+  filter: grayscale(1);
+}
+html[data-cfilter="sepia"] {
+  filter: sepia(0.85);
+}
+html[data-cfilter="invert"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+html[data-cfilter="invert"] :is(img, video, canvas, picture) {
+  filter: invert(1) hue-rotate(180deg);
+}
+html[data-cfilter="lowsat"] {
+  filter: saturate(0.55);
+}
+html[data-cfilter="highsat"] {
+  filter: saturate(1.5) contrast(1.05);
+}
+
+/* ── Personalização: perfil e posts ── */
+html[data-tags="hide"] .post-tags {
+  display: none !important;
+}
+html[data-imgc="square"] .post-image {
+  border-radius: 0 !important;
+}
+html[data-imgc="soft"] .post-image {
+  border-radius: 0.5rem !important;
+}
+html[data-cardaccent] .post-card {
+  border-left: 4px solid var(--accent) !important;
+}
+
 /* O logo mantém a fonte original: a personalização de fontes não o afeta (só a cor, via tema). */
 .font-logo-serif {
   font-family: "Libre Baskerville", ui-serif, Georgia, serif;

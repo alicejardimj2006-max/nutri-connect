@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { ConsentGate } from "../components/consent-gate";
 import { useAppSounds } from "../hooks/use-app-sounds";
+import { AccessibilityTools } from "../components/accessibility-tools";
 import { useAppearanceSync } from "../hooks/use-appearance-sync";
 
 import appCss from "../styles.css?url";
@@ -148,6 +149,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <ConsentGate />
+      <AccessibilityTools />
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );
