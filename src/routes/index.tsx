@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AuthGateLoading } from "@/components/site-chrome";
 import { useAuth } from "@/hooks/use-auth";
+import { HOME_ROUTES, loadAppearance } from "@/lib/appearance";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,7 +25,7 @@ function HomeGate() {
   useEffect(() => {
     if (!hydrated) return;
     if (user) {
-      navigate({ to: "/espaco" });
+      navigate({ to: HOME_ROUTES[loadAppearance().homePage] as "/espaco" });
     } else {
       navigate({ to: "/login" });
     }

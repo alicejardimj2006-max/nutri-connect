@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Compass, Sparkles } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { useAppearance } from "@/hooks/use-appearance";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
@@ -192,6 +193,8 @@ function EspacoDeHojePage() {
     return () => observer.disconnect();
   }, [ready]);
 
+  const { appearance } = useAppearance();
+  const panels = appearance.sidePanels;
   const enabled = !!user;
   useFeedRealtime(user?.id);
   const geral = useFeed({ scope: filter, limit }, enabled);
@@ -220,10 +223,18 @@ function EspacoDeHojePage() {
       <SiteHeader />
 
       <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
-        <div className="grid h-full min-h-0 w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-          <div className="hidden h-full min-h-0 overflow-hidden xl:block">
-            <EspacoLeftColumn />
-          </div>
+        <div
+          className={`grid h-full min-h-0 w-full gap-8 ${
+            panels
+              ? "lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[280px_minmax(0,1fr)_320px]"
+              : "mx-auto max-w-3xl"
+          }`}
+        >
+          {panels && (
+            <div className="hidden h-full min-h-0 overflow-hidden xl:block">
+              <EspacoLeftColumn />
+            </div>
+          )}
 
           {/* Feed centralizado, deslizável entre páginas (arraste para o lado no celular).
               Cada página é uma "tela" inteira, com um vão largo entre elas. */}
@@ -326,9 +337,11 @@ function EspacoDeHojePage() {
             </Carousel>
           </div>
 
-          <div className="hidden h-full min-h-0 overflow-hidden lg:block">
-            <EspacoRightColumn />
-          </div>
+          {panels && (
+            <div className="hidden h-full min-h-0 overflow-hidden lg:block">
+              <EspacoRightColumn />
+            </div>
+          )}
         </div>
       </main>
     </div>

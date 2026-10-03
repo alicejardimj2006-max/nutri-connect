@@ -49,7 +49,7 @@ function Login() {
     try {
       await loginUser(cleanEmail, password);
       toast.success(t("auth.loginWelcome"));
-      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
+      navigate({ to: (redirect ?? "/") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("auth.loginError"));
     } finally {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAppearance } from "@/hooks/use-appearance";
 import { Monitor, Moon, RotateCcw, Sun } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
@@ -24,34 +25,17 @@ import {
   type ThemeMode,
 } from "@/lib/appearance";
 
-const DEFAULT_HEADING_CSS = '"Libre Baskerville", ui-serif, Georgia, serif';
-const DEFAULT_BODY_CSS = '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
+export const DEFAULT_HEADING_CSS = '"Libre Baskerville", ui-serif, Georgia, serif';
+export const DEFAULT_BODY_CSS = '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
-export function useAppearance() {
-  const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
-
-  useEffect(() => {
-    const sync = () => setAppearance(loadAppearance());
-    sync();
-    window.addEventListener(APPEARANCE_EVENT, sync);
-    return () => window.removeEventListener(APPEARANCE_EVENT, sync);
-  }, []);
-
-  return {
-    appearance,
-    update: (patch: Partial<Appearance>) => saveAppearance({ ...appearance, ...patch }),
-    reset: resetAppearance,
-  };
-}
-
-const optionClass = (active: boolean) =>
+export const optionClass = (active: boolean) =>
   `min-w-0 rounded-xl border px-2 py-2 text-xs font-medium transition cursor-pointer sm:px-3 ${
     active
       ? "border-accent bg-accent-soft text-foreground ring-2 ring-accent/40"
       : "border-border bg-background text-muted-foreground hover:bg-secondary hover:text-foreground"
   }`;
 
-function Section({
+export function Section({
   title,
   hint,
   children,
@@ -69,7 +53,7 @@ function Section({
   );
 }
 
-function Group({
+export function Group({
   title,
   hint,
   children,
@@ -123,7 +107,7 @@ function HexInput({
  * Cor totalmente livre: seletor + código hexadecimal, sem modelos prontos.
  * `value` nulo significa "usar a cor do tema principal" (mostrada por `fallback`).
  */
-function FreeColor({
+export function FreeColor({
   label,
   value,
   fallback,
@@ -168,7 +152,7 @@ function FreeColor({
 }
 
 /** Cores de marca: algumas sugestões rápidas e qualquer outra cor à escolha. */
-function BrandColor({
+export function BrandColor({
   label,
   presets,
   value,
@@ -214,7 +198,7 @@ function BrandColor({
   );
 }
 
-function Segmented<T extends string>({
+export function Segmented<T extends string>({
   options,
   value,
   onChange,
@@ -244,7 +228,7 @@ function Segmented<T extends string>({
   );
 }
 
-function Slider({
+export function Slider({
   label,
   value,
   min,
@@ -278,7 +262,7 @@ function Slider({
   );
 }
 
-function Switch({
+export function Switch({
   checked,
   onChange,
   label,
@@ -315,7 +299,7 @@ function Switch({
   );
 }
 
-const MODES: {
+export const MODES: {
   id: ThemeMode;
   label: DictKey;
   icon: React.ComponentType<{ className?: string }>;
@@ -325,263 +309,27 @@ const MODES: {
   { id: "system", label: "ap.mode.system", icon: Monitor },
 ];
 
-const DENSITIES: { id: Density; label: DictKey }[] = [
+export const DENSITIES: { id: Density; label: DictKey }[] = [
   { id: "compact", label: "ap.density.compact" },
   { id: "normal", label: "ap.density.normal" },
   { id: "spacious", label: "ap.density.spacious" },
 ];
 
-const BORDERS: { id: BorderStyle; label: DictKey }[] = [
+export const BORDERS: { id: BorderStyle; label: DictKey }[] = [
   { id: "none", label: "ap.border.none" },
   { id: "subtle", label: "ap.border.subtle" },
   { id: "strong", label: "ap.border.strong" },
 ];
 
-const SHADOWS: { id: ShadowStyle; label: DictKey }[] = [
+export const SHADOWS: { id: ShadowStyle; label: DictKey }[] = [
   { id: "none", label: "ap.shadow.none" },
   { id: "soft", label: "ap.shadow.soft" },
   { id: "strong", label: "ap.shadow.strong" },
 ];
 
-function contrastLabel(ratio: number) {
+export function contrastLabel(ratio: number) {
   if (ratio >= 7) return { text: "ap.contrast.excellent" as DictKey, ok: true };
   if (ratio >= 4.5) return { text: "ap.contrast.good" as DictKey, ok: true };
   if (ratio >= 3) return { text: "ap.contrast.low" as DictKey, ok: false };
   return { text: "ap.contrast.veryLow" as DictKey, ok: false };
-}
-
-/** Todas as opções de personalização. Tudo vale na hora e fica salvo neste aparelho. */
-export function AppearanceEditor() {
-  const { appearance: a, update, reset } = useAppearance();
-  const { t } = useI18n();
-  const isDefault = JSON.stringify(a) === JSON.stringify(DEFAULT_APPEARANCE);
-
-  // Contraste do texto personalizado contra o fundo que está valendo agora.
-  const darkNow =
-    typeof document !== "undefined" && document.documentElement.classList.contains("dark");
-  const effectiveBg =
-    (darkNow ? a.backgroundDark : a.backgroundLight) ??
-    (darkNow ? THEME_COLORS.dark.background : THEME_COLORS.light.background);
-  const textContrast = isHex(a.textColor)
-    ? contrastLabel(contrastRatio(a.textColor, effectiveBg))
-    : null;
-
-  return (
-    <div className="space-y-5">
-      {/* Prévia */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {t("ap.preview")}
-          </p>
-          <button
-            type="button"
-            onClick={reset}
-            disabled={isDefault}
-            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:cursor-default disabled:opacity-40"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            {t("ap.restore")}
-          </button>
-        </div>
-        <h3 className="mt-1 font-display text-lg font-bold text-foreground">
-          {t("ap.previewTitle")}
-        </h3>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t("ap.previewText")}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
-            {t("ap.accentButton")}
-          </span>
-          <span className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">
-            {t("ap.primaryColorSample")}
-          </span>
-          <span className="rounded-full bg-accent-soft px-4 py-1.5 text-xs font-semibold text-accent">
-            {t("ap.softDetail")}
-          </span>
-        </div>
-      </div>
-
-      <Section title={t("ap.colors")} hint={t("ap.colorsHint")}>
-        <Group title={t("ap.mode")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={MODES}
-            value={a.mode}
-            onChange={(mode) => update({ mode })}
-          />
-        </Group>
-
-        <Group title={t("ap.accent")} hint={t("ap.accentHint")}>
-          <BrandColor
-            label={t("ap.accent")}
-            presets={ACCENT_PRESETS}
-            value={a.accent}
-            fallback={DEFAULT_APPEARANCE.accent}
-            onChange={(accent) => update({ accent })}
-          />
-        </Group>
-
-        <Group title={t("ap.primary")} hint={t("ap.primaryHint")}>
-          <BrandColor
-            label={t("ap.primary")}
-            presets={PRIMARY_PRESETS}
-            value={a.primary}
-            fallback={DEFAULT_APPEARANCE.primary}
-            onChange={(primary) => update({ primary })}
-          />
-        </Group>
-
-        <Group title={t("ap.bgLight")} hint={t("ap.bgLightHint")}>
-          <FreeColor
-            label={t("ap.bgLight")}
-            value={a.backgroundLight}
-            fallback={THEME_COLORS.light.background}
-            onChange={(backgroundLight) => update({ backgroundLight })}
-            resetLabel={t("ap.useThemeBg")}
-          />
-        </Group>
-
-        <Group title={t("ap.bgDark")}>
-          <FreeColor
-            label={t("ap.bgDark")}
-            value={a.backgroundDark}
-            fallback={THEME_COLORS.dark.background}
-            onChange={(backgroundDark) => update({ backgroundDark })}
-            resetLabel={t("ap.useThemeBg")}
-          />
-        </Group>
-
-        <Group title={t("ap.textColor")} hint={t("ap.textColorHint")}>
-          <FreeColor
-            label={t("ap.textColor")}
-            value={a.textColor}
-            fallback={darkNow ? THEME_COLORS.dark.text : THEME_COLORS.light.text}
-            onChange={(textColor) => update({ textColor })}
-            resetLabel={t("ap.automatic")}
-          />
-          {textContrast && (
-            <p
-              className={`mt-2 text-[11px] font-medium ${
-                textContrast.ok ? "text-muted-foreground" : "text-destructive"
-              }`}
-            >
-              {t("ap.contrastWithBg")} {t(textContrast.text)}.
-            </p>
-          )}
-        </Group>
-      </Section>
-
-      <Section title={t("ap.text")} hint={t("ap.textHint")}>
-        <Group title={t("ap.headingFont")}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {HEADING_FONTS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={a.headingFont === f.id}
-                onClick={() => update({ headingFont: f.id })}
-                className={optionClass(a.headingFont === f.id)}
-              >
-                <span
-                  className="block text-lg font-bold leading-tight text-foreground"
-                  style={{ fontFamily: f.css ?? DEFAULT_HEADING_CSS }}
-                >
-                  Aa
-                </span>
-                {t(`ap.hfont.${f.id}` as DictKey)}
-              </button>
-            ))}
-          </div>
-        </Group>
-
-        <Group title={t("ap.bodyFont")}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {BODY_FONTS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={a.bodyFont === f.id}
-                onClick={() => update({ bodyFont: f.id })}
-                className={optionClass(a.bodyFont === f.id)}
-              >
-                <span
-                  className="block text-lg leading-tight text-foreground"
-                  style={{ fontFamily: f.css ?? DEFAULT_BODY_CSS }}
-                >
-                  Aa
-                </span>
-                {f.id === "sistema" || f.id === "mono" ? t(`ap.bfont.${f.id}` as DictKey) : f.name}
-              </button>
-            ))}
-          </div>
-        </Group>
-
-        <Group title={t("ap.textSize")} hint={t("ap.textSizeHint")}>
-          <Slider
-            label={t("ap.textSize")}
-            min={TEXT_SCALE_RANGE.min}
-            max={TEXT_SCALE_RANGE.max}
-            step={5}
-            value={a.textScale}
-            onChange={(textScale) => update({ textScale })}
-            display={`${a.textScale}%`}
-          />
-        </Group>
-      </Section>
-
-      <Section title={t("ap.shapes")} hint={t("ap.shapesHint")}>
-        <Group title={t("ap.corners")}>
-          <Slider
-            label={t("ap.corners")}
-            min={CORNER_RANGE.min}
-            max={CORNER_RANGE.max}
-            step={2}
-            value={a.cornerRadius}
-            onChange={(cornerRadius) => update({ cornerRadius })}
-            display={`${a.cornerRadius}px`}
-          />
-          <div
-            className="mt-3 h-10 w-full border-2 border-foreground/30 bg-secondary"
-            style={{ borderRadius: `${a.cornerRadius * 1.5}px` }}
-          />
-        </Group>
-
-        <Group title={t("ap.density")} hint={t("ap.densityHint")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={DENSITIES}
-            value={a.density}
-            onChange={(density) => update({ density })}
-          />
-        </Group>
-
-        <Group title={t("ap.borders")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={BORDERS}
-            value={a.borders}
-            onChange={(borders) => update({ borders })}
-          />
-        </Group>
-
-        <Group title={t("ap.shadows")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={SHADOWS}
-            value={a.shadows}
-            onChange={(shadows) => update({ shadows })}
-          />
-        </Group>
-      </Section>
-
-      <Section title={t("ap.accessibility")} hint={t("ap.accessibilityHint")}>
-        <Switch
-          checked={a.reduceMotion}
-          onChange={(reduceMotion) => update({ reduceMotion })}
-          label={t("ap.reduceMotion")}
-          hint={t("ap.reduceMotionHint")}
-        />
-      </Section>
-    </div>
-  );
 }

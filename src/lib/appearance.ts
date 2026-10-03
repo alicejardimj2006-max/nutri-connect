@@ -7,6 +7,14 @@ export type Density = "compact" | "normal" | "spacious";
 export type BorderStyle = "none" | "subtle" | "strong";
 export type ShadowStyle = "none" | "soft" | "strong";
 
+export type SoundStyle = "suave" | "cristal" | "madeira";
+export type ContentWidth = "narrow" | "normal" | "wide";
+export type HomePageId =
+  "espaco" | "comunidades" | "desafios" | "explorar" | "nina" | "acompanhamento";
+export type CardStyle = "classic" | "compact";
+export type ImageSize = "normal" | "large";
+export type AvatarShape = "round" | "square";
+
 export type HeadingFontId =
   "classica" | "elegante" | "editorial" | "moderna" | "suave" | "marcante" | "tecnica";
 export type BodyFontId =
@@ -33,6 +41,41 @@ export interface Appearance {
   borders: BorderStyle;
   shadows: ShadowStyle;
   reduceMotion: boolean;
+
+  // Sons (sintetizados no aparelho; nada é baixado)
+  soundsOn: boolean;
+  /** Volume geral, 0 a 100. */
+  soundVolume: number;
+  soundStyle: SoundStyle;
+  soundNotification: boolean;
+  soundMessage: boolean;
+  soundAchievement: boolean;
+  soundClicks: boolean;
+
+  // Layout e início
+  contentWidth: ContentWidth;
+  /** Página que abre ao entrar no site. */
+  homePage: HomePageId;
+  /** Painéis laterais do Espaço (perfil/conquistas e sugestões). */
+  sidePanels: boolean;
+
+  // Acessibilidade ampliada
+  highContrast: boolean;
+  /** Fonte de leitura facilitada (Lexend) no site todo. */
+  readableFont: boolean;
+  strongFocus: boolean;
+  underlineLinks: boolean;
+  /** Espaço entre letras, de 0 a 10 (centésimos de em). */
+  letterSpacing: number;
+  /** Altura da linha em %: 0 = padrão do tema, de 130 a 200. */
+  lineHeight: number;
+
+  // Perfil e posts
+  cardStyle: CardStyle;
+  imageSize: ImageSize;
+  avatarShape: AvatarShape;
+  /** Mostra os números de curtidas, apoios e comentários. */
+  showCounts: boolean;
 }
 
 /** O tema principal do site. */
@@ -51,10 +94,42 @@ export const DEFAULT_APPEARANCE: Appearance = {
   borders: "subtle",
   shadows: "soft",
   reduceMotion: false,
+  soundsOn: false,
+  soundVolume: 60,
+  soundStyle: "suave",
+  soundNotification: true,
+  soundMessage: true,
+  soundAchievement: true,
+  soundClicks: false,
+  contentWidth: "normal",
+  homePage: "espaco",
+  sidePanels: true,
+  highContrast: false,
+  readableFont: false,
+  strongFocus: false,
+  underlineLinks: false,
+  letterSpacing: 0,
+  lineHeight: 0,
+  cardStyle: "classic",
+  imageSize: "normal",
+  avatarShape: "round",
+  showCounts: true,
 };
 
 export const TEXT_SCALE_RANGE = { min: 85, max: 130 } as const;
 export const CORNER_RANGE = { min: 0, max: 32 } as const;
+export const LETTER_SPACING_RANGE = { min: 0, max: 10 } as const;
+export const LINE_HEIGHT_RANGE = { min: 130, max: 200 } as const;
+
+/** Rota aberta ao entrar no site, por escolha da pessoa. */
+export const HOME_ROUTES: Record<HomePageId, string> = {
+  espaco: "/espaco",
+  comunidades: "/comunidades",
+  desafios: "/desafios",
+  explorar: "/explorar",
+  nina: "/nina",
+  acompanhamento: "/acompanhamento",
+};
 
 /** Cores do tema principal em cada modo (referência para contraste e mistura). */
 export const THEME_COLORS = {
@@ -236,6 +311,21 @@ export function computeAppearanceCss(a: Appearance): AppearanceCss {
     if (a.borders === "none") vars["--border"] = "transparent";
     if (a.borders === "strong") vars["--border"] = mix(text, bg, 0.72);
 
+    // Alto contraste: texto e bordas no máximo possível sobre o fundo que está valendo.
+    if (a.highContrast) {
+      const hc = luminance(bg) < 0.4 ? "#ffffff" : "#000000";
+      text = hc;
+      Object.assign(vars, {
+        "--foreground": hc,
+        "--card-foreground": hc,
+        "--popover-foreground": hc,
+        "--secondary-foreground": hc,
+        "--muted-foreground": mix(hc, bg, 0.1),
+        "--border": mix(hc, bg, 0.6),
+        "--input": mix(hc, bg, 0.6),
+      });
+    }
+
     // Com fundo livre, os tons de marca são sempre recalculados para casar com a nova superfície.
     const recolor = isHex(customBg);
     if (isHex(a.accent) && (recolor || a.accent.toLowerCase() !== DEFAULT_APPEARANCE.accent)) {
@@ -249,6 +339,13 @@ export function computeAppearanceCss(a: Appearance): AppearanceCss {
     if (heading) vars["--user-font-display"] = heading;
     const body = BODY_FONTS.find((f) => f.id === a.bodyFont)?.css;
     if (body) vars["--user-font-sans"] = body;
+    if (a.readableFont) {
+      const readable = '"Lexend", ui-sans-serif, system-ui, sans-serif';
+      vars["--user-font-display"] = readable;
+      vars["--user-font-sans"] = readable;
+    }
+    if (a.letterSpacing > 0) vars["letter-spacing"] = `${a.letterSpacing / 100}em`;
+    if (a.lineHeight > 0) vars["line-height"] = String(a.lineHeight / 100);
 
     if (a.textScale !== DEFAULT_APPEARANCE.textScale) vars["font-size"] = `${a.textScale}%`;
     if (a.cornerRadius !== DEFAULT_APPEARANCE.cornerRadius) {
@@ -263,6 +360,13 @@ export function computeAppearanceCss(a: Appearance): AppearanceCss {
   const attrs: Record<string, string> = {};
   if (a.shadows !== "soft") attrs["data-shadows"] = a.shadows;
   if (a.reduceMotion) attrs["data-motion"] = "reduce";
+  if (a.contentWidth !== "normal") attrs["data-width"] = a.contentWidth;
+  if (a.strongFocus) attrs["data-focus"] = "strong";
+  if (a.underlineLinks) attrs["data-links"] = "underline";
+  if (a.cardStyle === "compact") attrs["data-cards"] = "compact";
+  if (a.imageSize === "large") attrs["data-images"] = "large";
+  if (a.avatarShape === "square") attrs["data-avatar"] = "square";
+  if (!a.showCounts) attrs["data-counts"] = "hide";
 
   return { mode: a.mode, light: build(false), dark: build(true), attrs };
 }
@@ -298,8 +402,20 @@ const MANAGED_PROPS = [
   "--radius-3xl",
   "--spacing",
   "font-size",
+  "letter-spacing",
+  "line-height",
 ];
-const MANAGED_ATTRS = ["data-shadows", "data-motion"];
+const MANAGED_ATTRS = [
+  "data-shadows",
+  "data-motion",
+  "data-width",
+  "data-focus",
+  "data-links",
+  "data-cards",
+  "data-images",
+  "data-avatar",
+  "data-counts",
+];
 
 function prefersDark() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -375,8 +491,8 @@ export function loadAppearance(): Appearance {
   return DEFAULT_APPEARANCE;
 }
 
-/** Salva as escolhas e aplica na hora. */
-export function saveAppearance(a: Appearance) {
+/** Salva as escolhas e aplica na hora. `source: "remote"` = veio da conta (não reenviar). */
+export function saveAppearance(a: Appearance, source: "local" | "remote" = "local") {
   const css = computeAppearanceCss(a);
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(a));
@@ -385,7 +501,23 @@ export function saveAppearance(a: Appearance) {
   }
   storeCss(css);
   applyCss(css);
-  window.dispatchEvent(new Event(APPEARANCE_EVENT));
+  window.dispatchEvent(new CustomEvent(APPEARANCE_EVENT, { detail: { source } }));
+}
+
+/** Aceita só campos conhecidos do tipo certo (dados vindos da conta podem estar desatualizados). */
+export function sanitizeAppearance(raw: unknown): Appearance {
+  if (!raw || typeof raw !== "object") return DEFAULT_APPEARANCE;
+  const incoming = migrate(raw as Record<string, unknown>) as Record<string, unknown>;
+  const out: Record<string, unknown> = { ...DEFAULT_APPEARANCE };
+  for (const key of Object.keys(DEFAULT_APPEARANCE)) {
+    const fallback = (DEFAULT_APPEARANCE as unknown as Record<string, unknown>)[key];
+    const value = incoming[key];
+    if (value === undefined) continue;
+    const sameType = typeof value === typeof fallback;
+    const nullableColor = fallback === null && (value === null || typeof value === "string");
+    if (sameType || nullableColor) out[key] = value;
+  }
+  return out as unknown as Appearance;
 }
 
 export function resetAppearance() {
@@ -397,7 +529,7 @@ export function resetAppearance() {
     // ignora
   }
   applyCss(computeAppearanceCss(DEFAULT_APPEARANCE));
-  window.dispatchEvent(new Event(APPEARANCE_EVENT));
+  window.dispatchEvent(new CustomEvent(APPEARANCE_EVENT, { detail: { source: "local" } }));
 }
 
 /** Aplica as escolhas salvas e acompanha o modo "automático" do sistema. Retorna a limpeza. */

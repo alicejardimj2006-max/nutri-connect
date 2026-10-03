@@ -272,6 +272,47 @@ html[data-motion="reduce"] *::after {
   scroll-behavior: auto !important;
 }
 
+/* Layout, acessibilidade e posts (Configurações → Personalização). */
+html[data-width="narrow"] main:is([class*="max-w-4xl"], [class*="max-w-5xl"], [class*="max-w-6xl"], [class*="max-w-7xl"]) {
+  max-width: 44rem;
+}
+html[data-width="wide"] main:is([class*="max-w-4xl"], [class*="max-w-5xl"], [class*="max-w-6xl"]) {
+  max-width: 82rem;
+}
+html[data-focus="strong"] :focus-visible {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 3px !important;
+}
+html[data-links="underline"] a:not([class*="rounded-full"]) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+html[data-avatar="square"] .avatar-shape {
+  border-radius: calc(var(--radius) * 0.6) !important;
+}
+html[data-counts="hide"] .stat-count {
+  display: none !important;
+}
+:root {
+  --post-px: 1.5rem;
+  --post-pt: 1.5rem;
+  --post-pb: 1.5rem;
+  --post-px-sm: 1.25rem;
+  --post-pt-sm: 1.25rem;
+  --post-pb-sm: 1.25rem;
+}
+html[data-cards="compact"] {
+  --post-px: 1rem;
+  --post-pt: 1rem;
+  --post-pb: 1rem;
+  --post-px-sm: 0.875rem;
+  --post-pt-sm: 0.875rem;
+  --post-pb-sm: 0.875rem;
+}
+html[data-images="large"] {
+  --post-image-max: clamp(14rem, calc(100dvh - 20rem), 40rem);
+}
+
 /* O logo mantém a fonte original: a personalização de fontes não o afeta (só a cor, via tema). */
 .font-logo-serif {
   font-family: "Libre Baskerville", ui-serif, Georgia, serif;

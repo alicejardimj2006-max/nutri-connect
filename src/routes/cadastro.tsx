@@ -75,7 +75,7 @@ function Cadastro() {
         return;
       }
       toast.success(t("signup.success"));
-      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
+      navigate({ to: (redirect ?? "/") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("signup.error"));
     } finally {

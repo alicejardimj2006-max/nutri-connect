@@ -657,7 +657,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         >
           {/* Cabeçalho solto, sem caixa própria */}
           <div className="mb-8 flex items-center gap-3.5">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary-soft text-base font-bold text-primary shadow-md ring-4 ring-card">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-base font-bold text-primary shadow-md ring-4 ring-card">
               {initials(user?.name || t("sm.previewAuthor"))}
             </span>
             <div>

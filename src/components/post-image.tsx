@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 
 /** Altura máxima da foto no post (deixa espaço para parte do texto no card não expandido). */
-const MAX_HEIGHT = "clamp(10rem, calc(100dvh - 32rem), 26rem)";
+const MAX_HEIGHT = "var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem))";
 
 interface PostImageProps {
   src: string;

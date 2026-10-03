@@ -1,5 +1,7 @@
 // Confetes em canvas, sem dependências. Cada disparo cria uma camada temporária sobre a página.
 
+import { playSound } from "./sounds";
+
 export interface ConfettiOptions {
   /** Origem, em fração da tela (0–1). Padrão: centro, um pouco acima. */
   x?: number;
@@ -156,6 +158,7 @@ export function fireConfetti(options: ConfettiOptions = {}) {
 
 /** Explosão grande de comemoração: dois canhões laterais e uma chuva central. */
 export function celebrate(kind: "level" | "gold" | "levelup" = "level", playful = true) {
+  playSound("achievement");
   if (kind === "gold") {
     const emojis = ["⭐", "✨", "🏅", "🪙"];
     fireConfetti({

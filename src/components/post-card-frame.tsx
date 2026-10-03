@@ -4,8 +4,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 
 const PADDING = {
-  md: { top: "px-6 pt-6", bottom: "px-6 pb-6", toggle: "px-6 pt-3" },
-  sm: { top: "px-5 pt-5", bottom: "px-5 pb-5", toggle: "px-5 pt-3" },
+  md: {
+    top: "px-[var(--post-px)] pt-[var(--post-pt)]",
+    bottom: "px-[var(--post-px)] pb-[var(--post-pb)]",
+    toggle: "px-[var(--post-px)] pt-3",
+  },
+  sm: {
+    top: "px-[var(--post-px-sm)] pt-[var(--post-pt-sm)]",
+    bottom: "px-[var(--post-px-sm)] pb-[var(--post-pb-sm)]",
+    toggle: "px-[var(--post-px-sm)] pt-3",
+  },
 } as const;
 
 /** Respiro, em px, entre o cartão e cada barra de navegação. */

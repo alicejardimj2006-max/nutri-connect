@@ -377,7 +377,7 @@ export function EspacoRightColumn() {
                     params={{ userId: p.userId }}
                     className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary"
                   >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-xs font-bold text-primary">
                       {initials(p.name)}
                     </span>
                     <span className="min-w-0">

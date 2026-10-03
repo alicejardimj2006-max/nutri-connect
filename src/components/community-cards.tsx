@@ -173,7 +173,7 @@ export function PostCard({ post }: PostCardProps) {
         <Link
           to="/perfil/$userId"
           params={{ userId: post.authorId }}
-          className="grid h-10 w-10 overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0"
+          className="grid h-10 w-10 overflow-hidden place-items-center rounded-full avatar-shape bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0"
         >
           {avatarImage ? (
             <img src={avatarImage} alt={post.authorName} className="h-full w-full object-cover" />
@@ -351,7 +351,8 @@ export function PostCard({ post }: PostCardProps) {
           {opts.icon}
         </button>
         <span className="whitespace-nowrap text-[10px] leading-none tabular-nums text-muted-foreground">
-          {opts.label} {opts.count}
+          {opts.label}
+          <span className="stat-count"> {opts.count}</span>
         </span>
       </div>
     );

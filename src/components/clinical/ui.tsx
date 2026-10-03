@@ -128,7 +128,7 @@ export function Avatar({
       <img
         src={url}
         alt=""
-        className={cn("shrink-0 rounded-full object-cover", sizes[size].split(" text")[0])}
+        className={cn("shrink-0 rounded-full avatar-shape object-cover", sizes[size].split(" text")[0])}
       />
     );
   }

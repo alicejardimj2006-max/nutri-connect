@@ -188,7 +188,7 @@ export function SiteHeader() {
               <Link
                 to="/perfil/$userId"
                 params={{ userId: user.id }}
-                className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80"
+                className="grid h-10 w-10 place-items-center rounded-full avatar-shape bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80"
                 activeProps={{ className: "ring-2 ring-accent" }}
                 aria-label={t("nav.profile")}
                 title={t("nav.profile")}
@@ -279,7 +279,7 @@ export function SiteHeader() {
             className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
             activeProps={{ className: "text-accent" }}
           >
-            <span className="grid h-5 w-5 place-items-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">
+            <span className="grid h-5 w-5 place-items-center rounded-full avatar-shape bg-primary-soft text-[10px] font-bold text-primary">
               {user.name.charAt(0).toUpperCase()}
             </span>
             <span>{t("nav.profile")}</span>

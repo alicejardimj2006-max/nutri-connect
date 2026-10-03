@@ -352,7 +352,7 @@ function ChallengeDetailPage() {
               <ul className="space-y-3.5">
                 {participantsProgress.map((p) => (
                   <li key={p.userId} className="flex items-center gap-3">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-[11px] font-bold text-primary">
                       {initials(p.name)}
                     </span>
                     <div className="flex-1 min-w-0">

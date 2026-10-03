@@ -209,7 +209,7 @@ function ReceitaDetalhePage() {
               <Link
                 to="/perfil/$userId"
                 params={{ userId: recipe.authorId }}
-                className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft font-bold text-primary"
+                className="grid h-10 w-10 place-items-center rounded-full avatar-shape bg-primary-soft font-bold text-primary"
               >
                 {initials(recipe.authorName)}
               </Link>

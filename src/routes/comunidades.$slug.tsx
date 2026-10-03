@@ -429,7 +429,7 @@ function PostCard({
         </p>
       )}
       <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">
+        <span className="grid h-10 w-10 place-items-center rounded-full avatar-shape bg-primary-soft text-sm font-bold text-primary">
           {initials(post.authorName)}
         </span>
         <div>
@@ -493,7 +493,7 @@ function PostCard({
       <div className="mt-4 space-y-3 border-t pt-4">
         {post.comments.map((c) => (
           <div key={c.id} className="flex items-start gap-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full avatar-shape bg-secondary text-xs font-bold text-secondary-foreground">
               {initials(c.authorName)}
             </span>
             <div className="flex-1 rounded-xl bg-secondary/60 px-3 py-2">
