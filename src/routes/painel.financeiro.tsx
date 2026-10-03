@@ -122,7 +122,7 @@ function FinancePage() {
         people.data?.get(p.patient_id)?.name ?? "",
         p.provider === "manual"
           ? `${methodLabel(p.method ?? "", t)} (${t("finance.manual")})`
-          : `Mercado Pago · ${methodLabel(p.method ?? "", t)}`,
+          : `Stripe${p.method ? ` · ${methodLabel(p.method, t)}` : ""}`,
         t(`payment.status.${p.status}`),
         (p.amount_cents / 100).toFixed(2).replace(".", ","),
         (p.platform_fee_cents / 100).toFixed(2).replace(".", ","),
@@ -343,7 +343,7 @@ function FinancePage() {
                             {people.data?.get(p.patient_id)?.name ?? "…"}
                           </td>
                           <td className="px-2 py-2 text-muted-foreground">
-                            {p.provider === "manual" ? t("finance.manual") : "Mercado Pago"}
+                            {p.provider === "manual" ? t("finance.manual") : "Stripe"}
                             {p.method ? ` · ${methodLabel(p.method, t)}` : ""}
                           </td>
                           <td className="px-2 py-2 text-right tabular-nums text-foreground">

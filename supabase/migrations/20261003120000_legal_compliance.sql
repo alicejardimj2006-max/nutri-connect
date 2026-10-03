@@ -119,7 +119,7 @@ begin
       ('verificacoes_profissionais', 'verification_requests', array['user_id']),
       ('cadastro_profissional', 'professionals', array['user_id']),
       ('consentimentos', 'consents', array['user_id'])
-    ) as v(label text, tbl text, cols text[])
+    ) as v(label, tbl, cols)
   loop
     result := result || jsonb_build_object(spec.label, public._export_rows(spec.tbl, spec.cols, me));
   end loop;

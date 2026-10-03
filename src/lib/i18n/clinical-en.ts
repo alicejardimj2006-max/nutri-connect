@@ -666,8 +666,8 @@ const clinical: Record<ClinicalKey, string> = {
   "docs.emptyText": "Upload lab tests, reports or other documents.",
   "docs.open": "Open",
   "docs.byYou": "uploaded by you",
-  "errors.payment": "We couldn't reach Mercado Pago. Please try again in a moment.",
-  "appt.cancelledRefunded": "Appointment cancelled. The refund was requested from Mercado Pago.",
+  "errors.payment": "We couldn't reach Stripe. Please try again in a moment.",
+  "appt.cancelledRefunded": "Appointment cancelled. The refund was requested from Stripe.",
   "appt.cancelledNoRefund":
     "Appointment cancelled. Since it was less than {h} hours away, the amount isn't refunded automatically — please talk to your professional.",
   "appt.cancelledRefundFailed":
@@ -681,20 +681,8 @@ const clinical: Record<ClinicalKey, string> = {
   "payment.returnFailure":
     "The payment wasn't completed. You can try again while the slot is still held.",
   "mp.title": "Online payments",
-  "mp.connected": "Mercado Pago connected",
-  "mp.notConnected": "Get paid through Mercado Pago",
-  "mp.connectedText":
-    "Patients pay by Pix or card when booking and the money goes straight to your account. The platform keeps {fee}% per appointment.",
-  "mp.notConnectedText":
-    "Connect your account to charge by Pix or card at booking. The money goes straight to you; the platform keeps {fee}% per appointment.",
+  "mp.stripeText": "Patients pay by card when booking. NutriConnect receives the payment and passes it on to you, minus a {fee}% fee per appointment.",
   "mp.noPrice": "Set an appointment fee above zero to charge online.",
-  "mp.connect": "Connect Mercado Pago",
-  "mp.disconnect": "Disconnect",
-  "mp.disconnectConfirm":
-    "Disconnect Mercado Pago? New bookings will no longer require online payment.",
-  "mp.disconnected": "Mercado Pago disconnected.",
-  "mp.connectedToast": "Mercado Pago connected! Upcoming bookings can now be paid online.",
-  "mp.errorToast": "We couldn't connect Mercado Pago. Please try again.",
   "panelNav.finance": "Finances",
   "finance.title": "Finances",
   "finance.subtitle": "What you received, the fees and what's still to be received.",

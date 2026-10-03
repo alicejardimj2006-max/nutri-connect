@@ -150,7 +150,7 @@ function Privacidade() {
             <>
               <strong>Operadores que nos prestam serviço:</strong> hospedagem, banco de dados e
               armazenamento de arquivos (Supabase); hospedagem do site; provedores de pagamento
-              (Stripe e/ou Mercado Pago); e provedor de inteligência artificial (gateway Lovable
+              (Stripe); e provedor de inteligência artificial (gateway Lovable
               AI, que roda modelos do Google Gemini).
             </>,
             <>

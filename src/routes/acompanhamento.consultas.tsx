@@ -29,7 +29,7 @@ function PatientAppointmentsPage() {
   const navigate = useNavigate({ from: Route.fullPath });
   const qc = useQueryClient();
 
-  // Volta do checkout do Mercado Pago (a confirmação definitiva chega pelo webhook).
+  // Volta do checkout do Stripe (a confirmação definitiva chega pelo webhook).
   useEffect(() => {
     if (!pagamento) return;
     const id = "payment-return";

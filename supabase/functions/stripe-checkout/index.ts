@@ -1,11 +1,11 @@
-// Cria (ou reaproveita) o Checkout Pro de uma consulta aguardando pagamento.
-// O pagamento cai na conta do profissional; a plataforma retém marketplace_fee.
-import { HttpError, env, json, serve } from "../_shared/http.ts";
-import { createPreference, sellerToken } from "../_shared/mp.ts";
+// Cria (ou reaproveita) o Checkout do Stripe de uma consulta aguardando pagamento.
+// O pagamento cai na conta da plataforma; a taxa fica registrada em payments.platform_fee_cents
+// e o repasse ao profissional é feito fora do app.
+//
+// Segredos: STRIPE_SECRET_KEY. Opcional: APP_URL (senão usa a origem enviada pelo app).
+import { HttpError, json, serve } from "../_shared/http.ts";
+import { createCheckoutSession } from "../_shared/stripe.ts";
 import { adminClient, requireUser, settingInt } from "../_shared/supabase.ts";
-
-const functionsBase = () =>
-  Deno.env.get("PUBLIC_FUNCTIONS_URL") ?? `${env("SUPABASE_URL")}/functions/v1`;
 
 serve(async (req) => {
   const user = await requireUser(req);
@@ -24,8 +24,9 @@ serve(async (req) => {
     .eq("id", appointmentId)
     .maybeSingle();
   if (!appt || appt.patient_id !== user.id) throw new HttpError(404, "Consulta não encontrada.");
-  if (appt.status !== "aguardando_pagamento")
+  if (appt.status !== "aguardando_pagamento") {
     throw new HttpError(409, "Esta consulta não está aguardando pagamento.");
+  }
   if (!appt.hold_expires_at || new Date(appt.hold_expires_at) <= new Date()) {
     await db.rpc("expire_payment_holds", { p_professional: appt.professional_id });
     throw new HttpError(
@@ -34,26 +35,22 @@ serve(async (req) => {
     );
   }
 
-  const [{ data: pro }, { data: account }] = await Promise.all([
-    db.from("profiles").select("name").eq("id", appt.professional_id).single(),
-    db
-      .from("professional_mp_accounts")
-      .select("live_mode")
-      .eq("professional_id", appt.professional_id)
-      .maybeSingle(),
-  ]);
-  const token = await sellerToken(appt.professional_id);
+  const { data: pro } = await db
+    .from("profiles")
+    .select("name")
+    .eq("id", appt.professional_id)
+    .single();
 
   const feePercent = await settingInt("platform_fee_percent", 10);
   const amount = appt.price_cents;
   const fee = Math.round((amount * feePercent) / 100);
 
-  // Reaproveita a preferência pendente, se houver.
+  // Reaproveita a sessão pendente, se houver.
   const { data: existing } = await db
     .from("payments")
     .select("*")
     .eq("appointment_id", appt.id)
-    .eq("provider", "mercado_pago")
+    .eq("provider", "stripe")
     .in("status", ["pendente", "em_processamento"])
     .order("created_at", { ascending: false })
     .limit(1)
@@ -68,31 +65,35 @@ serve(async (req) => {
     timeStyle: "short",
   });
   const back = (status: string) => `${appUrl}/acompanhamento/consultas?pagamento=${status}`;
-  const preference = await createPreference(token, {
-    items: [
+
+  // O Stripe exige que a sessão dure pelo menos 30 min. Se o pagamento sair depois do horário
+  // reservado, o webhook tenta recuperar a vaga ou estorna.
+  const now = Math.floor(Date.now() / 1000);
+  const holdEnd = Math.floor(new Date(appt.hold_expires_at).getTime() / 1000);
+  const session = await createCheckoutSession({
+    mode: "payment",
+    success_url: back("sucesso"),
+    cancel_url: back("falha"),
+    customer_email: user.email,
+    client_reference_id: appt.id,
+    metadata: { appointment_id: appt.id },
+    payment_intent_data: { metadata: { appointment_id: appt.id } },
+    line_items: [
       {
-        id: appt.id,
-        title: `Consulta com ${pro?.name ?? "profissional"}`,
-        description: `${appt.modality === "online" ? "On-line" : "Presencial"} · ${when}`,
         quantity: 1,
-        currency_id: "BRL",
-        unit_price: amount / 100,
+        price_data: {
+          currency: "brl",
+          unit_amount: amount,
+          product_data: {
+            name: `Consulta com ${pro?.name ?? "profissional"}`,
+            description: `${appt.modality === "online" ? "On-line" : "Presencial"} · ${when}`,
+          },
+        },
       },
     ],
-    marketplace_fee: fee / 100,
-    external_reference: appt.id,
-    notification_url: `${functionsBase()}/mp-webhook?appointment=${appt.id}`,
-    back_urls: { success: back("sucesso"), pending: back("pendente"), failure: back("falha") },
-    auto_return: "approved",
-    payer: user.email ? { email: user.email } : undefined,
-    statement_descriptor: "NUTRICONNECT",
-    expires: true,
-    expiration_date_from: new Date().toISOString(),
-    expiration_date_to: new Date(appt.hold_expires_at).toISOString(),
+    expires_at: Math.min(Math.max(holdEnd, now + 31 * 60), now + 23 * 3600),
   });
-  const checkoutUrl = account?.live_mode
-    ? preference.init_point
-    : (preference.sandbox_init_point ?? preference.init_point);
+  if (!session.url) throw new HttpError(502, "O Stripe não devolveu a URL de pagamento.");
 
   const row = {
     appointment_id: appt.id,
@@ -101,14 +102,14 @@ serve(async (req) => {
     amount_cents: amount,
     platform_fee_cents: fee,
     status: "pendente",
-    provider: "mercado_pago",
-    mp_preference_id: preference.id,
-    checkout_url: checkoutUrl,
+    provider: "stripe",
+    mp_preference_id: session.id, // id da sessão do Stripe
+    checkout_url: session.url,
   };
   const { error } = existing
     ? await db.from("payments").update(row).eq("id", existing.id)
     : await db.from("payments").insert(row);
   if (error) throw new HttpError(500, error.message);
 
-  return json({ checkoutUrl });
+  return json({ checkoutUrl: session.url });
 });

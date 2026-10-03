@@ -1,8 +1,8 @@
-// Estorno de uma consulta cancelada paga pelo Mercado Pago.
-// Regra: cancelamento pelo profissional sempre estorna; pelo paciente, só com
-// antecedência mínima (platform_settings.refund_min_notice_hours, padrão 24 h).
+// Estorno de uma consulta cancelada paga pelo Stripe.
+// Regra: cancelamento pelo profissional sempre estorna; pelo paciente, só com antecedência
+// mínima (platform_settings.refund_min_notice_hours, padrão 24 h).
 import { HttpError, json, serve } from "../_shared/http.ts";
-import { refundPayment, sellerToken } from "../_shared/mp.ts";
+import { createRefund } from "../_shared/stripe.ts";
 import { adminClient, requireUser, settingInt } from "../_shared/supabase.ts";
 
 serve(async (req) => {
@@ -25,7 +25,7 @@ serve(async (req) => {
     .from("payments")
     .select("*")
     .eq("appointment_id", appt.id)
-    .eq("provider", "mercado_pago")
+    .eq("provider", "stripe")
     .eq("status", "aprovado")
     .maybeSingle();
   if (!payment?.mp_payment_id) return json({ refunded: false, reason: "sem pagamento on-line" });
@@ -38,7 +38,7 @@ serve(async (req) => {
     return json({ refunded: false, reason: "fora do prazo", minHours });
   }
 
-  await refundPayment(await sellerToken(appt.professional_id), payment.mp_payment_id);
+  await createRefund(payment.mp_payment_id); // payment_intent do Stripe
   await db
     .from("payments")
     .update({ status: "reembolsado", refunded_at: new Date().toISOString() })

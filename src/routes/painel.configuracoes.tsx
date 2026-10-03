@@ -22,9 +22,6 @@ import { td } from "@/lib/i18n/data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/painel/configuracoes")({
-  validateSearch: (search: Record<string, unknown>): { mp?: "conectado" | "erro" } => ({
-    mp: search.mp === "conectado" || search.mp === "erro" ? search.mp : undefined,
-  }),
   component: ProfessionalSettingsPage,
 });
 
@@ -44,18 +41,6 @@ function ProfessionalSettingsPage() {
   const { user } = useAuth();
   const { t, locale } = useClinicalI18n();
   const pro = useProfessional(user?.id);
-  const { mp } = Route.useSearch();
-  const navigate = useNavigate({ from: Route.fullPath });
-  const qc = useQueryClient();
-
-  // Retorno da autorização do Mercado Pago.
-  useEffect(() => {
-    if (!mp) return;
-    if (mp === "conectado") toast.success(t("mp.connectedToast"), { id: "mp-return" });
-    else toast.error(t("mp.errorToast"), { id: "mp-return" });
-    void qc.invalidateQueries({ queryKey: ["clinical", "professional"] });
-    navigate({ search: {}, replace: true });
-  }, [mp]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [form, setForm] = useState({
     headline: "",

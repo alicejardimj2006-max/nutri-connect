@@ -119,7 +119,7 @@ function Termos() {
           items={[
             "O preço de cada consulta é definido pelo(a) profissional e mostrado antes da contratação. O NutriConnect retém uma taxa de plataforma sobre pagamentos feitos pela plataforma, informada ao profissional.",
             "O horário fica reservado por um tempo limitado enquanto o pagamento é feito; passado esse tempo, é liberado.",
-            "Pagamentos são processados por provedores externos (Stripe e/ou Mercado Pago). Não guardamos os dados do seu cartão.",
+            "O pagamento é processado pelo Stripe e recebido pelo NutriConnect, que repassa o valor ao(à) profissional, descontada a taxa de plataforma. Não guardamos os dados do seu cartão.",
             "Cancelamentos feitos pelo(a) profissional dão direito ao estorno integral. Cancelamentos feitos pelo paciente com antecedência mínima de 24 horas (ou outro prazo informado na hora do agendamento) também dão direito ao estorno; depois disso, o estorno depende do(a) profissional.",
             "Quando aplicável, vale o direito de arrependimento de 7 dias para contratações feitas à distância (art. 49 do Código de Defesa do Consumidor). Para exercê-lo, fale conosco.",
           ]}

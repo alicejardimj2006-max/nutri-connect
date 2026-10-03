@@ -57,7 +57,6 @@ import { Route as PerfilPersonalizacaoRouteImport } from './routes/perfil.person
 import { Route as ProfissionaisIndexRouteImport } from './routes/profissionais.index'
 import { Route as ProfissionaisProfessionalIdRouteImport } from './routes/profissionais.$professionalId'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
-import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as PainelPacientesIndexRouteImport } from './routes/painel.pacientes.index'
 import { Route as PainelPacientesPatientIdRouteImport } from './routes/painel.pacientes.$patientId'
 import { Route as PainelPlanosPlanIdRouteImport } from './routes/painel.planos.$planId'
@@ -308,11 +307,6 @@ const ReceitasIdRoute = ReceitasIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ReceitasRoute,
 } as any)
-const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
-  id: '/api/public/stripe-webhook',
-  path: '/api/public/stripe-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PainelPacientesIndexRoute = PainelPacientesIndexRouteImport.update({
   id: '/pacientes/',
   path: '/pacientes/',
@@ -409,7 +403,6 @@ export interface FileRoutesByFullPath {
   '/desafios/': typeof DesafiosIndexRoute
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -463,7 +456,6 @@ export interface FileRoutesByTo {
   '/desafios': typeof DesafiosIndexRoute
   '/painel': typeof PainelIndexRoute
   '/profissionais': typeof ProfissionaisIndexRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -523,7 +515,6 @@ export interface FileRoutesById {
   '/desafios/': typeof DesafiosIndexRoute
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -584,7 +575,6 @@ export interface FileRouteTypes {
     | '/desafios/'
     | '/painel/'
     | '/profissionais/'
-    | '/api/public/stripe-webhook'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -638,7 +628,6 @@ export interface FileRouteTypes {
     | '/desafios'
     | '/painel'
     | '/profissionais'
-    | '/api/public/stripe-webhook'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -697,7 +686,6 @@ export interface FileRouteTypes {
     | '/desafios/'
     | '/painel/'
     | '/profissionais/'
-    | '/api/public/stripe-webhook'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -739,7 +727,6 @@ export interface RootRouteChildren {
   PerfilPersonalizacaoRoute: typeof PerfilPersonalizacaoRoute
   ProfissionaisProfessionalIdRoute: typeof ProfissionaisProfessionalIdRoute
   ProfissionaisIndexRoute: typeof ProfissionaisIndexRoute
-  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1080,13 +1067,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReceitasIdRouteImport
       parentRoute: typeof ReceitasRoute
     }
-    '/api/public/stripe-webhook': {
-      id: '/api/public/stripe-webhook'
-      path: '/api/public/stripe-webhook'
-      fullPath: '/api/public/stripe-webhook'
-      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/painel/pacientes/': {
       id: '/painel/pacientes/'
       path: '/pacientes'
@@ -1287,7 +1267,6 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilPersonalizacaoRoute: PerfilPersonalizacaoRoute,
   ProfissionaisProfessionalIdRoute: ProfissionaisProfessionalIdRoute,
   ProfissionaisIndexRoute: ProfissionaisIndexRoute,
-  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

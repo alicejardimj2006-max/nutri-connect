@@ -38,14 +38,14 @@ A migration `20261003120000_legal_compliance.sql` precisa estar aplicada no banc
 1. Preencher `COMPANY` em `src/lib/legal.ts`: razão social, CNPJ, endereço, nome do encarregado e
    um e-mail de privacidade próprio (hoje usa o e-mail de suporte).
 2. Revisão jurídica dos três textos. Mudou algo relevante? Altere `LEGAL_VERSION` para pedir novo aceite.
-3. Confirmar os provedores citados na Política (Supabase, Stripe/Mercado Pago, gateway de IA) e
+3. Confirmar os provedores citados na Política (Supabase, Stripe, gateway de IA) e
    assinar os contratos/DPAs com eles.
 4. Definir o prazo real de guarda de prontuário e de dados fiscais com o contador/jurídico.
 5. Documentar um plano de resposta a incidentes (comunicação à ANPD em até 3 dias úteis) e um
    Relatório de Impacto (RIPD), recomendado por tratar dados de saúde.
 6. A idade é **autodeclarada**. O ECA Digital pede mecanismos confiáveis de verificação; avaliar um
    serviço de verificação de idade se o risco de acesso por menores for relevante.
-7. Ligar o Stripe (ou manter o Mercado Pago) e informar o provedor definitivo na Política.
+7. Stripe: confirmar o contrato e o repasse aos profissionais (a Política e os Termos já citam o Stripe).
 8. Ativar no painel do Supabase: proteção contra senhas vazadas (Auth).
 9. Exclusão de conta não apaga arquivos do Storage (fotos, documentos): criar rotina de limpeza.
 10. O consentimento de saúde é registrado e revogável, mas as telas clínicas ainda não o exigem.

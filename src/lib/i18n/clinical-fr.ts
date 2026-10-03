@@ -677,8 +677,8 @@ const clinical: Record<ClinicalKey, string> = {
   "docs.emptyText": "Envoyez des analyses, comptes rendus ou autres documents.",
   "docs.open": "Ouvrir",
   "docs.byYou": "envoyé par vous",
-  "errors.payment": "Impossible de joindre Mercado Pago. Réessayez dans un instant.",
-  "appt.cancelledRefunded": "Consultation annulée. Le remboursement a été demandé à Mercado Pago.",
+  "errors.payment": "Impossible de joindre Stripe. Réessayez dans un instant.",
+  "appt.cancelledRefunded": "Consultation annulée. Le remboursement a été demandé à Stripe.",
   "appt.cancelledNoRefund":
     "Consultation annulée. Comme il restait moins de {h} heures, le montant n'est pas remboursé automatiquement — parlez-en au professionnel.",
   "appt.cancelledRefundFailed":
@@ -693,21 +693,8 @@ const clinical: Record<ClinicalKey, string> = {
   "payment.returnFailure":
     "Le paiement n'a pas abouti. Vous pouvez réessayer tant que le créneau est réservé.",
   "mp.title": "Paiements en ligne",
-  "mp.connected": "Mercado Pago connecté",
-  "mp.notConnected": "Encaissez avec Mercado Pago",
-  "mp.connectedText":
-    "Les patients paient par Pix ou carte lors de la réservation et l'argent arrive directement sur votre compte. La plateforme retient {fee} % par consultation.",
-  "mp.notConnectedText":
-    "Connectez votre compte pour encaisser par Pix ou carte à la réservation. L'argent vous revient directement ; la plateforme retient {fee} % par consultation.",
+  "mp.stripeText": "Les patients paient par carte lors de la réservation. NutriConnect reçoit le paiement et vous le reverse, moins des frais de {fee}% par consultation.",
   "mp.noPrice": "Définissez un tarif supérieur à zéro pour encaisser en ligne.",
-  "mp.connect": "Connecter Mercado Pago",
-  "mp.disconnect": "Déconnecter",
-  "mp.disconnectConfirm":
-    "Déconnecter Mercado Pago ? Les nouvelles réservations n'exigeront plus de paiement en ligne.",
-  "mp.disconnected": "Mercado Pago déconnecté.",
-  "mp.connectedToast":
-    "Mercado Pago connecté ! Les prochaines réservations peuvent être payées en ligne.",
-  "mp.errorToast": "Impossible de connecter Mercado Pago. Réessayez.",
   "panelNav.finance": "Finances",
   "finance.title": "Finances",
   "finance.subtitle": "Ce que vous avez reçu, les frais et ce qu'il reste à encaisser.",

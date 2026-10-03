@@ -667,8 +667,8 @@ const clinical: Record<ClinicalKey, string> = {
   "docs.emptyText": "Sube exámenes de laboratorio, informes u otros documentos.",
   "docs.open": "Abrir",
   "docs.byYou": "subido por ti",
-  "errors.payment": "No se pudo conectar con Mercado Pago. Inténtalo de nuevo en unos instantes.",
-  "appt.cancelledRefunded": "Consulta cancelada. Se solicitó el reembolso a Mercado Pago.",
+  "errors.payment": "No se pudo conectar con Stripe. Inténtalo de nuevo en unos instantes.",
+  "appt.cancelledRefunded": "Consulta cancelada. Se solicitó el reembolso a Stripe.",
   "appt.cancelledNoRefund":
     "Consulta cancelada. Como faltaban menos de {h} horas, el valor no se reembolsa automáticamente: habla con el profesional.",
   "appt.cancelledRefundFailed":
@@ -682,20 +682,8 @@ const clinical: Record<ClinicalKey, string> = {
   "payment.returnFailure":
     "El pago no se completó. Puedes intentarlo de nuevo mientras el horario siga reservado.",
   "mp.title": "Pagos en línea",
-  "mp.connected": "Mercado Pago conectado",
-  "mp.notConnected": "Cobra con Mercado Pago",
-  "mp.connectedText":
-    "Los pacientes pagan con Pix o tarjeta al agendar y el valor va directo a tu cuenta. La plataforma retiene el {fee}% por consulta.",
-  "mp.notConnectedText":
-    "Conecta tu cuenta para cobrar con Pix o tarjeta al agendar. El dinero va directo a ti; la plataforma retiene el {fee}% por consulta.",
+  "mp.stripeText": "Los pacientes pagan con tarjeta al agendar. NutriConnect recibe el pago y te lo transfiere, descontada una tarifa del {fee}% por consulta.",
   "mp.noPrice": "Define un valor de consulta mayor que cero para cobrar en línea.",
-  "mp.connect": "Conectar Mercado Pago",
-  "mp.disconnect": "Desconectar",
-  "mp.disconnectConfirm":
-    "¿Desconectar Mercado Pago? Las nuevas reservas dejarán de exigir pago en línea.",
-  "mp.disconnected": "Mercado Pago desconectado.",
-  "mp.connectedToast": "¡Mercado Pago conectado! Las próximas reservas ya pueden pagarse en línea.",
-  "mp.errorToast": "No se pudo conectar Mercado Pago. Inténtalo de nuevo.",
   "panelNav.finance": "Finanzas",
   "finance.title": "Finanzas",
   "finance.subtitle": "Lo que recibiste, las comisiones y lo que falta por recibir.",

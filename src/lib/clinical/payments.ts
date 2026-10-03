@@ -1,5 +1,5 @@
-// Pagamentos online (Mercado Pago). Tudo que usa credenciais roda em Edge
-// Functions: conexão da conta do profissional (OAuth), checkout e estornos.
+// Pagamentos online (Stripe). Tudo que usa credenciais roda em Edge Functions:
+// checkout, webhook e estornos.
 
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,7 @@ async function invoke<T>(name: string, body: Record<string, unknown>): Promise<T
 
 /** Cria (ou reaproveita) o checkout de uma consulta e devolve a URL de pagamento. */
 export async function startCheckout(appointmentId: string): Promise<string> {
-  const data = await invoke<{ checkoutUrl?: string }>("mp-checkout", {
+  const data = await invoke<{ checkoutUrl?: string }>("stripe-checkout", {
     appointmentId,
     origin: window.location.origin,
   });
@@ -29,19 +29,9 @@ export async function startCheckout(appointmentId: string): Promise<string> {
   return data.checkoutUrl;
 }
 
-/** Leva o profissional à tela de autorização do Mercado Pago. */
-export async function connectMercadoPago(): Promise<void> {
-  const data = await invoke<{ url: string }>("mp-oauth-start", { origin: window.location.origin });
-  window.location.href = data.url;
-}
-
-export async function disconnectMercadoPago(): Promise<void> {
-  await invoke("mp-disconnect", {});
-}
-
 /** Pede o estorno de uma consulta cancelada (a Edge Function aplica a regra de prazo). */
 export async function requestRefund(
   appointmentId: string,
 ): Promise<{ refunded: boolean; reason?: string; minHours?: number }> {
-  return invoke("mp-refund", { appointmentId });
+  return invoke("stripe-refund", { appointmentId });
 }

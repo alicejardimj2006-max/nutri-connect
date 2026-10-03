@@ -43,7 +43,7 @@ import {
 const ACTIVE: Appointment["status"][] = ["aguardando_pagamento", "agendada", "confirmada"];
 
 const paidOnline = (payment?: Payment) =>
-  payment?.status === "aprovado" && payment.provider === "mercado_pago";
+  payment?.status === "aprovado" && payment.provider === "stripe";
 
 /** Cancela e, se a consulta foi paga on-line, pede o estorno. Devolve o aviso para o usuário. */
 async function cancelWithRefund(
@@ -468,9 +468,9 @@ export function ManageAppointmentDialog({
                 <span className="text-xs text-muted-foreground">{t("appt.noPayment")}</span>
               )}
             </div>
-            {payment?.provider === "mercado_pago" && payment.method && (
+            {payment?.provider === "stripe" && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Mercado Pago · {methodLabel(payment.method, t)}
+                Stripe{payment.method ? ` · ${methodLabel(payment.method, t)}` : ""}
               </p>
             )}
             {!paid && (

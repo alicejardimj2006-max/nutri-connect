@@ -1,10 +1,13 @@
 project_id = "pdotnqmmtskjxysvsgxj"
 
-# Edge Functions públicas: o Mercado Pago chama sem JWT do Supabase.
-[functions.mp-webhook]
+# Edge Functions públicas: chamadas por serviços externos, sem o JWT do Supabase.
+[functions.stripe-webhook]
 verify_jwt = false
 
-[functions.mp-oauth-callback]
+[functions.stripe-checkout]
+verify_jwt = false
+
+[functions.stripe-refund]
 verify_jwt = false
 
 [functions.weekly-theme]
