@@ -30,6 +30,17 @@ const ptBR = {
   "nav.post": "Postar",
   "nav.search": "Pesquisar",
   "nav.notifications": "Notificações",
+  "nav.nina": "Nina",
+  "nina.title": "Converse com a Nina",
+  "nina.subtitle": "Tire dúvidas de alimentação de um jeito simples e acolhedor.",
+  "nina.placeholder": "Pergunte algo sobre alimentação…",
+  "nina.send": "Enviar",
+  "nina.empty": "Oi, eu sou a Nina! Como posso ajudar com a sua alimentação hoje?",
+  "nina.clear": "Apagar conversa",
+  "nina.clearConfirm": "Apagar todo o histórico da conversa com a Nina?",
+  "nina.usage": "perguntas hoje",
+  "nina.disclaimer": "A Nina é uma IA educativa e não substitui nutricionista ou médico(a). As conversas ficam guardadas por 90 dias.",
+  "nina.error": "A Nina não conseguiu responder. Tente novamente.",
   "nav.loading": "Carregando…",
 
   // Hub de configurações --------------------------------------------------

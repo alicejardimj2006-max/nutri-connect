@@ -9,3 +9,6 @@ verify_jwt = false
 
 [functions.weekly-theme]
 verify_jwt = false
+
+[functions.moderate-content]
+verify_jwt = false

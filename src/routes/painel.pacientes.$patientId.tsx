@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, Mail, MessageCircle, Phone, Plus } from "lucid
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { NewAppointmentDialog } from "@/components/clinical/new-appointment-dialog";
 import { AnamnesisForm } from "@/components/clinical/anamnesis-form";
+import { AiSummaryCard } from "@/components/clinical/ai-summary-card";
 import { AnthropometryPanel } from "@/components/clinical/anthropometry-panel";
 import { GoalsPanel } from "@/components/clinical/goals-panel";
 import { MealPlansPanel } from "@/components/clinical/meal-plans-panel";
@@ -166,7 +167,10 @@ function PatientRecordPage() {
       />
 
       {tab === "resumo" && (
-        <RecordSummary patientId={patientId} birthDate={priv.data?.birth_date} onOpenTab={setTab} />
+        <>
+          {isActive && <AiSummaryCard patientId={patientId} />}
+          <RecordSummary patientId={patientId} birthDate={priv.data?.birth_date} onOpenTab={setTab} />
+        </>
       )}
       {tab === "anamnese" && user && (
         <AnamnesisForm patientId={patientId} professionalId={user.id} readOnly={!isActive} />

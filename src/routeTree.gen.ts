@@ -22,6 +22,7 @@ import { Route as EspacoRouteImport } from './routes/espaco'
 import { Route as ExperienciasRouteImport } from './routes/experiencias'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as ReceitasRouteImport } from './routes/receitas'
@@ -127,6 +128,11 @@ const ExplorarRoute = ExplorarRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NinaRoute = NinaRouteImport.update({
+  id: '/nina',
+  path: '/nina',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificacoesRoute = NotificacoesRouteImport.update({
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
   '/receitas': typeof ReceitasRouteWithChildren
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
@@ -464,6 +472,7 @@ export interface FileRoutesById {
   '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
   '/receitas': typeof ReceitasRouteWithChildren
@@ -522,6 +531,7 @@ export interface FileRouteTypes {
     | '/experiencias'
     | '/explorar'
     | '/login'
+    | '/nina'
     | '/notificacoes'
     | '/painel'
     | '/receitas'
@@ -575,6 +585,7 @@ export interface FileRouteTypes {
     | '/experiencias'
     | '/explorar'
     | '/login'
+    | '/nina'
     | '/notificacoes'
     | '/receitas'
     | '/recuperar-senha'
@@ -629,6 +640,7 @@ export interface FileRouteTypes {
     | '/experiencias'
     | '/explorar'
     | '/login'
+    | '/nina'
     | '/notificacoes'
     | '/painel'
     | '/receitas'
@@ -686,6 +698,7 @@ export interface RootRouteChildren {
   ExperienciasRoute: typeof ExperienciasRoute
   ExplorarRoute: typeof ExplorarRoute
   LoginRoute: typeof LoginRoute
+  NinaRoute: typeof NinaRoute
   NotificacoesRoute: typeof NotificacoesRoute
   PainelRoute: typeof PainelRouteWithChildren
   ReceitasRoute: typeof ReceitasRouteWithChildren
@@ -794,6 +807,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nina': {
+      id: '/nina'
+      path: '/nina'
+      fullPath: '/nina'
+      preLoaderRoute: typeof NinaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notificacoes': {
@@ -1210,6 +1230,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExperienciasRoute: ExperienciasRoute,
   ExplorarRoute: ExplorarRoute,
   LoginRoute: LoginRoute,
+  NinaRoute: NinaRoute,
   NotificacoesRoute: NotificacoesRoute,
   PainelRoute: PainelRouteWithChildren,
   ReceitasRoute: ReceitasRouteWithChildren,

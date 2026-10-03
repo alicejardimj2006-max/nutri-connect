@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, Home, Users, Award, Plus, HeartPulse } from "lucide-react";
+import { Search, Bell, Home, Users, Award, Plus, HeartPulse, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
@@ -70,14 +70,26 @@ export function SiteHeader() {
             </span>
           </Link>
 
-          <Link
-            to="/explorar"
-            className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-            aria-label={t("nav.search")}
-            title={t("nav.search")}
-          >
-            <Search className="h-5 w-5" />
-          </Link>
+          <div className="flex items-center">
+            {user && (
+              <Link
+                to="/nina"
+                className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+                aria-label={t("nav.nina")}
+                title={t("nav.nina")}
+              >
+                <Sparkles className="h-5 w-5" />
+              </Link>
+            )}
+            <Link
+              to="/explorar"
+              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+              aria-label={t("nav.search")}
+              title={t("nav.search")}
+            >
+              <Search className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
 
         {/* Cabeçalho desktop — reúne os atalhos que no mobile ficam na barra inferior */}
@@ -107,6 +119,14 @@ export function SiteHeader() {
               >
                 <Award className="h-4 w-4" />
                 {t("nav.challenges")}
+              </Link>
+              <Link
+                to="/nina"
+                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                activeProps={{ className: "text-accent" }}
+              >
+                <Sparkles className="h-4 w-4" />
+                {t("nav.nina")}
               </Link>
               <Link
                 to={user.professional ? "/painel" : "/acompanhamento"}
