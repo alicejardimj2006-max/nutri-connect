@@ -23,10 +23,10 @@ import {
 import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
 import { useI18n } from "@/hooks/use-i18n";
 import { initials } from "@/lib/community";
-import { getProfessionalInfo, isPlatformAdmin } from "@/lib/community-admin";
+import { isPlatformAdmin } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
 import { fetchContactInfo, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
@@ -69,8 +69,8 @@ function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const state = useCommunity();
-  const { profiles, hydrated } = state;
+  const professionals = useProfessionalMap(!!user);
+
   const navigate = useNavigate();
   // Perfil, privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
   const remoteProfile = usePublicProfile(user ? userId : undefined);
@@ -119,8 +119,6 @@ function PublicProfilePage() {
     });
   };
 
-  // Registro local só para dados de profissional (vêm da tabela professionals, via profile-sync).
-  const stored = profiles.find((p) => p.userId === userId);
   const remote = remoteProfile.data ?? null;
 
   const profile =
@@ -141,8 +139,8 @@ function PublicProfilePage() {
   );
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
-  const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
-  const professionalInfo = getProfessionalInfo(profiles, userId);
+  const professionalInfo = professionals.map.get(userId)?.info;
+  const isProfessional = !!professionalInfo || remote?.role === "profissional";
   const inviteCount = isSelf && isProfessional ? (invitesQuery.data?.length ?? 0) : 0;
 
   const userGoals =
@@ -158,7 +156,7 @@ function PublicProfilePage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {!hydrated || (!isSelf && remoteProfile.isLoading) ? (
+        {!authHydrated || (!isSelf && remoteProfile.isLoading) ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
           <>

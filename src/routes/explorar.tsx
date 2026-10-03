@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";

@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Award, BookOpen, Flame, Sparkles, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { ChallengeCard } from "@/components/community-cards";
 import {
   TrailHeader,

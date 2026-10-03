@@ -18,9 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
 import { useI18n } from "@/hooks/use-i18n";
-import { getProfessionalInfo } from "@/lib/community-admin";
 import { formatDate, initials, type Post } from "@/lib/community";
 import type { RemoteCommunity } from "@/lib/social/communities";
 import {
@@ -67,7 +66,7 @@ function CommunityFeed() {
   const { user } = useAuth();
   const { t } = useI18n();
   // Dados de profissional (profissão, conselho) ainda vêm do espelho local; o resto, do banco.
-  const { profiles } = useCommunity();
+  const professionals = useProfessionalMap(!!user);
 
   // O banco já esconde comunidades pendentes de quem não pode vê-las.
   const communityQuery = useCommunityBySlug(slug);
@@ -108,7 +107,7 @@ function CommunityFeed() {
   // Só em comunidade ativa se publica (o banco também exige).
   const canPost = !!user && (isMember || isModerator) && community.status === "ativa";
   const pro = community.professionalId
-    ? getProfessionalInfo(profiles, community.professionalId)
+    ? professionals.map.get(community.professionalId)?.info
     : undefined;
   const coverImage = community.coverImage || DEFAULT_COVER;
 

@@ -6,16 +6,19 @@ import { ArrowLeft, BadgeCheck, Clock, ImagePlus, ShieldCheck, XCircle } from "l
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { VerifiedBadge } from "@/components/person-chip";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { CATEGORIES, formatDate } from "@/lib/community";
 import {
   BR_STATES,
   PROFESSIONS,
   getLatestVerification,
-  getProfessionalInfo,
   submitVerification,
 } from "@/lib/community-admin";
 import { fileToDataUrl } from "@/lib/image";
+import {
+  useProfessionalMap,
+  useRefreshProfessionals,
+  useVerifications,
+} from "@/lib/social/professionals-queries";
 import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/verificacao")({
@@ -29,13 +32,15 @@ const inputClass =
 function VerificationPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { profiles, verifications, hydrated: dataHydrated } = useCommunity();
+  const proMap = useProfessionalMap(!!user);
+  const verificationsQuery = useVerifications(false, !!user);
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
-  const professional = getProfessionalInfo(profiles, user.id);
-  const isVerified = profiles.find((p) => p.userId === user.id)?.role === "profissional";
-  const latest = getLatestVerification(verifications, user.id);
+  const professional = proMap.map.get(user.id)?.info;
+  const isVerified = !!professional;
+  const latest = getLatestVerification(verificationsQuery.data ?? [], user.id);
+  const dataHydrated = !proMap.isLoading && !verificationsQuery.isLoading;
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -167,6 +172,7 @@ function Label({
 
 function VerificationForm({ userId, userName }: { userId: string; userName: string }) {
   const { t } = useI18n();
+  const refresh = useRefreshProfessionals();
   const [fullName, setFullName] = useState(userName);
   const [profession, setProfession] = useState<string>(PROFESSIONS[0].label);
   const [registration, setRegistration] = useState("");
@@ -220,6 +226,7 @@ function VerificationForm({ userId, userName }: { userId: string; userName: stri
         documentImage,
         selfieImage,
       });
+      await refresh();
       toast.success(t("verify.sent"));
       setSubmitting(false);
     } catch (err) {

@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import { useCommunity } from "@/hooks/use-community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
 import { useCommunities } from "@/lib/social/communities-queries";
 import type { RemoteChallenge } from "@/lib/social/challenges";
 import { ThemePoll } from "@/components/theme-poll";
@@ -43,13 +43,6 @@ import {
   type Post,
   type PostBlock,
   normalizeBlockOrder,
-  type WeeklyTheme,
-  type Challenge,
-  toggleSupport,
-  togglePrepared,
-  addComment,
-  voteThemePoll,
-  toggleJoinChallenge,
   formatDate,
   getAvatarSrc,
   initials,
@@ -62,15 +55,13 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { profiles } = useCommunity();
+  const professionals = useProfessionalMap(!post.authorRole);
   // Comunidade do post (link no cabeçalho): do banco.
   const communitiesQuery = useCommunities(false, !!user && !!post.communityId);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Posts vindos do banco têm "audience"; os de comunidade ainda são locais (Etapa 4).
-  const remote = post.audience !== undefined;
   const toggleReaction = useToggleReaction();
   const addRemoteComment = useAddComment();
   const deleteRemoteComment = useDeleteComment();
@@ -89,16 +80,12 @@ export function PostCard({ post }: PostCardProps) {
       toast.info(t("common.loginToSupport"));
       return;
     }
-    if (remote) {
-      toggleReaction.mutate({
-        postId: post.id,
-        kind: "apoiar",
-        on: !hasSupported,
-        userId: user.id,
-      });
-    } else {
-      toggleSupport(post.id, user.id);
-    }
+    toggleReaction.mutate({
+      postId: post.id,
+      kind: "apoiar",
+      on: !hasSupported,
+      userId: user.id,
+    });
   };
 
   const handlePrepared = () => {
@@ -106,16 +93,12 @@ export function PostCard({ post }: PostCardProps) {
       toast.info(t("common.loginToPrepared"));
       return;
     }
-    if (remote) {
-      toggleReaction.mutate({
-        postId: post.id,
-        kind: "preparei",
-        on: !hasPrepared,
-        userId: user.id,
-      });
-    } else {
-      togglePrepared(post.id, user.id);
-    }
+    toggleReaction.mutate({
+      postId: post.id,
+      kind: "preparei",
+      on: !hasPrepared,
+      userId: user.id,
+    });
     if (!hasPrepared) {
       toast.success(t("postcard.preparedSuccess"));
     }
@@ -131,11 +114,7 @@ export function PostCard({ post }: PostCardProps) {
     if (!trimmed) return;
 
     try {
-      if (remote) {
-        await addRemoteComment.mutateAsync({ postId: post.id, text: trimmed });
-      } else {
-        addComment(post.id, { id: user.id, name: user.name }, trimmed);
-      }
+      await addRemoteComment.mutateAsync({ postId: post.id, text: trimmed });
       setCommentText("");
       toast.success(t("postcard.commentPublished"));
     } catch (err) {
@@ -145,16 +124,13 @@ export function PostCard({ post }: PostCardProps) {
 
   let displayImage = post.image;
   if (!displayImage) {
-    if (post.id === "p-rec-1") displayImage = "/images/recipes/default-recipe.jpg";
-    else if (post.id === "p-rec-2") displayImage = "/images/recipes/roasted-veg.jpg";
-    else if (post.type === "receita") displayImage = "/images/recipes/default-recipe.jpg";
-    else if (post.id === "p-exp-1") displayImage = "/images/experiences/cooking.jpg";
+    if (post.type === "receita") displayImage = "/images/recipes/default-recipe.jpg";
   }
 
   const avatarImage = getAvatarSrc(post.authorId, post.authorAvatar);
   const authorIsProfessional = post.authorRole
     ? post.authorRole === "profissional"
-    : profiles.find((p) => p.userId === post.authorId)?.role === "profissional";
+    : professionals.map.has(post.authorId);
 
   const community = post.communityId
     ? (communitiesQuery.data ?? []).find((c) => c.id === post.communityId)
@@ -197,7 +173,7 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </div>
 
-      {remote && isOwnPost && (
+      {isOwnPost && (
         <div className="shrink-0">
           {confirmDelete ? (
             <span className="flex items-center gap-1.5 text-[11px]">
@@ -266,7 +242,7 @@ export function PostCard({ post }: PostCardProps) {
                   </span>
                   <span className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     {formatDate(c.createdAt)}
-                    {remote && user && (c.authorId === user.id || isOwnPost) && (
+                    {user && (c.authorId === user.id || isOwnPost) && (
                       <button
                         type="button"
                         disabled={deleteRemoteComment.isPending}

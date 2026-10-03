@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Mascot } from "@/components/mascots";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useProfessionals } from "@/lib/social/professionals-queries";
 import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
@@ -23,7 +23,6 @@ import { challengeStreak, challengeXP } from "@/lib/social/challenge-stats";
 import { useChallenges } from "@/lib/social/challenges-queries";
 import { localizeTheme } from "@/lib/social/themes";
 import { useWeeklyTheme } from "@/lib/social/themes-queries";
-import { getProfessionalInfo } from "@/lib/community-admin";
 import {
   TRAIL_CHANGE_EVENT,
   getActiveStreak,
@@ -189,7 +188,7 @@ export function EspacoLeftColumn() {
 export function EspacoRightColumn() {
   const { user } = useAuth();
   const { t, locale } = useI18n();
-  const { profiles } = useCommunity();
+  const professionalsQuery = useProfessionals(!!user);
   const themeQuery = useWeeklyTheme("ativo", !!user);
   const themeText = themeQuery.data ? localizeTheme(themeQuery.data, locale) : null;
   const challengesQuery = useChallenges(!!user);
@@ -228,8 +227,8 @@ export function EspacoRightColumn() {
   );
 
   const professionals = useMemo(
-    () => profiles.filter((p) => p.role === "profissional" && p.userId !== user?.id).slice(0, 3),
-    [profiles, user],
+    () => (professionalsQuery.data ?? []).filter((p) => p.userId !== user?.id).slice(0, 3),
+    [professionalsQuery.data, user],
   );
 
   if (!user) return null;
@@ -375,7 +374,7 @@ export function EspacoRightColumn() {
         <Panel title={t("hub.professionals")}>
           <ul className="space-y-1">
             {professionals.map((p) => {
-              const info = getProfessionalInfo(profiles, p.userId);
+              const info = p.info;
               return (
                 <li key={p.userId}>
                   <Link

@@ -1,17 +1,16 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Check, ShieldAlert, X } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import { syncVerifications } from "@/lib/profile-sync";
 import { PostImage } from "@/components/post-image";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
 import { formatDate, type VerificationRequest } from "@/lib/community";
 import { isPlatformAdmin, reviewVerification } from "@/lib/community-admin";
 import type { RemoteCommunity } from "@/lib/social/communities";
+import { useRefreshProfessionals, useVerifications } from "@/lib/social/professionals-queries";
 import { useRegeneratePreview, useUpdateTheme, useWeeklyTheme } from "@/lib/social/themes-queries";
 import type { RemoteTheme } from "@/lib/social/themes";
 import {
@@ -31,15 +30,13 @@ type Tab = "verificacoes" | "comunidades" | "tema";
 function AdminPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
-  const state = useCommunity();
   // A plataforma enxerga todas as comunidades; as que precisam de atenção são as não ativas.
   const communitiesQuery = useCommunities(false, !!user?.isAdmin);
   const [tab, setTab] = useState<Tab>("verificacoes");
 
   // Admins veem todos os pedidos, com links temporários para as imagens privadas.
-  useEffect(() => {
-    if (user?.isAdmin) void syncVerifications(true);
-  }, [user]);
+  const verificationsQuery = useVerifications(true, !!user?.isAdmin);
+  const verifications = verificationsQuery.data ?? [];
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
@@ -56,8 +53,8 @@ function AdminPage() {
     );
   }
 
-  const pending = state.verifications.filter((v) => v.status === "em_analise");
-  const reviewed = state.verifications.filter((v) => v.status !== "em_analise");
+  const pending = verifications.filter((v) => v.status === "em_analise");
+  const reviewed = verifications.filter((v) => v.status !== "em_analise");
   const attention = (communitiesQuery.data ?? []).filter((c) => c.status !== "ativa");
 
   return (
@@ -179,6 +176,7 @@ function VerificationCard({
   reviewer: { id: string; name: string };
 }) {
   const { t } = useI18n();
+  const refresh = useRefreshProfessionals();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -244,6 +242,7 @@ function VerificationCard({
                     approve: false,
                     reason,
                   });
+                  await refresh();
                   toast.success(t("admin.rejectedToast"));
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : t("reset.error"));
@@ -269,6 +268,7 @@ function VerificationCard({
             onClick={async () => {
               try {
                 await reviewVerification({ requestId: v.id, reviewer, approve: true });
+                await refresh();
                 toast.success(`${v.fullName} ${t("admin.approvedToast")}`);
               } catch (err) {
                 toast.error(err instanceof Error ? err.message : t("reset.error"));

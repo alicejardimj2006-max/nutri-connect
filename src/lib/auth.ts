@@ -1,7 +1,6 @@
 import { t } from "./i18n";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
-import { syncCommunityWithRemote } from "./profile-sync";
 import type { ProfessionalInfo, ProfileRole } from "./community";
 
 // Autenticação via Supabase Auth. O usuário logado (perfil + dados privados)
@@ -109,7 +108,6 @@ export function initAuth(): Promise<void> {
     }
     ready = true;
     emit();
-    void syncCommunityWithRemote();
     syncTrails(currentUser?.id);
     supabase.auth.onAuthStateChange((event, session) => {
       if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
@@ -119,7 +117,6 @@ export function initAuth(): Promise<void> {
           ? await fetchAuthUser(session.user.id, session.user.email ?? "")
           : null;
         emit();
-        void syncCommunityWithRemote(true);
         syncTrails(currentUser?.id);
       }, 0);
     });

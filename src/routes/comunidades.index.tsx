@@ -4,8 +4,7 @@ import { useMemo, useState } from "react";
 import { MessageCircle, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminPerson } from "@/components/person-chip";
-import { useCommunity } from "@/hooks/use-community";
-import { getProfessionalInfo } from "@/lib/community-admin";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
 import { CATEGORIES } from "@/lib/community";
 import type { RemoteCommunity } from "@/lib/social/communities";
 import { useCommunities } from "@/lib/social/communities-queries";
@@ -135,15 +134,14 @@ function ComunidadesPage() {
 }
 
 function CommunityCard({ community: c }: { community: RemoteCommunity }) {
-  // Dados de profissional (profissão, conselho) ainda vêm do espelho local.
-  const { profiles } = useCommunity();
+  const professionals = useProfessionalMap();
   const { t } = useI18n();
   const STATUS_LABEL = {
     pendente: t("comunidades.status.pendente"),
     suspensa: t("comunidades.status.suspensa"),
   } as const;
   const isMember = c.isMember;
-  const pro = c.professionalId ? getProfessionalInfo(profiles, c.professionalId) : undefined;
+  const pro = c.professionalId ? professionals.map.get(c.professionalId)?.info : undefined;
 
   const coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
 

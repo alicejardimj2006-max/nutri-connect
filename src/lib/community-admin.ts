@@ -1,26 +1,10 @@
 import { t } from "./i18n";
-// Governança: verificação de profissionais e administração das comunidades
-// (um admin usuário + um admin profissional, sempre os dois).
+// Verificação de profissionais. A administração das comunidades (convites, candidatos,
+// indicação de admin) mora no banco: ver src/lib/social/communities.ts.
 
-import {
-  loadState,
-  saveState,
-  isCommunityAdmin,
-  type Actor,
-  type Community,
-  type CommunityState,
-  type ProfessionalInfo,
-  type PublicProfile,
-  type VerificationRequest,
-} from "@/lib/community";
+import type { VerificationRequest } from "@/lib/community";
 import type { AuthUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { syncRemoteProfiles, syncVerifications } from "@/lib/profile-sync";
-
-/** Quantos profissionais (os mais habilitados) recebem o convite de uma comunidade. */
-export const INVITE_LIMIT = 5;
-/** Quantos membros mais engajados a plataforma considera ao indicar um novo admin usuário. */
-export const CANDIDATE_LIMIT = 5;
 
 export const PROFESSIONS = [
   { label: "Nutricionista", council: "CRN" },
@@ -66,30 +50,9 @@ export function isPlatformAdmin(user: Pick<AuthUser, "isAdmin"> | null | undefin
   return !!user?.isAdmin;
 }
 
-function update(fn: (state: CommunityState) => CommunityState) {
-  saveState(fn(loadState()));
-}
-
-function newId() {
-  return typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
-}
-
 // ---------------------------------------------------------------------------
-// Perfil profissional e verificação
+// Pedidos de verificação
 // ---------------------------------------------------------------------------
-
-export function isVerifiedProfessional(profiles: PublicProfile[], userId: string): boolean {
-  return profiles.find((p) => p.userId === userId)?.role === "profissional";
-}
-
-export function getProfessionalInfo(
-  profiles: PublicProfile[],
-  userId: string,
-): ProfessionalInfo | undefined {
-  return profiles.find((p) => p.userId === userId)?.professional;
-}
 
 /** Pedido mais recente de uma pessoa. */
 export function getLatestVerification(
@@ -128,13 +91,13 @@ async function uploadVerificationImage(userId: string, name: string, dataUrl: st
 
 /** Envia o pedido (imagens vão para o bucket privado verification-docs). */
 export async function submitVerification(input: VerificationInput) {
-  const state = loadState();
-  if (isVerifiedProfessional(state.profiles, input.userId)) {
-    throw new Error(t("err.alreadyPro"));
-  }
-  if (getLatestVerification(state.verifications, input.userId)?.status === "em_analise") {
-    throw new Error(t("err.pendingRequest"));
-  }
+  // O banco recusa pedido repetido em análise e de quem já é profissional (erro 23505 abaixo).
+  const { data: already } = await supabase
+    .from("professionals")
+    .select("user_id")
+    .eq("user_id", input.userId)
+    .maybeSingle();
+  if (already) throw new Error(t("err.alreadyPro"));
   const [documentPath, selfiePath] = await Promise.all([
     uploadVerificationImage(input.userId, "documento", input.documentImage),
     uploadVerificationImage(input.userId, "selfie", input.selfieImage),
@@ -155,13 +118,12 @@ export async function submitVerification(input: VerificationInput) {
   if (error) {
     throw new Error(error.code === "23505" ? t("err.pendingRequest") : error.message);
   }
-  await syncVerifications();
 }
 
 /** Aprova ou recusa um pedido. Aprovado, o perfil vira profissional verificado. */
 export async function reviewVerification(input: {
   requestId: string;
-  reviewer: Actor;
+  reviewer: { id: string; name: string };
   approve: boolean;
   reason?: string;
 }) {
@@ -171,214 +133,4 @@ export async function reviewVerification(input: {
     p_reason: input.approve ? undefined : input.reason?.trim() || undefined,
   });
   if (error) throw new Error(error.message);
-  await Promise.all([syncVerifications(true), syncRemoteProfiles()]);
-}
-
-// ---------------------------------------------------------------------------
-// Administração das comunidades
-// ---------------------------------------------------------------------------
-
-export function needsProfessional(c: Community): boolean {
-  return !c.professionalId && (c.status === "pendente" || c.status === "suspensa");
-}
-
-export function needsAdminUser(c: Community): boolean {
-  return !c.adminUserId && c.status === "suspensa";
-}
-
-export function getAdministeredCommunity(
-  userId: string,
-  communities: Community[],
-): Community | undefined {
-  return communities.find((c) => c.adminUserId === userId || c.professionalId === userId);
-}
-
-export interface RankedProfessional {
-  profile: PublicProfile;
-  score: number;
-  matchesTopic: boolean;
-}
-
-/**
- * Profissionais mais habilitados para o tema de uma comunidade: quem atua na
- * categoria dela vem primeiro (desempate por atividade na rede). Só entram
- * profissionais verificados que ainda não administram outra comunidade. Se
- * ninguém atua no tema, a plataforma indica os mais ativos, para a comunidade
- * não ficar parada.
- */
-export function rankProfessionalsFor(
-  community: Community,
-  state: Pick<CommunityState, "profiles" | "communities" | "posts">,
-): RankedProfessional[] {
-  const eligible = state.profiles
-    .filter((p) => p.role === "profissional")
-    .filter((p) => !isCommunityAdmin(p.userId, state.communities))
-    .filter((p) => !community.formerProfessionalIds?.includes(p.userId))
-    .map((profile) => {
-      const matchesTopic = !!profile.professional?.specialties.includes(community.category);
-      const activity = Math.min(
-        20,
-        state.posts.filter((post) => post.authorId === profile.userId).length,
-      );
-      return { profile, matchesTopic, score: (matchesTopic ? 100 : 0) + activity };
-    })
-    .sort((a, b) => b.score - a.score);
-
-  const matching = eligible.filter((r) => r.matchesTopic);
-  return (matching.length > 0 ? matching : eligible).slice(0, INVITE_LIMIT);
-}
-
-/** Comunidades que estão convidando este profissional para ser admin profissional. */
-export function getProfessionalInvites(
-  userId: string,
-  state: Pick<CommunityState, "profiles" | "communities" | "posts">,
-): Community[] {
-  return state.communities.filter(
-    (c) =>
-      needsProfessional(c) &&
-      rankProfessionalsFor(c, state).some((r) => r.profile.userId === userId),
-  );
-}
-
-function reactivateIfComplete(c: Community): Community {
-  return c.adminUserId && c.professionalId ? { ...c, status: "ativa" } : c;
-}
-
-/** O profissional aceita ser admin: se a comunidade estava completa de novo, ela passa a existir. */
-export function acceptProfessionalInvite(communityId: string, actor: Actor) {
-  const state = loadState();
-  const community = state.communities.find((c) => c.id === communityId);
-  if (!community || !needsProfessional(community)) {
-    throw new Error(t("err.noLongerSeeking"));
-  }
-  if (!isVerifiedProfessional(state.profiles, actor.id)) {
-    throw new Error(t("err.onlyVerified"));
-  }
-  if (isCommunityAdmin(actor.id, state.communities)) {
-    throw new Error(t("err.alreadyAdmin"));
-  }
-  if (!rankProfessionalsFor(community, state).some((r) => r.profile.userId === actor.id)) {
-    throw new Error(t("err.notInvited"));
-  }
-
-  saveState({
-    ...state,
-    communities: state.communities.map((c) =>
-      c.id === communityId
-        ? reactivateIfComplete({
-            ...c,
-            professionalId: actor.id,
-            professionalName: actor.name,
-            members: c.members.some((m) => m.userId === actor.id)
-              ? c.members
-              : [
-                  ...c.members,
-                  { userId: actor.id, name: actor.name, joinedAt: new Date().toISOString() },
-                ],
-          })
-        : c,
-    ),
-  });
-}
-
-/**
- * Admin deixa a administração (e a comunidade).
- * - Admin usuário de uma comunidade ainda pendente: a comunidade é cancelada.
- * - Caso contrário a comunidade fica suspensa até a plataforma repor o admin.
- */
-export function leaveAsAdmin(communityId: string, actor: Actor) {
-  update((s) => {
-    const community = s.communities.find((c) => c.id === communityId);
-    if (!community) return s;
-    const isUser = community.adminUserId === actor.id;
-    const isPro = community.professionalId === actor.id;
-    if (!isUser && !isPro) return s;
-
-    if (isUser && community.status === "pendente") {
-      return { ...s, communities: s.communities.filter((c) => c.id !== communityId) };
-    }
-
-    return {
-      ...s,
-      communities: s.communities.map((c) =>
-        c.id === communityId
-          ? {
-              ...c,
-              adminUserId: isUser ? undefined : c.adminUserId,
-              adminUserName: isUser ? undefined : c.adminUserName,
-              professionalId: isPro ? undefined : c.professionalId,
-              professionalName: isPro ? undefined : c.professionalName,
-              formerProfessionalIds: isPro
-                ? [...(c.formerProfessionalIds ?? []), actor.id]
-                : c.formerProfessionalIds,
-              status: "suspensa" as const,
-              members: c.members.filter((m) => m.userId !== actor.id),
-            }
-          : c,
-      ),
-    };
-  });
-}
-
-export interface EngagedMember {
-  userId: string;
-  name: string;
-  score: number;
-  posts: number;
-  comments: number;
-  supports: number;
-}
-
-/** Membros mais engajados da comunidade (candidatos a novo admin usuário). */
-export function rankEngagedMembers(
-  community: Community,
-  state: Pick<CommunityState, "profiles" | "communities" | "posts">,
-): EngagedMember[] {
-  const communityPosts = state.posts.filter((p) => p.communityId === community.id);
-  return community.members
-    .filter((m) => !isVerifiedProfessional(state.profiles, m.userId))
-    .filter((m) => !isCommunityAdmin(m.userId, state.communities))
-    .map((m) => {
-      const posts = communityPosts.filter((p) => p.authorId === m.userId).length;
-      const comments = communityPosts.reduce(
-        (n, p) => n + p.comments.filter((c) => c.authorId === m.userId).length,
-        0,
-      );
-      const supports = communityPosts.filter((p) => p.supports.includes(m.userId)).length;
-      return {
-        userId: m.userId,
-        name: m.name,
-        posts,
-        comments,
-        supports,
-        score: posts * 3 + comments * 2 + supports,
-      };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, CANDIDATE_LIMIT);
-}
-
-/** A plataforma indica o novo admin usuário de uma comunidade suspensa. */
-export function designateAdminUser(communityId: string, userId: string) {
-  const state = loadState();
-  const community = state.communities.find((c) => c.id === communityId);
-  if (!community || !needsAdminUser(community)) {
-    throw new Error(t("err.noNewAdmin"));
-  }
-  const candidate = rankEngagedMembers(community, state).find((m) => m.userId === userId);
-  if (!candidate) {
-    throw new Error(t("err.notEligible"));
-  }
-  saveState({
-    ...state,
-    communities: state.communities.map((c) =>
-      c.id === communityId
-        ? reactivateIfComplete({
-            ...c,
-            adminUserId: candidate.userId,
-            adminUserName: candidate.name,
-          })
-        : c,
-    ),
-  });
 }
