@@ -12,6 +12,7 @@ import { RelationshipActions } from "@/components/relationship-actions";
 import { VerifiedBadge } from "@/components/person-chip";
 import { initials } from "@/lib/community";
 import { useSearchUsers } from "@/lib/social/queries";
+import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({
@@ -34,12 +35,18 @@ const PEOPLE_PAGE = 20;
 function ExplorarPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { posts, challenges, weeklyTheme, communities } = useCommunity();
+  const { challenges, weeklyTheme, communities } = useCommunity();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [onlyPros, setOnlyPros] = useState(false);
   const [peopleLimit, setPeopleLimit] = useState(PEOPLE_PAGE);
+  // Receitas e experiências: a busca (sem acento, sem diferença de maiúsculas) roda no banco.
+  const postsFeed = useFeed(
+    { scope: "todos", query: debouncedQuery || undefined, limit: 50 },
+    !!user,
+  );
+  useFeedRealtime(user?.id);
 
   // A pesquisa de pessoas espera a pessoa parar de digitar (e volta à 1ª página).
   useEffect(() => {
@@ -80,14 +87,7 @@ function ExplorarPage() {
   const q = query.toLowerCase().trim();
 
   // Filtragem
-  const matchingPosts = posts.filter(
-    (p) =>
-      !q ||
-      p.title?.toLowerCase().includes(q) ||
-      p.text.toLowerCase().includes(q) ||
-      p.tags?.some((tag) => tag.toLowerCase().includes(q)) ||
-      p.authorName.toLowerCase().includes(q),
-  );
+  const matchingPosts = postsFeed.data ?? [];
 
   const matchingRecipes = matchingPosts.filter((p) => p.type === "receita");
   const matchingExperiences = matchingPosts.filter((p) => p.type === "experiencia");

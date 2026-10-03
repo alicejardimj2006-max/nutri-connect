@@ -93,13 +93,6 @@ export function EspacoLeftColumn() {
   );
   const pct = Math.min(100, Math.round((lvl.xpInLevel / lvl.xpForNext) * 100));
 
-  const shortcuts: { to: string; icon: ReactNode; label: DictKey }[] = [
-    { to: "/receitas", icon: <ChefHat className="h-4 w-4" />, label: "hub.shortcut.recipes" },
-    { to: "/explorar", icon: <Compass className="h-4 w-4" />, label: "hub.shortcut.explore" },
-    { to: "/tema-da-semana", icon: <Sparkles className="h-4 w-4" />, label: "hub.shortcut.weekly" },
-    { to: "/desafios", icon: <Award className="h-4 w-4" />, label: "hub.shortcut.challenges" },
-  ];
-
   return (
     <aside className="space-y-5 text-left">
       <section className="overflow-hidden rounded-3xl border border-border/80 bg-card shadow-xs">
@@ -182,22 +175,6 @@ export function EspacoLeftColumn() {
             </Link>
           </div>
         )}
-      </Panel>
-
-      <Panel title={t("hub.shortcuts")}>
-        <ul className="grid grid-cols-2 gap-2">
-          {shortcuts.map((s) => (
-            <li key={s.to}>
-              <Link
-                to={s.to}
-                className="flex items-center gap-2 rounded-xl bg-secondary/50 px-3 py-2.5 text-xs font-semibold text-foreground transition hover:bg-secondary"
-              >
-                <span className="text-accent">{s.icon}</span>
-                {t(s.label)}
-              </Link>
-            </li>
-          ))}
-        </ul>
       </Panel>
     </aside>
   );

@@ -10,6 +10,8 @@ import {
   Send,
   HelpCircle,
   Award,
+  Trash2,
+  Lock,
 } from "lucide-react";
 import { Fragment, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -26,6 +28,12 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunity } from "@/hooks/use-community";
+import {
+  useAddComment,
+  useDeleteComment,
+  useDeletePost,
+  useToggleReaction,
+} from "@/lib/social/feed-queries";
 import {
   type Post,
   type PostBlock,
@@ -52,8 +60,17 @@ export function PostCard({ post }: PostCardProps) {
   const { communities, profiles } = useCommunity();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Posts vindos do banco têm "audience"; os de comunidade ainda são locais (Etapa 4).
+  const remote = post.audience !== undefined;
+  const toggleReaction = useToggleReaction();
+  const addRemoteComment = useAddComment();
+  const deleteRemoteComment = useDeleteComment();
+  const deleteRemotePost = useDeletePost();
 
   const currentUserId = user?.id || "guest";
+  const isOwnPost = !!user && post.authorId === user.id;
   const hasSupported = (post.supports || []).includes(currentUserId);
   const supportCount = (post.supports || []).length;
 
@@ -65,7 +82,16 @@ export function PostCard({ post }: PostCardProps) {
       toast.info(t("common.loginToSupport"));
       return;
     }
-    toggleSupport(post.id, user.id);
+    if (remote) {
+      toggleReaction.mutate({
+        postId: post.id,
+        kind: "apoiar",
+        on: !hasSupported,
+        userId: user.id,
+      });
+    } else {
+      toggleSupport(post.id, user.id);
+    }
   };
 
   const handlePrepared = () => {
@@ -73,13 +99,22 @@ export function PostCard({ post }: PostCardProps) {
       toast.info(t("common.loginToPrepared"));
       return;
     }
-    togglePrepared(post.id, user.id);
+    if (remote) {
+      toggleReaction.mutate({
+        postId: post.id,
+        kind: "preparei",
+        on: !hasPrepared,
+        userId: user.id,
+      });
+    } else {
+      togglePrepared(post.id, user.id);
+    }
     if (!hasPrepared) {
       toast.success(t("postcard.preparedSuccess"));
     }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.info(t("common.loginToComment"));
@@ -89,7 +124,11 @@ export function PostCard({ post }: PostCardProps) {
     if (!trimmed) return;
 
     try {
-      addComment(post.id, { id: user.id, name: user.name }, trimmed);
+      if (remote) {
+        await addRemoteComment.mutateAsync({ postId: post.id, text: trimmed });
+      } else {
+        addComment(post.id, { id: user.id, name: user.name }, trimmed);
+      }
       setCommentText("");
       toast.success(t("postcard.commentPublished"));
     } catch (err) {
@@ -106,8 +145,9 @@ export function PostCard({ post }: PostCardProps) {
   }
 
   const avatarImage = getAvatarSrc(post.authorId, post.authorAvatar);
-  const authorIsProfessional =
-    profiles.find((p) => p.userId === post.authorId)?.role === "profissional";
+  const authorIsProfessional = post.authorRole
+    ? post.authorRole === "profissional"
+    : profiles.find((p) => p.userId === post.authorId)?.role === "profissional";
 
   const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
 
@@ -139,9 +179,48 @@ export function PostCard({ post }: PostCardProps) {
           </div>
           <p className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-1">
             {formatDate(post.createdAt)}
+            {post.audience === "amigos" && (
+              <span className="inline-flex items-center gap-0.5" title={t("sm.audience.friends")}>
+                · <Lock className="h-3 w-3" /> {t("sm.audience.friends")}
+              </span>
+            )}
           </p>
         </div>
       </div>
+
+      {remote && isOwnPost && (
+        <div className="shrink-0">
+          {confirmDelete ? (
+            <span className="flex items-center gap-1.5 text-[11px]">
+              <button
+                type="button"
+                disabled={deleteRemotePost.isPending}
+                onClick={() => deleteRemotePost.mutate(post.id)}
+                className="rounded-full bg-destructive px-2.5 py-1 font-semibold text-white disabled:opacity-60 cursor-pointer"
+              >
+                {t("cf.removePost")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-full border border-border px-2.5 py-1 font-semibold text-foreground cursor-pointer"
+              >
+                {t("common.cancel")}
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              aria-label={t("cf.removePost")}
+              title={t("cf.removePost")}
+              className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-destructive cursor-pointer"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
 
       {community && (
         <Link
@@ -176,8 +255,20 @@ export function PostCard({ post }: PostCardProps) {
                   <span className="flex items-center gap-1 text-xs font-bold text-foreground">
                     {c.authorName}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     {formatDate(c.createdAt)}
+                    {remote && user && (c.authorId === user.id || isOwnPost) && (
+                      <button
+                        type="button"
+                        disabled={deleteRemoteComment.isPending}
+                        onClick={() => deleteRemoteComment.mutate(c.id)}
+                        aria-label={t("cf.removeComment")}
+                        title={t("cf.removeComment")}
+                        className="text-muted-foreground transition hover:text-destructive cursor-pointer"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-foreground/90">{c.text}</p>

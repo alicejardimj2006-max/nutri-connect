@@ -145,6 +145,16 @@
   * {
     border-color: var(--color-border);
   }
+  /* Sem barras de rolagem visíveis em nenhuma parte do site (a rolagem segue funcionando
+     por mouse, toque e teclado). A classe .no-scrollbar, usada em alguns componentes, não
+     precisa de regra própria: este seletor global já cobre todos os elementos. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
   /* Textos corridos dos cards ficam justificados. Vive no layer base com :where() (especificidade
      zero) para que utilitários como text-center e text-left continuem podendo sobrescrever. */
   :where(article, [class*="bg-card"]):not(footer) :is(p, li, dd) {

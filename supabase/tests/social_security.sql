@@ -22,6 +22,8 @@ declare
   post_amigos uuid;
   post_publico_c uuid;
   post_oculto uuid;
+  post_f uuid;
+  post_p uuid;
   res jsonb := '[]'::jsonb;
   r text;
   tbl text;
@@ -74,6 +76,9 @@ begin
   insert into public.posts (author_id, body, hidden) values (b, 'post oculto por moderação', false)
     returning id into post_oculto;
   update public.posts set hidden = true where id = post_oculto;
+  insert into public.posts (author_id, body) values (f, 'post público de F') returning id into post_f;
+  insert into public.posts (author_id, body) values (p, 'post público do profissional') returning id into post_p;
+  insert into public.comments (post_id, author_id, body) values (post_f, c, 'comentário da Carla (perfil privado)');
 
   -- --------------------------------------------------------------- ANÔNIMO
   foreach tbl in array array['profile_private','professionals','posts','comments','friendships',
@@ -341,6 +346,83 @@ begin
   res := res || jsonb_build_object('teste', 'log_search registra termo de uma palavra que não é nome completo',
     'ok', exists (select 1 from public.search_term_stats where term = 'zzqx'),
     'obtido', 'verificado como superusuário');
+
+  -- ------------------------------------------------------------------ get_feed
+  r := pg_temp.as_user(a, 'authenticated', format('select author_name from public.get_feed(p_scope := ''todos'') where id = %L', post_f));
+  res := res || jsonb_build_object('teste', 'feed mostra o autor de um post público', 'ok', (r like '%Fabio%'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select comments -> 0 ->> ''author_name'' from public.get_feed(p_scope := ''todos'') where id = %L', post_f));
+  res := res || jsonb_build_object('teste', 'comentário de autor PRIVADO continua no feed (nome do cartão)', 'ok', (r like '%Carla%'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''post'', p_post := %L)', post_f));
+  res := res || jsonb_build_object('teste', 'escopo post devolve a publicação pedida', 'ok', (r = '1'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''post'', p_post := %L)', post_amigos));
+  res := res || jsonb_build_object('teste', 'escopo post NÃO devolve post que a pessoa não pode ver', 'ok', (r = '0'), 'obtido', r);
+
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''amigos'') where id = %L', post_amigos));
+  res := res || jsonb_build_object('teste', 'escopo amigos mostra post de amigo', 'ok', (r = '1'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''amigos'') where id = %L', post_amigos));
+  res := res || jsonb_build_object('teste', 'escopo amigos NÃO mostra post de quem não é amigo', 'ok', (r = '0'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''seguindo'') where id = %L', post_p));
+  res := res || jsonb_build_object('teste', 'escopo seguindo mostra post de profissional seguido', 'ok', (r = '1'), 'obtido', r);
+
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''seguindo'') where id = %L', post_p));
+  res := res || jsonb_build_object('teste', 'escopo seguindo NÃO mostra profissional que não sigo', 'ok', (r = '0'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.post_reactions (post_id, user_id, kind) values (%L, %L, ''apoiar'')', post_f, a));
+  res := res || jsonb_build_object('teste', 'pessoa apoia um post público', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(b, 'authenticated', format('select cardinality(supports) from public.get_feed(p_scope := ''todos'') where id = %L', post_f));
+  res := res || jsonb_build_object('teste', 'feed reflete o apoio de outra pessoa', 'ok', (r = '1'), 'obtido', r);
+
+  r := pg_temp.as_user(d, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''todos'') where id = %L', post_amigos));
+  res := res || jsonb_build_object('teste', 'feed NÃO mostra post de quem bloqueou o leitor', 'ok', (r = '0'), 'obtido', r);
+
+  r := pg_temp.as_user(null, 'anon', 'select count(*) from public.get_feed()');
+  res := res || jsonb_build_object('teste', 'anon NÃO usa o feed', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''todos'', p_query := ''PÚBLICO do profissional'') where id = %L', post_p));
+  res := res || jsonb_build_object('teste', 'busca no feed ignora acento e caixa', 'ok', (r = '1'), 'obtido', r);
+
+  -- ------------------------------------------------------------------ publicar
+  r := pg_temp.as_user(f, 'authenticated', format(
+    'insert into public.posts (author_id, type, title, body, tags, audience, recipe, block_order) values (%L, ''receita'', ''Bolo'', ''modo de fazer'', array[''bolo''], ''amigos'', ''{"prepTime":"30 min","servings":"4","difficulty":"Fácil","ingredients":["ovo"],"steps":["misturar"],"category":"Doces"}''::jsonb, array[''title'',''image'',''text'',''recipe''])', f));
+  res := res || jsonb_build_object('teste', 'pessoa publica receita só para amigos (recipe + block_order)', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.posts (author_id, body) values (%L, ''fingindo ser B'')', b));
+  res := res || jsonb_build_object('teste', 'NÃO publica como outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.posts (author_id, body, hidden, pinned) values (%L, ''tentando forçar'', true, true)', a));
+  res := res || jsonb_build_object('teste', 'publicação nasce sem hidden/pinned mesmo se a pessoa tentar forçar', 'ok', (r = 'OK:1'
+    and not exists (select 1 from public.posts where body = 'tentando forçar' and (hidden or pinned))), 'obtido', r);
+
+  r := pg_temp.as_user(a, 'authenticated', format('insert into storage.objects (bucket_id, name, owner) values (''post-images'', ''%s/foto.jpg'', %L)', a, a));
+  res := res || jsonb_build_object('teste', 'pessoa envia imagem para a PRÓPRIA pasta', 'ok', (r = 'OK:1'), 'obtido', left(r, 90));
+
+  r := pg_temp.as_user(a, 'authenticated', format('insert into storage.objects (bucket_id, name, owner) values (''post-images'', ''%s/foto.jpg'', %L)', b, a));
+  res := res || jsonb_build_object('teste', 'pessoa NÃO envia imagem para a pasta de outra', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  r := pg_temp.as_user(null, 'anon', format('insert into storage.objects (bucket_id, name) values (''post-images'', ''%s/x.jpg'')', a));
+  res := res || jsonb_build_object('teste', 'anon NÃO envia imagem', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''autor'', p_author := %L, p_type := ''receita'')', f));
+  res := res || jsonb_build_object('teste', 'receita só-amigos de F NÃO aparece para A (não são amigos)', 'ok', (r = '0'), 'obtido', r);
+
+  -- ------------------------------------------------------- escopo preparados
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.post_reactions (post_id, user_id, kind) values (%L, %L, ''preparei'')', post_f, a));
+  res := res || jsonb_build_object('teste', 'pessoa marca "Eu preparei"', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''preparados'', p_author := %L) where id = %L', a, post_f));
+  res := res || jsonb_build_object('teste', 'escopo preparados lista o que A preparou (visto por B)', 'ok', (r = '1'), 'obtido', r);
+
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''preparados'', p_author := %L)', f));
+  res := res || jsonb_build_object('teste', 'escopo preparados NÃO lista quem F não preparou', 'ok', (r = '0'), 'obtido', r);
+
+  r := pg_temp.as_user(d, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''preparados'', p_author := %L)', a));
+  res := res || jsonb_build_object('teste', 'escopo preparados respeita bloqueio (D não vê nada de A)', 'ok', (r = '0' or r like 'ERRO%'), 'obtido', r);
 
   -- ---------------------------------------------- BLOQUEAR LIMPA RELAÇÕES
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', b, a));

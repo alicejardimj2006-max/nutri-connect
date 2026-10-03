@@ -3,7 +3,7 @@ import { Sparkles, Plus, Heart, MessageSquare } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import { useCommunity } from "@/hooks/use-community";
+import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 
@@ -24,11 +24,13 @@ export const Route = createFileRoute("/experiencias")({
 function ExperienciasPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { posts, hydrated } = useCommunity();
+  const feed = useFeed({ scope: "todos", type: "experiencia", limit: 100 }, !!user);
+  useFeedRealtime(user?.id);
+  const hydrated = !feed.isLoading;
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
-  const experiences = posts.filter((p) => p.type === "experiencia");
+  const experiences = feed.data ?? [];
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">

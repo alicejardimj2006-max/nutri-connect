@@ -16,13 +16,14 @@ import {
   SlidersHorizontal,
   Eye,
   Users,
+  Globe,
+  Lock,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
   CATEGORIES,
   createCommunity,
-  createCommunityPost,
   initials,
   isCommunityAdmin,
   normalizeBlockOrder,
@@ -40,6 +41,8 @@ import {
 } from "@/components/ui/dialog";
 import { ImageEditor, type ImageEdits } from "@/components/image-editor";
 import { PostCard } from "@/components/community-cards";
+import { useActiveTheme, useCreatePost } from "@/lib/social/feed-queries";
+import type { PostAudience } from "@/lib/social/feed";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 
@@ -275,6 +278,12 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
 
   const [isCommunity, setIsCommunity] = useState(false);
 
+  // Quem pode ver e participação no tema da semana (só para publicações, não para comunidades).
+  const [audience, setAudience] = useState<PostAudience>("publico");
+  const [joinTheme, setJoinTheme] = useState(false);
+  const activeTheme = useActiveTheme(open && !isCommunity);
+  const createPost = useCreatePost();
+
   // Ordem em que título, foto, texto e detalhes da receita aparecem na publicação
   const [blockOrder, setBlockOrder] = useState<PostBlock[]>(DEFAULT_ORDER);
   const formRef = useRef<HTMLFormElement>(null);
@@ -487,6 +496,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     setStepsText("");
     setType("experiencia");
     setIsCommunity(false);
+    setAudience("publico");
+    setJoinTheme(false);
     setObjective("");
     setCommunityCategory(CATEGORIES[0]);
     setPrepTime("");
@@ -548,7 +559,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     blockOrder: normalizeBlockOrder(blockOrder, DEFAULT_ORDER),
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.error(t("sm.needLogin"));
@@ -590,18 +601,17 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
     const recipeData = buildRecipeData();
 
     try {
-      createCommunityPost({
+      // A publicação (e a foto, enviada ao Storage) vai para o Supabase.
+      await createPost.mutateAsync({
         type,
-        actor: {
-          id: user.id,
-          name: user.name,
-        },
         title: title.trim() || undefined,
         text: text.trim(),
         tags: tags.length > 0 ? tags : [type],
         image,
         recipeData,
         blockOrder: normalizeBlockOrder(blockOrder, DEFAULT_ORDER),
+        audience,
+        themeId: joinTheme && activeTheme.data ? activeTheme.data.id : undefined,
       });
 
       toast.success(t("sm.published"));
@@ -973,23 +983,92 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
                 </PinnedCard>
               </>
             ) : (
-              <PinnedCard
-                icon={Tag}
-                theme="warning"
-                label={t("sm.tags")}
-                hint={t("sm.tagsHint")}
-                rotate="rotate-2"
-                className="sm:col-span-2 lg:col-span-2"
-                order={10}
-              >
-                <input
-                  type="text"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder={t("sm.phTags")}
-                  className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-warning transition"
-                />
-              </PinnedCard>
+              <>
+                <PinnedCard
+                  icon={Eye}
+                  theme="olive"
+                  label={t("sm.audience.title")}
+                  rotate="-rotate-1"
+                  className="sm:col-span-2 lg:col-span-2"
+                  order={10}
+                >
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {(
+                      [
+                        {
+                          id: "publico",
+                          icon: Globe,
+                          label: "sm.audience.public",
+                          hint: "sm.audience.publicHint",
+                        },
+                        {
+                          id: "amigos",
+                          icon: Lock,
+                          label: "sm.audience.friends",
+                          hint: "sm.audience.friendsHint",
+                        },
+                      ] as const
+                    ).map((opt) => {
+                      const Icon = opt.icon;
+                      const active = audience === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => setAudience(opt.id)}
+                          className={`flex flex-col items-center gap-1 rounded-xl border p-2.5 text-center text-xs transition cursor-pointer ${
+                            active
+                              ? "border-chart-3 bg-chart-3 font-bold text-white shadow-md"
+                              : "border-border bg-card text-muted-foreground hover:bg-secondary"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{t(opt.label)}</span>
+                          <span
+                            className={`text-[10px] ${active ? "text-white/85" : "text-muted-foreground"}`}
+                          >
+                            {t(opt.hint)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {activeTheme.data && (
+                    <label className="mt-3 flex cursor-pointer items-start gap-2 text-xs text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={joinTheme}
+                        onChange={(e) => setJoinTheme(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]"
+                      />
+                      <span>
+                        <span className="font-semibold">{t("sm.joinTheme")}</span>
+                        <span className="block text-[11px] text-muted-foreground">
+                          {activeTheme.data.title}
+                        </span>
+                      </span>
+                    </label>
+                  )}
+                </PinnedCard>
+                <PinnedCard
+                  icon={Tag}
+                  theme="warning"
+                  label={t("sm.tags")}
+                  hint={t("sm.tagsHint")}
+                  rotate="rotate-2"
+                  className="sm:col-span-2 lg:col-span-2"
+                  order={10}
+                >
+                  <input
+                    type="text"
+                    value={tagsInput}
+                    onChange={(e) => setTagsInput(e.target.value)}
+                    placeholder={t("sm.phTags")}
+                    className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-warning transition"
+                  />
+                </PinnedCard>
+              </>
             )}
 
             {/* Ação: o próprio "publicar" é um recorte do mural */}
@@ -1003,10 +1082,17 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
               </p>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-accent shadow-soft transition-transform hover:scale-[1.04] cursor-pointer"
+                disabled={createPost.isPending}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-accent shadow-soft transition-transform hover:scale-[1.04] cursor-pointer disabled:cursor-wait disabled:opacity-70"
               >
                 <Send className="h-4 w-4" />
-                <span>{isCommunity ? t("sm.createCommunity") : t("sm.publishToday")}</span>
+                <span>
+                  {createPost.isPending
+                    ? t("sm.publishing")
+                    : isCommunity
+                      ? t("sm.createCommunity")
+                      : t("sm.publishToday")}
+                </span>
               </button>
               {!isCommunity && (
                 <button

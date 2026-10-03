@@ -3,8 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChefHat, Clock, Plus, Search, Filter, Sparkles, Heart } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import { useCommunity } from "@/hooks/use-community";
-import { RECIPE_CATEGORIES, togglePrepared, toggleSupport } from "@/lib/community";
+import { RECIPE_CATEGORIES } from "@/lib/community";
+import { useFeed, useFeedRealtime, useToggleReaction } from "@/lib/social/feed-queries";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { ShareModal } from "@/components/share-modal";
@@ -27,13 +27,17 @@ export const Route = createFileRoute("/receitas")({
 function ReceitasPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { posts, hydrated } = useCommunity();
+  // As receitas vêm do banco (só as que esta pessoa pode ver); o contador de "Eu preparei" é real.
+  const feed = useFeed({ scope: "todos", type: "receita", limit: 100 }, !!user);
+  const toggleReaction = useToggleReaction();
+  useFeedRealtime(user?.id);
+  const hydrated = !feed.isLoading;
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [searchTerm, setSearchTerm] = useState("");
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
-  const recipes = posts.filter((p) => p.type === "receita");
+  const recipes = feed.data ?? [];
 
   const filteredRecipes = recipes.filter((r) => {
     const matchesCategory =
@@ -50,7 +54,7 @@ function ReceitasPage() {
       toast.info(t("common.loginToPrepared"));
       return;
     }
-    togglePrepared(postId, user.id);
+    toggleReaction.mutate({ postId, kind: "preparei", on: !hasPrepared, userId: user.id });
     if (!hasPrepared) {
       toast.success(t("recipes.prepared.success"));
     }

@@ -37,6 +37,7 @@ import { fetchContactInfo, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { RelationshipActions } from "@/components/relationship-actions";
+import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { useBlocked, useBlockUser, usePublicProfile, useUnblockUser } from "@/lib/social/queries";
 import type { PublicProfile as RemoteProfile } from "@/lib/social/api";
 import {
@@ -72,11 +73,17 @@ function PublicProfilePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
   const state = useCommunity();
-  const { profiles, posts, communities, challenges, hydrated } = state;
+  const { profiles, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
   // Perfil, privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
   const remoteProfile = usePublicProfile(user ? userId : undefined);
   const blockedQuery = useBlocked();
+  // Publicações da pessoa e receitas que ela preparou: do banco, e só se este perfil pode ser visto
+  // (perfil privado de quem não é amigo não carrega nada).
+  const canSeeContent = !!user && remoteProfile.data?.can_view_content !== false;
+  const postsQuery = useFeed({ scope: "autor", author: userId, limit: 50 }, canSeeContent);
+  const preparedQuery = useFeed({ scope: "preparados", author: userId, limit: 50 }, canSeeContent);
+  useFeedRealtime(user?.id);
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
 
@@ -124,12 +131,8 @@ function PublicProfilePage() {
   const username = remote?.username;
   const avatarUrl = isSelf ? user?.avatarUrl : (remote?.avatar_url ?? undefined);
 
-  const myPosts = posts
-    .filter((p) => p.authorId === userId)
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-  const preparedRecipes = posts.filter(
-    (p) => p.type === "receita" && (p.preparedBy || []).includes(userId),
-  );
+  const myPosts = postsQuery.data ?? [];
+  const preparedRecipes = (preparedQuery.data ?? []).filter((p) => p.type === "receita");
   const myChallenges = challenges.filter((c) => c.participants.includes(userId));
   // Comunidade que a pessoa administra (uma por vez); pendentes só aparecem para ela mesma.
   const administered = getAdministeredCommunity(userId, communities);

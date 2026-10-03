@@ -3206,6 +3206,7 @@ export type Database = {
           p_before?: string
           p_community?: string
           p_limit?: number
+          p_post?: string
           p_query?: string
           p_scope?: string
           p_theme?: string

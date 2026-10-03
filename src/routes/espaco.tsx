@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Compass } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Compass, Sparkles } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
@@ -13,25 +12,36 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { getAuthorRole, type Post } from "@/lib/community";
-import { useFriends } from "@/lib/social/queries";
+import type { Post } from "@/lib/community";
+import { themeText } from "@/lib/social/feed";
+import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 
-type FeedTab = "geral" | "amigos" | "profissionais";
+// Duas páginas, cada uma separada da outra ao arrastar para o lado.
+type PageId = "geral" | "tema";
+// Filtros da página Geral: tudo, amigos, ou profissionais que a pessoa segue.
+type Filter = "todos" | "amigos" | "seguindo";
 
-const FEED_TAB_KEYS: { id: FeedTab; labelKey: DictKey }[] = [
+const PAGES: { id: PageId; labelKey: DictKey }[] = [
   { id: "geral", labelKey: "espaco.tab.geral" },
-  { id: "amigos", labelKey: "espaco.tab.amigos" },
-  { id: "profissionais", labelKey: "espaco.tab.profissionais" },
+  { id: "tema", labelKey: "weekly.badge" },
 ];
 
-const EMPTY_STATE_KEYS: Record<FeedTab, DictKey> = {
-  geral: "espaco.empty.geral",
+const FILTERS: { id: Filter; labelKey: DictKey }[] = [
+  { id: "todos", labelKey: "espaco.filter.all" },
+  { id: "amigos", labelKey: "espaco.tab.amigos" },
+  { id: "seguindo", labelKey: "espaco.tab.profissionais" },
+];
+
+const EMPTY_FILTER_KEYS: Record<Filter, DictKey> = {
+  todos: "espaco.empty.geral",
   amigos: "espaco.empty.amigos",
-  profissionais: "espaco.empty.profissionais",
+  seguindo: "espaco.empty.profissionais",
 };
+
+const PAGE_SIZE = 20;
 
 export const Route = createFileRoute("/espaco")({
   head: () => ({
@@ -53,162 +63,271 @@ export const Route = createFileRoute("/espaco")({
   component: EspacoDeHojePage,
 });
 
+function EmptyState({ message }: { message: string }) {
+  const { t } = useI18n();
+  return (
+    <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
+      <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
+      <p className="text-base text-muted-foreground font-medium mb-6">{message}</p>
+      <ShareModal
+        triggerButton={
+          <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
+            {t("espaco.firstPost")}
+          </button>
+        }
+      />
+    </div>
+  );
+}
+
+function PostList({
+  posts,
+  loading,
+  emptyMessage,
+  hasMore,
+  onMore,
+}: {
+  posts: Post[];
+  loading: boolean;
+  emptyMessage: string;
+  hasMore: boolean;
+  onMore: () => void;
+}) {
+  const { t } = useI18n();
+  if (loading && posts.length === 0) {
+    return (
+      <div className="py-12 text-center text-sm text-muted-foreground">{t("espaco.loading")}</div>
+    );
+  }
+  if (posts.length === 0) return <EmptyState message={emptyMessage} />;
+  return (
+    <>
+      <div className="space-y-8">
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+      {hasMore && (
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={onMore}
+            className="rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
+          >
+            {t("espaco.loadMore")}
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Navegação entre as duas páginas: fica no topo de cada página e some junto com a rolagem. */
+function PagesNav({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="mx-auto mb-4 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
+      {PAGES.map((page, index) => (
+        <button
+          key={page.id}
+          type="button"
+          onClick={() => onSelect(index)}
+          className={cn(
+            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+            active === index
+              ? "bg-secondary text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {t(page.labelKey)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function EspacoDeHojePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
-  const { t } = useI18n();
-  const { posts, profiles, hydrated } = useCommunity();
-  const friends = useFriends();
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const { t, locale } = useI18n();
+  const [activePage, setActivePage] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
-  // Guarda a posição de rolagem de cada aba para restaurar ao voltar,
-  // e começar do topo ao entrar numa aba ainda não visitada.
-  const scrollPositions = useRef<Record<FeedTab, number>>({
-    geral: 0,
-    amigos: 0,
-    profissionais: 0,
-  });
-  const activeTabRef = useRef<FeedTab>("geral");
+  const [filter, setFilter] = useState<Filter>("todos");
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const [themeLimit, setThemeLimit] = useState(PAGE_SIZE);
 
   useEffect(() => {
     if (!carouselApi) return;
-    setActiveTabIndex(carouselApi.selectedScrollSnap());
-
-    const onSelect = () => {
-      const newIndex = carouselApi.selectedScrollSnap();
-      const newTab = FEED_TAB_KEYS[newIndex].id;
-      const oldTab = activeTabRef.current;
-
-      setActiveTabIndex(newIndex);
-
-      if (newTab !== oldTab) {
-        scrollPositions.current[oldTab] = window.scrollY;
-        activeTabRef.current = newTab;
-        window.scrollTo(0, scrollPositions.current[newTab]);
-      }
-    };
-
+    setActivePage(carouselApi.selectedScrollSnap());
+    const onSelect = () => setActivePage(carouselApi.selectedScrollSnap());
     carouselApi.on("select", onSelect);
     return () => {
       carouselApi.off("select", onSelect);
     };
   }, [carouselApi]);
 
-  // Ordem do feed geral: destaque (geral), receita, experiencia, pergunta
-  const destaque = posts.find((p) => p.type === "geral") || null;
-  const receita = posts.find((p) => p.type === "receita") || null;
-  const experiencia = posts.find((p) => p.type === "experiencia") || null;
-  const pergunta = posts.find((p) => p.type === "pergunta") || null;
-
-  // Add rest of the posts in case there are more
-  const rest = posts.filter(
-    (p) => p !== destaque && p !== receita && p !== experiencia && p !== pergunta,
-  );
-
-  const geralPosts = [destaque, receita, experiencia, pergunta, ...rest].filter(
-    Boolean,
-  ) as typeof posts;
-
-  // Amigos de verdade (amizade aceita no banco), não "quem divide comunidade".
-  const friendIds = useMemo(() => new Set((friends.data ?? []).map((f) => f.id)), [friends.data]);
-
-  const amigosPosts = useMemo(
-    () =>
-      posts.filter(
-        (p) => friendIds.has(p.authorId) && getAuthorRole(p.authorId, profiles) !== "profissional",
-      ),
-    [posts, friendIds, profiles],
-  );
-
-  const profissionaisPosts = useMemo(
-    () => posts.filter((p) => getAuthorRole(p.authorId, profiles) === "profissional"),
-    [posts, profiles],
-  );
-
-  const postsByTab: Record<FeedTab, Post[]> = {
-    geral: geralPosts,
-    amigos: amigosPosts,
-    profissionais: profissionaisPosts,
+  // Os filtros somem ao rolar o feed para baixo e voltam ao rolar para cima (ou no topo).
+  const [filtersVisible, setFiltersVisible] = useState(true);
+  const lastScrollTop = useRef(0);
+  const handleGeralScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const top = e.currentTarget.scrollTop;
+    const previous = lastScrollTop.current;
+    if (top <= 16) setFiltersVisible(true);
+    else if (top > previous + 4) setFiltersVisible(false);
+    else if (top < previous - 4) setFiltersVisible(true);
+    lastScrollTop.current = top;
   };
+
+  // Só o feed rola: cada página ocupa a altura que a coluna central tem (medida ao vivo),
+  // então rolar uma não mexe na outra e a janela fica parada.
+  const pagesRef = useRef<HTMLDivElement>(null);
+  const [pageHeight, setPageHeight] = useState<number>();
+  const ready = authHydrated && !!user;
+  useLayoutEffect(() => {
+    const el = pagesRef.current;
+    if (!ready || !el) return;
+    const measure = () => setPageHeight(Math.max(320, el.clientHeight));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ready]);
+
+  const enabled = !!user;
+  useFeedRealtime(user?.id);
+  const geral = useFeed({ scope: filter, limit }, enabled);
+  const theme = useActiveTheme(enabled);
+  const themeFeed = useFeed(
+    { scope: "tema", theme: theme.data?.id, limit: themeLimit },
+    enabled && !!theme.data,
+  );
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
+  const geralPosts = geral.data ?? [];
+  const themePosts = themeFeed.data ?? [];
+  const text = theme.data ? themeText(theme.data, locale) : null;
+
+  const changeFilter = (next: Filter) => {
+    setFilter(next);
+    setLimit(PAGE_SIZE);
+  };
+  const goToPage = (index: number) => carouselApi?.scrollTo(index);
+
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    // Altura fixa da tela: a janela não rola. Só o feed (cada página) rola; as colunas
+    // laterais ficam paradas e mostram só o que cabe.
+    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-          <div className="hidden xl:block">
-            <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-              <EspacoLeftColumn />
-            </div>
+      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
+        <div className="grid h-full min-h-0 w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+          <div className="hidden h-full min-h-0 overflow-hidden xl:block">
+            <EspacoLeftColumn />
           </div>
-          <div className="min-w-0">
-            {/* Navegação discreta entre tipos de publicação */}
-            <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
-              {FEED_TAB_KEYS.map((tab, index) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => carouselApi?.scrollTo(index)}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                    activeTabIndex === index
-                      ? "bg-secondary text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t(tab.labelKey)}
-                </button>
-              ))}
-            </div>
 
-            {/* Feed centralizado, deslizável entre abas (arraste para o lado no celular) */}
-            <div className="mx-auto w-full max-w-2xl">
-              {!hydrated ? (
-                <div className="py-12 text-center text-sm text-muted-foreground">
-                  {t("espaco.loading")}
-                </div>
-              ) : (
-                <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
-                  <CarouselContent className="items-start">
-                    {FEED_TAB_KEYS.map((tab) => {
-                      const tabPosts = postsByTab[tab.id];
-                      return (
-                        <CarouselItem key={tab.id}>
-                          {tabPosts.length > 0 ? (
-                            <div className="space-y-8">
-                              {tabPosts.map((post) => (
-                                <PostCard key={post.id} post={post} />
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="rounded-3xl border border-dashed border-border bg-card/40 p-12 text-center max-w-lg mx-auto">
-                              <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-50" />
-                              <p className="text-base text-muted-foreground font-medium mb-6">
-                                {t(EMPTY_STATE_KEYS[tab.id])}
-                              </p>
-                              <ShareModal
-                                triggerButton={
-                                  <button className="rounded-full bg-secondary border border-border px-6 py-2.5 text-sm font-bold text-foreground hover:bg-muted transition">
-                                    {t("espaco.firstPost")}
-                                  </button>
-                                }
-                              />
-                            </div>
+          {/* Feed centralizado, deslizável entre páginas (arraste para o lado no celular).
+              Cada página é uma "tela" inteira, com um vão largo entre elas. */}
+          <div
+            ref={pagesRef}
+            className="mx-auto h-full min-h-0 w-full min-w-0 max-w-3xl overflow-x-clip"
+          >
+            <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
+              <CarouselContent className="-ml-12">
+                <CarouselItem className="pl-12">
+                  <div
+                    onScroll={handleGeralScroll}
+                    className="overflow-y-auto overscroll-contain px-2 pb-12"
+                    style={{ height: pageHeight }}
+                  >
+                    <PagesNav active={activePage} onSelect={goToPage} />
+                    <div
+                      className={cn(
+                        "sticky top-0 z-10 -mx-2 mb-4 flex flex-wrap items-center justify-center gap-2 bg-background/90 px-2 py-2 backdrop-blur transition-transform duration-200",
+                        !filtersVisible && "-translate-y-full",
+                      )}
+                    >
+                      {FILTERS.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          aria-pressed={filter === f.id}
+                          onClick={() => changeFilter(f.id)}
+                          className={cn(
+                            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+                            filter === f.id
+                              ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+                              : "bg-secondary text-muted-foreground hover:text-foreground",
                           )}
-                        </CarouselItem>
-                      );
-                    })}
-                  </CarouselContent>
-                </Carousel>
-              )}
-            </div>
+                        >
+                          {t(f.labelKey)}
+                        </button>
+                      ))}
+                    </div>
+                    <PostList
+                      posts={geralPosts}
+                      loading={geral.isLoading}
+                      emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
+                      hasMore={geralPosts.length >= limit}
+                      onMore={() => setLimit((n) => n + PAGE_SIZE)}
+                    />
+                  </div>
+                </CarouselItem>
+
+                <CarouselItem className="pl-12">
+                  <div
+                    className="overflow-y-auto overscroll-contain px-2 pb-12"
+                    style={{ height: pageHeight }}
+                  >
+                    <PagesNav active={activePage} onSelect={goToPage} />
+                    {text ? (
+                      <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
+                        <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
+                          <Sparkles className="h-4 w-4" /> {text.badge ?? t("weekly.badge")}
+                        </p>
+                        <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">
+                          {text.title}
+                        </h2>
+                        {text.description && (
+                          <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                            {text.description}
+                          </p>
+                        )}
+                        {text.question && (
+                          <p className="mt-3 text-sm font-semibold text-foreground">
+                            {text.question}
+                          </p>
+                        )}
+                        <Link
+                          to="/tema-da-semana"
+                          className="mt-4 inline-block text-xs font-semibold text-accent hover:underline"
+                        >
+                          {t("espaco.theme.open")}
+                        </Link>
+                      </div>
+                    ) : (
+                      !theme.isLoading && (
+                        <p className="mb-6 rounded-2xl bg-secondary/30 p-4 text-center text-sm text-muted-foreground">
+                          {t("espaco.theme.none")}
+                        </p>
+                      )
+                    )}
+                    {text && (
+                      <PostList
+                        posts={themePosts}
+                        loading={themeFeed.isLoading}
+                        emptyMessage={t("espaco.empty.tema")}
+                        hasMore={themePosts.length >= themeLimit}
+                        onMore={() => setThemeLimit((n) => n + PAGE_SIZE)}
+                      />
+                    )}
+                  </div>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
           </div>
-          <div className="hidden lg:block">
-            <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-              <EspacoRightColumn />
-            </div>
+
+          <div className="hidden h-full min-h-0 overflow-hidden lg:block">
+            <EspacoRightColumn />
           </div>
         </div>
       </main>
