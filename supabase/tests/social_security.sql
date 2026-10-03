@@ -24,6 +24,9 @@ declare
   post_oculto uuid;
   post_f uuid;
   post_p uuid;
+  q uuid := 'ffffffff-0000-4000-a000-000000000011'; -- profissional que atua no tema da comunidade
+  cid uuid;
+  cid2 uuid;
   res jsonb := '[]'::jsonb;
   r text;
   tbl text;
@@ -63,6 +66,10 @@ begin
     (p, 'authenticated', 'authenticated', 'zzqx.p@teste.invalid', '{"name":"Zzqxprof Hélena"}');
   insert into public.professionals (user_id, profession, council, registration, uf)
     values (p, 'Nutricionista', 'CRN-3', 'TESTE', 'SP');
+  insert into auth.users (id, aud, role, email, raw_user_meta_data)
+    values (q, 'authenticated', 'authenticated', 'zzqx.q@teste.invalid', '{"name":"Zzqxprof Quirino"}');
+  insert into public.professionals (user_id, profession, council, registration, uf, specialties)
+    values (q, 'Nutricionista', 'CRN-3', 'TESTE2', 'SP', array['Zzqx Tema']);
   update public.profiles set is_private = true, bio = 'Bio privada da Carla' where id = c;
   insert into public.friendships (requester_id, addressee_id, status) values
     (a, b, 'aceita'), (b, c, 'aceita');
@@ -423,6 +430,68 @@ begin
 
   r := pg_temp.as_user(d, 'authenticated', format('select count(*) from public.get_feed(p_scope := ''preparados'', p_author := %L)', a));
   res := res || jsonb_build_object('teste', 'escopo preparados respeita bloqueio (D não vê nada de A)', 'ok', (r = '0' or r like 'ERRO%'), 'obtido', r);
+
+  -- ------------------------------------------------------------- comunidades
+  r := pg_temp.as_user(p, 'authenticated', 'select public.create_community(''Zzqx Prof'', ''x'', ''Zzqx Tema'')');
+  res := res || jsonb_build_object('teste', 'profissional NÃO cria comunidade', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(e, 'authenticated', 'select status from public.create_community(''Zzqx Comunidade'', ''teste'', ''Zzqx Tema'')');
+  res := res || jsonb_build_object('teste', 'usuário cria comunidade (nasce pendente)', 'ok', (r = 'pendente'), 'obtido', r);
+  select id into cid from public.communities where name = 'Zzqx Comunidade';
+  r := pg_temp.as_user(e, 'authenticated', 'select public.create_community(''Zzqx Segunda'', ''x'', ''Zzqx Tema'')');
+  res := res || jsonb_build_object('teste', 'quem já administra NÃO cria outra', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.communities where id = %L', cid));
+  res := res || jsonb_build_object('teste', 'comunidade pendente NÃO aparece para qualquer pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.communities where id = %L', cid));
+  res := res || jsonb_build_object('teste', 'profissional vê a comunidade pendente', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('insert into public.community_members (community_id, user_id) values (%L, %L)', cid, f));
+  res := res || jsonb_build_object('teste', 'NÃO entra em comunidade pendente', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(q, 'authenticated', 'select count(*) from public.my_community_invites() where name like ''Zzqx%''');
+  res := res || jsonb_build_object('teste', 'profissional do tema recebe o convite', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', 'select count(*) from public.my_community_invites() where name like ''Zzqx%''');
+  res := res || jsonb_build_object('teste', 'profissional de outro tema NÃO é convidado (há quem atue no tema)', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.community_candidates(%L)', cid));
+  res := res || jsonb_build_object('teste', 'estranho NÃO vê a lista de convidados', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', format('select count(*) from public.community_candidates(%L) where user_id = %L', cid, q));
+  res := res || jsonb_build_object('teste', 'quem criou vê os convidados', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', format('select public.accept_community_professional(%L)', cid));
+  res := res || jsonb_build_object('teste', 'profissional NÃO convidado não aceita', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(f, 'authenticated', format('select public.accept_community_professional(%L)', cid));
+  res := res || jsonb_build_object('teste', 'usuário comum NÃO aceita ser admin profissional', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(q, 'authenticated', format('select status from public.accept_community_professional(%L)', cid));
+  res := res || jsonb_build_object('teste', 'profissional convidado aceita e a comunidade fica ativa', 'ok', (r = 'ativa'), 'obtido', r);
+  r := pg_temp.as_user(d, 'authenticated', 'select status from public.create_community(''Zzqx Outra'', ''x'', ''Zzqx Tema'')');
+  res := res || jsonb_build_object('teste', 'outro usuário cria uma segunda comunidade', 'ok', (r = 'pendente'), 'obtido', r);
+  select id into cid2 from public.communities where name = 'Zzqx Outra';
+  r := pg_temp.as_user(q, 'authenticated', format('select public.accept_community_professional(%L)', cid2));
+  res := res || jsonb_build_object('teste', 'profissional que já administra NÃO aceita outra', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(d, 'authenticated', format('select id from public.leave_community_admin(%L)', cid2));
+  res := res || jsonb_build_object('teste', 'admin que sai de comunidade PENDENTE cancela a comunidade', 'ok', (r <> '<vazio>' and not exists (select 1 from public.communities where id = cid2)), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', format('insert into public.posts (author_id, body, community_id) values (%L, ''post na comunidade'', %L)', e, cid));
+  res := res || jsonb_build_object('teste', 'membro publica em comunidade ativa', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('insert into public.posts (author_id, body, community_id) values (%L, ''sem ser membro'', %L)', f, cid));
+  res := res || jsonb_build_object('teste', 'não-membro NÃO publica na comunidade', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(f, 'authenticated', format('insert into public.community_members (community_id, user_id) values (%L, %L)', cid, f));
+  res := res || jsonb_build_object('teste', 'pessoa entra em comunidade ativa', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select member_count || '' | '' || is_member || '' | '' || admin_name from public.get_communities(p_slug := (select slug from public.communities where id = %L))', cid));
+  res := res || jsonb_build_object('teste', 'get_communities traz contagem, participação e admin', 'ok', (r like '%3 | true | Zzqx Eva%'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.get_community_members(%L)', cid));
+  res := res || jsonb_build_object('teste', 'lista de membros com cartão', 'ok', (r = '3'), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', format('select public.toggle_post_pin(id) from public.posts where body = ''post na comunidade'' and community_id = %L', cid));
+  res := res || jsonb_build_object('teste', 'admin da comunidade fixa um post', 'ok', (r in ('t', 'true')), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select public.toggle_post_pin(id) from public.posts where body = ''post na comunidade'' and community_id = %L', cid));
+  res := res || jsonb_build_object('teste', 'membro comum NÃO fixa post', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(q, 'authenticated', format('select status from public.leave_community_admin(%L)', cid));
+  res := res || jsonb_build_object('teste', 'profissional deixa a administração: comunidade suspensa', 'ok', (r = 'suspensa'), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', format('insert into public.posts (author_id, body, community_id) values (%L, ''na suspensa'', %L)', e, cid));
+  res := res || jsonb_build_object('teste', 'comunidade suspensa NÃO aceita publicação', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(q, 'authenticated', 'select count(*) from public.my_community_invites() where name like ''Zzqx%''');
+  res := res || jsonb_build_object('teste', 'quem saiu NÃO é convidado de volta', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', format('select count(*) from public.community_candidates(%L) where user_id <> %L', cid, q));
+  res := res || jsonb_build_object('teste', 'sem quem atue no tema, o convite vai para outros candidatos (nunca para quem saiu)', 'ok', (r::integer >= 1), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('delete from public.community_members where community_id = %L and user_id = %L', cid, f));
+  res := res || jsonb_build_object('teste', 'membro comum sai da comunidade', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', format('delete from public.community_members where community_id = %L and user_id = %L', cid, e));
+  res := res || jsonb_build_object('teste', 'admin NÃO sai sem deixar a administração', 'ok', (r = 'OK:0' or r like 'ERRO%'), 'obtido', r);
 
   -- ---------------------------------------------- BLOQUEAR LIMPA RELAÇÕES
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', b, a));
