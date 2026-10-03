@@ -220,7 +220,7 @@ function EspacoDeHojePage() {
 
   return (
     // Altura fixa da tela: a janela não rola. Só o feed (cada página) rola; as colunas
-    // laterais ficam paradas e mostram só o que cabe.
+    // laterais não rolam: os cards são redistribuídos para caberem todos.
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
 
@@ -233,7 +233,7 @@ function EspacoDeHojePage() {
           }`}
         >
           {panels && (
-            <div className="hidden h-full min-h-0 overflow-y-auto overscroll-contain pb-2 pr-1 [scrollbar-width:thin] xl:block">
+            <div className="hidden h-full min-h-0 overflow-hidden xl:block">
               <EspacoLeftColumn />
             </div>
           )}
@@ -340,7 +340,7 @@ function EspacoDeHojePage() {
           </div>
 
           {panels && (
-            <div className="hidden h-full min-h-0 overflow-y-auto overscroll-contain pb-2 pr-1 [scrollbar-width:thin] lg:block">
+            <div className="hidden h-full min-h-0 overflow-hidden lg:block">
               <EspacoRightColumn />
             </div>
           )}
