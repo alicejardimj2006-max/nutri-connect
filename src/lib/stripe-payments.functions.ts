@@ -6,22 +6,18 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const FEE_FALLBACK = 10;
 
-async function platformFeePercent(admin: {
-  from: (t: string) => {
-    select: (c: string) => {
-      eq: (k: string, v: string) => {
-        maybeSingle: () => Promise<{ data: { value?: string } | null }>;
-      };
-    };
-  };
-}): Promise<number> {
+type AdminClient = Awaited<
+  typeof import("@/integrations/supabase/client.server")
+>["supabaseAdmin"];
+
+async function settingInt(admin: AdminClient, key: string, fallback: number): Promise<number> {
   const { data } = await admin
     .from("platform_settings")
     .select("value")
-    .eq("key", "platform_fee_percent")
+    .eq("key", key)
     .maybeSingle();
   const n = Number(data?.value);
-  return Number.isFinite(n) ? n : FEE_FALLBACK;
+  return Number.isFinite(n) ? n : fallback;
 }
 
 /** Cria (ou reaproveita) o Checkout do Stripe de uma consulta aguardando pagamento. */
