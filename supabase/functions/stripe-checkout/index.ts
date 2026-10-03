@@ -7,7 +7,7 @@
 // Segredos: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY. Opcional: APP_URL (senão usa a origem
 // enviada pelo app).
 import { HttpError, env, json, serve } from "../_shared/http.ts";
-import { createCheckoutSession, getSession } from "../_shared/stripe.ts";
+import { createCheckoutSession, expireSession } from "../_shared/stripe.ts";
 import { adminClient, requireUser, settingInt } from "../_shared/supabase.ts";
 
 serve(async (req) => {
@@ -59,11 +59,9 @@ serve(async (req) => {
     .limit(1)
     .maybeSingle();
   const publishableKey = env("STRIPE_PUBLISHABLE_KEY");
-  if (existing?.mp_preference_id && existing.amount_cents === amount) {
-    const open = await getSession(existing.mp_preference_id).catch(() => null);
-    if (open?.status === "open" && open.client_secret) {
-      return json({ clientSecret: open.client_secret, publishableKey });
-    }
+  // Sempre cria uma sessão nova (assim o formulário reflete a versão atual) e encerra a anterior.
+  if (existing?.mp_preference_id) {
+    await expireSession(existing.mp_preference_id).catch(() => null);
   }
 
   // O Stripe exige que a sessão dure pelo menos 30 min. Se o pagamento sair depois do horário

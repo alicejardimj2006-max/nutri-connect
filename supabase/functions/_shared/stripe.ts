@@ -62,6 +62,11 @@ export function getSession(id: string): Promise<StripeSession> {
   return call<StripeSession>("GET", `/checkout/sessions/${id}`);
 }
 
+/** Encerra uma sessão de checkout ainda aberta (o cliente não consegue mais pagar por ela). */
+export function expireSession(id: string): Promise<StripeSession> {
+  return call<StripeSession>("POST", `/checkout/sessions/${id}/expire`, {});
+}
+
 export function createRefund(paymentIntent: string): Promise<{ id: string; status?: string }> {
   return call("POST", "/refunds", { payment_intent: paymentIntent });
 }

@@ -36,11 +36,11 @@ function useCountdown(until: string | null | undefined) {
   return left;
 }
 
-const MIN_SCALE = 0.72;
+const MIN_SCALE = 0.88;
 
 /**
  * No desktop a página não rola: se o formulário do Stripe for mais alto que o espaço disponível
- * (telas baixas), ele é reduzido na proporção, até MIN_SCALE; abaixo disso passa a rolar dentro
+ * (telas baixas), ele é reduzido na proporção, até MIN_SCALE (88%, para a letra continuar legível); abaixo disso passa a rolar dentro
  * do card. No celular nada é reduzido e a página rola normalmente.
  */
 function FitToHeight({ children }: { children: ReactNode }) {
