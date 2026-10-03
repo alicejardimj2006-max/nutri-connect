@@ -46,6 +46,8 @@ function encode(params: Record<string, unknown>, prefix = ""): string {
 export interface StripeSession {
   id: string;
   url?: string;
+  client_secret?: string;
+  status?: string;
   payment_intent?: string;
   payment_status?: string;
   metadata?: Record<string, string>;

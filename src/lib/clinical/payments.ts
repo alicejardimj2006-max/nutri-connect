@@ -19,14 +19,21 @@ async function invoke<T>(name: string, body: Record<string, unknown>): Promise<T
   return data as T;
 }
 
-/** Cria (ou reaproveita) o checkout de uma consulta e devolve a URL de pagamento. */
+/** Página do site onde o pagamento acontece (o formulário do Stripe fica embutido nela). */
 export async function startCheckout(appointmentId: string): Promise<string> {
-  const data = await invoke<{ checkoutUrl?: string }>("stripe-checkout", {
+  return `/pagamento/${appointmentId}`;
+}
+
+/** Cria (ou reaproveita) a sessão de checkout e devolve o que o navegador precisa para montá-la. */
+export async function createCheckoutSession(
+  appointmentId: string,
+): Promise<{ clientSecret: string; publishableKey: string }> {
+  const data = await invoke<{ clientSecret?: string; publishableKey?: string }>("stripe-checkout", {
     appointmentId,
     origin: window.location.origin,
   });
-  if (!data?.checkoutUrl) throw new Error(ct("errors.checkout"));
-  return data.checkoutUrl;
+  if (!data?.clientSecret || !data.publishableKey) throw new Error(ct("errors.checkout"));
+  return { clientSecret: data.clientSecret, publishableKey: data.publishableKey };
 }
 
 /** Pede o estorno de uma consulta cancelada (a Edge Function aplica a regra de prazo). */

@@ -1,10 +1,13 @@
-// Cria (ou reaproveita) o Checkout do Stripe de uma consulta aguardando pagamento.
+// Cria (ou reaproveita) o Checkout do Stripe de uma consulta aguardando pagamento. O formulário é
+// embutido na página /pagamento/:id do site (Embedded Checkout): a função devolve o clientSecret
+// da sessão e a chave publicável, e o navegador monta o formulário.
 // O pagamento cai na conta da plataforma; a taxa fica registrada em payments.platform_fee_cents
 // e o repasse ao profissional é feito fora do app.
 //
-// Segredos: STRIPE_SECRET_KEY. Opcional: APP_URL (senão usa a origem enviada pelo app).
-import { HttpError, json, serve } from "../_shared/http.ts";
-import { createCheckoutSession } from "../_shared/stripe.ts";
+// Segredos: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY. Opcional: APP_URL (senão usa a origem
+// enviada pelo app).
+import { HttpError, env, json, serve } from "../_shared/http.ts";
+import { createCheckoutSession, getSession } from "../_shared/stripe.ts";
 import { adminClient, requireUser, settingInt } from "../_shared/supabase.ts";
 
 serve(async (req) => {
@@ -55,8 +58,12 @@ serve(async (req) => {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (existing?.checkout_url && existing.amount_cents === amount) {
-    return json({ checkoutUrl: existing.checkout_url });
+  const publishableKey = env("STRIPE_PUBLISHABLE_KEY");
+  if (existing?.mp_preference_id && existing.amount_cents === amount) {
+    const open = await getSession(existing.mp_preference_id).catch(() => null);
+    if (open?.status === "open" && open.client_secret) {
+      return json({ clientSecret: open.client_secret, publishableKey });
+    }
   }
 
   const when = new Date(appt.starts_at).toLocaleString("pt-BR", {
@@ -64,7 +71,6 @@ serve(async (req) => {
     dateStyle: "short",
     timeStyle: "short",
   });
-  const back = (status: string) => `${appUrl}/acompanhamento/consultas?pagamento=${status}`;
 
   // O Stripe exige que a sessão dure pelo menos 30 min. Se o pagamento sair depois do horário
   // reservado, o webhook tenta recuperar a vaga ou estorna.
@@ -72,8 +78,15 @@ serve(async (req) => {
   const holdEnd = Math.floor(new Date(appt.hold_expires_at).getTime() / 1000);
   const session = await createCheckoutSession({
     mode: "payment",
-    success_url: back("sucesso"),
-    cancel_url: back("falha"),
+    ui_mode: "embedded_page",
+    locale: "pt-BR",
+    return_url: `${appUrl}/acompanhamento/consultas?pagamento=sucesso`,
+    custom_text: {
+      submit: {
+        message:
+          "Ao pagar, você concorda com os Termos de Uso do NutriConnect. Cancelamento e estorno seguem as regras informadas no agendamento.",
+      },
+    },
     customer_email: user.email,
     client_reference_id: appt.id,
     metadata: { appointment_id: appt.id },
@@ -93,7 +106,7 @@ serve(async (req) => {
     ],
     expires_at: Math.min(Math.max(holdEnd, now + 31 * 60), now + 23 * 3600),
   });
-  if (!session.url) throw new HttpError(502, "O Stripe não devolveu a URL de pagamento.");
+  if (!session.client_secret) throw new HttpError(502, "O Stripe não devolveu o formulário de pagamento.");
 
   const row = {
     appointment_id: appt.id,
@@ -104,12 +117,12 @@ serve(async (req) => {
     status: "pendente",
     provider: "stripe",
     mp_preference_id: session.id, // id da sessão do Stripe
-    checkout_url: session.url,
+    checkout_url: `${appUrl}/pagamento/${appt.id}`,
   };
   const { error } = existing
     ? await db.from("payments").update(row).eq("id", existing.id)
     : await db.from("payments").insert(row);
   if (error) throw new HttpError(500, error.message);
 
-  return json({ checkoutUrl: session.url });
+  return json({ clientSecret: session.client_secret, publishableKey });
 });

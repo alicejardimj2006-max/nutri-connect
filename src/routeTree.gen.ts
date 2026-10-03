@@ -45,6 +45,7 @@ import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
 import { Route as ConviteCodeRouteImport } from './routes/convite.$code'
 import { Route as DesafiosIndexRouteImport } from './routes/desafios.index'
 import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$challengeId'
+import { Route as PagamentoAppointmentIdRouteImport } from './routes/pagamento.$appointmentId'
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
 import { Route as PainelAgendaRouteImport } from './routes/painel.agenda'
 import { Route as PainelConfiguracoesRouteImport } from './routes/painel.configuracoes'
@@ -246,6 +247,11 @@ const DesafiosChallengeIdRoute = DesafiosChallengeIdRouteImport.update({
   path: '/$challengeId',
   getParentRoute: () => DesafiosRoute,
 } as any)
+const PagamentoAppointmentIdRoute = PagamentoAppointmentIdRouteImport.update({
+  id: '/pagamento/$appointmentId',
+  path: '/pagamento/$appointmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PainelIndexRoute = PainelIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
+  '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
@@ -442,6 +449,7 @@ export interface FileRoutesByTo {
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
+  '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
+  '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
@@ -560,6 +569,7 @@ export interface FileRouteTypes {
     | '/comunidades/$slug'
     | '/convite/$code'
     | '/desafios/$challengeId'
+    | '/pagamento/$appointmentId'
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
@@ -614,6 +624,7 @@ export interface FileRouteTypes {
     | '/comunidades/$slug'
     | '/convite/$code'
     | '/desafios/$challengeId'
+    | '/pagamento/$appointmentId'
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
@@ -671,6 +682,7 @@ export interface FileRouteTypes {
     | '/comunidades/$slug'
     | '/convite/$code'
     | '/desafios/$challengeId'
+    | '/pagamento/$appointmentId'
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
@@ -721,6 +733,7 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   VerificacaoRoute: typeof VerificacaoRoute
   ConviteCodeRoute: typeof ConviteCodeRoute
+  PagamentoAppointmentIdRoute: typeof PagamentoAppointmentIdRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
   PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRouteWithChildren
   PerfilEditarRoute: typeof PerfilEditarRoute
@@ -982,6 +995,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/desafios/$challengeId'
       preLoaderRoute: typeof DesafiosChallengeIdRouteImport
       parentRoute: typeof DesafiosRoute
+    }
+    '/pagamento/$appointmentId': {
+      id: '/pagamento/$appointmentId'
+      path: '/pagamento/$appointmentId'
+      fullPath: '/pagamento/$appointmentId'
+      preLoaderRoute: typeof PagamentoAppointmentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/painel/': {
       id: '/painel/'
@@ -1261,6 +1281,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   VerificacaoRoute: VerificacaoRoute,
   ConviteCodeRoute: ConviteCodeRoute,
+  PagamentoAppointmentIdRoute: PagamentoAppointmentIdRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,
   PerfilConfiguracoesRoute: PerfilConfiguracoesRouteWithChildren,
   PerfilEditarRoute: PerfilEditarRoute,
