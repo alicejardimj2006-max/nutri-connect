@@ -1,4 +1,5 @@
 import { localeMeta, type Locale } from "@/lib/i18n";
+import { applyRegion } from "@/lib/region";
 
 const tag = (locale: Locale) => localeMeta(locale).tag;
 
@@ -18,12 +19,14 @@ export function formatDate(
   opts: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" },
 ): string {
   const d = typeof iso === "string" ? parseDate(iso) : iso;
-  return new Intl.DateTimeFormat(tag(locale), opts).format(d);
+  const [loc, options] = applyRegion(tag(locale), opts);
+  return new Intl.DateTimeFormat(loc, options).format(d);
 }
 
 export function formatTime(iso: string | Date, locale: Locale): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
-  return new Intl.DateTimeFormat(tag(locale), { hour: "2-digit", minute: "2-digit" }).format(d);
+  const [loc, options] = applyRegion(tag(locale), { hour: "2-digit", minute: "2-digit" });
+  return new Intl.DateTimeFormat(loc, options).format(d);
 }
 
 export function formatWeekday(date: Date, locale: Locale, style: "long" | "short" = "short") {

@@ -7,6 +7,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { changePassword, deleteAccount, updateCurrentUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Field } from "./login";
+import { buttonClass, useTr } from "@/components/settings-ui";
 
 export const Route = createFileRoute("/perfil/configuracoes/conta")({
   head: () => ({ meta: [{ title: "Conta e segurança — NutriConnect" }] }),
@@ -26,6 +27,8 @@ function ContaPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const tr = useTr();
+  const [newEmail, setNewEmail] = useState("");
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -38,6 +41,36 @@ function ContaPage() {
   }, [user]);
 
   if (!user) return null;
+
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = newEmail.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error(tr(["Informe um e-mail válido.", "Enter a valid email.", "Introduce un correo válido.", "Saisissez un e-mail valide."]));
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ email });
+    if (error) {
+      toast.error(tr(["Não foi possível trocar o e-mail agora.", "Could not change the email right now.", "No se pudo cambiar el correo ahora.", "Impossible de changer l'e-mail pour le moment."]));
+      return;
+    }
+    setNewEmail("");
+    toast.success(
+      tr([
+        "Enviamos um link de confirmação. O e-mail só muda depois que você confirmar.",
+        "We sent a confirmation link. The email only changes after you confirm it.",
+        "Enviamos un enlace de confirmación. El correo solo cambia después de confirmarlo.",
+        "Nous avons envoyé un lien de confirmation. L'e-mail ne change qu'après confirmation.",
+      ]),
+      { duration: 8000 },
+    );
+  };
+
+  const handleSignOutEverywhere = async () => {
+    if (!window.confirm(tr(["Sair de todos os aparelhos, inclusive este?", "Sign out of all devices, including this one?", "¿Cerrar sesión en todos los dispositivos, incluido este?", "Se déconnecter de tous les appareils, y compris celui-ci ?"]))) return;
+    await supabase.auth.signOut({ scope: "global" });
+    navigate({ to: "/login" });
+  };
 
   const handleSaveContact = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +155,42 @@ function ContaPage() {
             <Pencil className="h-3.5 w-3.5" />
             {t("settings.account.personalInfo.editLink")}
           </Link>
+        </section>
+
+        {/* Acesso e segurança */}
+        <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
+          <h2 className="text-sm font-bold font-display text-foreground">
+            {tr(["Acesso e segurança", "Access and security", "Acceso y seguridad", "Accès et sécurité"])}
+          </h2>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {tr(["E-mail de acesso atual:", "Current sign-in email:", "Correo de acceso actual:", "E-mail de connexion actuel :"])}{" "}
+            <span className="font-semibold text-foreground">{user.email}</span>
+          </p>
+          <form onSubmit={handleChangeEmail} className="mt-4 flex flex-wrap items-center gap-2">
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder={tr(["Novo e-mail", "New email", "Nuevo correo", "Nouvel e-mail"])}
+              className="min-w-0 flex-1 rounded-xl border border-input bg-background px-3.5 py-2 text-sm outline-none focus:border-accent"
+            />
+            <button type="submit" disabled={!newEmail.trim()} className={buttonClass}>
+              {tr(["Trocar e-mail", "Change email", "Cambiar correo", "Changer l'e-mail"])}
+            </button>
+          </form>
+          <div className="mt-5 border-t border-border/60 pt-4">
+            <p className="text-xs text-muted-foreground">
+              {tr([
+                "Perdeu um aparelho ou entrou num computador de outra pessoa? Encerre todas as sessões abertas.",
+                "Lost a device or signed in on someone else's computer? End all open sessions.",
+                "¿Perdiste un dispositivo o entraste en el ordenador de otra persona? Cierra todas las sesiones abiertas.",
+                "Perdu un appareil ou connecté sur l'ordinateur de quelqu'un ? Fermez toutes les sessions ouvertes.",
+              ])}
+            </p>
+            <button type="button" onClick={handleSignOutEverywhere} className={`${buttonClass} mt-3`}>
+              {tr(["Sair de todos os aparelhos", "Sign out of all devices", "Cerrar sesión en todos los dispositivos", "Se déconnecter de tous les appareils"])}
+            </button>
+          </div>
         </section>
 
         {/* Contato e documento */}

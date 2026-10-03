@@ -1,4 +1,5 @@
 import { loadLocale, localeMeta, t } from "./i18n";
+import { applyRegion } from "./region";
 // Comunidade & Jornadas — Armazenamento local reativo (pronto para futura API/DB).
 
 export interface CommunityMember {
@@ -1405,12 +1406,13 @@ export function togglePin(postId: string) {
 }
 
 export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(localeMeta(loadLocale()).tag, {
+  const [loc, options] = applyRegion(localeMeta(loadLocale()).tag, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
+  return new Intl.DateTimeFormat(loc, options).format(new Date(iso));
 }
 
 export function initials(name: string) {

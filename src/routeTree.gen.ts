@@ -63,6 +63,7 @@ import { Route as PainelPacientesPatientIdRouteImport } from './routes/painel.pa
 import { Route as PainelPlanosPlanIdRouteImport } from './routes/painel.planos.$planId'
 import { Route as PerfilConfiguracoesIndexRouteImport } from './routes/perfil.configuracoes.index'
 import { Route as PerfilConfiguracoesContaRouteImport } from './routes/perfil.configuracoes.conta'
+import { Route as PerfilConfiguracoesDadosRouteImport } from './routes/perfil.configuracoes.dados'
 import { Route as PerfilConfiguracoesIdiomaRouteImport } from './routes/perfil.configuracoes.idioma'
 import { Route as PerfilConfiguracoesNotificacoesRouteImport } from './routes/perfil.configuracoes.notificacoes'
 import { Route as PerfilConfiguracoesPrivacidadeRouteImport } from './routes/perfil.configuracoes.privacidade'
@@ -341,6 +342,12 @@ const PerfilConfiguracoesContaRoute =
     path: '/conta',
     getParentRoute: () => PerfilConfiguracoesRoute,
   } as any)
+const PerfilConfiguracoesDadosRoute =
+  PerfilConfiguracoesDadosRouteImport.update({
+    id: '/dados',
+    path: '/dados',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
 const PerfilConfiguracoesIdiomaRoute =
   PerfilConfiguracoesIdiomaRouteImport.update({
     id: '/idioma',
@@ -413,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/dados': typeof PerfilConfiguracoesDadosRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
@@ -467,6 +475,7 @@ export interface FileRoutesByTo {
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/dados': typeof PerfilConfiguracoesDadosRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
@@ -527,6 +536,7 @@ export interface FileRoutesById {
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/dados': typeof PerfilConfiguracoesDadosRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
@@ -588,6 +598,7 @@ export interface FileRouteTypes {
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/dados'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
@@ -642,6 +653,7 @@ export interface FileRouteTypes {
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/dados'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
@@ -701,6 +713,7 @@ export interface FileRouteTypes {
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/dados'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
@@ -1122,6 +1135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilConfiguracoesContaRouteImport
       parentRoute: typeof PerfilConfiguracoesRoute
     }
+    '/perfil/configuracoes/dados': {
+      id: '/perfil/configuracoes/dados'
+      path: '/dados'
+      fullPath: '/perfil/configuracoes/dados'
+      preLoaderRoute: typeof PerfilConfiguracoesDadosRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
     '/perfil/configuracoes/idioma': {
       id: '/perfil/configuracoes/idioma'
       path: '/idioma'
@@ -1239,6 +1259,7 @@ const ReceitasRouteWithChildren = ReceitasRoute._addFileChildren(
 
 interface PerfilConfiguracoesRouteChildren {
   PerfilConfiguracoesContaRoute: typeof PerfilConfiguracoesContaRoute
+  PerfilConfiguracoesDadosRoute: typeof PerfilConfiguracoesDadosRoute
   PerfilConfiguracoesIdiomaRoute: typeof PerfilConfiguracoesIdiomaRoute
   PerfilConfiguracoesNotificacoesRoute: typeof PerfilConfiguracoesNotificacoesRoute
   PerfilConfiguracoesPrivacidadeRoute: typeof PerfilConfiguracoesPrivacidadeRoute
@@ -1247,6 +1268,7 @@ interface PerfilConfiguracoesRouteChildren {
 
 const PerfilConfiguracoesRouteChildren: PerfilConfiguracoesRouteChildren = {
   PerfilConfiguracoesContaRoute: PerfilConfiguracoesContaRoute,
+  PerfilConfiguracoesDadosRoute: PerfilConfiguracoesDadosRoute,
   PerfilConfiguracoesIdiomaRoute: PerfilConfiguracoesIdiomaRoute,
   PerfilConfiguracoesNotificacoesRoute: PerfilConfiguracoesNotificacoesRoute,
   PerfilConfiguracoesPrivacidadeRoute: PerfilConfiguracoesPrivacidadeRoute,

@@ -37,6 +37,9 @@ export type HomePageId =
   | "tema"
   | "notificacoes";
 
+export type DateFormat = "auto" | "dmy" | "mdy" | "ymd" | "long";
+export type TimeFormat = "auto" | "24h" | "12h";
+
 export type ColorFilter = "none" | "grayscale" | "sepia" | "invert" | "lowsat" | "highsat";
 
 export type CardStyle = "classic" | "compact";
@@ -186,6 +189,16 @@ export interface Appearance {
   cardAccent: boolean;
   /** Quem vê uma publicação nova, por padrão. */
   defaultAudience: DefaultAudience;
+
+  // ── Idioma e região ──────────────────────────────────────────────────────
+  dateFormat: DateFormat;
+  timeFormat: TimeFormat;
+  /** Fuso horário (nome IANA) ou "auto" = o do aparelho. */
+  timeZone: string;
+
+  // ── Notificações ─────────────────────────────────────────────────────────
+  /** Mostra o texto da notificação do navegador (desligado = só "Você tem uma novidade"). */
+  notifPreview: boolean;
 }
 
 /** O tema principal do site. */
@@ -284,6 +297,12 @@ export const DEFAULT_APPEARANCE: Appearance = {
   showTags: true,
   cardAccent: false,
   defaultAudience: "publico",
+
+  dateFormat: "auto",
+  timeFormat: "auto",
+  timeZone: "auto",
+
+  notifPreview: true,
 };
 
 export const TEXT_SCALE_RANGE = { min: 85, max: 140 } as const;
