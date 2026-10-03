@@ -161,7 +161,7 @@ function Privacidade() {
         <p>
           Ao usar a IA, enviamos apenas o texto necessário: sua pergunta e o histórico recente da
           conversa com a Nina; o conteúdo de publicações e comentários para moderação; e, no resumo
-          clínico, os registros do paciente <strong>sem nome, e-mail ou telefone</strong>. Evite
+          clínico, os registros do paciente <strong>sem nome, e-mail ou telefone</strong>; nas ferramentas de rascunho do(a) profissional, o texto das anotações que ele(a) cola e as últimas mensagens do chat com o paciente (o texto pode conter dados que as próprias pessoas escreveram). Os rascunhos da IA só são salvos ou enviados depois da revisão do(a) profissional. Evite
           colocar dados pessoais de terceiros nas suas perguntas à Nina.
         </p>
       </LegalSection>
