@@ -33,7 +33,13 @@ function encode(params: Record<string, unknown>, prefix = ""): string {
     if (v === undefined || v === null) continue;
     const name = prefix ? `${prefix}[${k}]` : k;
     if (Array.isArray(v)) {
-      v.forEach((item, i) => parts.push(encode(item as Record<string, unknown>, `${name}[${i}]`)));
+      v.forEach((item, i) =>
+        parts.push(
+          item !== null && typeof item === "object"
+            ? encode(item as Record<string, unknown>, `${name}[${i}]`)
+            : `${encodeURIComponent(`${name}[${i}]`)}=${encodeURIComponent(String(item))}`,
+        ),
+      );
     } else if (typeof v === "object") {
       parts.push(encode(v as Record<string, unknown>, name));
     } else {
