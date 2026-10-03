@@ -36,7 +36,8 @@ export const summarizePatient = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data, context }): Promise<SummaryReply> => {
     const { supabase, userId } = context;
-    const { aiChat, aiErrorMessage } = await import("./ai-gateway.server");
+    const { aiChat, aiConfigured, aiErrorMessage } = await import("./ai-gateway.server");
+    if (!aiConfigured()) return { error: aiErrorMessage(503) };
 
     // Só a profissional com vínculo ativo com este paciente.
     const { data: link } = await supabase

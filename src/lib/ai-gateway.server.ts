@@ -14,6 +14,11 @@ export function createLovableAiGatewayProvider(lovableApiKey: string) {
 const CHAT_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 export const AI_MODEL = "google/gemini-2.5-flash";
 
+/** Falso quando a chave do gateway não está no ambiente do servidor. */
+export function aiConfigured(): boolean {
+  return Boolean(process.env["LOVABLE_API_KEY"]);
+}
+
 export type AiChatResult = { ok: true; text: string } | { ok: false; status: number };
 
 /** Uma chamada de chat ao gateway (sem streaming). A chave fica só no servidor. */

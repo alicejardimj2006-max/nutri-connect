@@ -23,7 +23,9 @@ export const askNutriAssistant = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data, context }): Promise<NinaReply> => {
     const { supabase, userId } = context;
-    const { aiChat, aiErrorMessage } = await import("./ai-gateway.server");
+    const { aiChat, aiConfigured, aiErrorMessage } = await import("./ai-gateway.server");
+    // Sem chave não há IA: não gasta uma pergunta do limite diário à toa.
+    if (!aiConfigured()) return { error: aiErrorMessage(503) };
 
     // Reserva um uso do dia antes de chamar a IA.
     const { data: allowed, error: quotaError } = await supabase.rpc("ai_consume", {
