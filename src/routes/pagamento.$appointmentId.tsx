@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, CalendarClock, CheckCircle2, Clock, Lock, MapPin, Video } from "lucide-react";
@@ -34,6 +34,56 @@ function useCountdown(until: string | null | undefined) {
     return () => window.clearInterval(id);
   }, [until]);
   return left;
+}
+
+const MIN_SCALE = 0.72;
+
+/**
+ * No desktop a página não rola: se o formulário do Stripe for mais alto que o espaço disponível
+ * (telas baixas), ele é reduzido na proporção, até MIN_SCALE; abaixo disso passa a rolar dentro
+ * do card. No celular nada é reduzido e a página rola normalmente.
+ */
+function FitToHeight({ children }: { children: ReactNode }) {
+  const outer = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const o = outer.current;
+    const i = inner.current;
+    if (!o || !i) return;
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const update = () => {
+      const natural = i.offsetHeight; // altura de layout: não muda com o transform
+      const available = o.clientHeight;
+      if (!desktop.matches || !natural || natural <= available) return setScale(1);
+      setScale(Math.max(MIN_SCALE, available / natural));
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(o);
+    observer.observe(i);
+    desktop.addEventListener("change", update);
+    update();
+    return () => {
+      observer.disconnect();
+      desktop.removeEventListener("change", update);
+    };
+  }, []);
+
+  return (
+    <div ref={outer} className="relative min-h-0 flex-1 lg:overflow-y-auto">
+      <div
+        ref={inner}
+        style={
+          scale < 1
+            ? { transform: `scale(${scale})`, transformOrigin: "top left", width: `${100 / scale}%` }
+            : undefined
+        }
+      >
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function PagamentoPage() {
@@ -101,16 +151,20 @@ function PagamentoPage() {
   const ss = left === null ? "--" : String(left % 60).padStart(2, "0");
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-dvh flex-col bg-background text-foreground lg:h-dvh lg:overflow-hidden">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-        <Link
-          to="/acompanhamento/consultas"
-          className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Minhas consultas
-        </Link>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">Pagamento da consulta</h1>
+      <main className="mx-auto flex w-full max-w-5xl min-h-0 flex-1 flex-col px-4 py-4 sm:px-6 lg:py-3">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">
+            Pagamento da consulta
+          </h1>
+          <Link
+            to="/acompanhamento/consultas"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" /> Minhas consultas
+          </Link>
+        </div>
 
         {appt.isLoading ? (
           <div className="mt-8">
@@ -149,21 +203,21 @@ function PagamentoPage() {
             </Link>
           </Notice>
         ) : (
-          <div className="mt-8 grid gap-6 lg:grid-cols-[22rem_1fr] lg:items-start">
+          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[20rem_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
             {/* Resumo da consulta */}
-            <aside className="space-y-4 lg:sticky lg:top-24">
-              <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs">
+            <aside className="min-h-0 space-y-3 lg:overflow-y-auto">
+              <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Resumo
                 </h2>
-                <div className="mt-4 flex items-center gap-3">
+                <div className="mt-3 flex items-center gap-3">
                   <Avatar name={pro?.name ?? "…"} url={pro?.avatarUrl} size="md" />
                   <div className="min-w-0">
                     <p className="truncate font-display font-bold">{pro?.name ?? "…"}</p>
                     <p className="text-xs text-muted-foreground">Consulta de nutrição</p>
                   </div>
                 </div>
-                <dl className="mt-5 space-y-3 text-sm">
+                <dl className="mt-4 space-y-2.5 text-sm">
                   <div className="flex items-start gap-2.5">
                     <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                     <div>
@@ -197,7 +251,7 @@ function PagamentoPage() {
                     </div>
                   </div>
                 </dl>
-                <div className="mt-5 flex items-end justify-between border-t border-border/60 pt-4">
+                <div className="mt-4 flex items-end justify-between border-t border-border/60 pt-3">
                   <span className="text-sm text-muted-foreground">Total</span>
                   <span className="font-display text-2xl font-extrabold text-foreground">
                     {formatMoney(a.price_cents, locale)}
@@ -205,7 +259,7 @@ function PagamentoPage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-accent/30 bg-accent-soft/60 p-4">
+              <section className="rounded-2xl border border-accent/30 bg-accent-soft/60 p-3">
                 <p className="flex items-center gap-2 text-sm font-semibold text-accent">
                   <Clock className="h-4 w-4" /> Horário reservado por {mm}:{ss}
                 </p>
@@ -214,7 +268,8 @@ function PagamentoPage() {
                 </p>
               </section>
 
-              <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
+              <p className="px-1 text-[11px] leading-snug text-muted-foreground">
+                Pagamento seguro pelo Stripe: não guardamos os dados do seu cartão.<br />
                 Cancelamento com pelo menos 24 horas de antecedência dá direito ao estorno. Veja os{" "}
                 <Link to="/termos" className="underline">
                   Termos de Uso
@@ -228,8 +283,8 @@ function PagamentoPage() {
             </aside>
 
             {/* Formulário do Stripe */}
-            <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs sm:p-6">
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
+            <section className="flex min-h-0 flex-col rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
                 <Lock className="h-4 w-4 text-primary" /> Pagamento seguro
                 <span className="ml-auto text-xs font-normal text-muted-foreground">
                   Processado pelo Stripe
@@ -238,25 +293,26 @@ function PagamentoPage() {
               {error ? (
                 <p className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">{error}</p>
               ) : stripe && clientSecret ? (
-                <stripe.Provider
-                  stripe={stripe.stripePromise}
-                  options={{ fetchClientSecret: () => Promise.resolve(clientSecret) }}
-                >
-                  <stripe.Checkout />
-                </stripe.Provider>
+                <FitToHeight>
+                  <stripe.Provider
+                    stripe={stripe.stripePromise}
+                    options={{ fetchClientSecret: () => Promise.resolve(clientSecret) }}
+                  >
+                    <stripe.Checkout />
+                  </stripe.Provider>
+                </FitToHeight>
               ) : (
                 <div className="py-10">
                   <Loading />
                 </div>
               )}
-              <p className="mt-4 text-center text-[11px] text-muted-foreground">
-                Não guardamos os dados do seu cartão.
-              </p>
             </section>
           </div>
         )}
       </main>
-      <SiteFooter />
+      <div className="lg:hidden">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

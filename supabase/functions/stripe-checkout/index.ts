@@ -66,12 +66,6 @@ serve(async (req) => {
     }
   }
 
-  const when = new Date(appt.starts_at).toLocaleString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-
   // O Stripe exige que a sessão dure pelo menos 30 min. Se o pagamento sair depois do horário
   // reservado, o webhook tenta recuperar a vaga ou estorna.
   const now = Math.floor(Date.now() / 1000);
@@ -80,11 +74,12 @@ serve(async (req) => {
     mode: "payment",
     ui_mode: "embedded_page",
     locale: "pt-BR",
+    // Só cartão: o formulário fica curto (sem o convite para salvar dados no Link) e cabe na tela.
+    payment_method_types: ["card"],
     return_url: `${appUrl}/acompanhamento/consultas?pagamento=sucesso`,
     custom_text: {
       submit: {
-        message:
-          "Ao pagar, você concorda com os Termos de Uso do NutriConnect. Cancelamento e estorno seguem as regras informadas no agendamento.",
+        message: "Ao pagar, você aceita os Termos de Uso do NutriConnect.",
       },
     },
     customer_email: user.email,
@@ -99,7 +94,6 @@ serve(async (req) => {
           unit_amount: amount,
           product_data: {
             name: `Consulta com ${pro?.name ?? "profissional"}`,
-            description: `${appt.modality === "online" ? "On-line" : "Presencial"} · ${when}`,
           },
         },
       },
