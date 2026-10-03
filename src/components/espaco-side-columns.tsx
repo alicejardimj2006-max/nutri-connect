@@ -1,32 +1,43 @@
 import {
+  FriendsCard,
   MyChallengesCard,
   MyCommunitiesCard,
+  NotificationsHelpCard,
   ProfessionalsCard,
   ProfileCard,
+  ShortcutsCard,
   SuggestedCommunitiesCard,
+  TopRecipesCard,
   TrailCard,
+  UpcomingAppointmentsCard,
   WeeklyThemeCard,
 } from "@/components/rail-cards";
+import { Wing } from "@/components/rails-wing";
 
-/** Coluna esquerda do Espaço: quem sou eu na rede e minhas comunidades. */
+/** Lateral esquerda do Espaço: quem sou eu na rede, comunidades, atalhos e amigos. */
 export function EspacoLeftColumn() {
   return (
-    <aside className="space-y-5 text-left">
+    <Wing>
       <ProfileCard />
       <MyCommunitiesCard />
-    </aside>
+      <ShortcutsCard />
+      <FriendsCard />
+      <UpcomingAppointmentsCard />
+      <NotificationsHelpCard />
+    </Wing>
   );
 }
 
-/** Coluna direita do Espaço: trilha com a Nina, tema da semana, desafios e sugestões. */
+/** Lateral direita do Espaço: trilha com a Nina, tema da semana, desafios, receitas e sugestões. */
 export function EspacoRightColumn() {
   return (
-    <aside className="space-y-5 text-left">
+    <Wing>
       <TrailCard />
       <WeeklyThemeCard />
       <MyChallengesCard />
-      <SuggestedCommunitiesCard />
+      <TopRecipesCard />
+      <SuggestedCommunitiesCard limit={4} />
       <ProfessionalsCard />
-    </aside>
+    </Wing>
   );
 }

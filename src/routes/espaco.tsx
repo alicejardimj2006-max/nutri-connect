@@ -224,11 +224,11 @@ function EspacoDeHojePage() {
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
 
-      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
+      <main className="flex min-h-0 w-full flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6 xl:px-8 2xl:px-14">
         <div
           className={`grid h-full min-h-0 w-full gap-8 ${
             panels
-              ? "lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[280px_minmax(0,1fr)_320px]"
+              ? "lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(240px,1fr)_minmax(0,48rem)_minmax(240px,1fr)]"
               : "mx-auto max-w-3xl"
           }`}
         >
