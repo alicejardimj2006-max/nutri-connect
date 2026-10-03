@@ -34,6 +34,13 @@ function NinaPage() {
   const queryClient = useQueryClient();
   const historyKey = ["nina-history", user?.id];
   const [draft, setDraft] = useState("");
+
+  // As perguntas prontas dos cards laterais preenchem o campo de texto.
+  useEffect(() => {
+    const onPrompt = (e: Event) => setDraft(String((e as CustomEvent<string>).detail ?? ""));
+    window.addEventListener("nina:prompt", onPrompt);
+    return () => window.removeEventListener("nina:prompt", onPrompt);
+  }, []);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [used, setUsed] = useState<number | null>(null);

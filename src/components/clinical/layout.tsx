@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-chrome";
+import { EducationalNoticeCard, ProfileCard, UpcomingAppointmentsCard } from "@/components/rail-cards";
+import { useAppearance } from "@/hooks/use-appearance";
 import { cn } from "@/lib/utils";
 import { plainText } from "./ui";
 
@@ -29,13 +31,14 @@ export function ClinicalLayout({
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { appearance } = useAppearance();
   const isActive = (item: ClinicalNavItem) =>
     item.exact ? pathname === item.to : pathname === item.to || pathname.startsWith(item.to + "/");
 
   return (
     <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pt-8">
+      <div className="mx-auto flex w-full max-w-[120rem] flex-1 gap-8 px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pt-8 xl:px-8 2xl:px-12">
         <aside className="hidden w-56 shrink-0 lg:block">
           <div className="sticky top-24">
             <p className="px-3 font-display text-lg font-bold text-foreground">{title}</p>
@@ -106,6 +109,17 @@ export function ClinicalLayout({
           </nav>
           {children}
         </main>
+
+        {/* Cards laterais (telas largas): o que importa para o acompanhamento, sem sair da área */}
+        {appearance.sidePanels && (
+          <aside className="hidden w-72 shrink-0 xl:block 2xl:w-80">
+            <div className="sticky top-24 max-h-[calc(100dvh-7rem)] space-y-5 overflow-y-auto pb-2 [scrollbar-width:thin]">
+              <ProfileCard />
+              <UpcomingAppointmentsCard />
+              <EducationalNoticeCard />
+            </div>
+          </aside>
+        )}
       </div>
     </div>
   );

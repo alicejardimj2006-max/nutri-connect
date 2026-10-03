@@ -273,9 +273,6 @@ html[data-motion="reduce"] *::after {
 }
 
 /* Layout, acessibilidade e posts (Configurações → Personalização). */
-html[data-rails="on"] main:is([class*="max-w-2xl"], [class*="max-w-3xl"], [class*="max-w-4xl"], [class*="max-w-5xl"]) {
-  max-width: var(--rails-main-max);
-}
 html[data-width="narrow"] main:is([class*="max-w-4xl"], [class*="max-w-5xl"], [class*="max-w-6xl"], [class*="max-w-7xl"]) {
   max-width: 44rem;
 }
@@ -479,6 +476,13 @@ html[data-imgc="soft"] .post-image {
 }
 html[data-cardaccent] .post-card {
   border-left: 4px solid var(--accent) !important;
+}
+
+/* Cards laterais: o conteúdo cede o espaço das colunas e usa o resto da tela. */
+html[data-rails="on"] main {
+  max-width: none !important;
+  padding-left: calc(var(--rail-edge) + var(--rail-w) + var(--rail-gap)) !important;
+  padding-right: calc(var(--rail-edge) + var(--rail-w) + var(--rail-gap)) !important;
 }
 
 /* O logo mantém a fonte original: a personalização de fontes não o afeta (só a cor, via tema). */
