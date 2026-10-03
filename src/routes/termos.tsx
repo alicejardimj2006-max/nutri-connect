@@ -89,8 +89,9 @@ function Termos() {
       <LegalSection id="moderacao" title="6. Moderação, denúncias e remoção">
         <p>
           Qualquer pessoa pode denunciar um conteúdo ou perfil pelo botão de denúncia ou pelo{" "}
-          <Link to="/contato" className="text-primary underline">Fale conosco</Link>. Conteúdos
-          denunciados por várias pessoas ou sinalizados pela moderação automática podem ser ocultados
+          <Link to="/contato" className="text-primary underline">Fale conosco</Link>. Publicações e
+          comentários passam por uma análise automática por IA antes de aparecerem para os outros.
+          Conteúdos reprovados nessa análise ou denunciados por várias pessoas ficam ocultos
           enquanto a equipe os analisa. Quando ocultarmos ou removermos algo, avisaremos o autor, e
           você pode pedir revisão por uma pessoa.
         </p>
