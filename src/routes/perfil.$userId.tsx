@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   BadgeCheck,
+  HeartPulse,
   Inbox,
   ShieldCheck,
   Pencil,
@@ -221,6 +222,17 @@ function PublicProfilePage() {
                     </DropdownMenuTrigger>
                     {isSelf ? (
                       <DropdownMenuContent align="end" className="w-64">
+                        {user && (
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to={user.professional ? "/painel" : "/acompanhamento"}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <HeartPulse className="h-4 w-4" />
+                              <span>{user.professional ? t("nav.clinic") : t("nav.care")}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem asChild>
                           <Link
                             to="/perfil/configuracoes"
@@ -353,6 +365,15 @@ function PublicProfilePage() {
 
                   {isSelf && (
                     <div className="flex flex-wrap items-center gap-2">
+                      {user && (
+                        <Link
+                          to={user.professional ? "/painel" : "/acompanhamento"}
+                          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary-hover"
+                        >
+                          <HeartPulse className="h-3.5 w-3.5" />
+                          <span>{user.professional ? t("nav.clinic") : t("nav.care")}</span>
+                        </Link>
+                      )}
                       <Link
                         to="/perfil/editar"
                         className="flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"

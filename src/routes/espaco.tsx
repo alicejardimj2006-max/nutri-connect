@@ -233,7 +233,7 @@ function EspacoDeHojePage() {
           }`}
         >
           {panels && (
-            <div className="hidden h-full min-h-0 overflow-hidden xl:block">
+            <div className="hidden h-full min-h-0 overflow-y-auto overscroll-contain pb-2 pr-1 [scrollbar-width:thin] xl:block">
               <EspacoLeftColumn />
             </div>
           )}
@@ -340,7 +340,7 @@ function EspacoDeHojePage() {
           </div>
 
           {panels && (
-            <div className="hidden h-full min-h-0 overflow-hidden lg:block">
+            <div className="hidden h-full min-h-0 overflow-y-auto overscroll-contain pb-2 pr-1 [scrollbar-width:thin] lg:block">
               <EspacoRightColumn />
             </div>
           )}

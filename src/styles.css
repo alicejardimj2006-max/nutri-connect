@@ -273,6 +273,9 @@ html[data-motion="reduce"] *::after {
 }
 
 /* Layout, acessibilidade e posts (Configurações → Personalização). */
+html[data-rails="on"] main:is([class*="max-w-2xl"], [class*="max-w-3xl"], [class*="max-w-4xl"], [class*="max-w-5xl"]) {
+  max-width: var(--rails-main-max);
+}
 html[data-width="narrow"] main:is([class*="max-w-4xl"], [class*="max-w-5xl"], [class*="max-w-6xl"], [class*="max-w-7xl"]) {
   max-width: 44rem;
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, Home, Users, Award, Plus, HeartPulse, Sparkles } from "lucide-react";
+import { Search, Bell, Home, Users, Award, Plus, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
@@ -128,14 +128,6 @@ export function SiteHeader() {
                 <Sparkles className="h-4 w-4" />
                 {t("nav.nina")}
               </Link>
-              <Link
-                to={user.professional ? "/painel" : "/acompanhamento"}
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "text-accent" }}
-              >
-                <HeartPulse className="h-4 w-4" />
-                {user.professional ? t("nav.clinic") : t("nav.care")}
-              </Link>
             </nav>
           ) : (
             <span />
@@ -262,15 +254,6 @@ export function SiteHeader() {
           >
             <Award className="h-5 w-5" />
             <span>{t("nav.challenges")}</span>
-          </Link>
-
-          <Link
-            to={user.professional ? "/painel" : "/acompanhamento"}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
-            activeProps={{ className: "text-accent" }}
-          >
-            <HeartPulse className="h-5 w-5" />
-            <span>{user.professional ? t("nav.clinicShort") : t("nav.care")}</span>
           </Link>
 
           <Link

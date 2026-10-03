@@ -936,7 +936,6 @@ const HOME_PAGES: { id: HomePageId; names: Names }[] = [
   { id: "receitas", names: ["Receitas", "Recipes", "Recetas", "Recettes"] },
   { id: "tema", names: ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"] },
   { id: "nina", names: ["Nina", "Nina", "Nina", "Nina"] },
-  { id: "acompanhamento", names: ["Meu acompanhamento", "My follow-up", "Mi seguimiento", "Mon suivi"] },
   { id: "notificacoes", names: ["Notificações", "Notifications", "Notificaciones", "Notifications"] },
 ];
 

@@ -25,7 +25,7 @@ function HomeGate() {
   useEffect(() => {
     if (!hydrated) return;
     if (user) {
-      navigate({ to: HOME_ROUTES[loadAppearance().homePage] as "/espaco" });
+      navigate({ to: (HOME_ROUTES[loadAppearance().homePage] ?? "/espaco") as "/espaco" });
     } else {
       navigate({ to: "/login" });
     }
