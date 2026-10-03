@@ -23,7 +23,6 @@ import {
 } from "@/lib/social/feed-queries";
 import { toast } from "sonner";
 import { useI18n } from "@/hooks/use-i18n";
-import { RecipeAdaptCard } from "@/components/recipe-adapt-card";
 
 export const Route = createFileRoute("/receitas/$id")({
   head: () => ({
@@ -328,8 +327,6 @@ function ReceitaDetalhePage() {
               )}
             </div>
           </div>
-
-          <RecipeAdaptCard recipeId={recipe.id} />
 
           {/* Tags */}
           {recipe.tags && recipe.tags.length > 0 && (
