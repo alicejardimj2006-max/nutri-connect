@@ -27,6 +27,15 @@ declare
   q uuid := 'ffffffff-0000-4000-a000-000000000011'; -- profissional que atua no tema da comunidade
   cid uuid;
   cid2 uuid;
+  ch uuid;
+  tp uuid;
+  th uuid;
+  th_old uuid;
+  th_prev uuid;
+  opt1 uuid;
+  opt2 uuid;
+  kid uuid := 'ffffffff-0000-4000-a000-0000000000b1';
+  g uuid := 'ffffffff-0000-4000-a000-000000000012'; -- admin da plataforma
   res jsonb := '[]'::jsonb;
   r text;
   tbl text;
@@ -70,6 +79,9 @@ begin
     values (q, 'authenticated', 'authenticated', 'zzqx.q@teste.invalid', '{"name":"Zzqxprof Quirino"}');
   insert into public.professionals (user_id, profession, council, registration, uf, specialties)
     values (q, 'Nutricionista', 'CRN-3', 'TESTE2', 'SP', array['Zzqx Tema']);
+  insert into auth.users (id, aud, role, email, raw_user_meta_data)
+    values (g, 'authenticated', 'authenticated', 'zzqx.g@teste.invalid', '{"name":"Zzqx Gestora"}');
+  insert into public.platform_admins (user_id) values (g);
   update public.profiles set is_private = true, bio = 'Bio privada da Carla' where id = c;
   insert into public.friendships (requester_id, addressee_id, status) values
     (a, b, 'aceita'), (b, c, 'aceita');
@@ -492,6 +504,154 @@ begin
   res := res || jsonb_build_object('teste', 'membro comum sai da comunidade', 'ok', (r = 'OK:1'), 'obtido', r);
   r := pg_temp.as_user(e, 'authenticated', format('delete from public.community_members where community_id = %L and user_id = %L', cid, e));
   res := res || jsonb_build_object('teste', 'admin NÃO sai sem deixar a administração', 'ok', (r = 'OK:0' or r like 'ERRO%'), 'obtido', r);
+
+  -- ----------------------------------------------- membros engajados (plataforma)
+  insert into public.community_members (community_id, user_id) values (cid, f) on conflict do nothing;
+  r := pg_temp.as_user(g, 'authenticated', format('select name from public.community_engaged_members(%L)', cid));
+  res := res || jsonb_build_object('teste', 'plataforma vê os membros engajados (sem admin nem profissional)', 'ok', (r like '%Fabio%' and r not like '%Eva%' and r not like '%Quirino%'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.community_engaged_members(%L)', cid));
+  res := res || jsonb_build_object('teste', 'usuário comum NÃO vê os membros engajados', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(g, 'authenticated', format('select count(*) from public.communities where id = %L', cid));
+  res := res || jsonb_build_object('teste', 'plataforma enxerga qualquer comunidade', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(g, 'authenticated', format('select status from public.designate_community_admin_user(%L, %L)', cid, f));
+  res := res || jsonb_build_object('teste', 'plataforma indica um membro como admin usuário', 'ok', (r in ('suspensa', 'ativa')), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select public.designate_community_admin_user(%L, %L)', cid, f));
+  res := res || jsonb_build_object('teste', 'usuário comum NÃO indica admin', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  -- ------------------------------------------------------------------ desafios
+  insert into public.challenges (title, description, category, badge_label, duration, steps)
+    values ('Zzqx Desafio', 'teste', 'Zzqx Tema', 'Selo de teste', '3 dias', array['um', 'dois', 'três']) returning id into ch;
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.challenge_participants (challenge_id, user_id) values (%L, %L)', ch, a));
+  res := res || jsonb_build_object('teste', 'pessoa entra num desafio', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.challenge_participants (challenge_id, user_id) values (%L, %L)', ch, a));
+  res := res || jsonb_build_object('teste', 'NÃO inscreve outra pessoa no desafio', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', format('update public.challenge_participants set completed_steps = array[0, 1] where challenge_id = %L and user_id = %L', ch, a));
+  res := res || jsonb_build_object('teste', 'marca passos do desafio', 'ok', (r = 'OK:1' and not exists (select 1 from public.challenge_participants where challenge_id = ch and user_id = a and completed_at is not null)), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('update public.challenge_participants set completed_steps = array[0, 1, 2] where challenge_id = %L and user_id = %L', ch, a));
+  res := res || jsonb_build_object('teste', 'todos os passos concluem o desafio', 'ok', (r = 'OK:1' and exists (select 1 from public.challenge_participants where challenge_id = ch and user_id = a and completed_at is not null)), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('update public.challenge_participants set completed_steps = array[0] where challenge_id = %L and user_id = %L', ch, a));
+  res := res || jsonb_build_object('teste', 'NÃO altera o progresso de outra pessoa', 'ok', (r = 'OK:0' or r like 'ERRO%'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('select participant_count || '' | '' || completed_count || '' | '' || joined || '' | '' || cardinality(my_steps) from public.get_challenges(p_id := %L)', ch));
+  res := res || jsonb_build_object('teste', 'get_challenges traz contagens e meu progresso', 'ok', (r like '%1 | 1 | true | 3%'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select joined from public.get_challenges(p_id := %L)', ch));
+  res := res || jsonb_build_object('teste', 'quem não entrou vê joined = falso', 'ok', (r in ('f', 'false')), 'obtido', r);
+  r := pg_temp.as_user(null, 'anon', 'select count(*) from public.get_challenges()');
+  res := res || jsonb_build_object('teste', 'anon NÃO lista desafios', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+  r := pg_temp.as_user(c, 'authenticated', format('insert into public.challenge_participants (challenge_id, user_id) values (%L, %L)', ch, c));
+  res := res || jsonb_build_object('teste', 'perfil privado também entra no desafio', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.get_challenge_participants(%L) where name like ''%%Carla%%''', ch));
+  res := res || jsonb_build_object('teste', 'perfil privado de não-amigo NÃO aparece na lista de participantes', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.get_challenge_participants(%L) where name like ''%%Carla%%''', ch));
+  res := res || jsonb_build_object('teste', 'amigo vê o perfil privado na lista de participantes', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.user_challenges(%L)', c));
+  res := res || jsonb_build_object('teste', 'desafios de perfil privado: não-amigo não vê', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.user_challenges(%L)', c));
+  res := res || jsonb_build_object('teste', 'desafios de perfil privado: amigo vê', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('select completed from public.user_challenges() where challenge_id = %L', ch));
+  res := res || jsonb_build_object('teste', 'minha lista de desafios mostra o concluído', 'ok', (r in ('t', 'true')), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.challenge_tips (challenge_id, author_id, body) values (%L, %L, ''beba água'')', ch, a));
+  res := res || jsonb_build_object('teste', 'pessoa dá uma dica no desafio', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.challenge_tips (challenge_id, author_id, body) values (%L, %L, ''fingindo'')', ch, a));
+  res := res || jsonb_build_object('teste', 'NÃO dá dica no nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select author_name from public.get_challenge_tips(%L)', ch));
+  res := res || jsonb_build_object('teste', 'dicas trazem o nome de quem escreveu', 'ok', (r like '%Alice%'), 'obtido', r);
+  r := pg_temp.as_user(d, 'authenticated', format('select count(*) from public.get_challenge_tips(%L)', ch));
+  res := res || jsonb_build_object('teste', 'bloqueado NÃO vê as dicas de quem o bloqueou', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.challenges (title, description, category, badge_label, duration, steps) values (''Zzqx Meu'', ''x'', ''x'', ''x'', ''x'', array[''a''])');
+  res := res || jsonb_build_object('teste', 'usuário comum NÃO cria desafio', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', format('delete from public.challenge_participants where challenge_id = %L and user_id = %L', ch, a));
+  res := res || jsonb_build_object('teste', 'pessoa sai do desafio', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  -- ------------------------------------------------------------------- trilhas
+  r := pg_temp.as_user(a, 'authenticated', 'select kind from public.ensure_adult_trail_profile()');
+  res := res || jsonb_build_object('teste', 'cria o perfil adulto da trilha', 'ok', (r = 'adult'), 'obtido', r);
+  select id into tp from public.trail_profiles where owner_id = a and kind = 'adult';
+  r := pg_temp.as_user(a, 'authenticated', 'select kind from public.ensure_adult_trail_profile()');
+  res := res || jsonb_build_object('teste', 'perfil adulto é criado uma só vez', 'ok', (r = 'adult' and (select count(*) from public.trail_profiles where owner_id = a and kind = 'adult') = 1), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('select public.save_trail_progress(%L, ''{"totalXP": 120, "streak": 3, "lastActiveDay": "2026-10-02", "stops": {}}''::jsonb, 120)', tp));
+  res := res || jsonb_build_object('teste', 'salva o progresso da trilha', 'ok', (r <> '<vazio>' and r not like 'ERRO%' and (select total_xp from public.trail_progress where profile_id = tp) = 120 and (select streak from public.trail_progress where profile_id = tp) = 3), 'obtido', r);
+  res := res || jsonb_build_object('teste', 'soma o XP ganho no dia', 'ok', ((select coalesce(sum(xp), 0) from public.trail_xp_daily where profile_id = tp) = 120), 'obtido', 'verificado como superusuário');
+  r := pg_temp.as_user(a, 'authenticated', format('select public.save_trail_progress(%L, ''{"totalXP": 5000}''::jsonb, 5000)', tp));
+  res := res || jsonb_build_object('teste', 'XP ganho de uma vez é limitado a 1000', 'ok', ((select coalesce(sum(xp), 0) from public.trail_xp_daily where profile_id = tp) = 1120), 'obtido', 'verificado como superusuário');
+  r := pg_temp.as_user(b, 'authenticated', format('select public.save_trail_progress(%L, ''{"totalXP": 9999}''::jsonb, 1)', tp));
+  res := res || jsonb_build_object('teste', 'NÃO salva no perfil de trilha de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.trail_progress where profile_id = %L', tp));
+  res := res || jsonb_build_object('teste', 'NÃO lê o progresso de trilha de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.trail_profiles (id, owner_id, kind, name, avatar) values (%L, %L, ''kid'', ''Lia'', ''lipe'')', kid, a));
+  res := res || jsonb_build_object('teste', 'cria perfil infantil com id do próprio app', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.trail_profiles (owner_id, kind, name) values (%L, ''adult'', ''Outro'')', a));
+  res := res || jsonb_build_object('teste', 'NÃO cria um segundo perfil adulto', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.trail_profiles (owner_id, kind, name) values (%L, ''kid'', ''Intruso'')', a));
+  res := res || jsonb_build_object('teste', 'NÃO cria perfil de trilha em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'select name || '' '' || xp || '' '' || "position" from public.friends_weekly_ranking() where is_me');
+  res := res || jsonb_build_object('teste', 'ranking entre amigos traz o meu XP da semana', 'ok', (r like '%1120%'), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', 'select count(*) from public.friends_weekly_ranking()');
+  res := res || jsonb_build_object('teste', 'ranking de quem não tem amigos só tem a própria pessoa', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('delete from public.trail_profiles where id = %L', kid));
+  res := res || jsonb_build_object('teste', 'remove o perfil infantil', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  -- ------------------------------------------------------------ tema da semana
+  -- tema ativo próprio do teste (o de produção, se existir, é encerrado dentro da transação)
+  update public.weekly_themes set status = 'encerrado' where status = 'ativo';
+  insert into public.weekly_themes (week_start, status, title, description, question, poll_question)
+    values ((date '2026-10-04' + 7 * 3000), 'ativo', 'Zzqx Tema Ativo', 'descrição', 'pergunta?', 'enquete?') returning id into th;
+  insert into public.theme_poll_options (theme_id, position, text) values (th, 0, 'Opção um') returning id into opt1;
+  insert into public.theme_poll_options (theme_id, position, text) values (th, 1, 'Opção dois') returning id into opt2;
+  insert into public.weekly_themes (week_start, status, title, description) values ((date '2026-10-04' + 7 * 3001), 'previa', 'Zzqx Prévia', 'segredo') returning id into th_prev;
+  insert into public.weekly_themes (week_start, status, title, description) values ((date '2026-10-04' - 7 * 3000), 'encerrado', 'Zzqx Tema Antigo', 'antigo') returning id into th_old;
+  insert into public.posts (author_id, body, type, theme_id) values (f, 'receita do tema antigo', 'receita', th_old);
+  r := pg_temp.as_user(a, 'authenticated', 'select title from public.get_weekly_theme()');
+  res := res || jsonb_build_object('teste', 'traz o tema ativo', 'ok', (r like '%Zzqx Tema Ativo%'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', 'select jsonb_array_length(poll) from public.get_weekly_theme()');
+  res := res || jsonb_build_object('teste', 'o tema ativo traz as opções da enquete', 'ok', (r = '2'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', 'select title from public.get_weekly_theme(p_status := ''previa'')');
+  res := res || jsonb_build_object('teste', 'usuário comum NÃO vê a prévia do próximo tema', 'ok', (r = '<vazio>'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', 'select title from public.get_weekly_theme(p_status := ''previa'')');
+  res := res || jsonb_build_object('teste', 'profissional vê a prévia', 'ok', (r like '%Zzqx Prévia%'), 'obtido', r);
+  r := pg_temp.as_user(null, 'anon', 'select title from public.get_weekly_theme()');
+  res := res || jsonb_build_object('teste', 'anon NÃO usa get_weekly_theme', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.theme_poll_votes (theme_id, option_id, user_id) values (%L, %L, %L)', th, opt1, a));
+  res := res || jsonb_build_object('teste', 'pessoa vota na enquete', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('update public.theme_poll_votes set option_id = %L where theme_id = %L and user_id = %L', opt2, th, a));
+  res := res || jsonb_build_object('teste', 'pessoa muda o voto', 'ok', (r = 'OK:1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.theme_poll_votes (theme_id, option_id, user_id) values (%L, %L, %L)', th, opt2, a));
+  res := res || jsonb_build_object('teste', 'NÃO vota em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.theme_poll_votes where theme_id = %L', th));
+  res := res || jsonb_build_object('teste', 'NÃO lê os votos das outras pessoas', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'select (poll -> 1 ->> ''votes'') || '' '' || (poll -> 1 ->> ''mine'') from public.get_weekly_theme()');
+  res := res || jsonb_build_object('teste', 'o resultado agregado aparece sem expor quem votou', 'ok', (r like '%1 false%'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', 'select (poll -> 1 ->> ''mine'') from public.get_weekly_theme()');
+  res := res || jsonb_build_object('teste', 'o resultado marca o meu voto', 'ok', (r = 'true'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('insert into public.theme_poll_votes (theme_id, option_id, user_id) values (%L, %L, %L)', th_old, opt1, a));
+  res := res || jsonb_build_object('teste', 'NÃO vota em tema encerrado', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'select title || '' '' || recipes_count || '' '' || posts_count from public.theme_history() where title = ''Zzqx Tema Antigo''');
+  res := res || jsonb_build_object('teste', 'histórico traz o tema encerrado com as contagens', 'ok', (r like '%Zzqx Tema Antigo 1 1%'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.theme_history() where title like ''%Prévia%'' or title = ''Zzqx Tema Ativo''');
+  res := res || jsonb_build_object('teste', 'histórico NÃO traz prévia nem tema ativo', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('update public.weekly_themes set title = ''hackeado'' where id = %L', th));
+  res := res || jsonb_build_object('teste', 'usuário comum NÃO edita o tema', 'ok', (r = 'OK:0' or r like 'ERRO%'), 'obtido', r);
+  r := pg_temp.as_user(g, 'authenticated', format('update public.weekly_themes set title = ''Zzqx Editado'' where id = %L', th_prev));
+  res := res || jsonb_build_object('teste', 'admin da plataforma edita o tema', 'ok', (r = 'OK:1'), 'obtido', r);
+
+  -- ------------------------------------------------------------- notificações
+  r := pg_temp.as_user(e, 'authenticated', 'select actor_name from public.get_notifications() where type = ''amizade_pedido''');
+  res := res || jsonb_build_object('teste', 'pedido de amizade gera notificação com o nome de quem pediu', 'ok', (r like '%Alice%'), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.get_notifications() where type = ''amizade_aceita''');
+  res := res || jsonb_build_object('teste', 'amizade aceita notifica quem pediu', 'ok', (r::integer >= 1), 'obtido', r);
+  r := pg_temp.as_user(f, 'authenticated', format('select count(*) from public.notifications where user_id = %L', e));
+  res := res || jsonb_build_object('teste', 'NÃO lê notificações de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(null, 'anon', 'select count(*) from public.get_notifications()');
+  res := res || jsonb_build_object('teste', 'anon NÃO usa get_notifications', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+  r := pg_temp.as_user(e, 'authenticated', 'select count(*) from public.notifications where read_at is null');
+  res := res || jsonb_build_object('teste', 'há notificações não lidas antes de marcar', 'ok', (r::integer >= 1), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', 'select public.mark_all_notifications_read()');
+  res := res || jsonb_build_object('teste', 'marcar tudo como lido funciona', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 80));
+  r := pg_temp.as_user(e, 'authenticated', 'select count(*) from public.notifications where read_at is null');
+  res := res || jsonb_build_object('teste', 'depois de marcar, não restam não lidas', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(e, 'authenticated', 'update public.notifications set type = ''conquista''');
+  res := res || jsonb_build_object('teste', 'a pessoa só altera read_at da notificação (não o conteúdo)', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(e, 'authenticated', format('insert into public.notifications (user_id, type) values (%L, ''conquista'')', b));
+  res := res || jsonb_build_object('teste', 'NÃO cria notificação para outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
 
   -- ---------------------------------------------- BLOQUEAR LIMPA RELAÇÕES
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.blocks (blocker_id, blocked_id) values (%L, %L)', b, a));
