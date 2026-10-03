@@ -3357,6 +3357,40 @@ export type Database = {
           phone: string
         }[]
       }
+      get_notifications: {
+        Args: { p_before?: string; p_limit?: number }
+        Returns: {
+          actor_avatar: string
+          actor_id: string
+          actor_name: string
+          actor_username: string
+          created_at: string
+          data: Json
+          entity_id: string
+          entity_type: string
+          id: string
+          read_at: string
+          type: string
+        }[]
+      }
+      get_weekly_theme: {
+        Args: { p_id?: string; p_status?: string }
+        Returns: {
+          activated_at: string
+          badge: string
+          description: string
+          id: string
+          poll: Json
+          poll_question: string
+          question: string
+          source: string
+          status: Database["public"]["Enums"]["theme_status"]
+          subtitle: string
+          title: string
+          translations: Json
+          week_start: string
+        }[]
+      }
       get_public_profile: {
         Args: { p_key: string }
         Returns: {
@@ -3727,6 +3761,18 @@ export type Database = {
         Returns: number
       }
       storage_owner: { Args: { p_name: string }; Returns: string }
+      theme_history: {
+        Args: { p_limit?: number }
+        Returns: {
+          description: string
+          id: string
+          posts_count: number
+          recipes_count: number
+          title: string
+          translations: Json
+          week_start: string
+        }[]
+      }
       theme_poll_results: {
         Args: { p_theme: string }
         Returns: {

@@ -15,6 +15,8 @@ import { useSearchUsers } from "@/lib/social/queries";
 import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { useCommunities } from "@/lib/social/communities-queries";
 import { useChallenges } from "@/lib/social/challenges-queries";
+import { useWeeklyTheme } from "@/lib/social/themes-queries";
+import { localizeTheme } from "@/lib/social/themes";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({
@@ -36,8 +38,9 @@ const PEOPLE_PAGE = 20;
 
 function ExplorarPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
-  const { t } = useI18n();
-  const { weeklyTheme } = useCommunity();
+  const { t, locale } = useI18n();
+  const themeQuery = useWeeklyTheme("ativo", !!user);
+  const weeklyTheme = themeQuery.data ?? null;
   const challengesQuery = useChallenges(!!user);
   const challenges = challengesQuery.data ?? [];
   const communitiesQuery = useCommunities(false, !!user);
@@ -114,11 +117,13 @@ function ExplorarPage() {
       c.category.toLowerCase().includes(q),
   );
 
+  const themeText = weeklyTheme ? localizeTheme(weeklyTheme, locale) : null;
   const matchingTheme =
     weeklyTheme &&
+    themeText &&
     (!q ||
-      weeklyTheme.title.toLowerCase().includes(q) ||
-      weeklyTheme.description.toLowerCase().includes(q))
+      themeText.title.toLowerCase().includes(q) ||
+      themeText.description.toLowerCase().includes(q))
       ? [weeklyTheme]
       : [];
   const tabs: { id: SearchTab; label: string; count: number | string }[] = [

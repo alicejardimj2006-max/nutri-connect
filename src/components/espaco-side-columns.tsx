@@ -21,6 +21,8 @@ import type { DictKey } from "@/lib/i18n";
 import { getUserLevel, initials } from "@/lib/community";
 import { challengeStreak, challengeXP } from "@/lib/social/challenge-stats";
 import { useChallenges } from "@/lib/social/challenges-queries";
+import { localizeTheme } from "@/lib/social/themes";
+import { useWeeklyTheme } from "@/lib/social/themes-queries";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import {
   TRAIL_CHANGE_EVENT,
@@ -187,7 +189,9 @@ export function EspacoLeftColumn() {
 export function EspacoRightColumn() {
   const { user } = useAuth();
   const { t, locale } = useI18n();
-  const { weeklyTheme, profiles, hydrated } = useCommunity();
+  const { profiles } = useCommunity();
+  const themeQuery = useWeeklyTheme("ativo", !!user);
+  const themeText = themeQuery.data ? localizeTheme(themeQuery.data, locale) : null;
   const challengesQuery = useChallenges(!!user);
   const challenges = useMemo(() => challengesQuery.data ?? [], [challengesQuery.data]);
   const allCommunities = useCommunities(false, !!user);
@@ -270,14 +274,14 @@ export function EspacoRightColumn() {
       </section>
 
       {/* Tema da semana */}
-      {hydrated && weeklyTheme && (
-        <Panel title={weeklyTheme.badge || t("weekly.badge")}>
+      {themeText && (
+        <Panel title={themeText.badge || t("weekly.badge")}>
           <p className="text-base font-bold font-display leading-snug text-foreground">
-            {weeklyTheme.title}
+            {themeText.title}
           </p>
-          {weeklyTheme.questionOfTheWeek && (
+          {themeText.question && (
             <p className="mt-2 rounded-xl bg-secondary/50 p-3 text-xs italic text-foreground/85">
-              “{weeklyTheme.questionOfTheWeek}”
+              “{themeText.question}”
             </p>
           )}
           <Link

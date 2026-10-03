@@ -30,6 +30,8 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useCommunity } from "@/hooks/use-community";
 import { useCommunities } from "@/lib/social/communities-queries";
 import type { RemoteChallenge } from "@/lib/social/challenges";
+import { ThemePoll } from "@/components/theme-poll";
+import { formatWeekStart, localizeTheme, type RemoteTheme } from "@/lib/social/themes";
 import { useJoinChallenge, useLeaveChallenge } from "@/lib/social/challenges-queries";
 import {
   useAddComment,
@@ -553,129 +555,45 @@ export function PostCard({ post }: PostCardProps) {
 }
 
 interface WeeklyThemeCardProps {
-  theme: WeeklyTheme;
+  theme: RemoteTheme;
   compact?: boolean;
 }
 
+/** Cartão do tema da semana (do banco, no idioma da pessoa); a enquete só aparece no modo completo. */
 export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps) {
-  const { user } = useAuth();
-  const { t } = useI18n();
-  const currentUserId = user?.id || "guest";
-
-  const totalVotes = theme?.poll?.options
-    ? theme.poll.options.reduce((acc, opt) => acc + (opt.votes || 0), 0)
-    : 0;
-
-  const handleVote = (optionId: string) => {
-    if (!user) {
-      toast.info(t("weekly.loginToVote"));
-      return;
-    }
-    voteThemePoll(optionId, user.id);
-    toast.success(t("weekly.voteRegistered"));
-  };
-
-  if (!theme) return null;
-
-  let themeImage = null;
-  if (theme.id === "tema-alimentos-frescos") {
-    themeImage = "/images/challenges/salad-bowl.jpg";
-  }
+  const { t, locale } = useI18n();
+  const text = localizeTheme(theme, locale);
+  const weekLabel = t("theme.weekOf").replace("{date}", formatWeekStart(theme.weekStart, locale));
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-card shadow-card flex flex-col">
-      {/* Capa Editorial do Tema */}
-      {themeImage && !compact && (
-        <div className="h-48 sm:h-64 w-full relative">
-          <img
-            src={themeImage}
-            alt={theme.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[10px] font-bold text-accent-foreground tracking-wide uppercase">
-              <Sparkles className="h-3 w-3" /> {theme.badge || t("weekly.badge")}
-            </span>
-          </div>
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-card via-card to-accent-soft/30">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
+            <Sparkles className="h-3.5 w-3.5" /> {text.badge || t("weekly.badge")}
+          </span>
+          <span className="text-xs font-medium text-muted-foreground">{weekLabel}</span>
         </div>
-      )}
-
-      <div
-        className={`p-6 sm:p-8 ${!themeImage || compact ? "bg-gradient-to-br from-card via-card to-accent-soft/30" : ""}`}
-      >
-        {(!themeImage || compact) && (
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
-              <Sparkles className="h-3.5 w-3.5" /> {theme.badge || t("weekly.badge")}
-            </span>
-            <span className="text-xs font-medium text-muted-foreground">{theme.currentWeek}</span>
-          </div>
-        )}
-
-        {themeImage && !compact && (
-          <div className="text-[11px] font-medium text-muted-foreground mb-3">
-            {theme.currentWeek}
-          </div>
-        )}
 
         <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-display leading-tight">
-          {theme.title}
+          {text.title}
         </h2>
         <p className="mt-2 text-sm text-foreground/80 leading-relaxed max-w-2xl">
-          {theme.description}
+          {text.description}
         </p>
 
         {/* Pergunta da Semana */}
-        {theme.questionOfTheWeek && (
+        {text.question && (
           <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
             <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
               {t("weekly.questionOfWeek")}
             </p>
-            <p className="text-sm font-medium text-foreground">“{theme.questionOfTheWeek}”</p>
+            <p className="text-sm font-medium text-foreground">“{text.question}”</p>
           </div>
         )}
 
-        {/* Enquete Interativa */}
-        {!compact && theme.poll && theme.poll.options && (
-          <div className="mt-6 border-t border-border/80 pt-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-              {t("weekly.pollPrefix")} {theme.poll.question}
-            </h3>
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {theme.poll.options.map((opt) => {
-                const hasVoted = (opt.votedUsers || []).includes(currentUserId);
-                const percentage =
-                  totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => handleVote(opt.id)}
-                    className={`group relative overflow-hidden rounded-xl border p-3 text-left transition cursor-pointer ${
-                      hasVoted
-                        ? "border-accent bg-accent-soft/40 shadow-xs"
-                        : "border-border bg-card hover:border-accent/60 hover:bg-secondary/40"
-                    }`}
-                  >
-                    <div
-                      className="absolute inset-y-0 left-0 bg-accent/15 transition-all"
-                      style={{ width: `${percentage}%` }}
-                    />
-                    <div className="relative flex items-center justify-between text-xs font-medium">
-                      <span className="text-foreground pr-2">{opt.text}</span>
-                      <span className="font-bold text-accent">{percentage}%</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-[11px] text-muted-foreground text-right">
-              {totalVotes} {t("weekly.membersParticipated")}
-            </p>
-          </div>
-        )}
+        {/* Enquete interativa */}
+        {!compact && <ThemePoll themeId={theme.id} theme={text} />}
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <Link

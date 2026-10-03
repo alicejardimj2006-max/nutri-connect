@@ -4,6 +4,7 @@ import { Search, Bell, Home, Users, Award, Plus, HeartPulse } from "lucide-react
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
+import { useNotificationsRealtime, useUnreadCount } from "@/lib/social/notifications-queries";
 
 const SCROLL_STEP = 8;
 
@@ -40,9 +41,33 @@ function useHideOnScroll(pathname: string) {
   return hidden;
 }
 
+/** Sino de notificações com o número de não lidas (some quando não há nenhuma). */
+function NotificationBell({ unread }: { unread: number }) {
+  const { t } = useI18n();
+  return (
+    <Link
+      to="/notificacoes"
+      className="relative grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+      aria-label={unread > 0 ? `${t("nav.notifications")} (${unread})` : t("nav.notifications")}
+      title={t("nav.notifications")}
+    >
+      <Bell className="h-5 w-5" />
+      {unread > 0 && (
+        <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-accent-foreground">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   const { user } = useAuth();
   const { t } = useI18n();
+  // Notificações novas chegam em tempo real e atualizam o número do sino.
+  const unreadQuery = useUnreadCount(!!user);
+  useNotificationsRealtime(user?.id);
+  const unread = unreadQuery.data ?? 0;
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const hidden = useHideOnScroll(pathname);
 
@@ -55,14 +80,7 @@ export function SiteHeader() {
       >
         {/* Cabeçalho mobile */}
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
-          <Link
-            to="/notificacoes"
-            className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-            aria-label={t("nav.notifications")}
-            title={t("nav.notifications")}
-          >
-            <Bell className="h-5 w-5" />
-          </Link>
+          <NotificationBell unread={unread} />
 
           <Link to="/" className="flex items-center">
             <span className="text-lg font-bold tracking-tight leading-none text-foreground font-logo-serif">
@@ -140,14 +158,7 @@ export function SiteHeader() {
               <Search className="h-5 w-5" />
             </Link>
 
-            <Link
-              to="/notificacoes"
-              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-              aria-label={t("nav.notifications")}
-              title={t("nav.notifications")}
-            >
-              <Bell className="h-5 w-5" />
-            </Link>
+            <NotificationBell unread={unread} />
 
             {user && (
               <ShareModal

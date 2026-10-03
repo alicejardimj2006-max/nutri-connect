@@ -12,6 +12,8 @@ import { useI18n } from "@/hooks/use-i18n";
 import { formatDate, type VerificationRequest } from "@/lib/community";
 import { isPlatformAdmin, reviewVerification } from "@/lib/community-admin";
 import type { RemoteCommunity } from "@/lib/social/communities";
+import { useRegeneratePreview, useUpdateTheme, useWeeklyTheme } from "@/lib/social/themes-queries";
+import type { RemoteTheme } from "@/lib/social/themes";
 import {
   useCommunities,
   useCommunityCandidates,
@@ -24,7 +26,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "verificacoes" | "comunidades";
+type Tab = "verificacoes" | "comunidades" | "tema";
 
 function AdminPage() {
   const { user, hydrated } = useRequireAuth();
@@ -69,6 +71,7 @@ function AdminPage() {
             [
               ["verificacoes", `${t("admin.tab.verifications")} (${pending.length})`],
               ["comunidades", `${t("admin.tab.communities")} (${attention.length})`],
+              ["tema", t("admin.theme.tab")],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -139,6 +142,8 @@ function AdminPage() {
               </section>
             )}
           </div>
+        ) : tab === "tema" ? (
+          <ThemeAdmin />
         ) : (
           <div className="mt-6 space-y-4">
             {attention.length === 0 ? (
@@ -367,5 +372,136 @@ function CommunityCase({ community: c }: { community: RemoteCommunity }) {
         </div>
       )}
     </article>
+  );
+}
+
+/** Prévia do próximo tema da semana: editar o texto e a enquete, ou gerar outra prévia. */
+function ThemeAdmin() {
+  const { t } = useI18n();
+  const preview = useWeeklyTheme("previa");
+  const regenerate = useRegeneratePreview();
+
+  return (
+    <div className="mt-6 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+          {t("admin.theme.title")}
+        </h2>
+        <button
+          type="button"
+          disabled={regenerate.isPending}
+          onClick={() =>
+            regenerate.mutate(undefined, {
+              onSuccess: ({ source }) =>
+                toast.success(`${t("admin.theme.regenerated")} (${source})`),
+            })
+          }
+          className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground transition hover:bg-secondary disabled:opacity-60 cursor-pointer"
+        >
+          {regenerate.isPending ? t("admin.theme.generating") : t("admin.theme.regenerate")}
+        </button>
+      </div>
+
+      {preview.isLoading ? (
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+      ) : preview.data ? (
+        <ThemeEditor key={preview.data.id + preview.data.title} theme={preview.data} />
+      ) : (
+        <p className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
+          {t("admin.theme.none")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ThemeEditor({ theme }: { theme: RemoteTheme }) {
+  const { t } = useI18n();
+  const update = useUpdateTheme();
+  const [title, setTitle] = useState(theme.title);
+  const [subtitle, setSubtitle] = useState(theme.subtitle ?? "");
+  const [description, setDescription] = useState(theme.description);
+  const [question, setQuestion] = useState(theme.question ?? "");
+  const [pollQuestion, setPollQuestion] = useState(theme.pollQuestion ?? "");
+  const [options, setOptions] = useState(theme.poll.map((o) => ({ id: o.id, text: o.text })));
+
+  const field =
+    "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent";
+  const label = "block text-xs font-semibold text-foreground";
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        update.mutate(
+          {
+            themeId: theme.id,
+            edit: { title, subtitle, description, question, pollQuestion, options },
+          },
+          { onSuccess: () => toast.success(t("admin.theme.saved")) },
+        );
+      }}
+      className="space-y-4 rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6"
+    >
+      <p className="text-xs text-muted-foreground">
+        {t("admin.theme.source")}: {theme.source}
+      </p>
+      <label className={label}>
+        {t("admin.theme.fTitle")}
+        <input
+          className={field}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </label>
+      <label className={label}>
+        {t("admin.theme.fSubtitle")}
+        <input className={field} value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
+      </label>
+      <label className={label}>
+        {t("admin.theme.fDescription")}
+        <textarea
+          rows={4}
+          className={field}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
+      </label>
+      <label className={label}>
+        {t("admin.theme.fQuestion")}
+        <input className={field} value={question} onChange={(e) => setQuestion(e.target.value)} />
+      </label>
+      <label className={label}>
+        {t("admin.theme.fPollQuestion")}
+        <input
+          className={field}
+          value={pollQuestion}
+          onChange={(e) => setPollQuestion(e.target.value)}
+        />
+      </label>
+      {options.map((opt, i) => (
+        <label key={opt.id} className={label}>
+          {t("admin.theme.fOption")} {i + 1}
+          <input
+            className={field}
+            value={opt.text}
+            onChange={(e) =>
+              setOptions((prev) =>
+                prev.map((o) => (o.id === opt.id ? { ...o, text: e.target.value } : o)),
+              )
+            }
+          />
+        </label>
+      ))}
+      <button
+        type="submit"
+        disabled={update.isPending}
+        className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90 disabled:opacity-60 cursor-pointer"
+      >
+        {t("admin.theme.save")}
+      </button>
+    </form>
   );
 }
