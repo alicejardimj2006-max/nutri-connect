@@ -13,6 +13,7 @@ export const qkCommunities = {
   members: (id: string) => [...KEY, "members", id] as const,
   invites: () => [...KEY, "invites"] as const,
   candidates: (id: string) => [...KEY, "candidates", id] as const,
+  engaged: (id: string) => [...KEY, "engaged", id] as const,
 };
 
 export function useCommunities(onlyMine = false, enabled = true) {
@@ -47,6 +48,14 @@ export function useCommunityCandidates(communityId: string | undefined, enabled 
   return useQuery({
     queryKey: qkCommunities.candidates(communityId ?? ""),
     queryFn: () => api.fetchCandidates(communityId!),
+    enabled: !!communityId && enabled,
+  });
+}
+
+export function useEngagedMembers(communityId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: qkCommunities.engaged(communityId ?? ""),
+    queryFn: () => api.fetchEngagedMembers(communityId!),
     enabled: !!communityId && enabled,
   });
 }

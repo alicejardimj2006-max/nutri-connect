@@ -12,6 +12,7 @@ import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+import { useChallenges } from "@/lib/social/challenges-queries";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { useI18n } from "@/hooks/use-i18n";
@@ -34,7 +35,9 @@ export const Route = createFileRoute("/tema-da-semana")({
 function TemaDaSemanaPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { weeklyTheme, challenges, hydrated } = useCommunity();
+  const { weeklyTheme, hydrated } = useCommunity();
+  const challengesQuery = useChallenges(!!user);
+  const challenges = challengesQuery.data ?? [];
   // Receitas publicadas para o tema da semana ATIVO (do banco). O cabeçalho e a enquete deste
   // tema ainda vêm do estado local e migram na Etapa 6.
   const activeTheme = useActiveTheme(!!user);
@@ -47,7 +50,9 @@ function TemaDaSemanaPage() {
   if (!authHydrated || !user) return <AuthGateLoading />;
 
   const themeRecipes = themeFeed.data ?? [];
-  const linkedChallenge = challenges.find((c) => c.themeId === weeklyTheme?.id) || challenges[0];
+  // Desafio ligado ao tema ativo; sem um, o primeiro da trilha.
+  const linkedChallenge =
+    challenges.find((c) => c.themeId === activeTheme.data?.id) || challenges[0];
 
   const pastThemes: {
     title: DictKey;

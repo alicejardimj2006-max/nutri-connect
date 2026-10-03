@@ -147,6 +147,35 @@ export async function fetchCandidates(communityId: string): Promise<CommunityMem
   }));
 }
 
+export interface EngagedMember {
+  id: string;
+  name: string;
+  username: string;
+  avatarUrl: string | null;
+  posts: number;
+  comments: number;
+  supports: number;
+  score: number;
+}
+
+/** Membros mais engajados (candidatos a admin usuário). Só a plataforma consulta. */
+export async function fetchEngagedMembers(communityId: string): Promise<EngagedMember[]> {
+  const { data, error } = await supabase.rpc("community_engaged_members", {
+    p_community: communityId,
+  });
+  fail(error);
+  return (data ?? []).map((m) => ({
+    id: m.id,
+    name: m.name,
+    username: m.username,
+    avatarUrl: m.avatar_url,
+    posts: m.posts,
+    comments: m.comments,
+    supports: m.supports,
+    score: m.score,
+  }));
+}
+
 // ── Criar e participar ───────────────────────────────────────────────────────
 
 const COVER_BUCKET = "community-covers";

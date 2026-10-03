@@ -26,18 +26,15 @@ import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
 import { initials } from "@/lib/community";
-import {
-  getAdministeredCommunity,
-  getProfessionalInfo,
-  getProfessionalInvites,
-  isPlatformAdmin,
-} from "@/lib/community-admin";
+import { getProfessionalInfo, isPlatformAdmin } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
 import { fetchContactInfo, signOut } from "@/lib/auth";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { RelationshipActions } from "@/components/relationship-actions";
 import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+import { useCommunities, useCommunityInvites } from "@/lib/social/communities-queries";
+import { useUserChallenges } from "@/lib/social/challenges-queries";
 import { useBlocked, useBlockUser, usePublicProfile, useUnblockUser } from "@/lib/social/queries";
 import type { PublicProfile as RemoteProfile } from "@/lib/social/api";
 import {
@@ -73,7 +70,7 @@ function PublicProfilePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
   const state = useCommunity();
-  const { profiles, communities, challenges, hydrated } = state;
+  const { profiles, hydrated } = state;
   const navigate = useNavigate();
   // Perfil, privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
   const remoteProfile = usePublicProfile(user ? userId : undefined);
@@ -81,9 +78,13 @@ function PublicProfilePage() {
   // Publicações da pessoa e receitas que ela preparou: do banco, e só se este perfil pode ser visto
   // (perfil privado de quem não é amigo não carrega nada).
   const canSeeContent = !!user && remoteProfile.data?.can_view_content !== false;
+  const challengesQuery = useUserChallenges(userId, canSeeContent);
   const postsQuery = useFeed({ scope: "autor", author: userId, limit: 50 }, canSeeContent);
   const preparedQuery = useFeed({ scope: "preparados", author: userId, limit: 50 }, canSeeContent);
   useFeedRealtime(user?.id);
+  // Comunidades (do banco): a que esta pessoa administra e, se for o próprio profissional, os convites.
+  const communitiesQuery = useCommunities(false, !!user);
+  const invitesQuery = useCommunityInvites(!!user && user.id === userId && !!user.professional);
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
 
@@ -133,15 +134,16 @@ function PublicProfilePage() {
 
   const myPosts = postsQuery.data ?? [];
   const preparedRecipes = (preparedQuery.data ?? []).filter((p) => p.type === "receita");
-  const myChallenges = challenges.filter((c) => c.participants.includes(userId));
+  const myChallenges = challengesQuery.data ?? [];
   // Comunidade que a pessoa administra (uma por vez); pendentes só aparecem para ela mesma.
-  const administered = getAdministeredCommunity(userId, communities);
+  const administered = (communitiesQuery.data ?? []).find(
+    (c) => c.adminUserId === userId || c.professionalId === userId,
+  );
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
   const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
   const professionalInfo = getProfessionalInfo(profiles, userId);
-  const inviteCount =
-    isSelf && isProfessional && user ? getProfessionalInvites(user.id, state).length : 0;
+  const inviteCount = isSelf && isProfessional ? (invitesQuery.data?.length ?? 0) : 0;
 
   const userGoals =
     isSelf && user
@@ -573,14 +575,14 @@ function PublicProfilePage() {
                       {myChallenges.length > 0 ? (
                         <div className="space-y-3">
                           {myChallenges.map((c) => {
-                            const completed = (c.progress?.[userId] || []).length;
-                            const total = c.steps.length;
-                            const isDone = c.completedBy.includes(userId);
+                            const completed = c.stepsDone;
+                            const total = c.stepsTotal;
+                            const isDone = c.completed;
                             return (
                               <Link
-                                key={c.id}
+                                key={c.challengeId}
                                 to="/desafios/$challengeId"
-                                params={{ challengeId: c.id }}
+                                params={{ challengeId: c.challengeId }}
                                 className="block rounded-xl bg-secondary/50 p-3 text-xs hover:bg-secondary transition"
                               >
                                 <div className="flex items-center justify-between gap-2">
@@ -592,7 +594,7 @@ function PublicProfilePage() {
                                   )}
                                 </div>
                                 <p className="text-[11px] text-muted-foreground mt-1">
-                                  {c.description}
+                                  {c.badgeLabel}
                                 </p>
                                 {total > 0 && (
                                   <div className="h-1.5 w-full rounded-full bg-card overflow-hidden mt-2">

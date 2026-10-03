@@ -28,6 +28,9 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useCommunity } from "@/hooks/use-community";
+import { useCommunities } from "@/lib/social/communities-queries";
+import type { RemoteChallenge } from "@/lib/social/challenges";
+import { useJoinChallenge, useLeaveChallenge } from "@/lib/social/challenges-queries";
 import {
   useAddComment,
   useDeleteComment,
@@ -57,7 +60,9 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, profiles } = useCommunity();
+  const { profiles } = useCommunity();
+  // Comunidade do post (link no cabeçalho): do banco.
+  const communitiesQuery = useCommunities(false, !!user && !!post.communityId);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -149,7 +154,9 @@ export function PostCard({ post }: PostCardProps) {
     ? post.authorRole === "profissional"
     : profiles.find((p) => p.userId === post.authorId)?.role === "profissional";
 
-  const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
+  const community = post.communityId
+    ? (communitiesQuery.data ?? []).find((c) => c.id === post.communityId)
+    : null;
 
   // --- RENDERS COMUNS ---
   const renderAuthorInfo = () => (
@@ -685,38 +692,37 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
 }
 
 interface ChallengeCardProps {
-  challenge: Challenge;
+  challenge: RemoteChallenge;
 }
 
 export function ChallengeCard({ challenge }: ChallengeCardProps) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const currentUserId = user?.id || "guest";
-  const participants = challenge?.participants || [];
-  const isJoined = participants.includes(currentUserId);
-  const isCompleted = (challenge?.completedBy || []).includes(currentUserId);
+  const join = useJoinChallenge();
+  const leave = useLeaveChallenge();
+  const isJoined = challenge?.joined ?? false;
+  const isCompleted = challenge?.completed ?? false;
   const totalSteps = challenge?.steps?.length || 0;
-  const completedSteps = (challenge?.progress?.[currentUserId] || []).length;
+  const completedSteps = challenge?.mySteps.length ?? 0;
 
   const handleJoin = () => {
     if (!user) {
       toast.info(t("challenge.loginToJoin"));
       return;
     }
-    toggleJoinChallenge(challenge.id, user.id);
-    if (!isJoined) {
-      toast.success(t("challenge.joined"));
+    if (isJoined) {
+      leave.mutate(challenge.id, { onSuccess: () => toast.info(t("challenge.left")) });
     } else {
-      toast.info(t("challenge.left"));
+      join.mutate(challenge.id, { onSuccess: () => toast.success(t("challenge.joined")) });
     }
   };
 
   if (!challenge) return null;
 
-  let challengeImage = null;
-  if (challenge.id === "desafio-3-frescos") {
-    challengeImage = "/images/challenges/salad-bowl.jpg";
-  }
+  // Só o desafio dos "3 alimentos frescos" tem foto de capa; os demais usam o cabeçalho colorido.
+  const challengeImage = /3 alimentos frescos/i.test(challenge.title)
+    ? "/images/challenges/salad-bowl.jpg"
+    : null;
 
   return (
     <div className="rounded-2xl border border-border bg-card shadow-xs flex flex-col justify-between transition hover:shadow-sm overflow-hidden">
@@ -794,7 +800,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
       <div className="mt-5 border-t border-border/60 pt-3 px-5 pb-5 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
-            👥 {participants.length} {t("challenge.participating")}
+            👥 {challenge.participantCount} {t("challenge.participating")}
           </span>
           <Link
             to="/desafios/$challengeId"
@@ -806,6 +812,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         </div>
         <button
           type="button"
+          disabled={join.isPending || leave.isPending}
           onClick={handleJoin}
           className={`w-full rounded-full px-4 py-1.5 text-xs font-semibold transition cursor-pointer ${
             isJoined

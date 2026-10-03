@@ -6,7 +6,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { AdminPerson } from "@/components/person-chip";
 import { useCommunity } from "@/hooks/use-community";
 import { getProfessionalInfo } from "@/lib/community-admin";
-import { CATEGORIES, type Community } from "@/lib/community";
+import { CATEGORIES } from "@/lib/community";
+import type { RemoteCommunity } from "@/lib/social/communities";
+import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/comunidades/")({
@@ -32,12 +34,10 @@ export const Route = createFileRoute("/comunidades/")({
 function ComunidadesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities: allCommunities, posts, hydrated } = useCommunity();
-  // Comunidades pendentes ainda não existem publicamente: só quem as criou as vê.
-  const communities = useMemo(
-    () => allCommunities.filter((c) => c.status !== "pendente" || c.adminUserId === user?.id),
-    [allCommunities, user?.id],
-  );
+  // As comunidades vêm do banco, que já esconde as pendentes de quem não pode vê-las.
+  const communitiesQuery = useCommunities(false, !!user);
+  const hydrated = !communitiesQuery.isLoading;
+  const communities = useMemo(() => communitiesQuery.data ?? [], [communitiesQuery.data]);
   const [category, setCategory] = useState<string>("Todas");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -134,23 +134,18 @@ function ComunidadesPage() {
   );
 }
 
-function CommunityCard({ community: c }: { community: Community }) {
-  const { posts, profiles } = useCommunity();
-  const { user } = useAuth();
+function CommunityCard({ community: c }: { community: RemoteCommunity }) {
+  // Dados de profissional (profissão, conselho) ainda vêm do espelho local.
+  const { profiles } = useCommunity();
   const { t } = useI18n();
   const STATUS_LABEL = {
     pendente: t("comunidades.status.pendente"),
     suspensa: t("comunidades.status.suspensa"),
   } as const;
-  const isMember = !!user && c.members.some((m) => m.userId === user.id);
+  const isMember = c.isMember;
   const pro = c.professionalId ? getProfessionalInfo(profiles, c.professionalId) : undefined;
 
-  let coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
-  if (!c.coverImage) {
-    if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
-    if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
-    if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
-  }
+  const coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
 
   return (
     // O card inteiro é clicável (link esticado no título); os admins são links próprios acima dele.
@@ -196,7 +191,7 @@ function CommunityCard({ community: c }: { community: Community }) {
             raised
             label={t("comunidades.adminUser")}
             userId={c.adminUserId}
-            name={c.adminUserName}
+            name={c.adminName}
             vacantText={t("comunidades.awaitingNomination")}
           />
           <AdminPerson
@@ -216,11 +211,11 @@ function CommunityCard({ community: c }: { community: Community }) {
 
         <div className="mt-4 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
           <span className="inline-flex items-center gap-1">
-            <Users className="h-4 w-4 text-accent" /> {c.members.length} {t("comunidades.members")}
+            <Users className="h-4 w-4 text-accent" /> {c.memberCount} {t("comunidades.members")}
           </span>
           <span className="inline-flex items-center gap-1">
             <MessageCircle className="h-4 w-4 text-accent" />
-            {posts.filter((p) => p.communityId === c.id).length} {t("comunidades.posts")}
+            {c.postCount} {t("comunidades.posts")}
           </span>
         </div>
       </div>

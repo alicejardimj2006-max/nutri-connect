@@ -15,9 +15,12 @@ import {
 import { Mascot } from "@/components/mascots";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
+import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
-import { getUserLevel, getUserStreak, getUserXP, initials } from "@/lib/community";
+import { getUserLevel, initials } from "@/lib/community";
+import { challengeStreak, challengeXP } from "@/lib/social/challenge-stats";
+import { useChallenges } from "@/lib/social/challenges-queries";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import {
   TRAIL_CHANGE_EVENT,
@@ -75,20 +78,20 @@ function useAdultTrailProgress(userId: string | undefined) {
 export function EspacoLeftColumn() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, challenges } = useCommunity();
+  const challengesQuery = useChallenges(!!user);
+  const challenges = useMemo(() => challengesQuery.data ?? [], [challengesQuery.data]);
   const trailProgress = useAdultTrailProgress(user?.id);
 
-  const myCommunities = useMemo(
-    () => (user ? communities.filter((c) => c.members.some((m) => m.userId === user.id)) : []),
-    [communities, user],
-  );
+  // Minhas comunidades: do banco.
+  const mine = useCommunities(true, !!user);
+  const myCommunities = useMemo(() => mine.data ?? [], [mine.data]);
 
   if (!user) return null;
 
-  const xp = getUserXP(user.id, challenges) + (trailProgress?.totalXP ?? 0);
+  const xp = challengeXP(challenges) + (trailProgress?.totalXP ?? 0);
   const lvl = getUserLevel(xp);
   const streak = Math.max(
-    getUserStreak(user.id, challenges),
+    challengeStreak(challenges),
     trailProgress ? getActiveStreak(trailProgress) : 0,
   );
   const pct = Math.min(100, Math.round((lvl.xpInLevel / lvl.xpForNext) * 100));
@@ -157,7 +160,7 @@ export function EspacoLeftColumn() {
                       {c.name}
                     </span>
                     <span className="block text-[11px] text-muted-foreground">
-                      {c.members.length} {t("comunidades.members")}
+                      {c.memberCount} {t("comunidades.members")}
                     </span>
                   </span>
                 </Link>
@@ -184,7 +187,10 @@ export function EspacoLeftColumn() {
 export function EspacoRightColumn() {
   const { user } = useAuth();
   const { t, locale } = useI18n();
-  const { communities, challenges, weeklyTheme, profiles, hydrated } = useCommunity();
+  const { weeklyTheme, profiles, hydrated } = useCommunity();
+  const challengesQuery = useChallenges(!!user);
+  const challenges = useMemo(() => challengesQuery.data ?? [], [challengesQuery.data]);
+  const allCommunities = useCommunities(false, !!user);
   const trailProgress = useAdultTrailProgress(user?.id);
 
   const trail = useMemo(() => {
@@ -207,18 +213,14 @@ export function EspacoRightColumn() {
   }, [trailProgress, locale]);
 
   const myChallenges = useMemo(
-    () =>
-      user
-        ? challenges.filter(
-            (c) => c.participants.includes(user.id) && !c.completedBy.includes(user.id),
-          )
-        : [],
-    [challenges, user],
+    () => challenges.filter((c) => c.joined && !c.completed),
+    [challenges],
   );
 
+  // Sugestões: comunidades abertas das quais a pessoa ainda não participa.
   const suggested = useMemo(
-    () => (user ? communities.filter((c) => !c.members.some((m) => m.userId === user.id)) : []),
-    [communities, user],
+    () => (allCommunities.data ?? []).filter((c) => !c.isMember && c.status !== "pendente"),
+    [allCommunities.data],
   );
 
   const professionals = useMemo(
@@ -299,7 +301,7 @@ export function EspacoRightColumn() {
         {myChallenges.length > 0 ? (
           <ul className="space-y-2">
             {myChallenges.slice(0, 3).map((c) => {
-              const done = (c.progress?.[user.id] || []).length;
+              const done = c.mySteps.length;
               const total = c.steps.length;
               return (
                 <li key={c.id}>

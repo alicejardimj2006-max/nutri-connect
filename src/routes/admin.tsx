@@ -9,16 +9,15 @@ import { PostImage } from "@/components/post-image";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import { formatDate, type Community, type VerificationRequest } from "@/lib/community";
+import { formatDate, type VerificationRequest } from "@/lib/community";
+import { isPlatformAdmin, reviewVerification } from "@/lib/community-admin";
+import type { RemoteCommunity } from "@/lib/social/communities";
 import {
-  designateAdminUser,
-  isPlatformAdmin,
-  needsAdminUser,
-  needsProfessional,
-  rankEngagedMembers,
-  rankProfessionalsFor,
-  reviewVerification,
-} from "@/lib/community-admin";
+  useCommunities,
+  useCommunityCandidates,
+  useDesignateAdminUser,
+  useEngagedMembers,
+} from "@/lib/social/communities-queries";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel da plataforma — NutriConnect" }] }),
@@ -31,6 +30,8 @@ function AdminPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
   const state = useCommunity();
+  // A plataforma enxerga todas as comunidades; as que precisam de atenção são as não ativas.
+  const communitiesQuery = useCommunities(false, !!user?.isAdmin);
   const [tab, setTab] = useState<Tab>("verificacoes");
 
   // Admins veem todos os pedidos, com links temporários para as imagens privadas.
@@ -55,7 +56,7 @@ function AdminPage() {
 
   const pending = state.verifications.filter((v) => v.status === "em_analise");
   const reviewed = state.verifications.filter((v) => v.status !== "em_analise");
-  const attention = state.communities.filter((c) => c.status !== "ativa");
+  const attention = (communitiesQuery.data ?? []).filter((c) => c.status !== "ativa");
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -285,11 +286,17 @@ function VerificationCard({
   );
 }
 
-function CommunityCase({ community: c }: { community: Community }) {
+function CommunityCase({ community: c }: { community: RemoteCommunity }) {
   const { t } = useI18n();
-  const state = useCommunity();
-  const invited = needsProfessional(c) ? rankProfessionalsFor(c, state) : [];
-  const candidates = needsAdminUser(c) ? rankEngagedMembers(c, state) : [];
+  // Faltam um profissional (convidados calculados no banco) e/ou um admin usuário (membros mais
+  // engajados). Pendente e suspensa sem profissional precisam de um; suspensa sem admin, do outro.
+  const needsPro = !c.professionalId && (c.status === "pendente" || c.status === "suspensa");
+  const needsUser = !c.adminUserId && c.status === "suspensa";
+  const invitedQuery = useCommunityCandidates(c.id, needsPro);
+  const engagedQuery = useEngagedMembers(c.id, needsUser);
+  const designate = useDesignateAdminUser();
+  const invited = invitedQuery.data ?? [];
+  const candidates = engagedQuery.data ?? [];
 
   return (
     <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
@@ -303,7 +310,7 @@ function CommunityCase({ community: c }: { community: Community }) {
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{td(c.category)}</p>
 
-      {needsProfessional(c) && (
+      {needsPro && (
         <div className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wider text-foreground">
             {t("admin.missingPro")}
@@ -312,14 +319,14 @@ function CommunityCase({ community: c }: { community: Community }) {
             <p className="mt-1 text-sm text-muted-foreground">{t("admin.noProAvailable")}</p>
           ) : (
             <p className="mt-1 text-sm text-muted-foreground">
-              {t("admin.invitedTo")} {invited.map((r) => r.profile.name).join(", ")}.{" "}
+              {t("admin.invitedTo")} {invited.map((r) => r.name).join(", ")}.{" "}
               {t("admin.firstToAccept")}
             </p>
           )}
         </div>
       )}
 
-      {needsAdminUser(c) && (
+      {needsUser && (
         <div className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wider text-foreground">
             {t("admin.missingUser")}
@@ -329,10 +336,7 @@ function CommunityCase({ community: c }: { community: Community }) {
           ) : (
             <ul className="mt-2 divide-y divide-border/60 rounded-xl border border-border/70">
               {candidates.map((m) => (
-                <li
-                  key={m.userId}
-                  className="flex flex-wrap items-center justify-between gap-2 p-3"
-                >
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <span className="text-sm text-foreground">
                     {m.name}{" "}
                     <span className="text-xs text-muted-foreground">
@@ -342,14 +346,16 @@ function CommunityCase({ community: c }: { community: Community }) {
                   </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      try {
-                        designateAdminUser(c.id, m.userId);
-                        toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`);
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : t("admin.designateError"));
-                      }
-                    }}
+                    disabled={designate.isPending}
+                    onClick={() =>
+                      designate.mutate(
+                        { communityId: c.id, userId: m.id },
+                        {
+                          onSuccess: () =>
+                            toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`),
+                        },
+                      )
+                    }
                     className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition hover:bg-accent/90"
                   >
                     {t("admin.designate")}

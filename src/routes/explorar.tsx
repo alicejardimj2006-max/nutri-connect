@@ -13,6 +13,8 @@ import { VerifiedBadge } from "@/components/person-chip";
 import { initials } from "@/lib/community";
 import { useSearchUsers } from "@/lib/social/queries";
 import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+import { useCommunities } from "@/lib/social/communities-queries";
+import { useChallenges } from "@/lib/social/challenges-queries";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({
@@ -35,7 +37,11 @@ const PEOPLE_PAGE = 20;
 function ExplorarPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { challenges, weeklyTheme, communities } = useCommunity();
+  const { weeklyTheme } = useCommunity();
+  const challengesQuery = useChallenges(!!user);
+  const challenges = challengesQuery.data ?? [];
+  const communitiesQuery = useCommunities(false, !!user);
+  const communities = communitiesQuery.data ?? [];
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -415,8 +421,8 @@ function ExplorarPage() {
                           {td(c.category)}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          {c.members.length}{" "}
-                          {c.members.length === 1 ? t("explore.member") : t("comunidades.members")}
+                          {c.memberCount}{" "}
+                          {c.memberCount === 1 ? t("explore.member") : t("comunidades.members")}
                         </span>
                       </div>
                     </Link>

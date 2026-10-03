@@ -3036,6 +3036,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      community_engaged_members: {
+        Args: { p_community: string }
+        Returns: {
+          avatar_url: string
+          comments: number
+          id: string
+          name: string
+          posts: number
+          score: number
+          supports: number
+          username: string
+        }[]
+      }
       community_is_visible: {
         Args: { p_community: string; p_user?: string }
         Returns: boolean
@@ -3206,6 +3219,57 @@ export type Database = {
           professional_id: string
           professional_name: string
           valid: boolean
+        }[]
+      }
+      get_challenge_participants: {
+        Args: { p_challenge: string }
+        Returns: {
+          avatar_url: string
+          completed: boolean
+          id: string
+          joined_at: string
+          name: string
+          steps_done: number
+          username: string
+        }[]
+      }
+      get_challenge_tips: {
+        Args: { p_challenge: string }
+        Returns: {
+          author_id: string
+          author_name: string
+          author_username: string
+          body: string
+          created_at: string
+          id: string
+        }[]
+      }
+      get_challenges: {
+        Args: { p_community?: string; p_id?: string }
+        Returns: {
+          badge_icon: string
+          badge_label: string
+          category: string
+          community_id: string
+          community_name: string
+          community_slug: string
+          completed_count: number
+          created_at: string
+          created_by: string
+          created_by_name: string
+          description: string
+          duration: string
+          id: string
+          joined: boolean
+          my_completed_at: string
+          my_steps: number[]
+          participant_count: number
+          position: number
+          required_challenge_id: string
+          steps: string[]
+          theme_id: string
+          tips: string[]
+          title: string
         }[]
       }
       get_communities: {
@@ -3380,18 +3444,6 @@ export type Database = {
           target_type: Database["public"]["Enums"]["report_target"]
         }[]
       }
-      notification_category: { Args: { p_type: string }; Returns: string }
-      notify: {
-        Args: {
-          p_actor: string
-          p_data?: Json
-          p_entity_id: string
-          p_entity_type: string
-          p_type: string
-          p_user: string
-        }
-        Returns: undefined
-      }
       my_community_invites: {
         Args: never
         Returns: {
@@ -3416,6 +3468,18 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      notification_category: { Args: { p_type: string }; Returns: string }
+      notify: {
+        Args: {
+          p_actor: string
+          p_data?: Json
+          p_entity_id: string
+          p_entity_type: string
+          p_type: string
+          p_user: string
+        }
+        Returns: undefined
       }
       owns_trail_profile: { Args: { p_profile: string }; Returns: boolean }
       person_cards: {
@@ -3680,6 +3744,21 @@ export type Database = {
         }[]
       }
       unique_slug: { Args: { p_name: string }; Returns: string }
+      user_challenges: {
+        Args: { p_user?: string }
+        Returns: {
+          badge_icon: string
+          badge_label: string
+          category: string
+          challenge_id: string
+          completed: boolean
+          completed_at: string
+          joined_at: string
+          steps_done: number
+          steps_total: number
+          title: string
+        }[]
+      }
     }
     Enums: {
       app_role: "paciente" | "profissional"

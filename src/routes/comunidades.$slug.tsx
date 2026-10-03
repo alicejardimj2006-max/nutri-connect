@@ -1,6 +1,6 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CalendarCheck, Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPerson } from "@/components/person-chip";
@@ -20,21 +20,25 @@ import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import { getProfessionalInfo, isPlatformAdmin, leaveAsAdmin } from "@/lib/community-admin";
+import { getProfessionalInfo } from "@/lib/community-admin";
+import { formatDate, initials, type Post } from "@/lib/community";
+import type { RemoteCommunity } from "@/lib/social/communities";
 import {
-  addComment,
-  createPost,
-  formatDate,
-  initials,
-  removeComment,
-  removePost,
-  toggleLike,
-  toggleMembership,
-  togglePin,
-  type Actor,
-  type Community,
-  type Post,
-} from "@/lib/community";
+  useCommunityBySlug,
+  useJoinCommunity,
+  useLeaveAdmin,
+  useLeaveCommunity,
+  useTogglePostPin,
+} from "@/lib/social/communities-queries";
+import {
+  useAddComment,
+  useCreatePost,
+  useDeleteComment,
+  useDeletePost,
+  useFeed,
+  useFeedRealtime,
+  useToggleReaction,
+} from "@/lib/social/feed-queries";
 
 export const Route = createFileRoute("/comunidades/$slug")({
   head: () => ({
@@ -56,30 +60,26 @@ export const Route = createFileRoute("/comunidades/$slug")({
   component: CommunityFeed,
 });
 
+const DEFAULT_COVER = "/images/communities/friends-dinner.jpg";
+
 function CommunityFeed() {
   const { slug } = useParams({ from: "/comunidades/$slug" });
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, posts, profiles, hydrated } = useCommunity();
-  const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
+  // Dados de profissional (profissão, conselho) ainda vêm do espelho local; o resto, do banco.
+  const { profiles } = useCommunity();
 
-  const community = communities.find((c) => c.slug === slug);
-  // Comunidade pendente ainda não existe publicamente: só quem a criou (ou a plataforma) a vê.
-  const hiddenPending =
-    community?.status === "pendente" &&
-    community.adminUserId !== actor?.id &&
-    !isPlatformAdmin(user);
-  const feed = useMemo(
-    () =>
-      posts
-        .filter((p) => p.communityId === community?.id)
-        .sort((a, b) =>
-          a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1,
-        ),
-    [posts, community?.id],
+  // O banco já esconde comunidades pendentes de quem não pode vê-las.
+  const communityQuery = useCommunityBySlug(slug);
+  const community = communityQuery.data ?? undefined;
+  const feedQuery = useFeed(
+    { scope: "comunidade", community: community?.id, limit: 50 },
+    !!user && !!community,
   );
+  useFeedRealtime(user?.id);
+  const feed = feedQuery.data ?? [];
 
-  if (!hydrated) {
+  if (communityQuery.isLoading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">
         {t("common.loading")}
@@ -87,7 +87,7 @@ function CommunityFeed() {
     );
   }
 
-  if (!community || hiddenPending) {
+  if (!community) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-2xl font-bold text-primary">{t("cf.notFound")}</h1>
@@ -101,19 +101,16 @@ function CommunityFeed() {
     );
   }
 
-  const isAdminUser = !!actor && community.adminUserId === actor.id;
-  const isAdminPro = !!actor && community.professionalId === actor.id;
+  const isAdminUser = !!user && community.adminUserId === user.id;
+  const isAdminPro = !!user && community.professionalId === user.id;
   const isModerator = isAdminUser || isAdminPro;
-  const isMember = !!actor && community.members.some((m) => m.userId === actor.id);
-  const canPost = !!actor && (isMember || isModerator) && community.status === "ativa";
+  const isMember = community.isMember;
+  // Só em comunidade ativa se publica (o banco também exige).
+  const canPost = !!user && (isMember || isModerator) && community.status === "ativa";
   const pro = community.professionalId
     ? getProfessionalInfo(profiles, community.professionalId)
     : undefined;
-
-  let coverImage = "/images/communities/friends-dinner.jpg";
-  if (community.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
-  if (community.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
-  if (community.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
+  const coverImage = community.coverImage || DEFAULT_COVER;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
@@ -138,11 +135,10 @@ function CommunityFeed() {
               </h1>
             </div>
 
-            {actor && (
+            {user && (
               <MembershipAction
                 variant="cover"
                 community={community}
-                actor={actor}
                 isMember={isMember}
                 isAdmin={isModerator}
                 isPro={isAdminPro}
@@ -169,7 +165,7 @@ function CommunityFeed() {
                 <AdminPerson
                   label={t("comunidades.adminUser")}
                   userId={community.adminUserId}
-                  name={community.adminUserName}
+                  name={community.adminName}
                   vacantText={t("comunidades.awaitingNomination")}
                 />
                 <AdminPerson
@@ -185,7 +181,7 @@ function CommunityFeed() {
                   vacantText={t("comunidades.status.pendente")}
                 />
               </div>
-              {community.professionalId && actor && community.professionalId !== actor.id && (
+              {community.professionalId && user && community.professionalId !== user.id && (
                 <Link
                   to="/profissionais/$professionalId"
                   params={{ professionalId: community.professionalId }}
@@ -200,15 +196,14 @@ function CommunityFeed() {
 
             <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
               <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
-                <Users className="h-4 w-4 text-accent" /> {community.members.length}{" "}
+                <Users className="h-4 w-4 text-accent" /> {community.memberCount}{" "}
                 {t("comunidades.members")}
               </span>
 
-              {actor && (
+              {user && (
                 <MembershipAction
                   variant="inline"
                   community={community}
-                  actor={actor}
                   isMember={isMember}
                   isAdmin={isModerator}
                   isPro={isAdminPro}
@@ -233,10 +228,10 @@ function CommunityFeed() {
       )}
 
       {canPost ? (
-        <Composer communityId={community.id} actor={actor} />
+        <Composer communityId={community.id} />
       ) : (
         <p className="mt-6 rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
-          {!actor ? (
+          {!user ? (
             <>
               <Link to="/login" className="font-semibold text-accent hover:underline">
                 {t("cf.signIn")}
@@ -253,9 +248,14 @@ function CommunityFeed() {
 
       <section className="mt-6 space-y-5">
         {feed.map((post) => (
-          <PostCard key={post.id} post={post} actor={actor} isModerator={isModerator} />
+          <CommunityPostCard
+            key={post.id}
+            post={post}
+            userId={user?.id ?? null}
+            isModerator={isModerator}
+          />
         ))}
-        {feed.length === 0 && (
+        {feed.length === 0 && !feedQuery.isLoading && (
           <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
             {t("cf.noPosts")}
           </p>
@@ -268,20 +268,21 @@ function CommunityFeed() {
 function MembershipAction({
   variant,
   community,
-  actor,
   isMember,
   isAdmin,
   isPro,
 }: {
   variant: "cover" | "inline";
-  community: Community;
-  actor: Actor;
+  community: RemoteCommunity;
   isMember: boolean;
   isAdmin: boolean;
   isPro: boolean;
 }) {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const join = useJoinCommunity();
+  const leave = useLeaveCommunity();
+  const leaveAdmin = useLeaveAdmin();
   const cover = variant === "cover";
   const base = cover
     ? "hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition"
@@ -316,10 +317,14 @@ function MembershipAction({
           <AlertDialogFooter>
             <AlertDialogCancel>{t("cf.keepAdmin")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                leaveAsAdmin(community.id, actor);
-                toast.success(t("cf.leftToast"));
-                navigate({ to: "/comunidades" });
+              onClick={async () => {
+                try {
+                  await leaveAdmin.mutateAsync(community.id);
+                  toast.success(t("cf.leftToast"));
+                  navigate({ to: "/comunidades" });
+                } catch {
+                  // o aviso de erro já é mostrado pelo hook
+                }
               }}
             >
               {t("cf.leaveAdmin")}
@@ -333,32 +338,44 @@ function MembershipAction({
   return (
     <button
       type="button"
-      onClick={() => toggleMembership(community.id, actor)}
-      className={`${base} ${isMember ? secondary : primary}`}
+      disabled={join.isPending || leave.isPending}
+      onClick={() => (isMember ? leave.mutate(community.id) : join.mutate(community.id))}
+      className={`${base} ${isMember ? secondary : primary} disabled:opacity-60`}
     >
       {isMember ? t("cf.leaveCommunity") : t("cf.join")}
     </button>
   );
 }
 
-function Composer({ communityId, actor }: { communityId: string; actor: Actor }) {
+function Composer({ communityId }: { communityId: string }) {
   const { t } = useI18n();
   const [text, setText] = useState("");
   const [image, setImage] = useState<string | undefined>(undefined);
   const fileRef = useRef<HTMLInputElement>(null);
+  const createPost = useCreatePost();
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         if (!text.trim()) {
           toast.error(t("cf.writeSomething"));
           return;
         }
-        createPost({ communityId, actor, text: text.trim(), ...(image ? { image } : {}) });
-        setText("");
-        setImage(undefined);
-        toast.success(t("cf.published"));
+        try {
+          // Publica no banco (a foto vai para o Storage); o feed da comunidade atualiza sozinho.
+          await createPost.mutateAsync({
+            type: "geral",
+            text: text.trim(),
+            image,
+            communityId,
+          });
+          setText("");
+          setImage(undefined);
+          toast.success(t("cf.published"));
+        } catch {
+          // o aviso de erro já é mostrado pelo hook
+        }
       }}
       className="mt-6 rounded-2xl border bg-card p-5 shadow-card"
     >
@@ -397,7 +414,10 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
         >
           <ImagePlus className="h-4 w-4" /> {t("cf.addPhoto")}
         </button>
-        <button className="ml-auto rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
+        <button
+          disabled={createPost.isPending}
+          className="ml-auto rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-60"
+        >
           {t("cf.postToCommunity")}
         </button>
       </div>
@@ -405,18 +425,23 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
   );
 }
 
-function PostCard({
+function CommunityPostCard({
   post,
-  actor,
+  userId,
   isModerator,
 }: {
   post: Post;
-  actor: Actor | null;
+  userId: string | null;
   isModerator: boolean;
 }) {
   const [comment, setComment] = useState("");
   const { t } = useI18n();
-  const liked = !!actor && post.likes.includes(actor.id);
+  const supported = !!userId && post.supports.includes(userId);
+  const toggleReaction = useToggleReaction();
+  const togglePin = useTogglePostPin();
+  const deletePost = useDeletePost();
+  const addComment = useAddComment();
+  const deleteComment = useDeleteComment();
 
   return (
     <PostCardFrame
@@ -445,17 +470,18 @@ function PostCard({
         {isModerator && (
           <div className="ml-auto flex gap-1">
             <button
-              onClick={() => togglePin(post.id)}
+              onClick={() => togglePin.mutate(post.id)}
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
               aria-label={post.pinned ? t("cf.unpin") : t("cf.pin")}
             >
               <Pin className="h-4 w-4" />
             </button>
             <button
-              onClick={() => {
-                removePost(post.id);
-                toast.success(t("cf.removedPost"));
-              }}
+              onClick={() =>
+                deletePost.mutate(post.id, {
+                  onSuccess: () => toast.success(t("cf.removedPost")),
+                })
+              }
               className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
               aria-label={t("cf.removePost")}
             >
@@ -475,15 +501,15 @@ function PostCard({
       <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
         <button
           onClick={() => {
-            if (!actor) return toast.error(t("cf.loginToSupport"));
-            toggleLike(post.id, actor.id);
+            if (!userId) return toast.error(t("cf.loginToSupport"));
+            toggleReaction.mutate({ postId: post.id, kind: "apoiar", on: !supported, userId });
           }}
           className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold transition ${
-            liked ? "bg-accent-soft text-accent" : "hover:bg-secondary"
+            supported ? "bg-accent-soft text-accent" : "hover:bg-secondary"
           }`}
         >
-          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length}{" "}
-          {post.likes.length === 1 ? t("cf.supportOne") : t("cf.supportMany")}
+          <Heart className={`h-4 w-4 ${supported ? "fill-current" : ""}`} /> {post.supports.length}{" "}
+          {post.supports.length === 1 ? t("cf.supportOne") : t("cf.supportMany")}
         </button>
         <span className="inline-flex items-center gap-1">
           <MessageCircle className="h-4 w-4" /> {post.comments.length} {t("cf.comments")}
@@ -505,12 +531,13 @@ function PostCard({
               </p>
               <p className="mt-1 text-sm text-foreground">{c.text}</p>
             </div>
-            {isModerator && (
+            {(isModerator || c.authorId === userId) && (
               <button
-                onClick={() => {
-                  removeComment(post.id, c.id);
-                  toast.success(t("cf.commentRemoved"));
-                }}
+                onClick={() =>
+                  deleteComment.mutate(c.id, {
+                    onSuccess: () => toast.success(t("cf.commentRemoved")),
+                  })
+                }
                 className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
                 aria-label={t("cf.removeComment")}
               >
@@ -520,13 +547,17 @@ function PostCard({
           </div>
         ))}
 
-        {actor && (
+        {userId && (
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (!comment.trim()) return;
-              addComment(post.id, actor, comment.trim());
-              setComment("");
+              try {
+                await addComment.mutateAsync({ postId: post.id, text: comment.trim() });
+                setComment("");
+              } catch {
+                // o aviso de erro já é mostrado pelo hook
+              }
             }}
             className="flex gap-2"
           >
