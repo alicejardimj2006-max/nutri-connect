@@ -23,25 +23,7 @@ export const askNutriAssistant = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data, context }): Promise<NinaReply> => {
     const { supabase, userId } = context;
-    const { aiChat, aiConfigured, aiErrorMessage } = await import("./ai-gateway.server");
-    // Sem chave não há IA: não gasta uma pergunta do limite diário à toa.
-    if (!aiConfigured()) return { error: aiErrorMessage(503) };
-
-    // Reserva um uso do dia antes de chamar a IA.
-    const { data: allowed, error: quotaError } = await supabase.rpc("ai_consume", {
-      p_kind: "nina",
-      p_limit: NINA_DAILY_LIMIT,
-    });
-    if (quotaError) {
-      console.error("nina quota", quotaError.message);
-      return { error: "A assistente não conseguiu responder. Tente novamente." };
-    }
-    if (!allowed) {
-      return {
-        error: `Você chegou ao limite de ${NINA_DAILY_LIMIT} perguntas por hoje. Volte amanhã!`,
-        used: NINA_DAILY_LIMIT,
-      };
-    }
+    const { aiChat, aiErrorMessage } = await import("./ai-gateway.server");
 
     const { data: past } = await supabase
       .from("nina_messages")
@@ -53,11 +35,19 @@ export const askNutriAssistant = createServerFn({ method: "POST" })
       .reverse()
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content.slice(0, 4000) }));
 
+    // A Edge Function ai-chat confere o login, consome o uso do dia e chama a IA.
     const result = await aiChat({
+      kind: "nina",
       system: SYSTEM,
       messages: [...history, { role: "user", content: data.message }],
     });
     const { data: used } = await supabase.rpc("ai_usage_today", { p_kind: "nina" });
+    if (!result.ok && result.limit) {
+      return {
+        error: `Você chegou ao limite de ${NINA_DAILY_LIMIT} perguntas por hoje. Volte amanhã!`,
+        used: NINA_DAILY_LIMIT,
+      };
+    }
     if (!result.ok) return { error: aiErrorMessage(result.status), used: used ?? undefined };
 
     // Só grava a troca quando a IA respondeu.

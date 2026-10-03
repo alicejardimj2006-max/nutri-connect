@@ -1,3 +1,4 @@
+import { getRequest } from "@tanstack/react-start/server";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 export function createLovableAiGatewayProvider(lovableApiKey: string) {
@@ -11,52 +12,46 @@ export function createLovableAiGatewayProvider(lovableApiKey: string) {
   });
 }
 
-const CHAT_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-export const AI_MODEL = "google/gemini-2.5-flash";
+export type AiKind = "nina" | "summary";
+export type AiChatResult = { ok: true; text: string } | { ok: false; status: number; limit?: boolean };
 
-/** Falso quando a chave do gateway não está no ambiente do servidor. */
-export function aiConfigured(): boolean {
-  return Boolean(process.env["LOVABLE_API_KEY"]);
-}
-
-export type AiChatResult = { ok: true; text: string } | { ok: false; status: number };
-
-/** Uma chamada de chat ao gateway (sem streaming). A chave fica só no servidor. */
+/**
+ * Uma chamada de chat à IA (sem streaming), feita pela Edge Function ai-chat do Supabase com o
+ * login de quem está usando. A chave do gateway e o limite diário ficam lá, não neste servidor.
+ */
 export async function aiChat(opts: {
+  kind: AiKind;
   system: string;
   messages: { role: "user" | "assistant"; content: string }[];
   temperature?: number;
 }): Promise<AiChatResult> {
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) return { ok: false, status: 503 };
+  const url = process.env["SUPABASE_URL"];
+  const apikey = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  const auth = getRequest()?.headers.get("authorization");
+  if (!url || !apikey || !auth) return { ok: false, status: 503 };
   try {
-    const res = await fetch(CHAT_URL, {
+    const res = await fetch(`${url}/functions/v1/ai-chat`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-        "Lovable-API-Key": key,
-      },
+      headers: { "Content-Type": "application/json", Authorization: auth, apikey },
       body: JSON.stringify({
-        model: AI_MODEL,
-        temperature: opts.temperature ?? 0.5,
-        messages: [{ role: "system", content: opts.system }, ...opts.messages],
+        kind: opts.kind,
+        system: opts.system,
+        messages: opts.messages,
+        temperature: opts.temperature,
       }),
     });
     if (!res.ok) {
-      console.error("ai-gateway", res.status, (await res.text().catch(() => "")).slice(0, 300));
-      return { ok: false, status: res.status };
+      console.error("ai-chat", res.status, (await res.text().catch(() => "")).slice(0, 300));
+      return { ok: false, status: res.status === 401 ? 403 : 502 };
     }
-    const body = await res.json();
-    const text = String(body?.choices?.[0]?.message?.content ?? "").trim();
-    return text ? { ok: true, text } : { ok: false, status: 502 };
+    return (await res.json()) as AiChatResult;
   } catch (err) {
-    console.error("ai-gateway", err);
+    console.error("ai-chat", err);
     return { ok: false, status: 502 };
   }
 }
 
-/** Mensagem amigável para um erro do gateway. */
+/** Mensagem amigável para um erro da IA. */
 export function aiErrorMessage(status: number): string {
   if (status === 503) return "A IA não está configurada.";
   if (status === 429) return "Muitas perguntas agora. Tente em instantes.";

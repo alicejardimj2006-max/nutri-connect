@@ -36,8 +36,7 @@ export const summarizePatient = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data, context }): Promise<SummaryReply> => {
     const { supabase, userId } = context;
-    const { aiChat, aiConfigured, aiErrorMessage } = await import("./ai-gateway.server");
-    if (!aiConfigured()) return { error: aiErrorMessage(503) };
+    const { aiChat, aiErrorMessage } = await import("./ai-gateway.server");
 
     // Só a profissional com vínculo ativo com este paciente.
     const { data: link } = await supabase
@@ -127,17 +126,16 @@ export const summarizePatient = createServerFn({ method: "POST" })
       );
     }
 
-    const { data: allowed } = await supabase.rpc("ai_consume", {
-      p_kind: "summary",
-      p_limit: SUMMARY_DAILY_LIMIT,
-    });
-    if (!allowed) return { error: `Limite de ${SUMMARY_DAILY_LIMIT} resumos por dia atingido.` };
-
+    // A Edge Function ai-chat confere o login, consome o uso do dia e chama a IA.
     const result = await aiChat({
+      kind: "summary",
       system: `${SYSTEM}\nResponda em ${LANGUAGES[data.locale]}.`,
       messages: [{ role: "user", content: lines.join("\n") }],
       temperature: 0.3,
     });
+    if (!result.ok && result.limit) {
+      return { error: `Limite de ${SUMMARY_DAILY_LIMIT} resumos por dia atingido.` };
+    }
     if (!result.ok) return { error: aiErrorMessage(result.status) };
     return { summary: result.text };
   });

@@ -12,3 +12,7 @@ verify_jwt = false
 
 [functions.moderate-content]
 verify_jwt = false
+
+# Valida o login dentro da funcao (requireUser); a chave de IA fica so nos segredos.
+[functions.ai-chat]
+verify_jwt = false
