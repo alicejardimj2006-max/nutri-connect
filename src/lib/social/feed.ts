@@ -116,6 +116,7 @@ export function toPost(row: FeedRow): Post {
     blockOrder: (row.block_order as PostBlock[] | null) ?? undefined,
     audience: row.audience,
     saved: row.saved,
+    hidden: row.hidden,
   };
 }
 

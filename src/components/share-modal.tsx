@@ -614,7 +614,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         themeId: joinTheme && activeTheme.data ? activeTheme.data.id : undefined,
       });
 
-      toast.success(t("sm.published"));
+      toast.success(t("sm.publishedReview"));
       setOpen(false);
       resetForm();
     } catch (err) {

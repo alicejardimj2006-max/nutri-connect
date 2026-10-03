@@ -78,7 +78,7 @@ function Diretrizes() {
       <LegalSection id="moderacao" title="6. Como moderamos">
         <LegalList
           items={[
-            "Uma inteligência artificial analisa publicações e comentários novos e pode ocultar os que forem claramente problemáticos; nesse caso abrimos uma denúncia para a equipe revisar.",
+            "Toda publicação e todo comentário passam por uma análise rápida de inteligência artificial antes de aparecer para os outros (você os vê normalmente, com o aviso \"em análise\"). Se algo for claramente problemático ou fugir do tema, ele fica oculto e abrimos uma denúncia para a equipe revisar.",
             "Conteúdos denunciados por várias pessoas são ocultados temporariamente até a análise.",
             "A equipe decide se o conteúdo volta ou é removido. O autor é avisado e pode pedir revisão por uma pessoa pelo Fale conosco.",
             "Em caso de violações graves ou repetidas, podemos advertir, suspender ou encerrar a conta. Decisões judiciais são cumpridas.",

@@ -1036,6 +1036,8 @@ const fr: Record<DictKey, string> = {
   "verified.professional": "Professionnel vérifié",
   "frame.seeLess": "Voir moins",
   "frame.seeMore": "Voir plus",
+  "postcard.underReview": "En cours de modération : vous seul(e) voyez ce post pour l'instant. Il apparaîtra aux autres une fois approuvé.",
+  "sm.publishedReview": "Envoyé ! Votre publication passe par une vérification rapide et apparaît aux autres dès son approbation.",
   "img.enlarge": "Agrandir l'image :",
   "img.close": "Fermer l'image",
   "ui.close": "Fermer",

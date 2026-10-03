@@ -1035,6 +1035,8 @@ const ptBR = {
   "verified.professional": "Profissional verificado",
   "frame.seeLess": "Ver menos",
   "frame.seeMore": "Ver mais",
+  "postcard.underReview": "Em análise pela moderação: só você vê este post por enquanto. Ele aparece para os outros assim que for aprovado.",
+  "sm.publishedReview": "Enviado! Sua publicação passa por uma análise rápida e aparece para os outros assim que for aprovada.",
   "img.enlarge": "Ampliar imagem:",
   "img.close": "Fechar imagem",
   "ui.close": "Fechar",

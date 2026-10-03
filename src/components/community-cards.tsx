@@ -153,7 +153,21 @@ export function PostCard({ post }: PostCardProps) {
   const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
 
   // --- RENDERS COMUNS ---
+  const underReview = remote && isOwnPost && post.hidden === true;
+  const reviewNotice = underReview ? (
+    <p className="mb-3 flex items-center gap-1.5 rounded-xl bg-warning/15 px-3 py-2 text-xs font-medium text-warning-foreground">
+      <Clock className="h-3.5 w-3.5 shrink-0" /> {t("postcard.underReview")}
+    </p>
+  ) : null;
+
   const renderAuthorInfo = () => (
+    <>
+      {reviewNotice}
+      {renderAuthorHeader()}
+    </>
+  );
+
+  const renderAuthorHeader = () => (
     <div className="flex flex-wrap items-start justify-between mb-4 gap-2">
       <div className="flex items-center gap-3 min-w-0">
         <Link

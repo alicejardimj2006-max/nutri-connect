@@ -1016,6 +1016,8 @@ const en: Record<DictKey, string> = {
   "verified.professional": "Verified professional",
   "frame.seeLess": "See less",
   "frame.seeMore": "See more",
+  "postcard.underReview": "Under moderation review: only you can see this post for now. It will show to others once approved.",
+  "sm.publishedReview": "Sent! Your post goes through a quick review and shows to others as soon as it is approved.",
   "img.enlarge": "Enlarge image:",
   "img.close": "Close image",
   "ui.close": "Close",

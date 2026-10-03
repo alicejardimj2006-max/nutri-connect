@@ -71,6 +71,8 @@ export interface Post {
   publishAt?: string;
   /** A pessoa logada salvou este post. */
   saved?: boolean;
+  /** Oculto para os outros: aguardando a moderação ou reprovado (o autor ainda o vê). */
+  hidden?: boolean;
 }
 
 /**

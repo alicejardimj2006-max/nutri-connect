@@ -51,8 +51,24 @@ function useFeedMutation<TResult, TVars>(fn: (vars: TVars) => Promise<TResult>) 
   });
 }
 
+/**
+ * Publicar: o post fica "em análise" até a IA aprovar (alguns segundos), então o feed é consultado
+ * de novo algumas vezes para o aviso sumir sozinho quando ele for liberado.
+ */
 export function useCreatePost() {
-  return useFeedMutation(feed.createPost);
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: feed.createPost,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: FEED_KEY });
+      for (const ms of [4000, 10000, 25000]) {
+        window.setTimeout(() => void qc.invalidateQueries({ queryKey: FEED_KEY }), ms);
+      }
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : String(err));
+    },
+  });
 }
 
 export function useDeletePost() {

@@ -1,8 +1,10 @@
-// Moderação automática: a IA lê um post/comentário recém-publicado (texto e imagem do post) ou uma
-// foto de perfil / capa de comunidade e, se for problemático, oculta o conteúdo e abre uma denúncia
-// (source = 'ia') para a administração revisar no /admin. Chamada pelo banco (trigger + pg_net)
-// com o header x-cron-secret. Se a IA falhar, o conteúdo continua visível (falha aberta) — nunca
-// impede ninguém de publicar. Só imagens PÚBLICAS do próprio Storage são enviadas à IA.
+// Moderação automática. Posts e comentários nascem ocultos ("pending_review") e só são publicados
+// quando a IA aprova (ai_approve_content); se ela reprovar, o conteúdo continua oculto e uma
+// denúncia (source = 'ia') vai para a fila do /admin. Se a IA falhar, a pendência é retomada pelo
+// job retry_pending_moderation e, depois de 30 minutos, vai para a revisão humana.
+// Também analisa fotos de perfil e capas de comunidade (publicadas na hora; removidas se reprovadas).
+// Chamada pelo banco (trigger + pg_net) com o header x-cron-secret.
+// Só imagens PÚBLICAS do próprio Storage são enviadas à IA.
 //
 // Segredos: CRON_SECRET, LOVABLE_API_KEY. Opcional: MODERATION_AI_MODEL.
 import { HttpError, env, json, serve } from "../_shared/http.ts";
@@ -152,20 +154,34 @@ serve(async (req) => {
   const admin = adminClient();
   let verdict: Verdict | null = null;
   let imageUrl: string | null = null;
+  let pending = false; // post/comentário aguardando a aprovação da IA
 
   try {
     if (type === "post" || type === "comment") {
       const { data: row } =
         type === "post"
-          ? await admin.from("posts").select("title, body, hidden, image_url").eq("id", id).maybeSingle()
-          : await admin.from("comments").select("body, hidden").eq("id", id).maybeSingle();
-      if (!row || row.hidden) return json({ ok: true, skipped: true });
+          ? await admin
+              .from("posts")
+              .select("title, body, hidden, pending_review, image_url")
+              .eq("id", id)
+              .maybeSingle()
+          : await admin
+              .from("comments")
+              .select("body, hidden, pending_review")
+              .eq("id", id)
+              .maybeSingle();
+      pending = row?.pending_review === true;
+      // Já oculto por moderação (não é pendência): nada a fazer.
+      if (!row || (row.hidden && !pending)) return json({ ok: true, skipped: true });
       const text = [(row as { title?: string | null }).title, row.body]
         .filter(Boolean)
         .join("\n\n")
         .trim();
       imageUrl = (row as { image_url?: string | null }).image_url ?? null;
-      if (!text && !imageUrl) return json({ ok: true, skipped: true });
+      if (!text && !imageUrl) {
+        if (pending) await admin.rpc("ai_approve_content", { p_type: type, p_id: id });
+        return json({ ok: true, skipped: true });
+      }
       verdict = await classifyWithFallback({ system: SYSTEM, text, imageUrl });
     } else if (type === "avatar") {
       const { data: row } = await admin.from("profiles").select("avatar_url").eq("id", id).maybeSingle();
@@ -183,10 +199,17 @@ serve(async (req) => {
       verdict = await classifyWithFallback({ system: SYSTEM_PROFILE_IMAGE, imageUrl });
     }
   } catch (err) {
+    // A pendência continua oculta e é retomada pelo job de nova tentativa.
     console.error("moderate-content: IA indisponível", err);
     return json({ ok: true, flagged: false, error: "ia_indisponivel" });
   }
-  if (!verdict || !verdict.flag) return json({ ok: true, flagged: false });
+  if (!verdict || !verdict.flag) {
+    if (pending) {
+      const { error } = await admin.rpc("ai_approve_content", { p_type: type, p_id: id });
+      if (error) throw error;
+    }
+    return json({ ok: true, flagged: false, approved: pending });
+  }
 
   const reason = (REASONS as readonly string[]).includes(verdict.reason) ? verdict.reason : "outro";
   const details = `Marcado pela IA${verdict.reason === "fora_do_tema" ? " (fora do tema)" : ""}: ${verdict.details}`.trim();
