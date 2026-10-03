@@ -3028,6 +3028,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      community_candidates: {
+        Args: { p_community: string }
+        Returns: {
+          matches_topic: boolean
+          score: number
+          user_id: string
+        }[]
+      }
       community_is_visible: {
         Args: { p_community: string; p_user?: string }
         Returns: boolean
@@ -3200,6 +3208,42 @@ export type Database = {
           valid: boolean
         }[]
       }
+      get_communities: {
+        Args: { p_only_mine?: boolean; p_slug?: string }
+        Returns: {
+          admin_name: string
+          admin_user_id: string
+          admin_username: string
+          category: string
+          cover_image_url: string
+          created_at: string
+          created_by: string
+          description: string
+          former_professional_ids: string[]
+          id: string
+          is_member: boolean
+          member_count: number
+          name: string
+          objective: string
+          post_count: number
+          professional_id: string
+          professional_name: string
+          professional_username: string
+          slug: string
+          status: Database["public"]["Enums"]["community_status"]
+        }[]
+      }
+      get_community_members: {
+        Args: { p_community: string }
+        Returns: {
+          avatar_url: string
+          id: string
+          joined_at: string
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+          username: string
+        }[]
+      }
       get_feed: {
         Args: {
           p_author?: string
@@ -3335,6 +3379,31 @@ export type Database = {
           target_id: string
           target_type: Database["public"]["Enums"]["report_target"]
         }[]
+      }
+      my_community_invites: {
+        Args: never
+        Returns: {
+          admin_user_id: string | null
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          former_professional_ids: string[]
+          id: string
+          name: string
+          objective: string | null
+          professional_id: string | null
+          slug: string
+          status: Database["public"]["Enums"]["community_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "communities"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       notification_category: { Args: { p_type: string }; Returns: string }
       notify: {
