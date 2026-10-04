@@ -38,7 +38,7 @@ const fr: Record<DictKey, string> = {
   "nina.clearConfirm": "Supprimer tout l'historique de la conversation avec Nina ?",
   "nina.usage": "questions aujourd'hui",
   "nina.disclaimer":
-    "Nina est une IA éducative et ne remplace pas un(e) diététicien(ne) ou un médecin. Les conversations sont conservées 90 jours.",
+    "Nina est une IA éducative et ne remplace pas un professionnel de santé. Les conversations sont conservées 90 jours.",
   "nina.error": "Nina n'a pas pu répondre. Réessayez.",
   "nav.loading": "Chargement…",
 

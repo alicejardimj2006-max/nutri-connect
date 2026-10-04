@@ -37,7 +37,7 @@ const es: Record<DictKey, string> = {
   "nina.clearConfirm": "¿Borrar todo el historial de la conversación con Nina?",
   "nina.usage": "preguntas hoy",
   "nina.disclaimer":
-    "Nina es una IA educativa y no reemplaza a un(a) nutricionista o médico(a). Las conversaciones se guardan 90 días.",
+    "Nina es una IA educativa y no reemplaza a un(a) profesional de la salud. Las conversaciones se guardan 90 días.",
   "nina.error": "Nina no pudo responder. Inténtalo de nuevo.",
   "nav.loading": "Cargando…",
 

@@ -3,7 +3,11 @@ import { COMPANY } from "@/lib/legal";
 
 /** Rodapé das páginas públicas: documentos legais e identificação de quem opera o site. */
 export function SiteFooter() {
-  const identification = [COMPANY.legalName, COMPANY.cnpj && `CNPJ ${COMPANY.cnpj}`, COMPANY.address]
+  const identification = [
+    COMPANY.legalName,
+    COMPANY.cnpj && `CNPJ ${COMPANY.cnpj}`,
+    COMPANY.address,
+  ]
     .filter(Boolean)
     .join(" · ");
   return (
@@ -28,7 +32,7 @@ export function SiteFooter() {
         </nav>
         <p>
           © {new Date().getFullYear()} {COMPANY.name}. O conteúdo da plataforma é educativo e não
-          substitui a consulta com nutricionista ou médico(a).
+          substitui a consulta com um(a) profissional de saúde.
         </p>
         {identification && <p>{identification}</p>}
       </div>

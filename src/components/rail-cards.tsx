@@ -828,10 +828,10 @@ export function EducationalNoticeCard() {
     >
       <p className="text-xs leading-relaxed text-muted-foreground">
         {tr([
-          "As informações do NutriConnect têm caráter educativo e não substituem a avaliação de um(a) nutricionista ou médico(a). Em urgências, procure atendimento imediato.",
-          "NutriConnect information is educational and does not replace an assessment by a nutritionist or doctor. In emergencies, seek immediate care.",
-          "La información de NutriConnect es educativa y no sustituye la evaluación de un nutricionista o médico. En urgencias, busca atención inmediata.",
-          "Les informations de NutriConnect sont éducatives et ne remplacent pas l'avis d'un nutritionniste ou d'un médecin. En urgence, consultez immédiatement.",
+          "As informações do NutriConnect têm caráter educativo e não substituem a avaliação de um(a) profissional de saúde. Em urgências, procure atendimento imediato.",
+          "NutriConnect information is educational and does not replace an assessment by a health professional. In emergencies, seek immediate care.",
+          "La información de NutriConnect es educativa y no sustituye la evaluación de un(a) profesional de la salud. En urgencias, busca atención inmediata.",
+          "Les informations de NutriConnect sont éducatives et ne remplacent pas l'avis d'un professionnel de santé. En urgence, consultez immédiatement.",
         ])}
       </p>
       <Link

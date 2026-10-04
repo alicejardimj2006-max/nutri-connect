@@ -40,7 +40,7 @@ const ptBR = {
   "nina.clearConfirm": "Apagar todo o histórico da conversa com a Nina?",
   "nina.usage": "perguntas hoje",
   "nina.disclaimer":
-    "A Nina é uma IA educativa e não substitui nutricionista ou médico(a). As conversas ficam guardadas por 90 dias.",
+    "A Nina é uma IA educativa e não substitui um(a) profissional de saúde. As conversas ficam guardadas por 90 dias.",
   "nina.error": "A Nina não conseguiu responder. Tente novamente.",
   "nav.loading": "Carregando…",
 

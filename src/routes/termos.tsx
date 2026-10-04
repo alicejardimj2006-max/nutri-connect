@@ -43,11 +43,11 @@ function Termos() {
         <p>
           Receitas, dicas, trilhas, publicações e respostas da assistente Nina têm caráter{" "}
           <strong>educativo</strong>. Elas não substituem avaliação, diagnóstico ou tratamento por
-          nutricionista ou médico(a), e não devem ser usadas em urgências. A Nina é uma inteligência
-          artificial: pode errar, não conhece seu histórico clínico e não prescreve dietas. Em caso
-          de doença, gestação, uso de medicamentos ou suspeita de transtorno alimentar, procure um
-          profissional. Em crise emocional, ligue para o CVV (188) ou, em emergência, para o SAMU
-          (192).
+          um(a) profissional de saúde, e não devem ser usadas em urgências. A Nina é uma
+          inteligência artificial: pode errar, não conhece seu histórico clínico e não prescreve
+          dietas. Em caso de doença, gestação, uso de medicamentos ou suspeita de transtorno
+          alimentar, procure um profissional. Em crise emocional, ligue para o CVV (188) ou, em
+          emergência, para o SAMU (192).
         </p>
       </LegalSection>
 
@@ -72,7 +72,13 @@ function Termos() {
       </LegalSection>
 
       <LegalSection id="condutas" title="5. O que não é permitido">
-        <p>Resumidamente (detalhes nas <Link to="/diretrizes" className="text-primary underline">Diretrizes da Comunidade</Link>):</p>
+        <p>
+          Resumidamente (detalhes nas{" "}
+          <Link to="/diretrizes" className="text-primary underline">
+            Diretrizes da Comunidade
+          </Link>
+          ):
+        </p>
         <LegalList
           items={[
             "ofensas, assédio, discriminação, ameaças ou discurso de ódio;",
@@ -89,12 +95,14 @@ function Termos() {
       <LegalSection id="moderacao" title="6. Moderação, denúncias e remoção">
         <p>
           Qualquer pessoa pode denunciar um conteúdo ou perfil pelo botão de denúncia ou pelo{" "}
-          <Link to="/contato" className="text-primary underline">Fale conosco</Link>. Publicações e
-          comentários passam por uma análise automática por IA antes de irem ao ar, que confere o assunto
-          (alimentação, nutrição e saúde) e se a foto combina com o texto. Conteúdos reprovados nessa
-          análise não são publicados. Já os denunciados por várias pessoas ficam ocultos
-          enquanto a equipe os analisa. Quando ocultarmos ou removermos algo, avisaremos o autor, e
-          você pode pedir revisão por uma pessoa.
+          <Link to="/contato" className="text-primary underline">
+            Fale conosco
+          </Link>
+          . Publicações e comentários passam por uma análise automática por IA antes de irem ao ar,
+          que confere o assunto (alimentação, nutrição e saúde) e se a foto combina com o texto.
+          Conteúdos reprovados nessa análise não são publicados. Já os denunciados por várias
+          pessoas ficam ocultos enquanto a equipe os analisa. Quando ocultarmos ou removermos algo,
+          avisaremos o autor, e você pode pedir revisão por uma pessoa.
         </p>
         <p>
           Conteúdo ilícito que nos for notificado de forma específica (com a indicação clara do
