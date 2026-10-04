@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
+  CalendarCheck,
   Camera,
   HeartPulse,
   Inbox,
@@ -516,8 +517,15 @@ function PublicProfilePage() {
                   </DropdownMenu>
                 </div>
 
-                <div className={`flex flex-col gap-6 pr-10 sm:pr-12 ${header.align === "center" ? "items-center text-center" : ""}`}>
-                  <div className={header.align === "center" ? "flex flex-col items-center" : ""}>
+                <div
+                  className={`flex flex-col gap-6 ${
+                    centered
+                      ? "items-center text-center"
+                      : "pr-10 sm:pr-12 lg:flex-row lg:items-start lg:justify-between lg:gap-10 lg:pr-0"
+                  }`}
+                >
+                  {/* Identidade: nome, registro, @, bio, números e contato */}
+                  <div className={`min-w-0 ${centered ? "flex flex-col items-center" : ""}`}>
                     <h1 className="flex items-center gap-2 text-2xl sm:text-3xl font-extrabold font-display text-foreground">
                       {profile.name}
                       {isProfessional && <VerifiedBadge className="h-5 w-5 sm:h-6 sm:w-6" />}
@@ -534,8 +542,51 @@ function PublicProfilePage() {
                         @{username}
                       </p>
                     )}
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{profile.bio}</p>
+                    <p className="mt-0.5 max-w-prose text-xs sm:text-sm text-muted-foreground">{profile.bio}</p>
                     {remote && <ProfileCounts remote={remote} isProfessional={isProfessional} />}
+                    {isSelf && user && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
+                      </p>
+                    )}
+                    {!isSelf && !unavailable && <RemoteContact userId={userId} />}
+                  </div>
+
+                  {/* Ações e especialidades: ocupam o lado direito em telas largas */}
+                  <div className={`flex min-w-0 flex-col gap-3 ${centered ? "items-center" : "lg:max-w-[46%] lg:items-end"}`}>
+                    {isSelf && (
+                      <div className={`flex flex-wrap items-center gap-2 ${centered ? "justify-center" : "lg:justify-end"}`}>
+                        {!editing && (
+                          <button
+                            type="button"
+                            onClick={startEditing}
+                            disabled={contentLocked}
+                            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
+                          >
+                            <Paintbrush className="h-3.5 w-3.5" />
+                            <span>{tr(["Personalizar perfil", "Customize profile", "Personalizar perfil", "Personnaliser le profil"])}</span>
+                          </button>
+                        )}
+                        <Link
+                          to="/perfil/editar"
+                          className="flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span>{t("profile.editProfile")}</span>
+                        </Link>
+                        <ShareModal
+                          triggerButton={
+                            <button
+                              type="button"
+                              className="rounded-full bg-secondary px-5 py-2 text-xs font-semibold text-foreground hover:bg-muted shadow-xs flex items-center gap-1.5"
+                            >
+                              <Plus className="h-4 w-4" />
+                              <span>{t("profile.share")}</span>
+                            </button>
+                          }
+                        />
+                      </div>
+                    )}
                     {!isSelf && remote && (
                       <RelationshipActions
                         userId={userId}
@@ -545,47 +596,28 @@ function PublicProfilePage() {
                         viewerIsProfessional={!!user.professional}
                       />
                     )}
-                    {isSelf && user && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
-                      </p>
-                    )}
-                    {!isSelf && !unavailable && <RemoteContact userId={userId} />}
-                  </div>
-
-                  {isSelf && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {!editing && (
-                        <button
-                          type="button"
-                          onClick={startEditing}
-                          disabled={contentLocked}
-                          className="flex cursor-pointer items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-                        >
-                          <Paintbrush className="h-3.5 w-3.5" />
-                          <span>{tr(["Personalizar perfil", "Customize profile", "Personalizar perfil", "Personnaliser le profil"])}</span>
-                        </button>
-                      )}
+                    {isProfessional && !isSelf && (
                       <Link
-                        to="/perfil/editar"
-                        className="flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"
+                        to="/profissionais/$professionalId"
+                        params={{ professionalId: userId }}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                        <span>{t("profile.editProfile")}</span>
+                        <CalendarCheck className="h-4 w-4" /> {t("profile.bookConsultation")}
                       </Link>
-                      <ShareModal
-                        triggerButton={
-                          <button
-                            type="button"
-                            className="rounded-full bg-secondary px-5 py-2 text-xs font-semibold text-foreground hover:bg-muted shadow-xs flex items-center gap-1.5"
+                    )}
+                    {isProfessional && professionalInfo && professionalInfo.specialties.length > 0 && (
+                      <ul className={`flex flex-wrap gap-1.5 ${centered ? "justify-center" : "lg:justify-end"}`}>
+                        {professionalInfo.specialties.map((sp) => (
+                          <li
+                            key={sp}
+                            className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
                           >
-                            <Plus className="h-4 w-4" />
-                            <span>{t("profile.share")}</span>
-                          </button>
-                        }
-                      />
-                    </div>
-                  )}
+                            {td(sp)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
