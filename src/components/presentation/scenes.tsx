@@ -809,15 +809,14 @@ export function CodeEditor({
 
 // ───────────────────────── Tour: mapa-trilha ─────────────────────────
 
-const MAP_POINTS: [number, number][] = [
-  [70, 190],
-  [215, 95],
-  [360, 175],
-  [500, 85],
-  [640, 170],
-  [785, 90],
-  [930, 160],
-];
+/** Pontos do caminho em zigue-zague, espaçados conforme o número de paradas do tour. */
+function mapPoints(count: number): [number, number][] {
+  const n = Math.max(count, 2);
+  return Array.from({ length: n }, (_, i) => [
+    Math.round(70 + (860 * i) / (n - 1)),
+    i % 2 === 0 ? 180 : 92,
+  ]);
+}
 
 /** Curva suave passando exatamente pelos pontos (Catmull-Rom convertida em Bézier). */
 function smoothPath(points: [number, number][]) {
@@ -841,7 +840,8 @@ export function TrailMap({
   stops: { label: string; icon: LucideIcon }[];
   onPick: (i: number) => void;
 }) {
-  const d = smoothPath(MAP_POINTS);
+  const points = mapPoints(stops.length);
+  const d = smoothPath(points);
   return (
     <div className="relative w-full" style={{ aspectRatio: "1000 / 260" }}>
       <svg viewBox="0 0 1000 260" className="absolute inset-0 h-full w-full" aria-hidden>
@@ -869,8 +869,8 @@ export function TrailMap({
           onClick={() => onPick(i)}
           className="nc-pop group absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
           style={{
-            left: `${MAP_POINTS[i][0] / 10}%`,
-            top: `${(MAP_POINTS[i][1] / 260) * 100}%`,
+            left: `${points[i][0] / 10}%`,
+            top: `${(points[i][1] / 260) * 100}%`,
             animationDelay: `${400 + i * 280}ms`,
           }}
         >
