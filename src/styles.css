@@ -233,7 +233,7 @@
 /* Fora de @layer de propósito: precisa vencer utilitários como py-8. Sem rodapé, no celular a
    barra de navegação inferior é fixa e não pode cobrir o fim da página. */
 @media (max-width: 1023px) {
-  body:has([data-site-bottom-nav]) main {
+  body:has([data-site-bottom-nav]) main:not([data-no-bottom-pad]) {
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 }

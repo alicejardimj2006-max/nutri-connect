@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, Home, Users, Award, Plus, Sparkles, ChefHat } from "lucide-react";
+import { Search, Bell, Home, Users, Award, Plus, Sparkles, CalendarDays } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
-import { pickName } from "@/lib/appearance-data";
 
 /** Páginas que rolam por dentro (ex.: Espaço de hoje) avisam por aqui quando as barras devem recolher. */
 export const CHROME_HIDE_EVENT = "chrome:hide";
@@ -55,7 +54,7 @@ function useHideOnScroll(pathname: string) {
 
 export function SiteHeader() {
   const { user } = useAuth();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const hidden = useHideOnScroll(pathname);
 
@@ -78,14 +77,18 @@ export function SiteHeader() {
             >
               <Bell className="h-5 w-5" />
             </Link>
-            <Link
-              to="/explorar"
-              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-              aria-label={t("nav.search")}
-              title={t("nav.search")}
-            >
-              <Search className="h-5 w-5" />
-            </Link>
+            {user ? (
+              <Link
+                to="/tema-da-semana"
+                className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+                aria-label={t("weekly.badge")}
+                title={t("weekly.badge")}
+              >
+                <CalendarDays className="h-5 w-5" />
+              </Link>
+            ) : (
+              <span className="h-10 w-10" aria-hidden="true" />
+            )}
           </div>
 
           <Link to="/" className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center">
@@ -96,27 +99,25 @@ export function SiteHeader() {
 
           <div className="flex items-center">
             {user ? (
-              <>
-                <Link
-                  to="/receitas"
-                  className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-                  aria-label={pickName(["Receitas", "Recipes", "Recetas", "Recettes"], locale)}
-                  title={pickName(["Receitas", "Recipes", "Recetas", "Recettes"], locale)}
-                >
-                  <ChefHat className="h-5 w-5" />
-                </Link>
-                <Link
-                  to="/nina"
-                  className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-                  aria-label={t("nav.nina")}
-                  title={t("nav.nina")}
-                >
-                  <Sparkles className="h-5 w-5" />
-                </Link>
-              </>
+              <Link
+                to="/nina"
+                className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+                aria-label={t("nav.nina")}
+                title={t("nav.nina")}
+              >
+                <Sparkles className="h-5 w-5" />
+              </Link>
             ) : (
-              <span className="h-10 w-20" aria-hidden="true" />
+              <span className="h-10 w-10" aria-hidden="true" />
             )}
+            <Link
+              to="/explorar"
+              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+              aria-label={t("nav.search")}
+              title={t("nav.search")}
+            >
+              <Search className="h-5 w-5" />
+            </Link>
           </div>
         </div>
 

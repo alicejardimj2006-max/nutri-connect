@@ -315,6 +315,8 @@ function EspacoDeHojePage() {
       <SiteHeader />
 
       <main
+        // O feed vai até a borda da tela; o fim da lista já tem folga própria para a barra de baixo.
+        data-no-bottom-pad
         className="flex min-h-0 w-full flex-1 px-4 sm:px-6 xl:px-8 2xl:px-14"
         style={{ marginTop: -topOffset }}
       >
