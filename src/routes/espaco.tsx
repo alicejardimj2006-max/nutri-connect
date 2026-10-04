@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Compass, Sparkles } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading, CHROME_HIDE_EVENT, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useAppearance } from "@/hooks/use-appearance";
 import { loadAppearance } from "@/lib/appearance";
@@ -180,6 +180,55 @@ function EspacoDeHojePage() {
   // Espaço igual (12px) entre a barra superior, o seletor de páginas, os filtros e o primeiro post:
   // a reserva no alto de cada página usa a altura real do seletor.
   const [navHeight, setNavHeight] = useState(38);
+
+  // No celular, as barras de cima e de baixo recolhem ao rolar o feed para baixo (a logo fica
+  // flutuando) e voltam ao rolar para cima. Como o feed rola por dentro, a janela não rola: o feed
+  // avisa o cabeçalho pelo evento CHROME_HIDE_EVENT. O feed ocupa a tela toda, por baixo do cabeçalho.
+  const [mobile, setMobile] = useState(false);
+  const [headerH, setHeaderH] = useState(0);
+  const chromeHidden = useRef(false);
+  const chromeLast = useRef(0);
+  const mobileRef = useRef(false);
+  const setChrome = useCallback((hidden: boolean) => {
+    if (chromeHidden.current === hidden) return;
+    chromeHidden.current = hidden;
+    window.dispatchEvent(new CustomEvent(CHROME_HIDE_EVENT, { detail: hidden }));
+  }, []);
+  const updateChrome = useCallback(
+    (top: number) => {
+      if (!mobileRef.current) return;
+      const previous = chromeLast.current;
+      if (top < 64) setChrome(false);
+      else if (top > previous + 8) setChrome(true);
+      else if (top < previous - 8) setChrome(false);
+      if (Math.abs(top - previous) > 8) chromeLast.current = top;
+    },
+    [setChrome],
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => {
+      mobileRef.current = mq.matches;
+      setMobile(mq.matches);
+      if (!mq.matches) setChrome(false);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => {
+      mq.removeEventListener("change", sync);
+      setChrome(false);
+    };
+  }, [setChrome]);
+  useLayoutEffect(() => {
+    const header = document.querySelector<HTMLElement>("[data-site-header]");
+    if (!header) return;
+    const measure = () => setHeaderH(Math.round(header.getBoundingClientRect().height));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [authHydrated, user]);
+  const topOffset = mobile ? headerH : 0;
   useLayoutEffect(() => {
     const pill = navRef.current?.firstElementChild;
     if (!pill) return;
@@ -191,7 +240,7 @@ function EspacoDeHojePage() {
     // O seletor só existe depois que o login é conferido.
   }, [authHydrated, user]);
   const topGap = 12;
-  const topPad = topGap + navHeight + topGap;
+  const topPad = topOffset + topGap + navHeight + topGap;
   const moveNav = useCallback((top: number) => {
     const el = navRef.current;
     if (!el) return;
@@ -207,12 +256,19 @@ function EspacoDeHojePage() {
     else if (top < previous - 4) setFiltersVisible(true);
     lastScrollTop.current = top;
     moveNav(top);
+    updateChrome(top);
   };
-  const handleTemaScroll = (e: React.UIEvent<HTMLDivElement>) => moveNav(e.currentTarget.scrollTop);
+  const handleTemaScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    moveNav(e.currentTarget.scrollTop);
+    updateChrome(e.currentTarget.scrollTop);
+  };
   // Ao trocar de página, o seletor acompanha a rolagem da página que ficou aberta.
   useEffect(() => {
-    moveNav((activePage === 0 ? geralRef : temaRef).current?.scrollTop ?? 0);
-  }, [activePage, moveNav]);
+    const top = (activePage === 0 ? geralRef : temaRef).current?.scrollTop ?? 0;
+    moveNav(top);
+    chromeLast.current = top;
+    if (top < 64) setChrome(false);
+  }, [activePage, moveNav, setChrome]);
 
   // Só o feed rola: cada página ocupa a altura que a coluna central tem (medida ao vivo),
   // então rolar uma não mexe na outra e a janela fica parada.
@@ -258,7 +314,10 @@ function EspacoDeHojePage() {
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
 
-      <main className="flex min-h-0 w-full flex-1 px-4 sm:px-6 xl:px-8 2xl:px-14">
+      <main
+        className="flex min-h-0 w-full flex-1 px-4 sm:px-6 xl:px-8 2xl:px-14"
+        style={{ marginTop: -topOffset }}
+      >
         <div
           className={`grid h-full min-h-0 w-full gap-8 ${
             panels
@@ -280,7 +339,8 @@ function EspacoDeHojePage() {
           >
             <div
               ref={navRef}
-              className="pointer-events-none absolute inset-x-0 top-3 z-30 flex justify-center will-change-transform"
+              className="pointer-events-none absolute inset-x-0 z-30 flex justify-center will-change-transform"
+              style={{ top: topOffset + 12 }}
             >
               <div className="pointer-events-auto">
                 <PagesNav active={activePage} onSelect={goToPage} />
@@ -298,7 +358,10 @@ function EspacoDeHojePage() {
                     {/* Espaçador (não é padding: o 'sticky' mede a partir da borda de dentro do padding). */}
                     <div className="shrink-0" style={{ height: topPad }} aria-hidden="true" />
                     {/* Filtros flutuantes: ficam no alto desta página, somem ao rolar para baixo. */}
-                    <div className="pointer-events-none sticky top-3 z-20 mb-3 flex justify-center">
+                    <div
+                      className="pointer-events-none sticky z-20 mb-3 flex justify-center"
+                      style={{ top: topOffset + 12 }}
+                    >
                       <div
                         className={cn(
                           "pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur transition duration-200",

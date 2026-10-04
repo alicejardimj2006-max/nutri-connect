@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, Home, Users, Award, Plus, Sparkles } from "lucide-react";
+import { Search, Bell, Home, Users, Award, Plus, Sparkles, ChefHat } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
+import { pickName } from "@/lib/appearance-data";
+
+/** Páginas que rolam por dentro (ex.: Espaço de hoje) avisam por aqui quando as barras devem recolher. */
+export const CHROME_HIDE_EVENT = "chrome:hide";
 
 const SCROLL_STEP = 8;
 
@@ -13,6 +17,15 @@ const SCROLL_STEP = 8;
  */
 function useHideOnScroll(pathname: string) {
   const [hidden, setHidden] = useState(false);
+  // Pedido de uma página cuja rolagem não é a da janela.
+  const [external, setExternal] = useState(false);
+
+  useEffect(() => {
+    setExternal(false);
+    const onExternal = (e: Event) => setExternal(!!(e as CustomEvent<boolean>).detail);
+    window.addEventListener(CHROME_HIDE_EVENT, onExternal);
+    return () => window.removeEventListener(CHROME_HIDE_EVENT, onExternal);
+  }, [pathname]);
 
   useEffect(() => {
     setHidden(false);
@@ -37,12 +50,12 @@ function useHideOnScroll(pathname: string) {
     };
   }, [pathname]);
 
-  return hidden;
+  return hidden || external;
 }
 
 export function SiteHeader() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const hidden = useHideOnScroll(pathname);
 
@@ -54,33 +67,17 @@ export function SiteHeader() {
         className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs max-lg:transition-transform max-lg:duration-300 max-lg:data-[hidden=true]:-translate-y-[calc(100%+0.5rem)]"
       >
         {/* Cabeçalho mobile */}
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
-          <Link
-            to="/notificacoes"
-            className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-            aria-label={t("nav.notifications")}
-            title={t("nav.notifications")}
-          >
-            <Bell className="h-5 w-5" />
-          </Link>
-
-          <Link to="/" className="flex items-center">
-            <span className="text-lg font-bold tracking-tight leading-none text-foreground font-logo-serif">
-              Nutri<span className="text-accent">Connect</span>
-            </span>
-          </Link>
-
+        <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
+          {/* Dois botões de cada lado e a logo no centro exato da tela. */}
           <div className="flex items-center">
-            {user && (
-              <Link
-                to="/nina"
-                className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-                aria-label={t("nav.nina")}
-                title={t("nav.nina")}
-              >
-                <Sparkles className="h-5 w-5" />
-              </Link>
-            )}
+            <Link
+              to="/notificacoes"
+              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+              aria-label={t("nav.notifications")}
+              title={t("nav.notifications")}
+            >
+              <Bell className="h-5 w-5" />
+            </Link>
             <Link
               to="/explorar"
               className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
@@ -89,6 +86,37 @@ export function SiteHeader() {
             >
               <Search className="h-5 w-5" />
             </Link>
+          </div>
+
+          <Link to="/" className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center">
+            <span className="text-lg font-bold tracking-tight leading-none text-foreground font-logo-serif">
+              Nutri<span className="text-accent">Connect</span>
+            </span>
+          </Link>
+
+          <div className="flex items-center">
+            {user ? (
+              <>
+                <Link
+                  to="/receitas"
+                  className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+                  aria-label={pickName(["Receitas", "Recipes", "Recetas", "Recettes"], locale)}
+                  title={pickName(["Receitas", "Recipes", "Recetas", "Recettes"], locale)}
+                >
+                  <ChefHat className="h-5 w-5" />
+                </Link>
+                <Link
+                  to="/nina"
+                  className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
+                  aria-label={t("nav.nina")}
+                  title={t("nav.nina")}
+                >
+                  <Sparkles className="h-5 w-5" />
+                </Link>
+              </>
+            ) : (
+              <span className="h-10 w-20" aria-hidden="true" />
+            )}
           </div>
         </div>
 
