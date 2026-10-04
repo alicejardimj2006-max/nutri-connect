@@ -146,14 +146,14 @@ function ExplorarPage() {
   // Um link para um post (ex.: /receitas/<id>) abre o post em modal por cima da grade.
   // O modal lê sempre a versão atual do post nas listas (apoios e comentários atualizam na hora);
   // a cópia do clique só serve enquanto a lista não tem o post.
-  const listed = useMemo(() => {
+  const listed = (() => {
     if (!openPost) return null;
     for (const f of Object.values(feeds)) {
       const found = f.data?.find((p) => p.id === openPost.id);
       if (found) return found;
     }
     return null;
-  }, [openPost, feeds]);
+  })();
   const linked = usePost(openId && !openPost ? openId : undefined);
   const modalPost = listed ?? openPost ?? (openId ? (linked.data ?? null) : null);
   const closeModal = () => {
