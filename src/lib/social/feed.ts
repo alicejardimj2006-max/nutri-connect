@@ -240,7 +240,11 @@ export async function setReaction(postId: string, kind: ReactionKind, on: boolea
   if (on) {
     const { error } = await supabase
       .from("post_reactions")
-      .upsert({ post_id: postId, user_id: me, kind }, { onConflict: "post_id,user_id,kind" });
+      // Já reagiu? Não faz nada (não há regra de atualização para reações).
+      .upsert(
+        { post_id: postId, user_id: me, kind },
+        { onConflict: "post_id,user_id,kind", ignoreDuplicates: true },
+      );
     fail(error);
   } else {
     const { error } = await supabase
