@@ -124,7 +124,7 @@ function categoryOf(type: string): CategoryId {
     return "clinical";
   }
   if (type === "conquista" || type.startsWith("tema_")) return "achievements";
-  if (type === "conteudo_oculto") return "moderation";
+  if (type === "conteudo_oculto" || type === "conta_suspensa" || type === "conta_reativada") return "moderation";
   return "system";
 }
 
@@ -206,6 +206,10 @@ function describe(n: NotificationRow, locale: string, isPro: boolean, tr: (names
       return { icon: ClipboardList, text: fill(["{name} publicou um plano alimentar para você", "{name} published a meal plan for you", "{name} publicó un plan alimentario para ti", "{name} a publié un plan alimentaire pour vous"]), detail: str(data.title), go: { to: "/acompanhamento/plano" } };
     case "conteudo_oculto":
       return { icon: ShieldAlert, text: tr(["Um conteúdo seu foi ocultado pela moderação", "One of your items was hidden by moderation", "Un contenido tuyo fue ocultado por moderación", "L'un de vos contenus a été masqué par la modération"]), detail: tr(["Veja as regras da comunidade", "See the community guidelines", "Mira las normas de la comunidad", "Voir les règles de la communauté"]), go: { to: "/diretrizes" } };
+    case "conta_suspensa":
+      return { icon: ShieldAlert, text: tr(["Sua conta foi suspensa", "Your account was suspended", "Tu cuenta fue suspendida", "Votre compte a été suspendu"]), detail: str(data.reason) || undefined, go: { to: "/contato" } };
+    case "conta_reativada":
+      return { icon: UserCheck, text: tr(["Sua conta foi reativada", "Your account was reactivated", "Tu cuenta fue reactivada", "Votre compte a été réactivé"]), go: { to: "/espaco" } };
     case "tema_previa":
     case "tema_ativo":
       return { icon: Sparkles, text: tr(n.type === "tema_previa" ? ["Nova prévia do tema da semana", "New weekly theme preview", "Nueva vista previa del tema de la semana", "Nouvel aperçu du thème de la semaine"] : ["O tema da semana começou", "The weekly theme has started", "Comenzó el tema de la semana", "Le thème de la semaine a commencé"]), detail: str(data.title), go: { to: "/tema-da-semana" } };

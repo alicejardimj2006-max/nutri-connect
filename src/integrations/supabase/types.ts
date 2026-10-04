@@ -2299,6 +2299,7 @@ export type Database = {
           journey_goal: string | null
           name: string
           role: Database["public"]["Enums"]["app_role"]
+          suspended_at: string | null
           updated_at: string
           username: string
         }
@@ -2312,6 +2313,7 @@ export type Database = {
           journey_goal?: string | null
           name?: string
           role?: Database["public"]["Enums"]["app_role"]
+          suspended_at?: string | null
           updated_at?: string
           username: string
         }
@@ -2325,6 +2327,7 @@ export type Database = {
           journey_goal?: string | null
           name?: string
           role?: Database["public"]["Enums"]["app_role"]
+          suspended_at?: string | null
           updated_at?: string
           username?: string
         }

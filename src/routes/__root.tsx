@@ -14,6 +14,7 @@ import { ConsentGate } from "../components/consent-gate";
 import { useAppSounds } from "../hooks/use-app-sounds";
 import { AccessibilityTools } from "../components/accessibility-tools";
 import { SideRails } from "../components/side-rails";
+import { AnnouncementBar } from "../components/announcement-bar";
 import { useAppearanceSync } from "../hooks/use-appearance-sync";
 
 import appCss from "../styles.css?url";
@@ -152,6 +153,7 @@ function RootComponent() {
       <ConsentGate />
       <AccessibilityTools />
       <SideRails />
+      <AnnouncementBar />
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );

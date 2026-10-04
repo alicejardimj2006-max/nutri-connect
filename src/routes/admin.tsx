@@ -1,48 +1,37 @@
-import { td } from "@/lib/i18n/data";
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Check, ShieldAlert, X } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import { syncVerifications } from "@/lib/profile-sync";
-import { PostImage } from "@/components/post-image";
-import { ModerationPanel } from "@/components/moderation-panel";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import { formatDate, type Community, type VerificationRequest } from "@/lib/community";
-import {
-  designateAdminUser,
-  isPlatformAdmin,
-  needsAdminUser,
-  needsProfessional,
-  rankEngagedMembers,
-  rankProfessionalsFor,
-  reviewVerification,
-} from "@/lib/community-admin";
+import { isPlatformAdmin } from "@/lib/community-admin";
+import { useOverview } from "@/lib/admin-api";
+import { SECTIONS, isSectionId, type SectionId } from "@/components/admin/sections";
+import { OverviewSection } from "@/components/admin/sections-overview";
+import { ContactSection, UsersSection } from "@/components/admin/sections-people";
+import { AnnouncementsSection, PostsSection, ThemesSection } from "@/components/admin/sections-content";
+import { AiSection, AuditSection, FinanceSection, SettingsSection } from "@/components/admin/sections-business";
+import { CommunitiesSection, ModerationSection, VerificationsSection } from "@/components/admin/sections-legacy";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Painel da plataforma — NutriConnect" }] }),
+  validateSearch: (search: Record<string, unknown>): { secao?: SectionId } => ({
+    secao: isSectionId(search.secao) ? search.secao : undefined,
+  }),
+  head: () => ({ meta: [{ title: "Administração — NutriConnect" }] }),
   component: AdminPage,
 });
-
-type Tab = "verificacoes" | "comunidades" | "denuncias";
 
 function AdminPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
-  const state = useCommunity();
-  const [tab, setTab] = useState<Tab>("verificacoes");
-  const [reportCount, setReportCount] = useState(0);
-
-  // Admins veem todos os pedidos, com links temporários para as imagens privadas.
-  useEffect(() => {
-    if (user?.isAdmin) void syncVerifications(true);
-  }, [user]);
+  const { secao } = Route.useSearch();
+  const navigate = useNavigate();
+  const section: SectionId = secao ?? "visao";
+  const admin = !!user && isPlatformAdmin(user);
+  const overview = useOverview();
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
-  if (!isPlatformAdmin(user)) {
+  if (!admin) {
     return (
       <div className="flex min-h-screen flex-col bg-background text-foreground">
         <SiteHeader />
@@ -55,318 +44,94 @@ function AdminPage() {
     );
   }
 
-  const pending = state.verifications.filter((v) => v.status === "em_analise");
-  const reviewed = state.verifications.filter((v) => v.status !== "em_analise");
-  const attention = state.communities.filter((c) => c.status !== "ativa");
+  const go = (id: SectionId) => void navigate({ to: "/admin", search: { secao: id } });
+  const o = overview.data;
+  const badges: Partial<Record<SectionId, number>> = {
+    moderacao: o?.reports_pending,
+    verificacoes: o?.verifications_pending,
+    contato: o?.contact_new,
+    comunidades: o?.communities_attention,
+  };
+  const groups = SECTIONS.reduce<Record<string, typeof SECTIONS>>((acc, s) => {
+    (acc[s.group] ??= []).push(s);
+    return acc;
+  }, {});
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="font-display text-3xl font-extrabold text-foreground">{t("admin.title")}</h1>
+      <main className="mx-auto w-full max-w-[96rem] flex-1 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-6">
+        <h1 className="sr-only">{t("admin.title")}</h1>
 
-        <div className="mt-5 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
-          {(
-            [
-              ["verificacoes", `${t("admin.tab.verifications")} (${pending.length})`],
-              ["comunidades", `${t("admin.tab.communities")} (${attention.length})`],
-              ["denuncias", `Denúncias (${reportCount})`],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
-                tab === id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Menu: lateral no computador, faixa rolável no celular */}
+        <nav aria-label="Seções da administração" className="mb-5 lg:mb-0">
+          <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:hidden">
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => go(s.id)}
+                aria-current={section === s.id ? "page" : undefined}
+                className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
+                  section === s.id ? "border-accent bg-accent-soft text-foreground" : "border-border bg-card text-muted-foreground"
+                }`}
+              >
+                <s.icon className="h-3.5 w-3.5" />
+                {s.label}
+                {!!badges[s.id] && <span className="rounded-full bg-destructive px-1.5 text-[10px] font-bold text-white">{badges[s.id]}</span>}
+              </button>
+            ))}
+          </div>
 
-        {tab === "verificacoes" ? (
-          <div className="mt-6 space-y-6">
-            <section className="space-y-4">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                {t("admin.awaiting")}
-              </h2>
-              {pending.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
-                  {t("admin.noPending")}
-                </p>
-              ) : (
-                pending.map((v) => (
-                  <VerificationCard
-                    key={v.id}
-                    request={v}
-                    reviewer={{ id: user.id, name: user.name }}
-                  />
-                ))
-              )}
-            </section>
-
-            {reviewed.length > 0 && (
-              <section className="space-y-2">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  {t("admin.reviewed")}
-                </h2>
-                <ul className="divide-y divide-border/60 rounded-2xl border border-border/70 bg-card">
-                  {reviewed.map((v) => (
-                    <li
-                      key={v.id}
-                      className="flex flex-wrap items-center justify-between gap-2 p-4"
-                    >
-                      <span className="text-sm text-foreground">
-                        {v.fullName}{" "}
-                        <span className="text-muted-foreground">
-                          · {td(v.profession)} {v.council} {v.registration}/{v.uf}
-                        </span>
-                      </span>
-                      <span
-                        className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                          v.status === "aprovado"
-                            ? "bg-accent-soft text-accent"
-                            : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
-                        {v.status === "aprovado" ? t("admin.approved") : t("admin.rejectedLabel")}
-                      </span>
-                    </li>
-                  ))}
+          <div className="sticky top-20 hidden space-y-4 rounded-3xl border border-border/80 bg-card p-3 shadow-xs lg:block">
+            <p className="flex items-center gap-2 px-3 pt-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-accent" /> Administração
+            </p>
+            {Object.entries(groups).map(([group, items]) => (
+              <div key={group}>
+                <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">{group}</p>
+                <ul className="space-y-0.5">
+                  {items.map((s) => {
+                    const active = section === s.id;
+                    return (
+                      <li key={s.id}>
+                        <button
+                          type="button"
+                          onClick={() => go(s.id)}
+                          aria-current={active ? "page" : undefined}
+                          className={`flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm transition ${
+                            active ? "bg-accent-soft font-bold text-foreground" : "font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          }`}
+                        >
+                          <s.icon className={`h-4 w-4 shrink-0 ${active ? "text-accent" : ""}`} />
+                          <span className="flex-1">{s.label}</span>
+                          {!!badges[s.id] && <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{badges[s.id]}</span>}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
-              </section>
-            )}
+              </div>
+            ))}
           </div>
-        ) : tab === "denuncias" ? (
-          <div className="mt-6">
-            <ModerationPanel onCount={setReportCount} />
-          </div>
-        ) : (
-          <div className="mt-6 space-y-4">
-            {attention.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
-                {t("admin.allComplete")}
-              </p>
-            ) : (
-              attention.map((c) => <CommunityCase key={c.id} community={c} />)
-            )}
-          </div>
-        )}
+        </nav>
+
+        <div className="min-w-0">
+          {section === "visao" && <OverviewSection go={go} />}
+          {section === "usuarios" && <UsersSection me={user.id} />}
+          {section === "verificacoes" && <VerificationsSection user={user} />}
+          {section === "contato" && <ContactSection />}
+          {section === "posts" && <PostsSection />}
+          {section === "moderacao" && <ModerationSection />}
+          {section === "comunidades" && <CommunitiesSection />}
+          {section === "temas" && <ThemesSection />}
+          {section === "anuncios" && <AnnouncementsSection />}
+          {section === "financeiro" && <FinanceSection />}
+          {section === "ia" && <AiSection />}
+          {section === "config" && <SettingsSection />}
+          {section === "auditoria" && <AuditSection />}
+        </div>
       </main>
     </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-0.5 text-sm text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-function VerificationCard({
-  request: v,
-  reviewer,
-}: {
-  request: VerificationRequest;
-  reviewer: { id: string; name: string };
-}) {
-  const { t } = useI18n();
-  const [rejecting, setRejecting] = useState(false);
-  const [reason, setReason] = useState("");
-
-  return (
-    <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-display text-lg font-bold text-foreground">{v.fullName}</h3>
-        <span className="text-xs text-muted-foreground">
-          {t("admin.sentOn")} {formatDate(v.submittedAt)}
-        </span>
-      </div>
-
-      <dl className="mt-3 grid gap-3 sm:grid-cols-2">
-        <Row label={t("admin.account")} value={v.userName} />
-        <Row label={t("verify.profession")} value={td(v.profession)} />
-        <Row label={t("verify.registration")} value={`${v.council} ${v.registration}/${v.uf}`} />
-        <Row label={t("verify.fields")} value={v.specialties.map((s) => td(s)).join(", ")} />
-      </dl>
-      {v.bio && <p className="mt-3 text-sm text-muted-foreground">{v.bio}</p>}
-      {v.publicLookupUrl && (
-        <a
-          href={v.publicLookupUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-block text-xs font-semibold text-accent hover:underline"
-        >
-          {t("admin.publicLookup")}
-        </a>
-      )}
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <figure>
-          <PostImage src={v.documentImage} alt={t("admin.docAlt")} className="rounded-xl" />
-          <figcaption className="mt-1 text-[11px] text-muted-foreground">
-            {t("admin.docCaption")}
-          </figcaption>
-        </figure>
-        <figure>
-          <PostImage src={v.selfieImage} alt={t("admin.selfieAlt")} className="rounded-xl" />
-          <figcaption className="mt-1 text-[11px] text-muted-foreground">
-            {t("admin.selfieAlt")}
-          </figcaption>
-        </figure>
-      </div>
-
-      {rejecting ? (
-        <div className="mt-4 space-y-3">
-          <textarea
-            rows={2}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder={t("admin.rejectReason")}
-            className="w-full resize-none rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-destructive"
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await reviewVerification({
-                    requestId: v.id,
-                    reviewer,
-                    approve: false,
-                    reason,
-                  });
-                  toast.success(t("admin.rejectedToast"));
-                } catch (err) {
-                  toast.error(err instanceof Error ? err.message : t("reset.error"));
-                }
-              }}
-              className="rounded-full bg-destructive px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              {t("admin.confirmReject")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setRejecting(false)}
-              className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-foreground"
-            >
-              {t("common.cancel")}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await reviewVerification({ requestId: v.id, reviewer, approve: true });
-                toast.success(`${v.fullName} ${t("admin.approvedToast")}`);
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : t("reset.error"));
-              }
-            }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent/90"
-          >
-            <Check className="h-4 w-4" /> {t("admin.approve")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setRejecting(true)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-sm font-semibold text-foreground transition hover:bg-secondary"
-          >
-            <X className="h-4 w-4" /> {t("admin.reject")}
-          </button>
-        </div>
-      )}
-    </article>
-  );
-}
-
-function CommunityCase({ community: c }: { community: Community }) {
-  const { t } = useI18n();
-  const state = useCommunity();
-  const invited = needsProfessional(c) ? rankProfessionalsFor(c, state) : [];
-  const candidates = needsAdminUser(c) ? rankEngagedMembers(c, state) : [];
-
-  return (
-    <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="font-display text-lg font-bold text-foreground">{c.name}</h3>
-        <span className="rounded-full bg-warning/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground">
-          {c.status === "pendente"
-            ? t("comunidades.status.pendente")
-            : t("comunidades.status.suspensa")}
-        </span>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">{td(c.category)}</p>
-
-      {needsProfessional(c) && (
-        <div className="mt-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-            {t("admin.missingPro")}
-          </p>
-          {invited.length === 0 ? (
-            <p className="mt-1 text-sm text-muted-foreground">{t("admin.noProAvailable")}</p>
-          ) : (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("admin.invitedTo")} {invited.map((r) => r.profile.name).join(", ")}.{" "}
-              {t("admin.firstToAccept")}
-            </p>
-          )}
-        </div>
-      )}
-
-      {needsAdminUser(c) && (
-        <div className="mt-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-            {t("admin.missingUser")}
-          </p>
-          {candidates.length === 0 ? (
-            <p className="mt-1 text-sm text-muted-foreground">{t("admin.noEligible")}</p>
-          ) : (
-            <ul className="mt-2 divide-y divide-border/60 rounded-xl border border-border/70">
-              {candidates.map((m) => (
-                <li
-                  key={m.userId}
-                  className="flex flex-wrap items-center justify-between gap-2 p-3"
-                >
-                  <span className="text-sm text-foreground">
-                    {m.name}{" "}
-                    <span className="text-xs text-muted-foreground">
-                      · {m.posts} {t("admin.stats")}, {m.comments} {t("admin.statsComments")},{" "}
-                      {m.supports} {t("admin.statsSupports")}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      try {
-                        designateAdminUser(c.id, m.userId);
-                        toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`);
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : t("admin.designateError"));
-                      }
-                    }}
-                    className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition hover:bg-accent/90"
-                  >
-                    {t("admin.designate")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-    </article>
   );
 }
