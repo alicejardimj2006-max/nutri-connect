@@ -124,11 +124,11 @@ function PostList({
   );
 }
 
-/** Navegação entre as duas páginas: fica no topo de cada página e some junto com a rolagem. */
+/** Navegação entre as duas páginas: flutua sobre o feed e some ao rolar para baixo. */
 function PagesNav({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
   const { t } = useI18n();
   return (
-    <div className="mx-auto mb-4 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
+    <div className="flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur">
       {PAGES.map((page, index) => (
         <button
           key={page.id}
@@ -168,17 +168,22 @@ function EspacoDeHojePage() {
     };
   }, [carouselApi]);
 
-  // Os filtros somem ao rolar o feed para baixo e voltam ao rolar para cima (ou no topo).
-  const [filtersVisible, setFiltersVisible] = useState(true);
+  // A navegação das páginas e os filtros flutuam sobre o feed: somem ao rolar para baixo e voltam
+  // ao rolar para cima (ou no topo).
+  const [barsVisible, setBarsVisible] = useState(true);
   const lastScrollTop = useRef(0);
-  const handleGeralScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const handleFeedScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const top = e.currentTarget.scrollTop;
     const previous = lastScrollTop.current;
-    if (top <= 16) setFiltersVisible(true);
-    else if (top > previous + 4) setFiltersVisible(false);
-    else if (top < previous - 4) setFiltersVisible(true);
+    if (top <= 16) setBarsVisible(true);
+    else if (top > previous + 4) setBarsVisible(false);
+    else if (top < previous - 4) setBarsVisible(true);
     lastScrollTop.current = top;
   };
+  useEffect(() => {
+    setBarsVisible(true);
+    lastScrollTop.current = 0;
+  }, [activePage]);
 
   // Só o feed rola: cada página ocupa a altura que a coluna central tem (medida ao vivo),
   // então rolar uma não mexe na outra e a janela fica parada.
@@ -224,7 +229,7 @@ function EspacoDeHojePage() {
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
 
-      <main className="flex min-h-0 w-full flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6 xl:px-8 2xl:px-14">
+      <main className="flex min-h-0 w-full flex-1 px-4 sm:px-6 xl:px-8 2xl:px-14">
         <div
           className={`grid h-full min-h-0 w-full gap-8 ${
             panels
@@ -233,7 +238,7 @@ function EspacoDeHojePage() {
           }`}
         >
           {panels && (
-            <div className="hidden h-full min-h-0 overflow-hidden xl:block">
+            <div className="hidden h-full min-h-0 overflow-hidden py-6 xl:block">
               <EspacoLeftColumn />
             </div>
           )}
@@ -242,40 +247,49 @@ function EspacoDeHojePage() {
               Cada página é uma "tela" inteira, com um vão largo entre elas. */}
           <div
             ref={pagesRef}
-            className="mx-auto h-full min-h-0 w-full min-w-0 max-w-3xl overflow-x-clip"
+            className="relative mx-auto h-full min-h-0 w-full min-w-0 max-w-3xl overflow-x-clip"
           >
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-x-0 top-3 z-20 flex flex-col items-center gap-2 transition duration-200",
+                !barsVisible && "-translate-y-[140%] opacity-0",
+              )}
+            >
+              <div className={barsVisible ? "pointer-events-auto" : "pointer-events-none"}>
+                <PagesNav active={activePage} onSelect={goToPage} />
+              </div>
+              <div
+                className={cn(
+                  "flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur transition-opacity duration-200",
+                  barsVisible && activePage === 0 ? "pointer-events-auto" : "pointer-events-none opacity-0",
+                )}
+              >
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    aria-pressed={filter === f.id}
+                    onClick={() => changeFilter(f.id)}
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+                      filter === f.id
+                        ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t(f.labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
             <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
               <CarouselContent className="-ml-12">
                 <CarouselItem className="pl-12">
                   <div
-                    onScroll={handleGeralScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-12"
+                    onScroll={handleFeedScroll}
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-28 lg:pb-8"
                     style={{ height: pageHeight }}
                   >
-                    <PagesNav active={activePage} onSelect={goToPage} />
-                    <div
-                      className={cn(
-                        "sticky top-0 z-10 -mx-2 mb-4 flex flex-wrap items-center justify-center gap-2 bg-background/90 px-2 py-2 backdrop-blur transition-transform duration-200",
-                        !filtersVisible && "-translate-y-full",
-                      )}
-                    >
-                      {FILTERS.map((f) => (
-                        <button
-                          key={f.id}
-                          type="button"
-                          aria-pressed={filter === f.id}
-                          onClick={() => changeFilter(f.id)}
-                          className={cn(
-                            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                            filter === f.id
-                              ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                              : "bg-secondary text-muted-foreground hover:text-foreground",
-                          )}
-                        >
-                          {t(f.labelKey)}
-                        </button>
-                      ))}
-                    </div>
                     <PostList
                       posts={geralPosts}
                       loading={geral.isLoading}
@@ -288,10 +302,10 @@ function EspacoDeHojePage() {
 
                 <CarouselItem className="pl-12">
                   <div
-                    className="overflow-y-auto overscroll-contain px-2 pb-12"
+                    onScroll={handleFeedScroll}
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-16 lg:pb-8"
                     style={{ height: pageHeight }}
                   >
-                    <PagesNav active={activePage} onSelect={goToPage} />
                     {text ? (
                       <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
                         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
@@ -340,7 +354,7 @@ function EspacoDeHojePage() {
           </div>
 
           {panels && (
-            <div className="hidden h-full min-h-0 overflow-hidden lg:block">
+            <div className="hidden h-full min-h-0 overflow-hidden py-6 lg:block">
               <EspacoRightColumn />
             </div>
           )}
