@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
 import { useIsDark } from "@/lib/post-type";
+import { useUnreadCount } from "@/lib/social/notifications";
 
 /** Páginas que rolam por dentro (ex.: Espaço de hoje) avisam por aqui quando as barras devem recolher. */
 export const CHROME_HIDE_EVENT = "chrome:hide";
@@ -105,6 +106,17 @@ function NavTab({
   showLabel?: boolean;
 }) {
   const { color, active, tint } = useNavState(navKey, to);
+  const { user } = useAuth();
+  // Ponto de "não lidas" no sino.
+  const unread = useUnreadCount(navKey === "notificacoes" ? user?.id : undefined).data ?? 0;
+  const dot =
+    unread > 0 ? (
+      <span
+        className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+        style={{ background: color }}
+        aria-label={`${unread}`}
+      />
+    ) : null;
   if (variant === "bottom") {
     return (
       <Link
@@ -130,10 +142,11 @@ function NavTab({
         aria-label={label}
         aria-current={active ? "page" : undefined}
         title={label}
-        className={`grid h-10 w-10 place-items-center rounded-full transition ${active ? "" : "text-foreground hover:bg-secondary"}`}
+        className={`relative grid h-10 w-10 place-items-center rounded-full transition ${active ? "" : "text-foreground hover:bg-secondary"}`}
         style={active ? { color, backgroundColor: tint } : undefined}
       >
         <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
+        {dot}
       </Link>
     );
   }
@@ -143,13 +156,14 @@ function NavTab({
       aria-label={showLabel ? undefined : label}
       aria-current={active ? "page" : undefined}
       title={showLabel ? undefined : label}
-      className={`flex items-center gap-2 rounded-full text-sm font-medium transition ${
+      className={`relative flex items-center gap-2 rounded-full text-sm font-medium transition ${
         showLabel ? "px-4 py-2" : "h-10 w-10 justify-center"
       } ${active ? "font-bold" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
       style={active ? { color, backgroundColor: tint } : undefined}
     >
       <Icon className="h-4 w-4" strokeWidth={active ? 2.4 : 2} />
       {showLabel && label}
+      {dot}
     </Link>
   );
 }
