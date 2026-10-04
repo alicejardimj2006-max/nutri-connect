@@ -51,6 +51,11 @@ import {
 export interface RailSet {
   left: ReactNode;
   right: ReactNode;
+  /**
+   * A página tem a altura da tela e não rola (ex.: conversa da Nina): o que não couber nas colunas
+   * não vai para a seção "Mais" do fim da página. Por isso os cards ficam em ordem de importância.
+   */
+  locked?: boolean;
 }
 
 const last = (path: string) => path.split("/").filter(Boolean).pop() ?? "";
@@ -192,19 +197,20 @@ export function railsFor(pathname: string): RailSet | null {
   }
   if (p === "/nina") {
     return {
+      locked: true,
       left: (
         <>
           <NinaTopicsCard />
-          <MoodCard />
           <NinaUsageCard />
+          <MoodCard />
         </>
       ),
       right: (
         <>
+          <EducationalNoticeCard />
           <QuizCard />
           <MindfulMealCard />
           <TrailCard />
-          <EducationalNoticeCard />
         </>
       ),
     };

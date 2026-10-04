@@ -188,7 +188,7 @@ export function SideRails() {
         {column(active.right)}
       </aside>
 
-      {active.rest.length > 0 && (
+      {active.rest.length > 0 && !rails.locked && (
         <section aria-label="Mais" className="mx-auto w-full max-w-[96rem] px-6 pb-12 pt-2 text-left lg:px-10">
           <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {active.rest.map((i) => (

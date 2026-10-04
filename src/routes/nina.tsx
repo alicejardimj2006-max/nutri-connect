@@ -120,10 +120,11 @@ function NinaPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    // Altura da tela: a página não rola; só a conversa rola por dentro.
+    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6">
-        <div className="mb-4 flex items-center gap-4">
+      <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-4 pb-24 pt-6 sm:px-6 lg:pb-6">
+        <div className="mb-4 flex shrink-0 items-center gap-4">
           <Mascot id="nina" mood={sending ? "talk" : "idle"} size={72} />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-2xl font-extrabold">{t("nina.title")}</h1>
@@ -140,7 +141,7 @@ function NinaPage() {
           )}
         </div>
 
-        <div className="flex min-h-[40vh] flex-1 flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain rounded-2xl border border-border/70 bg-card p-4">
           {history.isLoading && (
             <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
           )}
@@ -161,7 +162,7 @@ function NinaPage() {
           </p>
         )}
 
-        <form onSubmit={send} className="mt-3 flex items-end gap-2">
+        <form onSubmit={send} className="mt-3 flex shrink-0 items-end gap-2">
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -186,7 +187,7 @@ function NinaPage() {
           </button>
         </form>
 
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 shrink-0 text-xs text-muted-foreground">
           {used !== null && (
             <span className="mr-2 font-semibold">
               {used}/{NINA_DAILY_LIMIT} {t("nina.usage")}
