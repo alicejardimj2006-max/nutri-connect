@@ -16,18 +16,22 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
 import {
-  addChallengeTip,
   formatDate,
   getEarnedBadges,
   initials,
-  toggleChallengeStep,
-  toggleJoinChallenge,
   type Post,
   type PublicProfile,
 } from "@/lib/community";
 import type { AuthUser } from "@/lib/auth";
 import { sendBrowserNotification } from "@/lib/settings";
 import { EmojiIcon } from "@/components/emoji-icon";
+import {
+  addChallengeTipRemote,
+  errorText,
+  joinChallenge,
+  leaveChallenge,
+  toggleChallengeStepRemote,
+} from "@/lib/community-remote";
 
 export const Route = createFileRoute("/desafios/$challengeId")({
   head: () => ({
@@ -95,8 +99,11 @@ function ChallengeDetailPage() {
       toast.info(t("challenge.loginToJoin"));
       return;
     }
-    toggleJoinChallenge(challenge.id, user.id);
-    toast[isJoined ? "info" : "success"](isJoined ? t("cd.leftToast") : t("cd.joinedToast"));
+    void (isJoined ? leaveChallenge(challenge.id, user.id) : joinChallenge(challenge.id, user.id))
+      .then(() =>
+        toast[isJoined ? "info" : "success"](isJoined ? t("cd.leftToast") : t("cd.joinedToast")),
+      )
+      .catch((err) => toast.error(errorText(err)));
   };
 
   const handleToggleStep = (index: number) => {
@@ -109,7 +116,9 @@ function ChallengeDetailPage() {
       totalSteps > 0 &&
       myCompletedSteps.length === totalSteps - 1 &&
       !myCompletedSteps.includes(index);
-    toggleChallengeStep(challenge.id, user.id, index);
+    void toggleChallengeStepRemote(challenge.id, user.id, myCompletedSteps, index, isJoined).catch(
+      (err) => toast.error(errorText(err)),
+    );
     if (willComplete) {
       toast.success(`${t("cd.doneToast")} ${challenge.badgeLabel}.`);
       sendBrowserNotification(
@@ -127,13 +136,13 @@ function ChallengeDetailPage() {
       toast.info(t("cd.loginTip"));
       return;
     }
-    try {
-      addChallengeTip(challenge.id, { id: user.id, name: user.name }, tipText);
-      setTipText("");
-      toast.success(t("cd.tipShared"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("cd.tipError"));
-    }
+    if (!tipText.trim()) return;
+    void addChallengeTipRemote(challenge.id, user.id, tipText)
+      .then(() => {
+        setTipText("");
+        toast.success(t("cd.tipShared"));
+      })
+      .catch((err) => toast.error(err instanceof Error ? err.message : t("cd.tipError")));
   };
 
   const participantsProgress = challenge.participants
@@ -417,7 +426,10 @@ function ChallengeDetailPage() {
                     badge.achieved ? "bg-primary-soft/50" : "bg-secondary/30 opacity-60"
                   }`}
                 >
-                  <EmojiIcon emoji={badge.achieved ? badge.icon : "🔒"} className="h-4 w-4 text-accent" />
+                  <EmojiIcon
+                    emoji={badge.achieved ? badge.icon : "🔒"}
+                    className="h-4 w-4 text-accent"
+                  />
                   <span className="font-semibold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}

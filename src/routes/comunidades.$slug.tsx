@@ -1,10 +1,9 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { CalendarCheck, Heart, ImagePlus, MessageCircle, Pin, Trash2, Users } from "lucide-react";
+import { CalendarCheck, ImagePlus, Pin, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPerson } from "@/components/person-chip";
-import { PostCardFrame } from "@/components/post-card-frame";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,25 +15,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PostImage } from "@/components/post-image";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import { getProfessionalInfo, isPlatformAdmin, leaveAsAdmin } from "@/lib/community-admin";
+import { getProfessionalInfo, isPlatformAdmin } from "@/lib/community-admin";
+import { type Actor, type Community } from "@/lib/community";
 import {
-  addComment,
-  createPost,
-  formatDate,
-  initials,
-  removeComment,
-  removePost,
-  toggleLike,
-  toggleMembership,
-  togglePin,
-  type Actor,
-  type Community,
-  type Post,
-} from "@/lib/community";
+  communityCover,
+  joinCommunity,
+  leaveCommunity,
+  leaveCommunityAdmin,
+  togglePostPin,
+} from "@/lib/community-remote";
+import { PostCard } from "@/components/community-cards";
+import { useCreatePost, useDeletePost, useFeed } from "@/lib/social/feed-queries";
 
 export const Route = createFileRoute("/comunidades/$slug")({
   head: () => ({
@@ -60,7 +54,7 @@ function CommunityFeed() {
   const { slug } = useParams({ from: "/comunidades/$slug" });
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, posts, profiles, hydrated } = useCommunity();
+  const { communities, profiles, hydrated } = useCommunity();
   const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
 
   const community = communities.find((c) => c.slug === slug);
@@ -69,14 +63,17 @@ function CommunityFeed() {
     community?.status === "pendente" &&
     community.adminUserId !== actor?.id &&
     !isPlatformAdmin(user);
+  // Publicações da comunidade, do banco (fixadas primeiro).
+  const remoteFeed = useFeed(
+    { scope: "comunidade", community: community?.id, limit: 40 },
+    !!community?.id && !hiddenPending,
+  );
   const feed = useMemo(
     () =>
-      posts
-        .filter((p) => p.communityId === community?.id)
-        .sort((a, b) =>
-          a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1,
-        ),
-    [posts, community?.id],
+      [...(remoteFeed.data ?? [])].sort((a, b) =>
+        a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.createdAt < b.createdAt ? 1 : -1,
+      ),
+    [remoteFeed.data],
   );
 
   if (!hydrated) {
@@ -110,10 +107,7 @@ function CommunityFeed() {
     ? getProfessionalInfo(profiles, community.professionalId)
     : undefined;
 
-  let coverImage = "/images/communities/friends-dinner.jpg";
-  if (community.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
-  if (community.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
-  if (community.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
+  const coverImage = communityCover(community);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
@@ -253,7 +247,12 @@ function CommunityFeed() {
 
       <section className="mt-6 space-y-5">
         {feed.map((post) => (
-          <PostCard key={post.id} post={post} actor={actor} isModerator={isModerator} />
+          <div key={post.id}>
+            {(isModerator || post.pinned) && (
+              <ModeratorBar postId={post.id} pinned={!!post.pinned} canModerate={isModerator} />
+            )}
+            <PostCard post={post} />
+          </div>
         ))}
         {feed.length === 0 && (
           <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
@@ -317,9 +316,12 @@ function MembershipAction({
             <AlertDialogCancel>{t("cf.keepAdmin")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                leaveAsAdmin(community.id, actor);
-                toast.success(t("cf.leftToast"));
-                navigate({ to: "/comunidades" });
+                void leaveCommunityAdmin(community.id)
+                  .then(() => {
+                    toast.success(t("cf.leftToast"));
+                    navigate({ to: "/comunidades" });
+                  })
+                  .catch((err) => toast.error(err instanceof Error ? err.message : String(err)));
               }}
             >
               {t("cf.leaveAdmin")}
@@ -333,7 +335,11 @@ function MembershipAction({
   return (
     <button
       type="button"
-      onClick={() => toggleMembership(community.id, actor)}
+      onClick={() =>
+        void (
+          isMember ? leaveCommunity(community.id, actor.id) : joinCommunity(community.id, actor.id)
+        ).catch((err) => toast.error(err instanceof Error ? err.message : String(err)))
+      }
       className={`${base} ${isMember ? secondary : primary}`}
     >
       {isMember ? t("cf.leaveCommunity") : t("cf.join")}
@@ -341,8 +347,9 @@ function MembershipAction({
   );
 }
 
-function Composer({ communityId, actor }: { communityId: string; actor: Actor }) {
+function Composer({ communityId }: { communityId: string; actor: Actor }) {
   const { t } = useI18n();
+  const create = useCreatePost();
   const [text, setText] = useState("");
   const [image, setImage] = useState<string | undefined>(undefined);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -355,10 +362,16 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
           toast.error(t("cf.writeSomething"));
           return;
         }
-        createPost({ communityId, actor, text: text.trim(), ...(image ? { image } : {}) });
-        setText("");
-        setImage(undefined);
-        toast.success(t("cf.published"));
+        create.mutate(
+          { type: "geral", communityId, text: text.trim(), ...(image ? { image } : {}) },
+          {
+            onSuccess: () => {
+              setText("");
+              setImage(undefined);
+              toast.success(t("cf.published"));
+            },
+          },
+        );
       }}
       className="mt-6 rounded-2xl border bg-card p-5 shadow-card"
     >
@@ -397,7 +410,10 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
         >
           <ImagePlus className="h-4 w-4" /> {t("cf.addPhoto")}
         </button>
-        <button className="ml-auto rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90">
+        <button
+          disabled={create.isPending}
+          className="ml-auto rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-60"
+        >
           {t("cf.postToCommunity")}
         </button>
       </div>
@@ -405,144 +421,53 @@ function Composer({ communityId, actor }: { communityId: string; actor: Actor })
   );
 }
 
-function PostCard({
-  post,
-  actor,
-  isModerator,
+/** Fixar e remover publicações (admins da comunidade). */
+function ModeratorBar({
+  postId,
+  pinned,
+  canModerate,
 }: {
-  post: Post;
-  actor: Actor | null;
-  isModerator: boolean;
+  postId: string;
+  pinned: boolean;
+  canModerate: boolean;
 }) {
-  const [comment, setComment] = useState("");
   const { t } = useI18n();
-  const liked = !!actor && post.likes.includes(actor.id);
-
+  const remove = useDeletePost();
   return (
-    <PostCardFrame
-      size="sm"
-      type={post.type}
-      className={`rounded-2xl border bg-card shadow-card ${post.pinned ? "border-accent/50" : ""}`}
-    >
-      {post.pinned && (
-        <p className="mb-3 inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+    <div className="mb-1.5 flex items-center gap-1 px-1">
+      {pinned && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
           <Pin className="h-3.5 w-3.5" /> {t("cf.pinnedTag")}
-        </p>
-      )}
-      <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-full avatar-shape bg-primary-soft text-sm font-bold text-primary">
-          {initials(post.authorName)}
         </span>
-        <div>
-          <Link
-            to="/perfil/$userId"
-            params={{ userId: post.authorId }}
-            className="flex items-center gap-1 text-sm font-semibold text-foreground hover:underline"
-          >
-            {post.authorName}
-          </Link>
-          <p className="text-xs text-muted-foreground">{formatDate(post.createdAt)}</p>
-        </div>
-        {isModerator && (
-          <div className="ml-auto flex gap-1">
-            <button
-              onClick={() => togglePin(post.id)}
-              className="rounded-lg p-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-              aria-label={post.pinned ? t("cf.unpin") : t("cf.pin")}
-            >
-              <Pin className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => {
-                removePost(post.id);
-                toast.success(t("cf.removedPost"));
-              }}
-              className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
-              aria-label={t("cf.removePost")}
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {post.image && (
-        <PostImage src={post.image} alt={t("cf.photoAlt")} className="mt-3 w-full rounded-xl" />
       )}
-      <p className="mt-3 whitespace-pre-line text-justify hyphens-auto text-sm leading-relaxed text-foreground">
-        {post.text}
-      </p>
-
-      <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-        <button
-          onClick={() => {
-            if (!actor) return toast.error(t("cf.loginToSupport"));
-            toggleLike(post.id, actor.id);
-          }}
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold transition ${
-            liked ? "bg-accent-soft text-accent" : "hover:bg-secondary"
-          }`}
-        >
-          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} /> {post.likes.length}{" "}
-          {post.likes.length === 1 ? t("cf.supportOne") : t("cf.supportMany")}
-        </button>
-        <span className="inline-flex items-center gap-1">
-          <MessageCircle className="h-4 w-4" /> {post.comments.length} {t("cf.comments")}
-        </span>
-      </div>
-
-      <div className="mt-4 space-y-3 border-t pt-4">
-        {post.comments.map((c) => (
-          <div key={c.id} className="flex items-start gap-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full avatar-shape bg-secondary text-xs font-bold text-secondary-foreground">
-              {initials(c.authorName)}
-            </span>
-            <div className="flex-1 rounded-xl bg-secondary/60 px-3 py-2">
-              <p className="flex items-center gap-1 text-xs font-semibold text-foreground">
-                {c.authorName}
-                <span className="ml-auto font-normal text-muted-foreground">
-                  {formatDate(c.createdAt)}
-                </span>
-              </p>
-              <p className="mt-1 text-sm text-foreground">{c.text}</p>
-            </div>
-            {isModerator && (
-              <button
-                onClick={() => {
-                  removeComment(post.id, c.id);
-                  toast.success(t("cf.commentRemoved"));
-                }}
-                className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
-                aria-label={t("cf.removeComment")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        ))}
-
-        {actor && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!comment.trim()) return;
-              addComment(post.id, actor, comment.trim());
-              setComment("");
-            }}
-            className="flex gap-2"
+      {canModerate && (
+        <span className="ml-auto flex gap-1">
+          <button
+            type="button"
+            onClick={() =>
+              void togglePostPin(postId).catch((err) =>
+                toast.error(err instanceof Error ? err.message : String(err)),
+              )
+            }
+            className="rounded-lg p-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+            aria-label={pinned ? t("cf.unpin") : t("cf.pin")}
+            title={pinned ? t("cf.unpin") : t("cf.pin")}
           >
-            <input
-              className="input"
-              placeholder={t("cf.commentPlaceholder")}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-            <button className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90">
-              {t("cf.comment")}
-            </button>
-          </form>
-        )}
-      </div>
-    </PostCardFrame>
+            <Pin className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              remove.mutate(postId, { onSuccess: () => toast.success(t("cf.removedPost")) })
+            }
+            className="rounded-lg p-2 text-destructive transition hover:bg-destructive/10"
+            aria-label={t("cf.removePost")}
+            title={t("cf.removePost")}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </span>
+      )}
+    </div>
   );
 }

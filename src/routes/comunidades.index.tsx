@@ -5,6 +5,7 @@ import { MessageCircle, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminPerson } from "@/components/person-chip";
 import { useCommunity } from "@/hooks/use-community";
+import { communityCover } from "@/lib/community-remote";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import { type Community } from "@/lib/community";
 import { resetCommunityFilters, useCommunityFilters, useRailsOn } from "@/lib/community-filters";
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/comunidades/")({
 function ComunidadesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities: allCommunities, posts, hydrated } = useCommunity();
+  const { communities: allCommunities, hydrated } = useCommunity();
   // Comunidades pendentes ainda não existem publicamente: só quem as criou as vê.
   const communities = useMemo(
     () => allCommunities.filter((c) => c.status !== "pendente" || c.adminUserId === user?.id),
@@ -111,7 +112,7 @@ function ComunidadesPage() {
 }
 
 function CommunityCard({ community: c }: { community: Community }) {
-  const { posts, profiles } = useCommunity();
+  const { profiles } = useCommunity();
   const { user } = useAuth();
   const { t } = useI18n();
   const STATUS_LABEL = {
@@ -121,12 +122,7 @@ function CommunityCard({ community: c }: { community: Community }) {
   const isMember = !!user && c.members.some((m) => m.userId === user.id);
   const pro = c.professionalId ? getProfessionalInfo(profiles, c.professionalId) : undefined;
 
-  let coverImage = c.coverImage || "/images/communities/friends-dinner.jpg";
-  if (!c.coverImage) {
-    if (c.id === "c-educacao") coverImage = "/images/communities/friends-dinner.jpg";
-    if (c.id === "c-relacao") coverImage = "/images/experiences/cooking.jpg";
-    if (c.id === "c-cozinha") coverImage = "/images/hero/kitchen-prep.jpg";
-  }
+  const coverImage = communityCover(c);
 
   return (
     // O card inteiro é clicável (link esticado no título); os admins são links próprios acima dele.
@@ -196,7 +192,7 @@ function CommunityCard({ community: c }: { community: Community }) {
           </span>
           <span className="inline-flex items-center gap-1">
             <MessageCircle className="h-4 w-4 text-accent" />
-            {posts.filter((p) => p.communityId === c.id).length} {t("comunidades.posts")}
+            {c.postCount ?? 0} {t("comunidades.posts")}
           </span>
         </div>
       </div>

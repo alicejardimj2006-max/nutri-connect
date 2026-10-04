@@ -104,6 +104,8 @@ export interface Community {
   formerProfessionalIds?: string[];
   status: CommunityStatus;
   members: CommunityMember[];
+  /** Quantas publicações a comunidade tem (vem do banco). */
+  postCount?: number;
   createdAt: string;
 }
 

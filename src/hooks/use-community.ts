@@ -1,52 +1,95 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "@/hooks/use-i18n";
-import { localizeWeeklyTheme } from "@/lib/i18n/data";
-import { COMMUNITY_EVENT, loadState, type CommunityState } from "@/lib/community";
+import { useAuth } from "@/hooks/use-auth";
+import { COMMUNITY_EVENT, loadState, type CommunityState, type WeeklyTheme } from "@/lib/community";
+import {
+  COMMUNITY_REMOTE_EVENT,
+  fetchCommunityData,
+  fetchThemeData,
+  myCommunityInvites,
+  type PastTheme,
+} from "@/lib/community-remote";
 
-const EMPTY: CommunityState = {
-  communities: [],
-  posts: [],
-  profiles: [],
-  verifications: [],
-  weeklyTheme: {
-    id: "tema-alimentos-frescos",
-    title: "Cozinha de Verdade: Menos Rótulos, Mais Frescor",
-    subtitle: "O Pulso da Comunidade nesta semana",
-    description: "Nesta semana, nosso convite é olhar com carinho para os alimentos in natura.",
-    badge: "Tema da Semana",
-    currentWeek: "Semana Atual",
-    questionOfTheWeek: "Qual alimento fresco passou a fazer parte da sua rotina?",
-    poll: {
-      id: "poll-1",
-      question: "Qual o seu maior obstáculo para cozinhar mais com alimentos frescos?",
-      options: [],
-    },
-    featuredRecipeIds: [],
-  },
-  challenges: [],
-};
+const COMMUNITY_KEY = ["community"] as const;
 
-export function useCommunity() {
-  const [state, setState] = useState<CommunityState>(EMPTY);
-  const [hydrated, setHydrated] = useState(false);
+/** Perfis e pedidos de verificação ainda vêm do espelho local (sincronizado com o banco em profile-sync). */
+type LocalPart = Pick<CommunityState, "posts" | "profiles" | "verifications">;
+const EMPTY_LOCAL: LocalPart = { posts: [], profiles: [], verifications: [] };
+
+/**
+ * Comunidades, desafios e Tema da Semana — agora vindos do banco, no mesmo formato que as telas
+ * sempre usaram. `hydrated` fica verdadeiro quando os dados chegaram.
+ */
+export function useCommunity(): Omit<CommunityState, "weeklyTheme"> & {
+  weeklyTheme: WeeklyTheme | null;
+  hydrated: boolean;
+  themeHydrated: boolean;
+} {
+  const { user } = useAuth();
+  const { locale } = useI18n();
+  const qc = useQueryClient();
+  const [local, setLocal] = useState<LocalPart>(EMPTY_LOCAL);
 
   useEffect(() => {
-    const sync = () => setState(loadState());
+    const sync = () => {
+      const s = loadState();
+      setLocal({ posts: s.posts, profiles: s.profiles, verifications: s.verifications });
+    };
     sync();
-    setHydrated(true);
+    const refresh = () => void qc.invalidateQueries({ queryKey: COMMUNITY_KEY });
     window.addEventListener(COMMUNITY_EVENT, sync);
     window.addEventListener("storage", sync);
+    window.addEventListener(COMMUNITY_REMOTE_EVENT, refresh);
     return () => {
       window.removeEventListener(COMMUNITY_EVENT, sync);
       window.removeEventListener("storage", sync);
+      window.removeEventListener(COMMUNITY_REMOTE_EVENT, refresh);
     };
-  }, []);
+  }, [qc]);
 
+  const data = useQuery({
+    queryKey: [...COMMUNITY_KEY, "data"],
+    queryFn: fetchCommunityData,
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  const theme = useQuery({
+    queryKey: [...COMMUNITY_KEY, "theme", locale, user?.id ?? ""],
+    queryFn: () => fetchThemeData(locale, user?.id),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
+  return {
+    ...local,
+    communities: data.data?.communities ?? [],
+    challenges: data.data?.challenges ?? [],
+    weeklyTheme: theme.data?.current ?? null,
+    hydrated: data.isFetched || data.isError,
+    themeHydrated: theme.isFetched || theme.isError,
+  };
+}
+
+/** Temas das semanas anteriores (só a página do Tema da Semana usa). */
+export function usePastThemes(): PastTheme[] {
+  const { user } = useAuth();
   const { locale } = useI18n();
-  const weeklyTheme = useMemo(
-    () => localizeWeeklyTheme(state.weeklyTheme, locale),
-    [state.weeklyTheme, locale],
-  );
+  const q = useQuery({
+    queryKey: [...COMMUNITY_KEY, "past-themes", locale],
+    queryFn: () => fetchThemeData(locale, user?.id, true),
+    enabled: !!user,
+    staleTime: 5 * 60_000,
+  });
+  return q.data?.past ?? [];
+}
 
-  return { ...state, weeklyTheme, hydrated };
+/** Comunidades que convidam este(a) profissional para ser admin (calculado no banco). */
+export function useMyCommunityInvites(enabled: boolean) {
+  return useQuery({
+    queryKey: [...COMMUNITY_KEY, "invites"],
+    queryFn: myCommunityInvites,
+    enabled,
+    staleTime: 30_000,
+  });
 }

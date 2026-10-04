@@ -6,19 +6,24 @@ import { syncVerifications } from "@/lib/profile-sync";
 import { PostImage } from "@/components/post-image";
 import { ModerationPanel } from "@/components/moderation-panel";
 import { useCommunity } from "@/hooks/use-community";
+import { useQuery } from "@tanstack/react-query";
+import { communityCandidates, designateCommunityAdmin } from "@/lib/community-remote";
+import { useFeed } from "@/lib/social/feed-queries";
 import { useI18n } from "@/hooks/use-i18n";
 import { formatDate, type Community, type VerificationRequest } from "@/lib/community";
 import {
-  designateAdminUser,
   needsAdminUser,
   needsProfessional,
   rankEngagedMembers,
-  rankProfessionalsFor,
   reviewVerification,
 } from "@/lib/community-admin";
 
 /** Pedidos de verificação profissional (aguardando e já analisados). */
-export function VerificationsSection({ user }: { user: { id: string; name: string; isAdmin?: boolean } }) {
+export function VerificationsSection({
+  user,
+}: {
+  user: { id: string; name: string; isAdmin?: boolean };
+}) {
   const { t } = useI18n();
   const state = useCommunity();
 
@@ -33,19 +38,25 @@ export function VerificationsSection({ user }: { user: { id: string; name: strin
   return (
     <div className="space-y-6">
       <section className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">{t("admin.awaiting")}</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+          {t("admin.awaiting")}
+        </h2>
         {pending.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
             {t("admin.noPending")}
           </p>
         ) : (
-          pending.map((v) => <VerificationCard key={v.id} request={v} reviewer={{ id: user.id, name: user.name }} />)
+          pending.map((v) => (
+            <VerificationCard key={v.id} request={v} reviewer={{ id: user.id, name: user.name }} />
+          ))
         )}
       </section>
 
       {reviewed.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">{t("admin.reviewed")}</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            {t("admin.reviewed")}
+          </h2>
           <ul className="divide-y divide-border/60 rounded-2xl border border-border/70 bg-card">
             {reviewed.map((v) => (
               <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 p-4">
@@ -57,7 +68,9 @@ export function VerificationsSection({ user }: { user: { id: string; name: strin
                 </span>
                 <span
                   className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                    v.status === "aprovado" ? "bg-accent-soft text-accent" : "bg-destructive/10 text-destructive"
+                    v.status === "aprovado"
+                      ? "bg-accent-soft text-accent"
+                      : "bg-destructive/10 text-destructive"
                   }`}
                 >
                   {v.status === "aprovado" ? t("admin.approved") : t("admin.rejectedLabel")}
@@ -228,8 +241,20 @@ function VerificationCard({
 function CommunityCase({ community: c }: { community: Community }) {
   const { t } = useI18n();
   const state = useCommunity();
-  const invited = needsProfessional(c) ? rankProfessionalsFor(c, state) : [];
-  const candidates = needsAdminUser(c) ? rankEngagedMembers(c, state) : [];
+  // Quem a plataforma convida (o banco calcula, com as mesmas regras do convite).
+  const pros = useQuery({
+    queryKey: ["community", "candidates", c.id],
+    queryFn: () => communityCandidates(c.id),
+    enabled: needsProfessional(c),
+  });
+  const invited = (pros.data ?? []).map((r) => ({
+    profile: { name: state.profiles.find((p) => p.userId === r.user_id)?.name ?? "…" },
+  }));
+  // Engajamento dos membros a partir das publicações reais da comunidade.
+  const feed = useFeed({ scope: "comunidade", community: c.id, limit: 100 }, needsAdminUser(c));
+  const candidates = needsAdminUser(c)
+    ? rankEngagedMembers(c, { ...state, posts: feed.data ?? [] })
+    : [];
 
   return (
     <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
@@ -283,12 +308,13 @@ function CommunityCase({ community: c }: { community: Community }) {
                   <button
                     type="button"
                     onClick={() => {
-                      try {
-                        designateAdminUser(c.id, m.userId);
-                        toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`);
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : t("admin.designateError"));
-                      }
+                      void designateCommunityAdmin(c.id, m.userId)
+                        .then(() => toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`))
+                        .catch((err) =>
+                          toast.error(
+                            err instanceof Error ? err.message : t("admin.designateError"),
+                          ),
+                        );
                     }}
                     className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition hover:bg-accent/90"
                   >

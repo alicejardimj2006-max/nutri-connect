@@ -24,13 +24,12 @@ import {
 import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useCommunity, useMyCommunityInvites } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
 import { getUserStreak, getUserXP, initials } from "@/lib/community";
 import {
   getAdministeredCommunity,
   getProfessionalInfo,
-  getProfessionalInvites,
   isPlatformAdmin,
 } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
@@ -104,6 +103,8 @@ function PublicProfilePage() {
   const { t } = useI18n();
   const tr = useTr();
   const state = useCommunity();
+  // Convites para administrar comunidades (só conta para o próprio profissional).
+  const inviteIds = useMyCommunityInvites(!!user?.professional);
   const { profiles, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -204,8 +205,7 @@ function PublicProfilePage() {
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
   const professionalInfo = getProfessionalInfo(profiles, userId);
-  const inviteCount =
-    isSelf && isProfessional && user ? getProfessionalInvites(user.id, state).length : 0;
+  const inviteCount = isSelf && isProfessional ? (inviteIds.data ?? []).length : 0;
 
   const xp = getUserXP(userId, challenges) + (isSelf ? (trailProgress?.totalXP ?? 0) : 0);
   const streak = Math.max(
@@ -234,7 +234,10 @@ function PublicProfilePage() {
   const updateDraft = (fn: (p: ProfilePage) => ProfilePage) => setDraft((d) => (d ? fn(d) : d));
   const setLayout = (layout: Block[]) => updateDraft((p) => ({ ...p, layout }));
   const patchBlock = (id: string, patch: Partial<Block>) =>
-    updateDraft((p) => ({ ...p, layout: p.layout.map((b) => (b.id === id ? { ...b, ...patch } : b)) }));
+    updateDraft((p) => ({
+      ...p,
+      layout: p.layout.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+    }));
   const selected = draft?.layout.find((b) => b.id === selectedId) ?? null;
 
   const startEditing = () => {
@@ -248,7 +251,17 @@ function PublicProfilePage() {
     setSelectedId(null);
   };
   const cancelEditing = () => {
-    if (dirty && !window.confirm(tr(["Descartar as mudanças que você ainda não salvou?", "Discard the changes you haven't saved?", "¿Descartar los cambios sin guardar?", "Abandonner les modifications non enregistrées ?"]))) {
+    if (
+      dirty &&
+      !window.confirm(
+        tr([
+          "Descartar as mudanças que você ainda não salvou?",
+          "Discard the changes you haven't saved?",
+          "¿Descartar los cambios sin guardar?",
+          "Abandonner les modifications non enregistrées ?",
+        ]),
+      )
+    ) {
       return;
     }
     stopEditing();
@@ -270,29 +283,66 @@ function PublicProfilePage() {
     }
   };
   const resetPage = () => {
-    if (!window.confirm(tr(["Voltar ao perfil padrão? Os blocos e o tema atuais serão trocados (você ainda pode cancelar antes de salvar).", "Go back to the default profile? Current blocks and theme will be replaced (you can still cancel before saving).", "¿Volver al perfil estándar? Se reemplazarán los bloques y el tema actuales (aún puedes cancelar antes de guardar).", "Revenir au profil par défaut ? Les blocs et le thème actuels seront remplacés (vous pouvez encore annuler avant d'enregistrer)."]))) return;
+    if (
+      !window.confirm(
+        tr([
+          "Voltar ao perfil padrão? Os blocos e o tema atuais serão trocados (você ainda pode cancelar antes de salvar).",
+          "Go back to the default profile? Current blocks and theme will be replaced (you can still cancel before saving).",
+          "¿Volver al perfil estándar? Se reemplazarán los bloques y el tema actuales (aún puedes cancelar antes de guardar).",
+          "Revenir au profil par défaut ? Les blocs et le thème actuels seront remplacés (vous pouvez encore annuler avant d'enregistrer).",
+        ]),
+      )
+    )
+      return;
     setDraft({ ...defaultPage(isProfessional), header: { ...DEFAULT_HEADER } });
     setSelectedId(null);
   };
   const handleSave = () => {
     if (!draft) return;
     // Ao salvar, os blocos sobem até encostar uns nos outros: não ficam vãos para quem visita.
-    savePage.mutate({ ...draft, layout: compactLayout(draft.layout) }, {
-      onSuccess: () => {
-        toast.success(tr(["Perfil salvo! Quem visitar já vê do seu jeito.", "Profile saved! Visitors now see it your way.", "¡Perfil guardado! Quien visite ya lo ve a tu manera.", "Profil enregistré ! Les visiteurs le voient à votre façon."]));
-        stopEditing();
+    savePage.mutate(
+      { ...draft, layout: compactLayout(draft.layout) },
+      {
+        onSuccess: () => {
+          toast.success(
+            tr([
+              "Perfil salvo! Quem visitar já vê do seu jeito.",
+              "Profile saved! Visitors now see it your way.",
+              "¡Perfil guardado! Quien visite ya lo ve a tu manera.",
+              "Profil enregistré ! Les visiteurs le voient à votre façon.",
+            ]),
+          );
+          stopEditing();
+        },
+        onError: (err) => {
+          if (err instanceof ProfileRejectedError) {
+            toast.error(
+              tr([
+                "Não foi possível salvar o perfil",
+                "Could not save the profile",
+                "No se pudo guardar el perfil",
+                "Impossible d'enregistrer le profil",
+              ]),
+              {
+                description: err.message,
+                duration: 12000,
+              },
+            );
+          } else {
+            toast.error(
+              err instanceof Error
+                ? err.message
+                : tr([
+                    "Não foi possível salvar agora.",
+                    "Could not save right now.",
+                    "No se pudo guardar ahora.",
+                    "Impossible d'enregistrer pour le moment.",
+                  ]),
+            );
+          }
+        },
       },
-      onError: (err) => {
-        if (err instanceof ProfileRejectedError) {
-          toast.error(tr(["Não foi possível salvar o perfil", "Could not save the profile", "No se pudo guardar el perfil", "Impossible d'enregistrer le profil"]), {
-            description: err.message,
-            duration: 12000,
-          });
-        } else {
-          toast.error(err instanceof Error ? err.message : tr(["Não foi possível salvar agora.", "Could not save right now.", "No se pudo guardar ahora.", "Impossible d'enregistrer pour le moment."]));
-        }
-      },
-    });
+    );
   };
 
   /** Depois de trocar foto de perfil ou capa: atualiza a conta e o que está na tela. */
@@ -307,7 +357,14 @@ function PublicProfilePage() {
     const { supabase } = await import("@/integrations/supabase/client");
     const { error } = await supabase.from("profiles").update({ banner_url: null }).eq("id", userId);
     if (error) {
-      toast.error(tr(["Não foi possível remover a capa.", "Could not remove the cover.", "No se pudo quitar la portada.", "Impossible de retirer la couverture."]));
+      toast.error(
+        tr([
+          "Não foi possível remover a capa.",
+          "Could not remove the cover.",
+          "No se pudo quitar la portada.",
+          "Impossible de retirer la couverture.",
+        ]),
+      );
       return;
     }
     await afterMedia();
@@ -352,7 +409,12 @@ function PublicProfilePage() {
               <div className="relative w-full" style={{ height: header.bannerHeight }}>
                 <img
                   src={bannerUrl ?? "/images/hero/hero-table.jpg"}
-                  alt={tr(["Capa do perfil", "Profile cover", "Portada del perfil", "Couverture du profil"])}
+                  alt={tr([
+                    "Capa do perfil",
+                    "Profile cover",
+                    "Portada del perfil",
+                    "Couverture du profil",
+                  ])}
                   className="h-full w-full object-cover"
                 />
                 {header.dim && (
@@ -370,7 +432,12 @@ function PublicProfilePage() {
                         <Camera className="h-3.5 w-3.5" />
                         {busy
                           ? tr(["Analisando…", "Checking…", "Analizando…", "Analyse…"])
-                          : tr(["Alterar capa", "Change cover", "Cambiar portada", "Changer la couverture"])}
+                          : tr([
+                              "Alterar capa",
+                              "Change cover",
+                              "Cambiar portada",
+                              "Changer la couverture",
+                            ])}
                       </button>
                     )}
                   </MediaUpload>
@@ -411,8 +478,18 @@ function PublicProfilePage() {
                           onClick={open}
                           disabled={busy}
                           className="absolute -bottom-1 -right-1 grid h-8 w-8 cursor-pointer place-items-center rounded-full border-2 border-card bg-accent text-accent-foreground shadow-soft transition hover:scale-105 disabled:cursor-wait disabled:opacity-70"
-                          aria-label={tr(["Trocar foto de perfil", "Change profile photo", "Cambiar foto de perfil", "Changer la photo de profil"])}
-                          title={tr(["Trocar foto de perfil", "Change profile photo", "Cambiar foto de perfil", "Changer la photo de profil"])}
+                          aria-label={tr([
+                            "Trocar foto de perfil",
+                            "Change profile photo",
+                            "Cambiar foto de perfil",
+                            "Changer la photo de profil",
+                          ])}
+                          title={tr([
+                            "Trocar foto de perfil",
+                            "Change profile photo",
+                            "Cambiar foto de perfil",
+                            "Changer la photo de profil",
+                          ])}
                         >
                           <Camera className="h-4 w-4" />
                         </button>
@@ -544,7 +621,9 @@ function PublicProfilePage() {
                         @{username}
                       </p>
                     )}
-                    <p className="mt-0.5 max-w-prose text-xs sm:text-sm text-muted-foreground">{profile.bio}</p>
+                    <p className="mt-0.5 max-w-prose text-xs sm:text-sm text-muted-foreground">
+                      {profile.bio}
+                    </p>
                     {remote && <ProfileCounts remote={remote} isProfessional={isProfessional} />}
                     {isSelf && user && (
                       <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -562,9 +641,13 @@ function PublicProfilePage() {
                   </div>
 
                   {/* Ações e especialidades: ocupam o lado direito em telas largas */}
-                  <div className={`flex min-w-0 flex-col gap-3 ${centered ? "items-center" : "lg:max-w-[46%] lg:items-end"}`}>
+                  <div
+                    className={`flex min-w-0 flex-col gap-3 ${centered ? "items-center" : "lg:max-w-[46%] lg:items-end"}`}
+                  >
                     {isSelf && (
-                      <div className={`flex flex-wrap items-center gap-2 ${centered ? "justify-center" : "lg:justify-end"}`}>
+                      <div
+                        className={`flex flex-wrap items-center gap-2 ${centered ? "justify-center" : "lg:justify-end"}`}
+                      >
                         {!editing && (
                           <button
                             type="button"
@@ -573,7 +656,14 @@ function PublicProfilePage() {
                             className="flex cursor-pointer items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
                           >
                             <Paintbrush className="h-3.5 w-3.5" />
-                            <span>{tr(["Personalizar perfil", "Customize profile", "Personalizar perfil", "Personnaliser le profil"])}</span>
+                            <span>
+                              {tr([
+                                "Personalizar perfil",
+                                "Customize profile",
+                                "Personalizar perfil",
+                                "Personnaliser le profil",
+                              ])}
+                            </span>
                           </button>
                         )}
                         <Link
@@ -614,18 +704,22 @@ function PublicProfilePage() {
                         <CalendarCheck className="h-4 w-4" /> {t("profile.bookConsultation")}
                       </Link>
                     )}
-                    {isProfessional && professionalInfo && professionalInfo.specialties.length > 0 && (
-                      <ul className={`flex flex-wrap gap-1.5 ${centered ? "justify-center" : "lg:justify-end"}`}>
-                        {professionalInfo.specialties.map((sp) => (
-                          <li
-                            key={sp}
-                            className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
-                          >
-                            {td(sp)}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    {isProfessional &&
+                      professionalInfo &&
+                      professionalInfo.specialties.length > 0 && (
+                        <ul
+                          className={`flex flex-wrap gap-1.5 ${centered ? "justify-center" : "lg:justify-end"}`}
+                        >
+                          {professionalInfo.specialties.map((sp) => (
+                            <li
+                              key={sp}
+                              className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
+                            >
+                              {td(sp)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                   </div>
                 </div>
               </div>

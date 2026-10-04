@@ -10,13 +10,16 @@ import {
 } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useCommunity, usePastThemes } from "@/hooks/use-community";
+import { useTr } from "@/components/settings-ui";
 import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 import { stripEmoji } from "@/lib/emoji";
+import { errorText, votePoll } from "@/lib/community-remote";
+import { toast } from "sonner";
 import { EmojiIcon } from "@/components/emoji-icon";
 
 export const Route = createFileRoute("/tema-da-semana")({
@@ -36,7 +39,9 @@ export const Route = createFileRoute("/tema-da-semana")({
 function TemaDaSemanaPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
-  const { weeklyTheme, challenges, hydrated } = useCommunity();
+  const tr = useTr();
+  const { weeklyTheme, challenges, themeHydrated: hydrated } = useCommunity();
+  const pastThemes = usePastThemes();
   // Receitas publicadas para o tema da semana ATIVO (do banco). O cabeçalho e a enquete deste
   // tema ainda vêm do estado local e migram na Etapa 6.
   const activeTheme = useActiveTheme(!!user);
@@ -51,36 +56,6 @@ function TemaDaSemanaPage() {
   const themeRecipes = themeFeed.data ?? [];
   const linkedChallenge = challenges.find((c) => c.themeId === weeklyTheme?.id) || challenges[0];
 
-  const pastThemes: {
-    title: DictKey;
-    week: DictKey;
-    summary: DictKey;
-    recipesCount: number;
-    reflectionsCount: number;
-  }[] = [
-    {
-      title: "theme.past1.title",
-      week: "theme.past1.week",
-      summary: "theme.past1.summary",
-      recipesCount: 14,
-      reflectionsCount: 86,
-    },
-    {
-      title: "theme.past2.title",
-      week: "theme.past2.week",
-      summary: "theme.past2.summary",
-      recipesCount: 22,
-      reflectionsCount: 110,
-    },
-    {
-      title: "theme.past3.title",
-      week: "theme.past3.week",
-      summary: "theme.past3.summary",
-      recipesCount: 9,
-      reflectionsCount: 94,
-    },
-  ];
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
@@ -88,7 +63,14 @@ function TemaDaSemanaPage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         {!hydrated || !weeklyTheme ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
-            {t("theme.loading")}
+            {!hydrated
+              ? t("theme.loading")
+              : tr([
+                  "O tema desta semana ainda está sendo preparado. Volte em breve!",
+                  "This week's theme is still being prepared. Check back soon!",
+                  "El tema de esta semana aún se está preparando. ¡Vuelve pronto!",
+                  "Le thème de la semaine est en préparation. Revenez bientôt !",
+                ])}
           </div>
         ) : (
           <div className="space-y-12">
@@ -138,25 +120,53 @@ function TemaDaSemanaPage() {
                         “{weeklyTheme.questionOfTheWeek}”
                       </p>
 
-                      {/* Placeholder for the poll (Enquete) */}
-                      {weeklyTheme.poll && (
+                      {weeklyTheme.poll && weeklyTheme.poll.options.length > 0 && (
                         <div className="mt-6 space-y-2">
                           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                             {t("theme.vote")}
                           </p>
-                          {weeklyTheme.poll.options.map((opt) => (
-                            <div
-                              key={opt.id}
-                              className="relative flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50 hover:bg-secondary/60 cursor-pointer transition"
-                            >
-                              <span className="text-sm font-medium text-foreground relative z-10">
-                                {opt.text}
-                              </span>
-                              <span className="text-xs font-semibold text-muted-foreground relative z-10">
-                                {opt.votes} {t("theme.votes")}
-                              </span>
-                            </div>
-                          ))}
+                          {(() => {
+                            const total = weeklyTheme.poll.options.reduce((a, o) => a + o.votes, 0);
+                            const voted = weeklyTheme.poll.options.some((o) =>
+                              o.votedUsers.includes(user.id),
+                            );
+                            return weeklyTheme.poll.options.map((opt) => {
+                              const mine = opt.votedUsers.includes(user.id);
+                              const pct = total ? Math.round((opt.votes / total) * 100) : 0;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  aria-pressed={mine}
+                                  onClick={() =>
+                                    void votePoll(weeklyTheme.id, opt.id, user.id)
+                                      .then(() => toast.success(t("weekly.voteRegistered")))
+                                      .catch((err) => toast.error(errorText(err)))
+                                  }
+                                  className={`relative flex w-full cursor-pointer items-center justify-between overflow-hidden rounded-xl border p-3 text-left transition ${
+                                    mine
+                                      ? "border-accent bg-accent-soft/40"
+                                      : "border-border/50 bg-secondary/40 hover:bg-secondary/60"
+                                  }`}
+                                >
+                                  {voted && (
+                                    <span
+                                      aria-hidden
+                                      className="absolute inset-y-0 left-0 bg-accent/15 transition-all duration-500"
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  )}
+                                  <span className="relative z-10 text-sm font-medium text-foreground">
+                                    {opt.text}
+                                  </span>
+                                  <span className="relative z-10 text-xs font-semibold text-muted-foreground">
+                                    {voted ? `${pct}% · ` : ""}
+                                    {opt.votes} {t("theme.votes")}
+                                  </span>
+                                </button>
+                              );
+                            });
+                          })()}
                         </div>
                       )}
 
@@ -219,65 +229,73 @@ function TemaDaSemanaPage() {
             </div>
 
             {/* Histórico de Temas Anteriores */}
-            <section className="border-t border-border pt-10">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold font-display text-foreground">
-                  {t("theme.archive")}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{t("theme.archiveHint")}</p>
-              </div>
+            {pastThemes.length > 0 && (
+              <section className="border-t border-border pt-10">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold font-display text-foreground">
+                    {t("theme.archive")}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("theme.archiveHint")}</p>
+                </div>
 
-              <div className="grid gap-5 sm:grid-cols-3">
-                {pastThemes.map((pt, index) => {
-                  const cover =
-                    index === 0
-                      ? "/images/hero/kitchen-prep.jpg"
-                      : index === 1
-                        ? "/images/recipes/default-recipe.jpg"
-                        : "/images/communities/friends-dinner.jpg";
+                <div className="grid gap-5 sm:grid-cols-3">
+                  {pastThemes.map((pt, index) => {
+                    const cover =
+                      index === 0
+                        ? "/images/hero/kitchen-prep.jpg"
+                        : index === 1
+                          ? "/images/recipes/default-recipe.jpg"
+                          : "/images/communities/friends-dinner.jpg";
 
-                  return (
-                    <div
-                      key={pt.title}
-                      className="rounded-2xl border border-border bg-card shadow-xs transition hover:shadow-md overflow-hidden flex flex-col"
-                    >
-                      <div className="h-32 w-full relative">
-                        <img
-                          src={cover}
-                          alt={t(pt.title)}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        <div className="absolute bottom-3 left-4">
-                          <span className="text-[10px] font-bold text-white/90 drop-shadow-md">
-                            {t(pt.week)}
-                          </span>
+                    return (
+                      <div
+                        key={pt.id}
+                        className="rounded-2xl border border-border bg-card shadow-xs transition hover:shadow-md overflow-hidden flex flex-col"
+                      >
+                        <div className="h-32 w-full relative">
+                          <img
+                            src={cover}
+                            alt={pt.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                          <div className="absolute bottom-3 left-4">
+                            <span className="text-[10px] font-bold text-white/90 drop-shadow-md">
+                              {pt.week}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-5 flex flex-col flex-1">
+                          <h4 className="text-sm font-bold font-display text-foreground mb-2">
+                            {pt.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed flex-1">
+                            {pt.summary}
+                          </p>
+                          <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                            <span>
+                              <EmojiIcon
+                                emoji={"🥗"}
+                                className="mr-1 inline h-3.5 w-3.5 align-[-2px]"
+                              />
+                              {pt.recipesCount} {t("theme.recipesCount")}
+                            </span>
+                            <span>
+                              <EmojiIcon
+                                emoji={"💬"}
+                                className="mr-1 inline h-3.5 w-3.5 align-[-2px]"
+                              />
+                              {pt.reflectionsCount} {t("theme.storiesCount")}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="p-5 flex flex-col flex-1">
-                        <h4 className="text-sm font-bold font-display text-foreground mb-2">
-                          {t(pt.title)}
-                        </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed flex-1">
-                          {t(pt.summary)}
-                        </p>
-                        <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                          <span>
-                            <EmojiIcon emoji={"🥗"} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
-                            {pt.recipesCount} {t("theme.recipesCount")}
-                          </span>
-                          <span>
-                            <EmojiIcon emoji={"💬"} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
-                            {pt.reflectionsCount} {t("theme.storiesCount")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </main>

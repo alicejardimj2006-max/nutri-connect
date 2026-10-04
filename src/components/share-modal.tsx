@@ -24,7 +24,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import {
   CATEGORIES,
-  createCommunity,
   initials,
   isCommunityAdmin,
   normalizeBlockOrder,
@@ -33,6 +32,7 @@ import {
   RECIPE_CATEGORIES,
   type PostType,
 } from "@/lib/community";
+import { createCommunityRemote } from "@/lib/community-remote";
 import {
   Dialog,
   DialogContent,
@@ -572,13 +572,12 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         return;
       }
       try {
-        createCommunity({
+        await createCommunityRemote({
           name: title.trim(),
           description: text.trim(),
           objective: objective.trim(),
           coverImage: image ?? "",
           category: communityCategory,
-          actor: { id: user.id, name: user.name },
         });
       } catch (err) {
         toast.error(err instanceof Error ? err.message : t("sm.communityError"));

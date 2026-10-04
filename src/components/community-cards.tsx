@@ -46,13 +46,12 @@ import {
   toggleSupport,
   togglePrepared,
   addComment,
-  voteThemePoll,
-  toggleJoinChallenge,
   formatDate,
   getAvatarSrc,
   initials,
 } from "@/lib/community";
 import { EmojiIcon } from "@/components/emoji-icon";
+import { errorText, joinChallenge, leaveChallenge, votePoll } from "@/lib/community-remote";
 
 interface PostCardProps {
   post: Post;
@@ -411,7 +410,10 @@ export function PostCard({ post }: PostCardProps) {
   if (post.type === "receita") {
     return (
       <PostCardFrame type={post.type} className={frameClass} footer={footer(false, true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--pt)" }}>
+        <div
+          className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider"
+          style={{ color: "var(--pt)" }}
+        >
           <ChefHat className="h-4 w-4" /> {t("postcard.communityRecipe")}
         </div>
 
@@ -484,7 +486,10 @@ export function PostCard({ post }: PostCardProps) {
   if (post.type === "experiencia") {
     return (
       <PostCardFrame type={post.type} className={frameClass} footer={footer()}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--pt)" }}>
+        <div
+          className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider"
+          style={{ color: "var(--pt)" }}
+        >
           <Sparkles className="h-4 w-4" /> {t("postcard.communityStory")}
         </div>
 
@@ -517,7 +522,10 @@ export function PostCard({ post }: PostCardProps) {
   if (post.type === "pergunta") {
     return (
       <PostCardFrame type={post.type} className={frameClass} footer={footer(true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--pt)" }}>
+        <div
+          className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider"
+          style={{ color: "var(--pt)" }}
+        >
           <HelpCircle className="h-4 w-4" /> {t("postcard.question")}
         </div>
 
@@ -585,8 +593,10 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
       toast.info(t("weekly.loginToVote"));
       return;
     }
-    voteThemePoll(optionId, user.id);
-    toast.success(t("weekly.voteRegistered"));
+    if (!theme) return;
+    void votePoll(theme.id, optionId, user.id)
+      .then(() => toast.success(t("weekly.voteRegistered")))
+      .catch((err) => toast.error(errorText(err)));
   };
 
   if (!theme) return null;
@@ -724,12 +734,11 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
       toast.info(t("challenge.loginToJoin"));
       return;
     }
-    toggleJoinChallenge(challenge.id, user.id);
-    if (!isJoined) {
-      toast.success(t("challenge.joined"));
-    } else {
-      toast.info(t("challenge.left"));
-    }
+    void (isJoined ? leaveChallenge(challenge.id, user.id) : joinChallenge(challenge.id, user.id))
+      .then(() =>
+        isJoined ? toast.info(t("challenge.left")) : toast.success(t("challenge.joined")),
+      )
+      .catch((err) => toast.error(errorText(err)));
   };
 
   if (!challenge) return null;

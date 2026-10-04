@@ -16,14 +16,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useCommunity, useMyCommunityInvites } from "@/hooks/use-community";
+import { acceptCommunityInvite } from "@/lib/community-remote";
 import { useI18n } from "@/hooks/use-i18n";
 import { type Community } from "@/lib/community";
 import {
-  acceptProfessionalInvite,
   getAdministeredCommunity,
   getProfessionalInfo,
-  getProfessionalInvites,
   isVerifiedProfessional,
 } from "@/lib/community-admin";
 
@@ -36,13 +35,16 @@ function InvitesPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
   const state = useCommunity();
+  const isPro = !!user && isVerifiedProfessional(state.profiles, user.id);
+  const inviteIds = useMyCommunityInvites(isPro);
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
-  const isPro = isVerifiedProfessional(state.profiles, user.id);
   const info = getProfessionalInfo(state.profiles, user.id);
   const administered = getAdministeredCommunity(user.id, state.communities);
-  const invites = isPro ? getProfessionalInvites(user.id, state) : [];
+  const invites = isPro
+    ? state.communities.filter((c) => (inviteIds.data ?? []).includes(c.id))
+    : [];
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -57,9 +59,7 @@ function InvitesPage() {
           <span>{t("edit.back")}</span>
         </Link>
 
-        <h1 className="sr-only">
-          {t("invites.title")}
-        </h1>
+        <h1 className="sr-only">{t("invites.title")}</h1>
 
         {!state.hydrated ? (
           <p className="mt-8 text-sm text-muted-foreground">{t("common.loading")}</p>
@@ -201,14 +201,14 @@ function InviteCard({
               <AlertDialogCancel>{t("invites.notNow")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
-                  try {
-                    acceptProfessionalInvite(c.id, actor);
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : t("invites.acceptError"));
-                    return;
-                  }
-                  toast.success(t("invites.acceptedToast"));
-                  navigate({ to: "/comunidades/$slug", params: { slug: c.slug } });
+                  void acceptCommunityInvite(c.id)
+                    .then(() => {
+                      toast.success(t("invites.acceptedToast"));
+                      navigate({ to: "/comunidades/$slug", params: { slug: c.slug } });
+                    })
+                    .catch((err) =>
+                      toast.error(err instanceof Error ? err.message : t("invites.acceptError")),
+                    );
                 }}
               >
                 {t("invites.accept")}
