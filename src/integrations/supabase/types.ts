@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string | null
+          admin_name: string
+          created_at: string
+          details: Json
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          admin_name?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          admin_name?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_log_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage: {
         Row: {
           count: number
@@ -34,6 +82,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ai_usage_user_id_fkey"
             columns: ["user_id"]
@@ -89,6 +144,60 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "professionals"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          active: boolean
+          body: string
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          level: string
+          link_url: string | null
+          starts_at: string | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          level?: string
+          link_url?: string | null
+          starts_at?: string | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          level?: string
+          link_url?: string | null
+          starts_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -193,13 +302,13 @@ export type Database = {
           id: string
           location: string | null
           meeting_url: string | null
-          patient_joined_at: string | null
-          professional_joined_at: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
+          patient_joined_at: string | null
           patient_notes: string | null
           price_cents: number
           professional_id: string
+          professional_joined_at: string | null
           starts_at: string
           status: Database["public"]["Enums"]["appointment_status"]
           summary_for_patient: string | null
@@ -216,13 +325,13 @@ export type Database = {
           id?: string
           location?: string | null
           meeting_url?: string | null
-          patient_joined_at?: string | null
-          professional_joined_at?: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
+          patient_joined_at?: string | null
           patient_notes?: string | null
           price_cents?: number
           professional_id: string
+          professional_joined_at?: string | null
           starts_at: string
           status?: Database["public"]["Enums"]["appointment_status"]
           summary_for_patient?: string | null
@@ -239,13 +348,13 @@ export type Database = {
           id?: string
           location?: string | null
           meeting_url?: string | null
-          patient_joined_at?: string | null
-          professional_joined_at?: string | null
           modality?: Database["public"]["Enums"]["appointment_modality"]
           patient_id?: string
+          patient_joined_at?: string | null
           patient_notes?: string | null
           price_cents?: number
           professional_id?: string
+          professional_joined_at?: string | null
           starts_at?: string
           status?: Database["public"]["Enums"]["appointment_status"]
           summary_for_patient?: string | null
@@ -822,6 +931,7 @@ export type Database = {
           created_at: string
           hidden: boolean
           id: string
+          pending_review: boolean
           post_id: string
         }
         Insert: {
@@ -830,6 +940,7 @@ export type Database = {
           created_at?: string
           hidden?: boolean
           id?: string
+          pending_review?: boolean
           post_id: string
         }
         Update: {
@@ -838,6 +949,7 @@ export type Database = {
           created_at?: string
           hidden?: boolean
           id?: string
+          pending_review?: boolean
           post_id?: string
         }
         Relationships: [
@@ -1021,6 +1133,13 @@ export type Database = {
             foreignKeyName: "consents_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1070,6 +1189,63 @@ export type Database = {
           },
           {
             foreignKeyName: "contact_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_approvals: {
+        Row: {
+          body: string
+          created_at: string
+          expires_at: string
+          id: string
+          image_url: string | null
+          kind: string
+          post_id: string | null
+          recipe: Json | null
+          tags: string[]
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          kind: string
+          post_id?: string | null
+          recipe?: Json | null
+          tags?: string[]
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          kind?: string
+          post_id?: string | null
+          recipe?: Json | null
+          tags?: string[]
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_approvals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_approvals_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1728,6 +1904,13 @@ export type Database = {
             foreignKeyName: "nina_messages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nina_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2045,6 +2228,7 @@ export type Database = {
           hidden: boolean
           id: string
           image_url: string | null
+          pending_review: boolean
           pinned: boolean
           publish_at: string
           recipe: Json | null
@@ -2064,6 +2248,7 @@ export type Database = {
           hidden?: boolean
           id?: string
           image_url?: string | null
+          pending_review?: boolean
           pinned?: boolean
           publish_at?: string
           recipe?: Json | null
@@ -2083,6 +2268,7 @@ export type Database = {
           hidden?: boolean
           id?: string
           image_url?: string | null
+          pending_review?: boolean
           pinned?: boolean
           publish_at?: string
           recipe?: Json | null
@@ -2249,6 +2435,78 @@ export type Database = {
           },
         ]
       }
+      profile_media: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_media_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_media_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_pages: {
+        Row: {
+          page: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          page?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          page?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_pages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_pages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_private: {
         Row: {
           birth_date: string | null
@@ -2297,6 +2555,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          banner_url: string | null
           bio: string
           created_at: string
           goal: string | null
@@ -2311,6 +2570,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          banner_url?: string | null
           bio?: string
           created_at?: string
           goal?: string | null
@@ -2325,6 +2585,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          banner_url?: string | null
           bio?: string
           created_at?: string
           goal?: string | null
@@ -2378,9 +2639,10 @@ export type Database = {
           details: string | null
           id: string
           reason: string
-          reporter_id: string
+          reporter_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          source: string
           status: Database["public"]["Enums"]["report_status"]
           target_id: string
           target_type: Database["public"]["Enums"]["report_target"]
@@ -2390,9 +2652,10 @@ export type Database = {
           details?: string | null
           id?: string
           reason: string
-          reporter_id: string
+          reporter_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source?: string
           status?: Database["public"]["Enums"]["report_status"]
           target_id: string
           target_type: Database["public"]["Enums"]["report_target"]
@@ -2402,9 +2665,10 @@ export type Database = {
           details?: string | null
           id?: string
           reason?: string
-          reporter_id?: string
+          reporter_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source?: string
           status?: Database["public"]["Enums"]["report_status"]
           target_id?: string
           target_type?: Database["public"]["Enums"]["report_target"]
@@ -2714,6 +2978,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_preferences_user_id_fkey"
             columns: ["user_id"]
@@ -3033,13 +3304,19 @@ export type Database = {
       }
     }
     Functions: {
-      join_consultation: {
-        Args: { p_appointment: string }
-        Returns: Json
+      _admin_guard: { Args: never; Returns: undefined }
+      _admin_log: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_id: string
+          p_type: string
+        }
+        Returns: undefined
       }
-      consultation_room_state: {
-        Args: { p_appointment: string }
-        Returns: string
+      _export_rows: {
+        Args: { p_cols: string[]; p_table: string; p_user: string }
+        Returns: Json
       }
       accept_care_invite: {
         Args: { p_code: string }
@@ -3089,7 +3366,145 @@ export type Database = {
         }
       }
       activate_weekly_theme: { Args: never; Returns: string }
-      ai_consume: { Args: { p_kind: string; p_limit: number }; Returns: boolean }
+      admin_ai_stats: { Args: { p_days?: number }; Returns: Json }
+      admin_delete_announcement: { Args: { p_id: string }; Returns: undefined }
+      admin_delete_post: { Args: { p_post: string }; Returns: undefined }
+      admin_log: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_id: string
+          p_type: string
+        }
+        Returns: undefined
+      }
+      admin_overview: { Args: never; Returns: Json }
+      admin_payments: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          amount_cents: number
+          created_at: string
+          id: string
+          method: string
+          paid_at: string
+          patient_name: string
+          platform_fee_cents: number
+          professional_name: string
+          provider: string
+          refunded_at: string
+          status: Database["public"]["Enums"]["payment_status"]
+          total: number
+        }[]
+      }
+      admin_save_announcement: {
+        Args: {
+          p_active: boolean
+          p_body: string
+          p_ends: string
+          p_id: string
+          p_level: string
+          p_link: string
+          p_starts: string
+          p_title: string
+        }
+        Returns: string
+      }
+      admin_search_posts: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_query?: string
+          p_status?: string
+        }
+        Returns: {
+          author_id: string
+          author_name: string
+          author_username: string
+          body: string
+          comments: number
+          created_at: string
+          hidden: boolean
+          id: string
+          image_url: string
+          pinned: boolean
+          reactions: number
+          reports_pending: number
+          title: string
+          total: number
+          type: Database["public"]["Enums"]["post_type"]
+        }[]
+      }
+      admin_search_users: {
+        Args: {
+          p_filter?: string
+          p_limit?: number
+          p_offset?: number
+          p_query?: string
+        }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          is_admin: boolean
+          name: string
+          posts_count: number
+          reports_pending: number
+          role: Database["public"]["Enums"]["app_role"]
+          suspended_at: string
+          total: number
+          username: string
+          verified: boolean
+        }[]
+      }
+      admin_set_admin: {
+        Args: { p_make: boolean; p_user: string }
+        Returns: undefined
+      }
+      admin_set_post_hidden: {
+        Args: { p_hidden: boolean; p_post: string }
+        Returns: undefined
+      }
+      admin_set_post_pinned: {
+        Args: { p_pinned: boolean; p_post: string }
+        Returns: undefined
+      }
+      admin_set_setting: {
+        Args: { p_key: string; p_value: Json }
+        Returns: undefined
+      }
+      admin_set_suspended: {
+        Args: { p_reason?: string; p_suspend: boolean; p_user: string }
+        Returns: undefined
+      }
+      ai_approve_content: {
+        Args: {
+          p_id: string
+          p_type: Database["public"]["Enums"]["report_target"]
+        }
+        Returns: boolean
+      }
+      ai_consume: {
+        Args: { p_kind: string; p_limit: number }
+        Returns: boolean
+      }
+      ai_flag_content: {
+        Args: {
+          p_details: string
+          p_id: string
+          p_reason: string
+          p_type: Database["public"]["Enums"]["report_target"]
+        }
+        Returns: boolean
+      }
+      ai_flag_image: {
+        Args: {
+          p_details: string
+          p_id: string
+          p_kind: string
+          p_reason: string
+        }
+        Returns: boolean
+      }
       ai_usage_today: { Args: { p_kind: string }; Returns: number }
       are_friends: { Args: { a: string; b: string }; Returns: boolean }
       book_appointment: {
@@ -3113,9 +3528,11 @@ export type Database = {
           meeting_url: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
+          patient_joined_at: string | null
           patient_notes: string | null
           price_cents: number
           professional_id: string
+          professional_joined_at: string | null
           starts_at: string
           status: Database["public"]["Enums"]["appointment_status"]
           summary_for_patient: string | null
@@ -3154,9 +3571,11 @@ export type Database = {
           meeting_url: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
+          patient_joined_at: string | null
           patient_notes: string | null
           price_cents: number
           professional_id: string
+          professional_joined_at: string | null
           starts_at: string
           status: Database["public"]["Enums"]["appointment_status"]
           summary_for_patient: string | null
@@ -3179,6 +3598,14 @@ export type Database = {
       }
       community_is_visible: {
         Args: { p_community: string; p_user?: string }
+        Returns: boolean
+      }
+      consultation_room_state: {
+        Args: { p_appointment: string }
+        Returns: string
+      }
+      consultation_topic_allowed: {
+        Args: { p_topic: string }
         Returns: boolean
       }
       create_community: {
@@ -3308,11 +3735,11 @@ export type Database = {
         Args: { p_patient: string; p_professional?: string }
         Returns: boolean
       }
-      export_my_data: { Args: never; Returns: Json }
       expire_payment_holds: {
         Args: { p_professional?: string }
         Returns: number
       }
+      export_my_data: { Args: never; Returns: Json }
       f_unaccent: { Args: { "": string }; Returns: string }
       friend_ids: { Args: { p_user?: string }; Returns: string[] }
       friends_weekly_ranking: {
@@ -3435,6 +3862,7 @@ export type Database = {
           phone: string
         }[]
       }
+      get_profile_page: { Args: { p_user: string }; Returns: Json }
       get_public_profile: {
         Args: { p_key: string }
         Returns: {
@@ -3467,7 +3895,9 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { uid?: string }; Returns: boolean }
+      is_suspended: { Args: { uid: string }; Returns: boolean }
       is_verified_professional: { Args: { uid?: string }; Returns: boolean }
+      join_consultation: { Args: { p_appointment: string }; Returns: Json }
       leave_community_admin: {
         Args: { p_community: string }
         Returns: {
@@ -3608,6 +4038,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      purge_content_approvals: { Args: never; Returns: undefined }
+      purge_nina_messages: { Args: never; Returns: number }
+      record_consent: {
+        Args: { p_granted?: boolean; p_kind: string; p_version: string }
+        Returns: undefined
+      }
       register_manual_payment: {
         Args: {
           p_amount_cents?: number
@@ -3639,10 +4075,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      record_consent: {
-        Args: { p_granted?: boolean; p_kind: string; p_version: string }
-        Returns: undefined
       }
       relationship_with: { Args: { p_user: string }; Returns: string }
       remove_friendship: { Args: { p_user: string }; Returns: undefined }
@@ -3679,9 +4111,11 @@ export type Database = {
           meeting_url: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
+          patient_joined_at: string | null
           patient_notes: string | null
           price_cents: number
           professional_id: string
+          professional_joined_at: string | null
           starts_at: string
           status: Database["public"]["Enums"]["appointment_status"]
           summary_for_patient: string | null
@@ -3741,6 +4175,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      retry_pending_moderation: { Args: never; Returns: number }
       review_verification: {
         Args: { p_approve: boolean; p_reason?: string; p_request: string }
         Returns: {
