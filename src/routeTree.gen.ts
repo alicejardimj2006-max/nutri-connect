@@ -41,6 +41,7 @@ import { Route as AcompanhamentoMetasRouteImport } from './routes/acompanhamento
 import { Route as AcompanhamentoPlanoRouteImport } from './routes/acompanhamento.plano'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
+import { Route as ConsultaAppointmentIdRouteImport } from './routes/consulta.$appointmentId'
 import { Route as ConviteCodeRouteImport } from './routes/convite.$code'
 import { Route as DesafiosIndexRouteImport } from './routes/desafios.index'
 import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$challengeId'
@@ -228,6 +229,11 @@ const ComunidadesSlugRoute = ComunidadesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ComunidadesRoute,
 } as any)
+const ConsultaAppointmentIdRoute = ConsultaAppointmentIdRouteImport.update({
+  id: '/consulta/$appointmentId',
+  path: '/consulta/$appointmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConviteCodeRoute = ConviteCodeRouteImport.update({
   id: '/convite/$code',
   path: '/convite/$code',
@@ -398,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
@@ -454,6 +461,7 @@ export interface FileRoutesByTo {
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
@@ -514,6 +522,7 @@ export interface FileRoutesById {
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
   '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
@@ -576,6 +585,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
     | '/comunidades/$slug'
+    | '/consulta/$appointmentId'
     | '/convite/$code'
     | '/desafios/$challengeId'
     | '/pagamento/$appointmentId'
@@ -632,6 +642,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
     | '/comunidades/$slug'
+    | '/consulta/$appointmentId'
     | '/convite/$code'
     | '/desafios/$challengeId'
     | '/pagamento/$appointmentId'
@@ -691,6 +702,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
     | '/comunidades/$slug'
+    | '/consulta/$appointmentId'
     | '/convite/$code'
     | '/desafios/$challengeId'
     | '/pagamento/$appointmentId'
@@ -744,6 +756,7 @@ export interface RootRouteChildren {
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
   TermosRoute: typeof TermosRoute
   VerificacaoRoute: typeof VerificacaoRoute
+  ConsultaAppointmentIdRoute: typeof ConsultaAppointmentIdRoute
   ConviteCodeRoute: typeof ConviteCodeRoute
   PagamentoAppointmentIdRoute: typeof PagamentoAppointmentIdRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
@@ -981,6 +994,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/comunidades/$slug'
       preLoaderRoute: typeof ComunidadesSlugRouteImport
       parentRoute: typeof ComunidadesRoute
+    }
+    '/consulta/$appointmentId': {
+      id: '/consulta/$appointmentId'
+      path: '/consulta/$appointmentId'
+      fullPath: '/consulta/$appointmentId'
+      preLoaderRoute: typeof ConsultaAppointmentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/convite/$code': {
       id: '/convite/$code'
@@ -1290,6 +1310,7 @@ const rootRouteChildren: RootRouteChildren = {
   TemaDaSemanaRoute: TemaDaSemanaRoute,
   TermosRoute: TermosRoute,
   VerificacaoRoute: VerificacaoRoute,
+  ConsultaAppointmentIdRoute: ConsultaAppointmentIdRoute,
   ConviteCodeRoute: ConviteCodeRoute,
   PagamentoAppointmentIdRoute: PagamentoAppointmentIdRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,

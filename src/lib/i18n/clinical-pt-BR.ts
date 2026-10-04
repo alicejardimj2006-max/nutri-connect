@@ -76,7 +76,7 @@ const clinicalPtBR = {
   "pro.duration": "Duração",
   "pro.minutes": "{n} minutos",
   "pro.addressOnBooking": "Endereço informado após o agendamento",
-  "pro.onlineDefault": "Chamada de vídeo; o link chega antes da consulta.",
+  "pro.onlineDefault": "Chamada de vídeo na sala do NutriConnect, aqui no site, sem instalar nada.",
   "pro.selfNotice":
     "Esta é a sua página pública de agendamento. É assim que os pacientes veem você.",
   "pro.editSettings": "Editar atendimento",
@@ -161,7 +161,8 @@ const clinicalPtBR = {
   "patientAppts.emptyPast": "Nada por aqui ainda",
 
   // Cartão/diálogos de consulta ---------------------------------------
-  "appt.join": "Entrar na chamada",
+  "appt.join": "Entrar na sala",
+  "appt.roomInfo": "A consulta acontece na sala de vídeo do NutriConnect, aqui no site. A sala abre 30 min antes.",
   "appt.payNow": "Pagar agora",
   "appt.reschedule": "Remarcar",
   "appt.manage": "Gerenciar",

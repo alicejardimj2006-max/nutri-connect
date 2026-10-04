@@ -25,6 +25,7 @@ import {
   Users,
   X,
   ChefHat,
+  Video,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -179,6 +180,8 @@ function describe(n: NotificationRow, locale: string, isPro: boolean, tr: (names
       return { icon: CalendarCheck, text: fill(["{name} confirmou a sua consulta", "{name} confirmed your appointment", "{name} confirmó tu consulta", "{name} a confirmé votre consultation"]), detail: dateOf(data.starts_at, locale), go: { to: isPro ? "/painel/agenda" : "/acompanhamento/consultas" } };
     case "consulta_cancelada":
       return { icon: CalendarX, text: fill(["{name} cancelou a consulta", "{name} cancelled the appointment", "{name} canceló la consulta", "{name} a annulé la consultation"]), detail: str(data.reason) || dateOf(data.starts_at, locale), go: { to: isPro ? "/painel/agenda" : "/acompanhamento/consultas" } };
+    case "consulta_sala":
+      return { icon: Video, text: fill(["{name} entrou na sala da consulta", "{name} joined the appointment room", "{name} entró a la sala de la consulta", "{name} est entré(e) dans la salle"]), detail: dateOf(data.starts_at, locale), go: n.entity_id ? { to: "/consulta/$appointmentId", params: { appointmentId: n.entity_id } } : { to: isPro ? "/painel/agenda" : "/acompanhamento/consultas" } };
     case "consulta_remarcada":
       return { icon: CalendarClock, text: fill(["{name} remarcou a consulta", "{name} rescheduled the appointment", "{name} reprogramó la consulta", "{name} a reprogrammé la consultation"]), detail: dateOf(data.starts_at, locale), go: { to: isPro ? "/painel/agenda" : "/acompanhamento/consultas" } };
     case "mensagem": {

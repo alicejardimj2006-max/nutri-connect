@@ -63,7 +63,7 @@ const clinical: Record<ClinicalKey, string> = {
   "pro.duration": "Durée",
   "pro.minutes": "{n} minutes",
   "pro.addressOnBooking": "Adresse communiquée après la réservation",
-  "pro.onlineDefault": "Appel vidéo ; le lien arrive avant la consultation.",
+  "pro.onlineDefault": "Appel vidéo dans la salle NutriConnect, directement sur le site, sans rien installer.",
   "pro.selfNotice":
     "Voici votre page publique de réservation. C'est ainsi que les patients vous voient.",
   "pro.editSettings": "Modifier la pratique",
@@ -137,7 +137,8 @@ const clinical: Record<ClinicalKey, string> = {
   "patientAppts.emptyUpcoming": "Aucune consultation prévue",
   "patientAppts.emptyUpcomingText": "Pourquoi ne pas réserver avec un professionnel vérifié ?",
   "patientAppts.emptyPast": "Rien ici pour l'instant",
-  "appt.join": "Rejoindre l'appel",
+  "appt.join": "Rejoindre la salle",
+  "appt.roomInfo": "La consultation a lieu dans la salle vidéo de NutriConnect, ici sur le site. La salle ouvre 30 min avant.",
   "appt.payNow": "Payer maintenant",
   "appt.reschedule": "Déplacer",
   "appt.manage": "Gérer",

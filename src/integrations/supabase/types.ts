@@ -193,6 +193,8 @@ export type Database = {
           id: string
           location: string | null
           meeting_url: string | null
+          patient_joined_at: string | null
+          professional_joined_at: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
           patient_notes: string | null
@@ -214,6 +216,8 @@ export type Database = {
           id?: string
           location?: string | null
           meeting_url?: string | null
+          patient_joined_at?: string | null
+          professional_joined_at?: string | null
           modality: Database["public"]["Enums"]["appointment_modality"]
           patient_id: string
           patient_notes?: string | null
@@ -235,6 +239,8 @@ export type Database = {
           id?: string
           location?: string | null
           meeting_url?: string | null
+          patient_joined_at?: string | null
+          professional_joined_at?: string | null
           modality?: Database["public"]["Enums"]["appointment_modality"]
           patient_id?: string
           patient_notes?: string | null
@@ -3027,6 +3033,14 @@ export type Database = {
       }
     }
     Functions: {
+      join_consultation: {
+        Args: { p_appointment: string }
+        Returns: Json
+      }
+      consultation_room_state: {
+        Args: { p_appointment: string }
+        Returns: string
+      }
       accept_care_invite: {
         Args: { p_code: string }
         Returns: {

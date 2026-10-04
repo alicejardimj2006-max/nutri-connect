@@ -26,6 +26,7 @@ import { useClinicalMutation } from "@/lib/clinical/queries";
 import { requestRefund } from "@/lib/clinical/payments";
 import { formatDate, formatMoney, formatTime } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
+import { roomState } from "@/lib/clinical/video-call";
 import { methodLabel } from "@/lib/clinical/labels";
 import { SlotPicker } from "./slot-picker";
 import {
@@ -62,16 +63,9 @@ async function cancelWithRefund(
   return t("appt.cancelledRefundFailed");
 }
 
-/** Janela para entrar na chamada: 15 min antes até o fim da consulta. */
+/** A sala de vídeo do site abre 30 min antes e fecha 1 h depois do fim da consulta. */
 function canJoin(appt: Appointment): boolean {
-  const now = Date.now();
-  return (
-    appt.modality === "online" &&
-    !!appt.meeting_url &&
-    ACTIVE.includes(appt.status) &&
-    now >= new Date(appt.starts_at).getTime() - 15 * 60_000 &&
-    now <= new Date(appt.ends_at).getTime()
-  );
+  return roomState(appt) === "aberta";
 }
 
 export function AppointmentCard({
@@ -160,9 +154,13 @@ export function AppointmentCard({
         {payment && appt.price_cents > 0 && <PaymentStatusBadge status={payment.status} />}
 
         {canJoin(appt) && (
-          <a href={appt.meeting_url!} target="_blank" rel="noreferrer" className={buttonPrimary}>
+          <Link
+            to="/consulta/$appointmentId"
+            params={{ appointmentId: appt.id }}
+            className={buttonPrimary}
+          >
             <Video className="h-4 w-4" /> {t("appt.join")}
-          </a>
+          </Link>
         )}
 
         {role === "patient" && appt.status === "aguardando_pagamento" && onPay && (
@@ -318,7 +316,6 @@ export function ManageAppointmentDialog({
   onClose: () => void;
 }) {
   const { t, locale } = useClinicalI18n();
-  const [meetingUrl, setMeetingUrl] = useState(appt.meeting_url ?? "");
   const [location, setLocation] = useState(appt.location ?? "");
   const [summary, setSummary] = useState(appt.summary_for_patient ?? "");
   const [method, setMethod] = useState<(typeof PAYMENT_METHODS)[number]>("pix");
@@ -336,7 +333,6 @@ export function ManageAppointmentDialog({
   const save = useClinicalMutation(
     () =>
       api.updateAppointment(appt.id, {
-        meeting_url: meetingUrl.trim() || null,
         location: location.trim() || null,
         summary_for_patient: summary.trim() || null,
       }),
@@ -415,15 +411,19 @@ export function ManageAppointmentDialog({
 
         <div className="space-y-3">
           {appt.modality === "online" ? (
-            <Field label={t("appt.meetingUrl")}>
-              <input
-                className={inputClass}
-                type="url"
-                placeholder="https://meet.google.com/…"
-                value={meetingUrl}
-                onChange={(e) => setMeetingUrl(e.target.value)}
-              />
-            </Field>
+            <div className="flex flex-wrap items-center gap-3 rounded-xl bg-secondary/70 px-3 py-2.5 text-xs text-foreground">
+              <Video className="h-4 w-4 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1">{t("appt.roomInfo")}</span>
+              {canJoin(appt) && (
+                <Link
+                  to="/consulta/$appointmentId"
+                  params={{ appointmentId: appt.id }}
+                  className={buttonPrimary}
+                >
+                  {t("appt.join")}
+                </Link>
+              )}
+            </div>
           ) : (
             <Field label={t("appt.location")}>
               <input
