@@ -35,7 +35,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserLevel, getUserStreak, getUserXP, initials } from "@/lib/community";
+import { CATEGORIES, getUserLevel, getUserStreak, getUserXP, initials } from "@/lib/community";
+import { setCommunityFilters, useCommunityFilters } from "@/lib/community-filters";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import { formatDate, formatTime } from "@/lib/clinical/format";
 import { useAppointments } from "@/lib/clinical/queries";
@@ -974,6 +975,52 @@ export function SearchTipsCard() {
           </li>
         ))}
       </ul>
+    </Panel>
+  );
+}
+
+// ───────────────────────────── Filtros da lista de comunidades ─────────────────────────────
+
+/** Busca por nome, descrição ou categoria; filtra a lista da página Comunidades. */
+export function CommunitySearchCard() {
+  const { t } = useI18n();
+  const { query } = useCommunityFilters();
+  return (
+    <Panel title={t("common.search")}>
+      <input
+        type="text"
+        placeholder={t("comunidades.searchPlaceholder")}
+        value={query}
+        onChange={(e) => setCommunityFilters({ query: e.target.value })}
+        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+      />
+    </Panel>
+  );
+}
+
+/** Categorias temáticas; filtra a lista da página Comunidades. */
+export function CommunityCategoriesCard() {
+  const { t } = useI18n();
+  const { category } = useCommunityFilters();
+  return (
+    <Panel title={t("comunidades.categories")}>
+      <div className="flex flex-wrap gap-2">
+        {["Todas", ...CATEGORIES].map((c) => (
+          <button
+            key={c}
+            type="button"
+            aria-pressed={category === c}
+            onClick={() => setCommunityFilters({ category: c })}
+            className={`cursor-pointer rounded-full px-4 py-2 text-xs font-medium transition ${
+              category === c
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-secondary text-secondary-foreground hover:bg-muted"
+            }`}
+          >
+            {c === "Todas" ? t("comunidades.categoryAll") : td(c)}
+          </button>
+        ))}
+      </div>
     </Panel>
   );
 }

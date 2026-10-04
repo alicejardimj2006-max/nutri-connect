@@ -4,6 +4,8 @@ import {
   ChallengeInfoCard,
   ChallengeStatsCard,
   CommunityAboutCard,
+  CommunityCategoriesCard,
+  CommunitySearchCard,
   CommunityMembersCard,
   CommunityRulesCard,
   ContactCard,
@@ -61,14 +63,15 @@ export function railsFor(pathname: string): RailSet | null {
     return {
       left: (
         <>
-          <ProfileCard />
+          <CommunitySearchCard />
+          <CommunityCategoriesCard />
           <MyCommunitiesCard />
-          <IcebreakerCard />
         </>
       ),
       right: (
         <>
           <CommunityRouletteCard />
+          <IcebreakerCard />
           <SuggestedCommunitiesCard limit={4} />
           <CommunityRulesCard />
         </>

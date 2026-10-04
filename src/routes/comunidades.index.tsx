@@ -1,12 +1,14 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { MessageCircle, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminPerson } from "@/components/person-chip";
 import { useCommunity } from "@/hooks/use-community";
 import { getProfessionalInfo } from "@/lib/community-admin";
-import { CATEGORIES, type Community } from "@/lib/community";
+import { type Community } from "@/lib/community";
+import { resetCommunityFilters, useCommunityFilters, useRailsOn } from "@/lib/community-filters";
+import { CommunityCategoriesCard, CommunitySearchCard } from "@/components/rail-cards";
 import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/comunidades/")({
@@ -38,8 +40,11 @@ function ComunidadesPage() {
     () => allCommunities.filter((c) => c.status !== "pendente" || c.adminUserId === user?.id),
     [allCommunities, user?.id],
   );
-  const [category, setCategory] = useState<string>("Todas");
-  const [searchTerm, setSearchTerm] = useState("");
+  // Busca e categorias são cards das colunas laterais (ou aparecem aqui em cima, se as colunas não
+  // estiverem visíveis); o estado é compartilhado e volta ao padrão ao sair da página.
+  const { query: searchTerm, category } = useCommunityFilters();
+  const railsOn = useRailsOn();
+  useEffect(() => resetCommunityFilters, []);
 
   const filtered = useMemo(() => {
     return communities.filter((c) => {
@@ -77,44 +82,15 @@ function ComunidadesPage() {
         </section>
       )}
 
-      <div
-        className={`grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)] ${showFeatured ? "mt-12 border-t border-border pt-12" : ""}`}
-      >
-        <aside className="min-w-0 space-y-6">
-          <div className="rounded-2xl border bg-card p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground mb-4">{t("common.search")}</h2>
-            <input
-              type="text"
-              placeholder={t("comunidades.searchPlaceholder")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+      <div className={showFeatured ? "mt-12 border-t border-border pt-12" : ""}>
+        {!railsOn && (
+          <div className="mb-6 grid gap-4 md:grid-cols-2">
+            <CommunitySearchCard />
+            <CommunityCategoriesCard />
           </div>
+        )}
 
-          <div className="rounded-2xl border bg-card p-5 shadow-card">
-            <h2 className="text-sm font-semibold text-foreground mb-4">
-              {t("comunidades.categories")}
-            </h2>
-            <div className="flex overflow-x-auto no-scrollbar gap-2 lg:flex-col lg:items-start pb-2 lg:pb-0">
-              {["Todas", ...CATEGORIES].map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`rounded-full px-4 py-2 text-xs font-medium transition ${
-                    category === c
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-secondary text-secondary-foreground hover:bg-muted"
-                  }`}
-                >
-                  {c === "Todas" ? t("comunidades.categoryAll") : td(c)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
+        <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((c) => (
             <CommunityCard key={c.id} community={c} />
           ))}
