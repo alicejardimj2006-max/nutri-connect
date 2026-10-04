@@ -5,6 +5,7 @@
 // `Post` (src/lib/community.ts) é o modelo que os cartões da interface já usam; aqui o
 // resultado do banco é convertido para ele, então os componentes quase não mudam.
 
+import { checkContent } from "@/lib/social/content-check";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import type { Comment, Post, PostBlock, PostType, RecipeData } from "@/lib/community";
@@ -183,46 +184,32 @@ export function themeText(theme: ActiveTheme, locale: string) {
 
 const IMAGE_BUCKET = "post-images";
 
-function extensionOf(mime: string): string {
-  if (mime === "image/png") return "png";
-  if (mime === "image/webp") return "webp";
-  if (mime === "image/gif") return "gif";
-  return "jpg";
-}
-
-/** Envia a imagem para a pasta da própria pessoa e devolve o endereço público e o caminho. */
-async function uploadPostImage(userId: string, dataUrl: string) {
-  const blob = await (await fetch(dataUrl)).blob();
-  const path = `${userId}/${crypto.randomUUID()}.${extensionOf(blob.type)}`;
-  const { error } = await supabase.storage
-    .from(IMAGE_BUCKET)
-    .upload(path, blob, { contentType: blob.type, upsert: false });
-  fail(error);
-  const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path);
-  return { url: data.publicUrl, path };
-}
-
 export async function createPost(input: NewPostInput): Promise<string> {
   const me = await currentUserId();
   const text = input.text.trim();
   const title = input.title?.trim() || null;
   if (!text && !title && !input.image) throw new Error("Escreva algo para publicar.");
 
-  const uploaded = input.image?.startsWith("data:")
-    ? await uploadPostImage(me, input.image)
-    : input.image
-      ? { url: input.image, path: null }
-      : null;
+  // A IA analisa texto e foto ANTES de qualquer coisa ser salva. Se reprovar, lança ContentRejectedError
+  // e nada é gravado (nem a foto). Se aprovar, a foto já foi para o Storage e o banco aceita estes valores.
+  const approved = await checkContent({
+    kind: "post",
+    title,
+    body: text,
+    tags: input.tags ?? [],
+    recipe: input.recipeData,
+    image: input.image ?? null,
+  });
 
   const { data, error } = await supabase
     .from("posts")
     .insert({
       author_id: me,
       type: input.type,
-      title,
-      body: text,
-      image_url: uploaded?.url ?? null,
-      tags: input.tags ?? [],
+      title: approved.title,
+      body: approved.body,
+      image_url: approved.imageUrl,
+      tags: approved.tags,
       audience: input.audience ?? "publico",
       recipe: (input.recipeData as unknown as Json | undefined) ?? null,
       block_order: input.blockOrder ?? null,
@@ -234,7 +221,8 @@ export async function createPost(input: NewPostInput): Promise<string> {
 
   if (error) {
     // Não deixa imagem órfã no Storage se a publicação falhou.
-    if (uploaded?.path) await supabase.storage.from(IMAGE_BUCKET).remove([uploaded.path]);
+    const path = approved.imageUrl?.split(`/${IMAGE_BUCKET}/`)[1];
+    if (path) await supabase.storage.from(IMAGE_BUCKET).remove([decodeURIComponent(path)]);
     throw new Error(error.message);
   }
   return data.id;
@@ -269,9 +257,11 @@ export async function addComment(postId: string, text: string): Promise<void> {
   const me = await currentUserId();
   const body = text.trim();
   if (!body) throw new Error("Escreva um comentário.");
+  // A IA confere o comentário antes de ele ser salvo.
+  const approved = await checkContent({ kind: "comment", postId, body });
   const { error } = await supabase
     .from("comments")
-    .insert({ post_id: postId, author_id: me, body });
+    .insert({ post_id: postId, author_id: me, body: approved.body });
   fail(error);
 }
 

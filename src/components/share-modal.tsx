@@ -618,8 +618,8 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
       toast.success(t("sm.publishedReview"));
       setOpen(false);
       resetForm();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("sm.publishError"));
+    } catch {
+      // O motivo (reprovado pela IA ou erro de envio) já foi mostrado pelo aviso da publicação.
     }
   };
 

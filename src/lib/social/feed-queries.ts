@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Post } from "@/lib/community";
 import * as feed from "./feed";
+import { ContentRejectedError } from "./content-check";
 
 // Todas as chaves ficam sob ["social"], então mudar amizade, seguir ou bloqueio também
 // atualiza o feed (quem aparece nele depende dessas relações).
@@ -40,34 +41,31 @@ export function useActiveTheme(enabled = true) {
 
 // ── Mutações ─────────────────────────────────────────────────────────────────
 
+/** Reprovado pela IA: mostra o motivo com calma, para a pessoa saber o que ajustar. */
+function showError(err: unknown) {
+  if (err instanceof ContentRejectedError) {
+    toast.error("Não foi possível publicar", { description: err.message, duration: 10000 });
+    return;
+  }
+  toast.error(err instanceof Error ? err.message : String(err));
+}
+
 function useFeedMutation<TResult, TVars>(fn: (vars: TVars) => Promise<TResult>) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: fn,
     onSuccess: () => qc.invalidateQueries({ queryKey: FEED_KEY }),
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : String(err));
-    },
+    onError: showError,
   });
 }
 
-/**
- * Publicar: o post fica "em análise" até a IA aprovar (alguns segundos), então o feed é consultado
- * de novo algumas vezes para o aviso sumir sozinho quando ele for liberado.
- */
+/** Publicar: a IA analisa antes de salvar; aprovado, o post já aparece no feed. */
 export function useCreatePost() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: feed.createPost,
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: FEED_KEY });
-      for (const ms of [4000, 10000, 25000]) {
-        window.setTimeout(() => void qc.invalidateQueries({ queryKey: FEED_KEY }), ms);
-      }
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : String(err));
-    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: FEED_KEY }),
+    onError: showError,
   });
 }
 
