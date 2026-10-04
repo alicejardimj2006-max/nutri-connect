@@ -218,23 +218,7 @@ export function railsFor(pathname: string): RailSet | null {
       ),
     };
   }
-  if (/^\/perfil\/(?!configuracoes|editar|personalizacao)[^/]+$/.test(p)) {
-    return {
-      left: (
-        <>
-          <ProfileCard />
-          <ShortcutsCard />
-        </>
-      ),
-      right: (
-        <>
-          <FriendsCard />
-          <MyChallengesCard />
-          <TrailCard />
-        </>
-      ),
-    };
-  }
+  // O perfil de cada pessoa é um espaço livre montado por ela: não usa as colunas laterais do site.
   if (p === "/profissionais") {
     return {
       left: (

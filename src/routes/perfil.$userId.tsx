@@ -1,32 +1,29 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import {
-  CalendarCheck,
-  ChefHat,
-  Award,
-  Plus,
-  CheckCircle2,
-  Sparkles,
-  Compass,
-  MoreVertical,
-  Settings,
-  LogOut,
   BadgeCheck,
+  Camera,
   HeartPulse,
   Inbox,
-  ShieldCheck,
-  Pencil,
-  UserX,
-  UserCheck,
   Lock,
+  LogOut,
+  MoreVertical,
+  Paintbrush,
+  Pencil,
+  Plus,
+  Settings,
+  ShieldCheck,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import { initials } from "@/lib/community";
+import { getUserStreak, getUserXP, initials } from "@/lib/community";
 import {
   getAdministeredCommunity,
   getProfessionalInfo,
@@ -34,10 +31,42 @@ import {
   isPlatformAdmin,
 } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
-import { fetchContactInfo, signOut } from "@/lib/auth";
-import { PostCard } from "@/components/community-cards";
+import { fetchContactInfo, refreshUser, signOut } from "@/lib/auth";
 import { ShareModal } from "@/components/share-modal";
 import { RelationshipActions } from "@/components/relationship-actions";
+import { useAdultTrailProgress } from "@/components/rail-cards";
+import { ProfileCanvas } from "@/components/profile-canvas";
+import { ProfileDataProvider, type ProfileData } from "@/components/profile-blocks";
+import { MediaUpload } from "@/components/profile-media";
+import {
+  AddBlockDialog,
+  BlockEditor,
+  HeaderEditor,
+  StudioBar,
+  StudioDrawer,
+  ThemeEditor,
+  type StudioPanel,
+} from "@/components/profile-studio";
+import { useTr } from "@/components/appearance-editor";
+import { getActiveStreak } from "@/lib/learning-trail";
+import { applyScopedAppearance } from "@/lib/appearance";
+import {
+  DEFAULT_HEADER,
+  PROFILE_PAGE_KEY,
+  ProfileRejectedError,
+  defaultPage,
+  freeSpot,
+  importSiteTheme,
+  newBlock,
+  readPage,
+  resolveCollisions,
+  themeToAppearance,
+  useProfilePage,
+  useSaveProfilePage,
+  type Block,
+  type BlockType,
+  type ProfilePage,
+} from "@/lib/profile-page";
 import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { useBlocked, useBlockUser, usePublicProfile, useUnblockUser } from "@/lib/social/queries";
 import type { PublicProfile as RemoteProfile } from "@/lib/social/api";
@@ -69,16 +98,23 @@ export const Route = createFileRoute("/perfil/$userId")({
   component: PublicProfilePage,
 });
 
+const AVATAR_PX = { p: 72, m: 96, g: 128 } as const;
+
 function PublicProfilePage() {
   const { userId } = useParams({ from: "/perfil/$userId" });
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
+  const tr = useTr();
   const state = useCommunity();
   const { profiles, communities, challenges, hydrated } = state;
   const navigate = useNavigate();
+  const qc = useQueryClient();
   // Perfil, privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
   const remoteProfile = usePublicProfile(user ? userId : undefined);
   const blockedQuery = useBlocked();
+  // A página montada pela pessoa (capa, blocos e tema) também vem do banco: todo mundo vê igual.
+  const pageQuery = useProfilePage(user ? userId : undefined);
+  const savePage = useSaveProfilePage(userId);
   // Publicações da pessoa e receitas que ela preparou: do banco, e só se este perfil pode ser visto
   // (perfil privado de quem não é amigo não carrega nada).
   const canSeeContent = !!user && remoteProfile.data?.can_view_content !== false;
@@ -87,6 +123,35 @@ function PublicProfilePage() {
   useFeedRealtime(user?.id);
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
+  const isSelf = user?.id === userId;
+  const trailProgress = useAdultTrailProgress(isSelf ? user?.id : undefined);
+
+  // Modo de edição: o rascunho só vale para os outros depois de salvar.
+  const [draft, setDraft] = useState<ProfilePage | null>(null);
+  const [panel, setPanel] = useState<StudioPanel>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+
+  const stored = profiles.find((p) => p.userId === userId);
+  const remote = remoteProfile.data ?? null;
+  const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
+
+  const record = pageQuery.data ?? null;
+  const savedPage = useMemo(() => readPage(record?.page, isProfessional), [record, isProfessional]);
+  const page = draft ?? savedPage;
+  const bannerUrl = record?.banner_url ?? null;
+  const editing = draft !== null;
+  const dirty = editing && JSON.stringify(draft) !== JSON.stringify(savedPage);
+
+  // O tema de quem montou o perfil vale enquanto a página está aberta (e só nela): a personalização
+  // de quem visita não se aplica ao perfil dos outros. Acessibilidade do visitante continua valendo.
+  const themeKey = JSON.stringify(page.theme);
+  const themeReady = !!record && !!user;
+  useEffect(() => {
+    if (!themeReady) return;
+    applyScopedAppearance(themeToAppearance(JSON.parse(themeKey)));
+    return () => applyScopedAppearance(null);
+  }, [themeKey, themeReady]);
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
@@ -95,8 +160,6 @@ function PublicProfilePage() {
     toast.success(t("settings.signout.success"));
     navigate({ to: "/login" });
   };
-
-  const isSelf = user?.id === userId;
 
   const iBlockedThem = !isSelf && (blockedQuery.data ?? []).some((b) => b.id === userId);
   // get_public_profile devolve nada quando há bloqueio entre as duas pessoas (em qualquer sentido).
@@ -119,10 +182,6 @@ function PublicProfilePage() {
     });
   };
 
-  // Registro local só para dados de profissional (vêm da tabela professionals, via profile-sync).
-  const stored = profiles.find((p) => p.userId === userId);
-  const remote = remoteProfile.data ?? null;
-
   const profile =
     isSelf && user
       ? { userId, name: user.name, bio: user.bio || t("profile.noBio") }
@@ -135,29 +194,129 @@ function PublicProfilePage() {
   const myPosts = postsQuery.data ?? [];
   const preparedRecipes = (preparedQuery.data ?? []).filter((p) => p.type === "receita");
   const myChallenges = challenges.filter((c) => c.participants.includes(userId));
+  const myCommunities = communities.filter((c) => c.members.some((m) => m.userId === userId));
   // Comunidade que a pessoa administra (uma por vez); pendentes só aparecem para ela mesma.
   const administered = getAdministeredCommunity(userId, communities);
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
-  const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
   const professionalInfo = getProfessionalInfo(profiles, userId);
   const inviteCount =
     isSelf && isProfessional && user ? getProfessionalInvites(user.id, state).length : 0;
 
-  const userGoals =
-    isSelf && user
-      ? [
-          td(user.journeyGoal || user.goal) || t("profile.goal1"),
-          t("profile.goal2"),
-          t("profile.goal3"),
-        ]
-      : [];
+  const xp = getUserXP(userId, challenges) + (isSelf ? (trailProgress?.totalXP ?? 0) : 0);
+  const streak = Math.max(
+    getUserStreak(userId, challenges),
+    isSelf && trailProgress ? getActiveStreak(trailProgress) : 0,
+  );
+
+  const data: ProfileData = {
+    userId,
+    name: profile?.name ?? "",
+    bio: profile?.bio ?? "",
+    isSelf,
+    isProfessional,
+    remote,
+    posts: myPosts,
+    recipes: preparedRecipes,
+    challenges: myChallenges,
+    communities: myCommunities,
+    xp,
+    streak,
+    professionalInfo: isProfessional ? professionalInfo : null,
+  };
+
+  // ── Edição ────────────────────────────────────────────────────────────────
+
+  const updateDraft = (fn: (p: ProfilePage) => ProfilePage) => setDraft((d) => (d ? fn(d) : d));
+  const setLayout = (layout: Block[]) => updateDraft((p) => ({ ...p, layout }));
+  const patchBlock = (id: string, patch: Partial<Block>) =>
+    updateDraft((p) => ({ ...p, layout: p.layout.map((b) => (b.id === id ? { ...b, ...patch } : b)) }));
+  const selected = draft?.layout.find((b) => b.id === selectedId) ?? null;
+
+  const startEditing = () => {
+    setDraft(savedPage);
+    setPanel(null);
+    setSelectedId(null);
+  };
+  const stopEditing = () => {
+    setDraft(null);
+    setPanel(null);
+    setSelectedId(null);
+  };
+  const cancelEditing = () => {
+    if (dirty && !window.confirm(tr(["Descartar as mudanças que você ainda não salvou?", "Discard the changes you haven't saved?", "¿Descartar los cambios sin guardar?", "Abandonner les modifications non enregistrées ?"]))) {
+      return;
+    }
+    stopEditing();
+  };
+  const addBlock = (type: BlockType) => {
+    if (!draft) return;
+    const spot = freeSpot(draft.layout);
+    const block = newBlock(type, spot);
+    setLayout(resolveCollisions([...draft.layout, block], block.id));
+    setAddOpen(false);
+    setSelectedId(block.id);
+    setPanel("block");
+  };
+  const removeBlock = (id: string) => {
+    updateDraft((p) => ({ ...p, layout: p.layout.filter((b) => b.id !== id) }));
+    if (selectedId === id) {
+      setSelectedId(null);
+      setPanel(null);
+    }
+  };
+  const resetPage = () => {
+    if (!window.confirm(tr(["Voltar ao perfil padrão? Os blocos e o tema atuais serão trocados (você ainda pode cancelar antes de salvar).", "Go back to the default profile? Current blocks and theme will be replaced (you can still cancel before saving).", "¿Volver al perfil estándar? Se reemplazarán los bloques y el tema actuales (aún puedes cancelar antes de guardar).", "Revenir au profil par défaut ? Les blocs et le thème actuels seront remplacés (vous pouvez encore annuler avant d'enregistrer)."]))) return;
+    setDraft({ ...defaultPage(isProfessional), header: { ...DEFAULT_HEADER } });
+    setSelectedId(null);
+  };
+  const handleSave = () => {
+    if (!draft) return;
+    savePage.mutate(draft, {
+      onSuccess: () => {
+        toast.success(tr(["Perfil salvo! Quem visitar já vê do seu jeito.", "Profile saved! Visitors now see it your way.", "¡Perfil guardado! Quien visite ya lo ve a tu manera.", "Profil enregistré ! Les visiteurs le voient à votre façon."]));
+        stopEditing();
+      },
+      onError: (err) => {
+        if (err instanceof ProfileRejectedError) {
+          toast.error(tr(["Não foi possível salvar o perfil", "Could not save the profile", "No se pudo guardar el perfil", "Impossible d'enregistrer le profil"]), {
+            description: err.message,
+            duration: 12000,
+          });
+        } else {
+          toast.error(err instanceof Error ? err.message : tr(["Não foi possível salvar agora.", "Could not save right now.", "No se pudo guardar ahora.", "Impossible d'enregistrer pour le moment."]));
+        }
+      },
+    });
+  };
+
+  /** Depois de trocar foto de perfil ou capa: atualiza a conta e o que está na tela. */
+  const afterMedia = async () => {
+    await refreshUser();
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: PROFILE_PAGE_KEY(userId) }),
+      qc.invalidateQueries({ queryKey: ["social"] }),
+    ]);
+  };
+  const removeBanner = async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { error } = await supabase.from("profiles").update({ banner_url: null }).eq("id", userId);
+    if (error) {
+      toast.error(tr(["Não foi possível remover a capa.", "Could not remove the cover.", "No se pudo quitar la portada.", "Impossible de retirer la couverture."]));
+      return;
+    }
+    await afterMedia();
+  };
+
+  const header = page.header;
+  const avatarPx = AVATAR_PX[header.avatarSize];
+  const centered = header.avatarPos === "center";
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {!hydrated || (!isSelf && remoteProfile.isLoading) ? (
+      <main className="mx-auto w-full max-w-[96rem] flex-1 px-4 py-8 sm:px-6 lg:px-10">
+        {!hydrated || (!isSelf && remoteProfile.isLoading) || pageQuery.isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
           <>
@@ -183,27 +342,77 @@ function PublicProfilePage() {
           </>
         ) : (
           <>
-            {/* Banner do Perfil */}
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-card mb-8 flex flex-col">
-              <div className="h-32 sm:h-48 w-full relative">
+            {/* Cabeçalho: capa, foto, nome e ações */}
+            <div className="relative mb-8 flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-card">
+              <div className="relative w-full" style={{ height: header.bannerHeight }}>
                 <img
-                  src="/images/hero/hero-table.jpg"
-                  alt="Capa do perfil"
-                  className="w-full h-full object-cover"
+                  src={bannerUrl ?? "/images/hero/hero-table.jpg"}
+                  alt={tr(["Capa do perfil", "Profile cover", "Portada del perfil", "Couverture du profil"])}
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                {header.dim && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                )}
+                {isSelf && (
+                  <MediaUpload target="banner" onDone={afterMedia}>
+                    {(open, busy) => (
+                      <button
+                        type="button"
+                        onClick={open}
+                        disabled={busy}
+                        className="absolute bottom-3 right-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-black/60 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-black/75 disabled:cursor-wait disabled:opacity-70"
+                      >
+                        <Camera className="h-3.5 w-3.5" />
+                        {busy
+                          ? tr(["Analisando…", "Checking…", "Analizando…", "Analyse…"])
+                          : tr(["Alterar capa", "Change cover", "Cambiar portada", "Changer la couverture"])}
+                      </button>
+                    )}
+                  </MediaUpload>
+                )}
               </div>
 
-              <div className="p-6 sm:p-10 pt-12 sm:pt-14 relative bg-gradient-to-br from-card via-card to-accent-soft/20">
-                <div className="absolute -top-10 sm:-top-12 left-6 sm:left-10 grid h-20 w-20 sm:h-24 sm:w-24 place-items-center rounded-3xl bg-primary text-3xl font-extrabold text-primary-foreground shadow-card border-4 border-card">
+              <div
+                className="relative bg-gradient-to-br from-card via-card to-accent-soft/20 px-6 pb-8 sm:px-10"
+                style={{ paddingTop: avatarPx / 2 + 20 }}
+              >
+                <div
+                  className={`avatar-shape absolute grid place-items-center bg-primary font-extrabold text-primary-foreground shadow-card border-4 border-card ${
+                    centered ? "left-1/2 -translate-x-1/2" : "left-6 sm:left-10"
+                  }`}
+                  style={{
+                    top: -avatarPx / 2,
+                    width: avatarPx,
+                    height: avatarPx,
+                    fontSize: avatarPx / 3,
+                    borderRadius: avatarPx * 0.28,
+                  }}
+                >
                   {avatarUrl ? (
                     <img
                       src={avatarUrl}
                       alt={profile.name}
-                      className="h-full w-full rounded-[1.1rem] object-cover"
+                      className="h-full w-full object-cover"
+                      style={{ borderRadius: avatarPx * 0.2 }}
                     />
                   ) : (
                     initials(profile.name)
+                  )}
+                  {isSelf && (
+                    <MediaUpload target="avatar" onDone={afterMedia}>
+                      {(open, busy) => (
+                        <button
+                          type="button"
+                          onClick={open}
+                          disabled={busy}
+                          className="absolute -bottom-1 -right-1 grid h-8 w-8 cursor-pointer place-items-center rounded-full border-2 border-card bg-accent text-accent-foreground shadow-soft transition hover:scale-105 disabled:cursor-wait disabled:opacity-70"
+                          aria-label={tr(["Trocar foto de perfil", "Change profile photo", "Cambiar foto de perfil", "Changer la photo de profil"])}
+                          title={tr(["Trocar foto de perfil", "Change profile photo", "Cambiar foto de perfil", "Changer la photo de profil"])}
+                        >
+                          <Camera className="h-4 w-4" />
+                        </button>
+                      )}
+                    </MediaUpload>
                   )}
                 </div>
 
@@ -305,8 +514,8 @@ function PublicProfilePage() {
                   </DropdownMenu>
                 </div>
 
-                <div className="flex flex-col gap-6 pr-10 sm:pr-12">
-                  <div>
+                <div className={`flex flex-col gap-6 pr-10 sm:pr-12 ${header.align === "center" ? "items-center text-center" : ""}`}>
+                  <div className={header.align === "center" ? "flex flex-col items-center" : ""}>
                     <h1 className="flex items-center gap-2 text-2xl sm:text-3xl font-extrabold font-display text-foreground">
                       {profile.name}
                       {isProfessional && <VerifiedBadge className="h-5 w-5 sm:h-6 sm:w-6" />}
@@ -334,27 +543,6 @@ function PublicProfilePage() {
                         viewerIsProfessional={!!user.professional}
                       />
                     )}
-                    {isProfessional && !isSelf && (
-                      <Link
-                        to="/profissionais/$professionalId"
-                        params={{ professionalId: userId }}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
-                      >
-                        <CalendarCheck className="h-4 w-4" /> {t("profile.bookConsultation")}
-                      </Link>
-                    )}
-                    {isProfessional && professionalInfo && (
-                      <ul className="mt-2 flex flex-wrap gap-1.5">
-                        {professionalInfo.specialties.map((sp) => (
-                          <li
-                            key={sp}
-                            className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
-                          >
-                            {td(sp)}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
                     {isSelf && user && (
                       <p className="text-xs text-muted-foreground mt-1">
                         📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
@@ -365,14 +553,16 @@ function PublicProfilePage() {
 
                   {isSelf && (
                     <div className="flex flex-wrap items-center gap-2">
-                      {user && (
-                        <Link
-                          to={user.professional ? "/painel" : "/acompanhamento"}
-                          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary-hover"
+                      {!editing && (
+                        <button
+                          type="button"
+                          onClick={startEditing}
+                          disabled={contentLocked}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-soft transition hover:bg-accent/90"
                         >
-                          <HeartPulse className="h-3.5 w-3.5" />
-                          <span>{user.professional ? t("nav.clinic") : t("nav.care")}</span>
-                        </Link>
+                          <Paintbrush className="h-3.5 w-3.5" />
+                          <span>{tr(["Personalizar perfil", "Customize profile", "Personalizar perfil", "Personnaliser le profil"])}</span>
+                        </button>
                       )}
                       <Link
                         to="/perfil/editar"
@@ -385,7 +575,7 @@ function PublicProfilePage() {
                         triggerButton={
                           <button
                             type="button"
-                            className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent/90 shadow-xs flex items-center gap-1.5"
+                            className="rounded-full bg-secondary px-5 py-2 text-xs font-semibold text-foreground hover:bg-muted shadow-xs flex items-center gap-1.5"
                           >
                             <Plus className="h-4 w-4" />
                             <span>{t("profile.share")}</span>
@@ -408,266 +598,99 @@ function PublicProfilePage() {
               </div>
             )}
             {!contentLocked && (
+              <ProfileDataProvider value={data}>
+                <ProfileCanvas
+                  layout={page.layout}
+                  editing={editing}
+                  selectedId={selectedId}
+                  onChange={setLayout}
+                  onSelect={(id) => {
+                    setSelectedId(id);
+                    if (!id && panel === "block") setPanel(null);
+                  }}
+                  onEdit={(id) => {
+                    setSelectedId(id);
+                    setPanel("block");
+                  }}
+                  onDelete={removeBlock}
+                />
+                {administeredCommunities.length > 0 && !editing && (
+                  <p className="mt-8 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-semibold">{t("profile.administers")}:</span>
+                    {administeredCommunities.map((c) => (
+                      <Link
+                        key={c.id}
+                        to="/comunidades/$slug"
+                        params={{ slug: c.slug }}
+                        className="rounded-full bg-secondary px-3 py-1.5 font-medium text-secondary-foreground hover:bg-muted"
+                      >
+                        {c.name}
+                      </Link>
+                    ))}
+                  </p>
+                )}
+              </ProfileDataProvider>
+            )}
+
+            {editing && draft && (
               <>
-                {/* Métricas da Jornada */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {t("profile.stat.recipes")}
-                      </span>
-                      <ChefHat className="h-5 w-5 text-accent" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold font-display text-foreground">
-                      {preparedRecipes.length}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {t("profile.stat.recipesSub")}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {t("profile.stat.challenges")}
-                      </span>
-                      <Award className="h-5 w-5 text-accent" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold font-display text-foreground">
-                      {myChallenges.length}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {t("profile.stat.challengesSub")}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {t("profile.stat.shares")}
-                      </span>
-                      <Sparkles className="h-5 w-5 text-accent" />
-                    </div>
-                    <p className="mt-2 text-2xl font-bold font-display text-foreground">
-                      {myPosts.length}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {t("profile.stat.sharesSub")}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {t("profile.stat.pace")}
-                      </span>
-                      <Compass className="h-5 w-5 text-accent" />
-                    </div>
-                    <p className="mt-2 text-base font-bold text-foreground">
-                      {t("profile.stat.paceValue")}
-                    </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {t("profile.stat.paceSub")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-                  <div className="space-y-8">
-                    {/* Receitas que preparou */}
-                    <section>
-                      <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
-                        <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                          <ChefHat className="h-5 w-5 text-accent" />
-                          <span>
-                            {t("profile.recipesDone")} ({preparedRecipes.length})
-                          </span>
-                        </h2>
-                        <Link
-                          to="/receitas"
-                          className="text-xs text-primary font-semibold hover:underline"
-                        >
-                          {t("profile.discoverMore")}
-                        </Link>
-                      </div>
-
-                      {preparedRecipes.length > 0 ? (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          {preparedRecipes.map((r) => (
-                            <PostCard key={r.id} post={r} />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
-                          <ChefHat className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                          <p className="text-sm font-semibold text-foreground">
-                            {isSelf ? t("profile.noRecipesSelf") : t("profile.noRecipesOther")}
-                          </p>
-                          {isSelf && (
-                            <>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {t("profile.howTo1")} <b>"{t("profile.howTo2")}"</b>{" "}
-                                {t("profile.howTo3")}
-                              </p>
-                              <div className="mt-4">
-                                <Link
-                                  to="/receitas"
-                                  className="rounded-full bg-accent px-5 py-2 text-xs font-semibold text-accent-foreground inline-block"
-                                >
-                                  {t("profile.exploreRecipes")}
-                                </Link>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </section>
-
-                    {/* Publicações */}
-                    <section>
-                      <div className="flex items-center justify-between mb-4 border-b border-border/70 pb-2">
-                        <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                          <Sparkles className="h-5 w-5 text-accent" />
-                          <span>
-                            {t("profile.postsTitle")} ({myPosts.length})
-                          </span>
-                        </h2>
-                      </div>
-
-                      {myPosts.length > 0 ? (
-                        <div className="space-y-4">
-                          {myPosts.map((p) => (
-                            <PostCard key={p.id} post={p} />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-card/60">
-                          <p className="text-sm text-muted-foreground">
-                            {isSelf ? t("profile.noPostsSelf") : t("profile.noPostsOther")}
-                          </p>
-                          {isSelf && (
-                            <div className="mt-3">
-                              <ShareModal />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </section>
-                  </div>
-
-                  {/* Barra Lateral */}
-                  <aside className="space-y-6">
-                    {isSelf && userGoals.length > 0 && (
-                      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                        <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3 flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-accent" />
-                          <span>{t("profile.myGoals")}</span>
-                        </h3>
-                        <ul className="space-y-2.5 text-xs text-foreground">
-                          {userGoals.map((goal, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-2 rounded-xl bg-secondary/40 p-2.5"
-                            >
-                              <span className="text-accent font-bold mt-0.5">✓</span>
-                              <span className="leading-snug">{goal}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground flex items-center gap-2">
-                          <Award className="h-4 w-4 text-accent" />
-                          <span>{t("profile.activeChallenges")}</span>
-                        </h3>
-                        <Link
-                          to="/desafios"
-                          className="text-xs text-primary font-semibold hover:underline"
-                        >
-                          {t("profile.seeAll")}
-                        </Link>
-                      </div>
-
-                      {myChallenges.length > 0 ? (
-                        <div className="space-y-3">
-                          {myChallenges.map((c) => {
-                            const completed = (c.progress?.[userId] || []).length;
-                            const total = c.steps.length;
-                            const isDone = c.completedBy.includes(userId);
-                            return (
-                              <Link
-                                key={c.id}
-                                to="/desafios/$challengeId"
-                                params={{ challengeId: c.id }}
-                                className="block rounded-xl bg-secondary/50 p-3 text-xs hover:bg-secondary transition"
-                              >
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-1.5 font-bold text-foreground">
-                                    <span>{c.badgeIcon}</span> {c.title}
-                                  </div>
-                                  {isDone && (
-                                    <Award className="h-3.5 w-3.5 text-primary shrink-0" />
-                                  )}
-                                </div>
-                                <p className="text-[11px] text-muted-foreground mt-1">
-                                  {c.description}
-                                </p>
-                                {total > 0 && (
-                                  <div className="h-1.5 w-full rounded-full bg-card overflow-hidden mt-2">
-                                    <div
-                                      className="h-full rounded-full bg-primary transition-all"
-                                      style={{ width: `${Math.round((completed / total) * 100)}%` }}
-                                    />
-                                  </div>
-                                )}
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-xs text-muted-foreground">
-                          <p>
-                            {isSelf
-                              ? t("profile.noChallengesSelf")
-                              : t("profile.noChallengesOther")}
-                          </p>
-                          {isSelf && (
-                            <Link
-                              to="/desafios"
-                              className="mt-2.5 inline-block text-xs font-semibold text-accent hover:underline"
-                            >
-                              {t("profile.pickChallenge")}
-                            </Link>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {administeredCommunities.length > 0 && (
-                      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs">
-                        <h3 className="text-sm font-bold font-display uppercase tracking-wider text-foreground mb-3">
-                          {t("profile.administers")}
-                        </h3>
-                        <ul className="flex flex-wrap gap-2">
-                          {administeredCommunities.map((c) => (
-                            <li key={c.id}>
-                              <Link
-                                to="/comunidades/$slug"
-                                params={{ slug: c.slug }}
-                                className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-muted"
-                              >
-                                {c.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </aside>
-                </div>
+                <StudioBar
+                  dirty={dirty}
+                  saving={savePage.isPending}
+                  panel={panel}
+                  onPanel={(p) => {
+                    setPanel(p);
+                    if (p !== "block") setSelectedId(null);
+                  }}
+                  onAdd={() => setAddOpen(true)}
+                  onReset={resetPage}
+                  onSave={handleSave}
+                  onCancel={cancelEditing}
+                />
+                <AddBlockDialog
+                  open={addOpen}
+                  onClose={() => setAddOpen(false)}
+                  onPick={addBlock}
+                  isProfessional={isProfessional}
+                />
+                {panel === "theme" && (
+                  <StudioDrawer
+                    title={tr(["Tema do perfil", "Profile theme", "Tema del perfil", "Thème du profil"])}
+                    onClose={() => setPanel(null)}
+                  >
+                    <ThemeEditor
+                      theme={draft.theme}
+                      onChange={(theme) => updateDraft((p) => ({ ...p, theme }))}
+                      onImportSiteTheme={() => updateDraft((p) => ({ ...p, theme: importSiteTheme() }))}
+                    />
+                  </StudioDrawer>
+                )}
+                {panel === "header" && (
+                  <StudioDrawer
+                    title={tr(["Capa e foto de perfil", "Cover and profile photo", "Portada y foto de perfil", "Couverture et photo de profil"])}
+                    onClose={() => setPanel(null)}
+                  >
+                    <HeaderEditor
+                      header={draft.header}
+                      onChange={(patch) => updateDraft((p) => ({ ...p, header: { ...p.header, ...patch } }))}
+                      onMediaDone={afterMedia}
+                      hasBanner={!!bannerUrl}
+                      onRemoveBanner={removeBanner}
+                    />
+                  </StudioDrawer>
+                )}
+                {panel === "block" && selected && (
+                  <StudioDrawer
+                    title={tr(["Editar bloco", "Edit block", "Editar bloque", "Modifier le bloc"])}
+                    onClose={() => setPanel(null)}
+                  >
+                    <BlockEditor
+                      block={selected}
+                      onChange={(patch) => patchBlock(selected.id, patch)}
+                      onDelete={() => removeBlock(selected.id)}
+                    />
+                  </StudioDrawer>
+                )}
               </>
             )}
           </>

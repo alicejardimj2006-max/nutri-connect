@@ -93,7 +93,7 @@ const linkRow =
   "flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-medium text-foreground transition hover:bg-secondary";
 const smallLink = "text-[11px] font-semibold text-primary hover:underline";
 
-function useAdultTrailProgress(userId: string | undefined) {
+export function useAdultTrailProgress(userId: string | undefined) {
   const [progress, setProgress] = useState<TrailProgress | null>(null);
   useEffect(() => {
     if (!userId) return;

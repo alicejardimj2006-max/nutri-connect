@@ -80,6 +80,7 @@ function Diretrizes() {
           items={[
             "Toda publicação e todo comentário passam por uma análise de inteligência artificial ANTES de ir ao ar. Os posts precisam tratar de alimentação, nutrição, saúde e bem-estar, e a foto precisa ter relação com o tema e combinar com o título e a descrição. O que fugir disso, ou for spam, ofensivo ou impróprio, não é publicado (nada fica salvo) e você vê o motivo na hora para poder ajustar.",
             "Conteúdos denunciados por várias pessoas são ocultados temporariamente até a análise.",
+            "A foto de perfil, a capa e a página personalizada do seu perfil também passam pela análise antes de serem salvas. Ali o assunto é livre, mas valem as mesmas regras: sem spam, golpes, ofensas, conteúdo impróprio ou dados pessoais de outras pessoas.",
             "A equipe decide se o conteúdo volta ou é removido. O autor é avisado e pode pedir revisão por uma pessoa pelo Fale conosco.",
             "Em caso de violações graves ou repetidas, podemos advertir, suspender ou encerrar a conta. Decisões judiciais são cumpridas.",
           ]}

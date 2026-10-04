@@ -24,6 +24,13 @@ verify_jwt = false
 [functions.check-content]
 verify_jwt = false
 
+# Foto de perfil/capa e pagina do perfil: validam o login dentro da funcao (requireUser).
+[functions.profile-image]
+verify_jwt = false
+
+[functions.profile-page]
+verify_jwt = false
+
 # Servidores ICE (STUN/TURN) da videoconsulta: valida o login dentro da funcao (requireUser).
 [functions.call-ice]
 verify_jwt = false

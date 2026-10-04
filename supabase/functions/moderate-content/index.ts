@@ -147,8 +147,8 @@ serve(async (req) => {
   if (req.headers.get("x-cron-secret") !== env("CRON_SECRET")) throw new HttpError(401, "Segredo inválido.");
 
   const { type, id } = await req.json().catch(() => ({}));
-  if (!["post", "comment", "avatar", "cover"].includes(type) || typeof id !== "string") {
-    throw new HttpError(400, "Informe type (post|comment|avatar|cover) e id.");
+  if (!["post", "comment", "avatar", "banner", "cover"].includes(type) || typeof id !== "string") {
+    throw new HttpError(400, "Informe type (post|comment|avatar|banner|cover) e id.");
   }
 
   const admin = adminClient();
@@ -183,9 +183,9 @@ serve(async (req) => {
         return json({ ok: true, skipped: true });
       }
       verdict = await classifyWithFallback({ system: SYSTEM, text, imageUrl });
-    } else if (type === "avatar") {
-      const { data: row } = await admin.from("profiles").select("avatar_url").eq("id", id).maybeSingle();
-      imageUrl = row?.avatar_url ?? null;
+    } else if (type === "avatar" || type === "banner") {
+      const { data: row } = await admin.from("profiles").select("avatar_url, banner_url").eq("id", id).maybeSingle();
+      imageUrl = (type === "avatar" ? row?.avatar_url : row?.banner_url) ?? null;
       if (!imageUrl) return json({ ok: true, skipped: true });
       verdict = await classifyWithFallback({ system: SYSTEM_PROFILE_IMAGE, imageUrl });
     } else {

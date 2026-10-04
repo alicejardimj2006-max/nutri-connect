@@ -817,10 +817,73 @@ export function loadAppearance(): Appearance {
   return DEFAULT_APPEARANCE;
 }
 
+/** Aparência de OUTRA pessoa (perfil) em exibição agora, ou null. Não é gravada em lugar nenhum. */
+let scopedTheme: Appearance | null = null;
+
+/**
+ * Opções que continuam sendo de quem VISITA o perfil: acessibilidade e conforto de leitura nunca são
+ * trocados pelo tema de outra pessoa.
+ */
+const VIEWER_KEYS = [
+  "highContrast",
+  "readableFont",
+  "strongFocus",
+  "underlineLinks",
+  "letterSpacing",
+  "wordSpacing",
+  "lineHeight",
+  "bigCursor",
+  "largeTargets",
+  "colorFilter",
+  "readingGuide",
+  "speakSelection",
+  "reduceMotion",
+  "animationSpeed",
+  "scrollbar",
+] as const;
+
+function applyScopedNow(viewer: Appearance) {
+  if (!scopedTheme) return;
+  const merged = { ...scopedTheme } as unknown as Record<string, unknown>;
+  for (const key of VIEWER_KEYS) merged[key] = viewer[key];
+  // Quem aumentou o texto para enxergar melhor mantém o tamanho dele.
+  if (viewer.textScale !== 100) merged.textScale = viewer.textScale;
+  let css: AppearanceCss;
+  try {
+    css = computeAppearanceCss(merged as unknown as Appearance);
+  } catch {
+    css = computeAppearanceCss({ ...DEFAULT_APPEARANCE, ...viewerOnly(viewer) });
+  }
+  applyCss(css);
+  ensureFonts(merged as unknown as Appearance);
+}
+
+function viewerOnly(viewer: Appearance): Partial<Appearance> {
+  const out: Record<string, unknown> = {};
+  for (const key of VIEWER_KEYS) out[key] = viewer[key];
+  return out as Partial<Appearance>;
+}
+
+/**
+ * Mostra a aparência escolhida por quem montou um perfil enquanto a página estiver aberta, sem tocar
+ * nas escolhas de quem visita (que voltam ao chamar com null). Assim o perfil aparece para todos
+ * exatamente como foi decorado.
+ */
+export function applyScopedAppearance(theme: Appearance | null) {
+  scopedTheme = theme;
+  const own = loadAppearance();
+  if (theme) applyScopedNow(own);
+  else applyAppearance(own);
+}
+
 function applyAppearance(a: Appearance) {
   const css = computeAppearanceCss(a);
+  storeCss(css); // cache lido pelo script inicial (sempre o da própria pessoa)
+  if (scopedTheme) {
+    applyScopedNow(a);
+    return;
+  }
   applyCss(css);
-  storeCss(css); // cache lido pelo script inicial
   ensureFonts(a);
 }
 
