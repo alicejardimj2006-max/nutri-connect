@@ -124,11 +124,11 @@ function PostList({
   );
 }
 
-/** Navegação entre as duas páginas: flutua sobre o feed e some ao rolar para baixo. */
+/** Navegação entre as duas páginas: fica só no topo do feed e rola junto com o conteúdo. */
 function PagesNav({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
   const { t } = useI18n();
   return (
-    <div className="flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur">
+    <div className="mx-auto flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft">
       {PAGES.map((page, index) => (
         <button
           key={page.id}
@@ -168,13 +168,15 @@ function EspacoDeHojePage() {
     };
   }, [carouselApi]);
 
-  // A navegação das páginas e os filtros flutuam sobre o feed: somem ao rolar para baixo e voltam
-  // ao rolar para cima (ou no topo).
+  // Os filtros flutuam sobre o feed: somem ao rolar para baixo e voltam ao rolar para cima (ou no
+  // topo). Já o seletor de páginas só existe no topo do feed e rola junto com o conteúdo.
   const [barsVisible, setBarsVisible] = useState(true);
+  const [atTop, setAtTop] = useState(true);
   const lastScrollTop = useRef(0);
   const handleFeedScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const top = e.currentTarget.scrollTop;
     const previous = lastScrollTop.current;
+    setAtTop(top <= 16);
     if (top <= 16) setBarsVisible(true);
     else if (top > previous + 4) setBarsVisible(false);
     else if (top < previous - 4) setBarsVisible(true);
@@ -182,6 +184,7 @@ function EspacoDeHojePage() {
   };
   useEffect(() => {
     setBarsVisible(true);
+    setAtTop(true);
     lastScrollTop.current = 0;
   }, [activePage]);
 
@@ -251,13 +254,12 @@ function EspacoDeHojePage() {
           >
             <div
               className={cn(
-                "pointer-events-none absolute inset-x-0 top-3 z-20 flex flex-col items-center gap-2 transition duration-200",
-                !barsVisible && "-translate-y-[140%] opacity-0",
+                "pointer-events-none absolute inset-x-0 z-20 flex justify-center transition-all duration-200",
+                // No topo ficam logo abaixo do seletor de páginas; depois grudam no alto do feed.
+                atTop ? "top-16" : "top-3",
+                !barsVisible && "-translate-y-[160%] opacity-0",
               )}
             >
-              <div className={barsVisible ? "pointer-events-auto" : "pointer-events-none"}>
-                <PagesNav active={activePage} onSelect={goToPage} />
-              </div>
               <div
                 className={cn(
                   "flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur transition-opacity duration-200",
@@ -287,9 +289,12 @@ function EspacoDeHojePage() {
                 <CarouselItem className="pl-12">
                   <div
                     onScroll={handleFeedScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-28 lg:pb-8"
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-3 lg:pb-8"
                     style={{ height: pageHeight }}
                   >
+                    <PagesNav active={activePage} onSelect={goToPage} />
+                    {/* Espaço reservado para os filtros flutuantes no topo. */}
+                    <div className="h-[4.25rem]" aria-hidden="true" />
                     <PostList
                       posts={geralPosts}
                       loading={geral.isLoading}
@@ -303,9 +308,11 @@ function EspacoDeHojePage() {
                 <CarouselItem className="pl-12">
                   <div
                     onScroll={handleFeedScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-16 lg:pb-8"
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-3 lg:pb-8"
                     style={{ height: pageHeight }}
                   >
+                    <PagesNav active={activePage} onSelect={goToPage} />
+                    <div className="h-4" aria-hidden="true" />
                     {text ? (
                       <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
                         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
