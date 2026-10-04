@@ -21,8 +21,8 @@ export const COMPANY = {
  * Versão dos Termos e da Política de Privacidade. Mude este valor (AAAA-MM-DD) quando os textos
  * mudarem de forma relevante: todos os usuários voltam a ver o pedido de aceite.
  */
-export const LEGAL_VERSION = "2026-10-03";
-export const LEGAL_UPDATED_AT = "3 de outubro de 2026";
+export const LEGAL_VERSION = "2026-10-04";
+export const LEGAL_UPDATED_AT = "4 de outubro de 2026";
 
 /** Idade mínima para ter conta própria. */
 export const MIN_AGE = 18;

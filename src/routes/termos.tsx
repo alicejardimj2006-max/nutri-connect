@@ -28,7 +28,9 @@ function Termos() {
           O NutriConnect, operado por {operator}
           {COMPANY.cnpj && <> (CNPJ {COMPANY.cnpj})</>}, é uma rede social sobre alimentação, com
           receitas, comunidades, desafios, uma trilha de aprendizado e ferramentas para que usuários
-          e profissionais de nutrição se encontrem e acompanhem seus atendimentos.
+          e profissionais de saúde (nutrição, medicina, psicologia, educação física, fisioterapia e
+          enfermagem) se encontrem, façam consultas — inclusive por vídeo, no próprio site — e
+          acompanhem os atendimentos.
         </p>
         <p>
           <strong>O NutriConnect não presta serviços de saúde.</strong> Os atendimentos são
@@ -115,7 +117,8 @@ function Termos() {
       <LegalSection id="profissionais" title="7. Regras para profissionais">
         <LegalList
           items={[
-            "Manter o registro ativo e atuar dentro do que o conselho da categoria permite, inclusive no atendimento on-line.",
+            "Manter o registro ativo e atuar dentro do que o conselho da categoria permite, inclusive no atendimento on-line, cumprindo as exigências próprias da profissão para o atendimento a distância (por exemplo, o cadastro e-Psi exigido pelo Conselho Federal de Psicologia).",
+            "Avaliar, a cada caso, se o atendimento por vídeo é adequado e indicar atendimento presencial ou de urgência quando necessário.",
             "Divulgar-se de forma ética: sem promessas de resultado, sem “antes e depois” sensacionalista, sem garantias de cura, sem preços de choque e sem expor pacientes.",
             "Guardar sigilo e manter os registros do atendimento pelos prazos do seu conselho.",
             "Usar os dados dos pacientes apenas para o atendimento, sem repassá-los a terceiros.",
@@ -134,6 +137,14 @@ function Termos() {
             "Quando aplicável, vale o direito de arrependimento de 7 dias para contratações feitas à distância (art. 49 do Código de Defesa do Consumidor). Para exercê-lo, fale conosco.",
           ]}
         />
+        <p>
+          <strong>Videoconsulta.</strong> A sala abre 30 minutos antes do horário e só o paciente e
+          o(a) profissional daquela consulta podem entrar. A chamada é criptografada e não é gravada
+          pela plataforma. É proibido gravar, fotografar ou transmitir a consulta sem a autorização
+          expressa da outra pessoa. O(a) profissional só pode registrar uma imagem da câmera do
+          paciente (por exemplo, postura ou uma ferida) depois que o paciente autorizar na tela. A
+          videoconsulta não é serviço de urgência: em emergências, ligue 192 (SAMU).
+        </p>
       </LegalSection>
 
       <LegalSection id="disponibilidade" title="9. Disponibilidade e responsabilidade">
