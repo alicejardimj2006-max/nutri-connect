@@ -11,6 +11,7 @@ import {
   GAP_PX,
   GRID_COLUMNS,
   ROW_PX,
+  compactLayout,
   resolveCollisions,
   type Block,
 } from "@/lib/profile-page";
@@ -51,7 +52,7 @@ const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const LIFT = "scale(1.02)";
 
 export function ProfileCanvas({
-  layout,
+  layout: layoutProp,
   editing = false,
   selectedId = null,
   onChange,
@@ -68,6 +69,8 @@ export function ProfileCanvas({
   onDelete?: (id: string) => void;
 }) {
   const tr = useTr();
+  // Fora da edição os blocos sobem até encostar uns nos outros (sem vãos entre eles).
+  const layout = editing ? layoutProp : compactLayout(layoutProp);
   const mobile = useIsMobile();
   const boxRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1000);

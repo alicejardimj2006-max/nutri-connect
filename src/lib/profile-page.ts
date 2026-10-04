@@ -289,6 +289,24 @@ export function resolveCollisions(layout: Block[], pinnedId?: string): Block[] {
   return layout.map((b) => byId.get(b.id) ?? b);
 }
 
+/**
+ * Puxa cada bloco para cima até encostar em outro (ou no topo). Vale para quem visita e para o que é
+ * salvo: sobram vãos só enquanto a pessoa está editando.
+ */
+export function compactLayout(layout: Block[]): Block[] {
+  const sorted = [...layout].sort((a, b) => a.y - b.y || a.x - b.x);
+  const placed: Block[] = [];
+  for (const block of sorted) {
+    const candidates = [0, ...placed.map((p) => p.y + p.h)]
+      .filter((y) => y <= block.y)
+      .sort((a, b) => a - b);
+    const y = candidates.find((cy) => !placed.some((p) => overlaps({ ...block, y: cy }, p))) ?? block.y;
+    placed.push({ ...block, y });
+  }
+  const byId = new Map(placed.map((b) => [b.id, b]));
+  return layout.map((b) => byId.get(b.id) ?? b);
+}
+
 /** Primeira posição livre na coluna da esquerda, abaixo de tudo. */
 export function freeSpot(layout: Block[]): { x: number; y: number } {
   const bottom = layout.reduce((max, b) => Math.max(max, b.y + b.h), 0);

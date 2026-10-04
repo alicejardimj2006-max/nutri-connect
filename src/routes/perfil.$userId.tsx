@@ -47,6 +47,7 @@ import {
   PROFILE_PAGE_KEY,
   ProfileRejectedError,
   defaultPage,
+  compactLayout,
   freeSpot,
   newBlock,
   readPage,
@@ -267,7 +268,8 @@ function PublicProfilePage() {
   };
   const handleSave = () => {
     if (!draft) return;
-    savePage.mutate(draft, {
+    // Ao salvar, os blocos sobem até encostar uns nos outros: não ficam vãos para quem visita.
+    savePage.mutate({ ...draft, layout: compactLayout(draft.layout) }, {
       onSuccess: () => {
         toast.success(tr(["Perfil salvo! Quem visitar já vê do seu jeito.", "Profile saved! Visitors now see it your way.", "¡Perfil guardado! Quien visite ya lo ve a tu manera.", "Profil enregistré ! Les visiteurs le voient à votre façon."]));
         stopEditing();
