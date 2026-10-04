@@ -200,7 +200,8 @@ function TemaDaSemanaPage() {
                     </h3>
                   </div>
                   <Link
-                    to="/receitas"
+                    to="/explorar"
+                    search={{ tipo: "receita" }}
                     className="text-xs font-semibold text-primary hover:underline"
                   >
                     {t("theme.seeAllRecipes")}

@@ -609,7 +609,7 @@ export function RecipeRouletteCard() {
           {tr(["Girar", "Spin", "Girar", "Tourner"])}
         </button>
         {recipe && !spinning && (
-          <Link to="/receitas/$id" params={{ id: recipe.id }} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+          <Link to="/explorar" search={{ post: recipe.id }} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
             <ChefHat className="h-3.5 w-3.5" />
             {tr(["Ver receita", "See recipe", "Ver receta", "Voir la recette"])}
           </Link>

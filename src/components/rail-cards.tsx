@@ -453,7 +453,6 @@ export function ShortcutsCard() {
       title={["Atalhos", "Shortcuts", "Atajos", "Raccourcis"]}
       items={[
         { to: "/espaco", icon: Home, names: ["Espaço", "Space", "Espacio", "Espace"] },
-        { to: "/receitas", icon: ChefHat, names: ["Receitas", "Recipes", "Recetas", "Recettes"] },
         { to: "/explorar", icon: Compass, names: ["Explorar", "Explore", "Explorar", "Explorer"] },
         { to: "/comunidades", icon: Users, names: ["Comunidades", "Communities", "Comunidades", "Communautés"] },
         { to: "/desafios", icon: Award, names: ["Desafios", "Challenges", "Desafíos", "Défis"] },
@@ -675,7 +674,7 @@ export function TopRecipesCard() {
     <Panel
       title={tr(["Receitas em alta", "Trending recipes", "Recetas en alza", "Recettes tendance"])}
       action={
-        <Link to="/receitas" className={smallLink}>
+        <Link to="/explorar" search={{ tipo: "receita" }} className={smallLink}>
           {tr(["Ver todas", "See all", "Ver todas", "Tout voir"])}
         </Link>
       }
@@ -683,7 +682,7 @@ export function TopRecipesCard() {
       <ul className="space-y-1">
         {top.map((r) => (
           <li key={r.id}>
-            <Link to="/receitas/$id" params={{ id: r.id }} className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary">
+            <Link to="/explorar" search={{ post: r.id }} className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
                 <ChefHat className="h-4 w-4" />
               </span>

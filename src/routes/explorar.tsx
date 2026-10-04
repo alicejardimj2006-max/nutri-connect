@@ -1,452 +1,308 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Search, ChefHat, Sparkles, Users, Award, Compass } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Compass, Search, X } from "lucide-react";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
-import { PostCard, ChallengeCard, WeeklyThemeCard } from "@/components/community-cards";
+import { FeedShell, type FeedShellPage } from "@/components/feed-shell";
+import { PostTile } from "@/components/post-tile";
+import { PostModal } from "@/components/post-modal";
+import { VerifiedBadge } from "@/components/person-chip";
+import { RelationshipActions } from "@/components/relationship-actions";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { RelationshipActions } from "@/components/relationship-actions";
-import { VerifiedBadge } from "@/components/person-chip";
-import { initials } from "@/lib/community";
+import { initials, type Post, type PostType } from "@/lib/community";
+import { pickName, type Names } from "@/lib/appearance-data";
+import { loadAppearance } from "@/lib/appearance";
+import { trendingMix } from "@/lib/trending";
+import { useFeed, useFeedRealtime, usePost } from "@/lib/social/feed-queries";
 import { useSearchUsers } from "@/lib/social/queries";
-import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 
 export const Route = createFileRoute("/explorar")({
+  validateSearch: (search: Record<string, unknown>): { tipo?: string; post?: string } => ({
+    tipo: typeof search.tipo === "string" ? search.tipo : undefined,
+    post: typeof search.post === "string" ? search.post : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Explorar — NutriConnect" },
       {
         name: "description",
         content:
-          "Encontre receitas, relatos de experiências, desafios de hábitos e comunidades na rede NutriConnect.",
+          "Descubra as publicações mais comentadas da rede NutriConnect: receitas, experiências e perguntas.",
       },
     ],
   }),
   component: ExplorarPage,
 });
 
-type SearchTab = "tudo" | "receitas" | "experiencias" | "desafios" | "comunidades" | "pessoas";
+/** Páginas do Explorar: a primeira mistura tudo; as outras mostram só um tipo de post (e as pessoas). */
+const PAGE_DEFS: { id: string; type?: PostType; label: Names }[] = [
+  { id: "tudo", label: ["Geral", "General", "General", "Général"] },
+  { id: "receita", type: "receita", label: ["Receitas", "Recipes", "Recetas", "Recettes"] },
+  { id: "experiencia", type: "experiencia", label: ["Experiências", "Experiences", "Experiencias", "Expériences"] },
+  { id: "pergunta", type: "pergunta", label: ["Perguntas", "Questions", "Preguntas", "Questions"] },
+  { id: "conversa", type: "geral", label: ["Conversas", "Chats", "Conversaciones", "Discussions"] },
+  { id: "pessoas", label: ["Pessoas", "People", "Personas", "Personnes"] },
+];
 
+const FETCH = 60;
 const PEOPLE_PAGE = 20;
+const ALIASES: Record<string, string> = { receitas: "receita", experiencias: "experiencia", perguntas: "pergunta" };
 
 function ExplorarPage() {
-  const { user, hydrated: authHydrated } = useRequireAuth();
-  const { t } = useI18n();
-  const { challenges, weeklyTheme, communities } = useCommunity();
+  const { user } = useRequireAuth();
+  const { t, locale } = useI18n();
+  const search = Route.useSearch();
+  const initialId = ALIASES[search.tipo ?? ""] ?? search.tipo ?? "tudo";
+  const initialPage = Math.max(0, PAGE_DEFS.findIndex((p) => p.id === initialId));
+
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<SearchTab>("tudo");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [visited, setVisited] = useState<Set<string>>(() => new Set([PAGE_DEFS[initialPage].id]));
+  const [more, setMore] = useState<Record<string, number>>({});
   const [onlyPros, setOnlyPros] = useState(false);
-  const [peopleLimit, setPeopleLimit] = useState(PEOPLE_PAGE);
+  const [openId, setOpenId] = useState<string | null>(search.post ?? null);
+  const [openPost, setOpenPost] = useState<Post | null>(null);
+  // Mesma "sorte" durante toda a visita: a grade não embaralha a cada clique.
+  const [seed] = useState(() => Math.random());
+  const enabled = !!user;
+  useFeedRealtime(user?.id);
+
   // Os temas do card lateral preenchem a busca.
   useEffect(() => {
     const onQuery = (e: Event) => setQuery(String((e as CustomEvent<string>).detail ?? ""));
     window.addEventListener("explore:query", onQuery);
     return () => window.removeEventListener("explore:query", onQuery);
   }, []);
-  // Receitas e experiências: a busca (sem acento, sem diferença de maiúsculas) roda no banco.
-  const postsFeed = useFeed(
-    { scope: "todos", query: debouncedQuery || undefined, limit: 50 },
-    !!user,
-  );
-  useFeedRealtime(user?.id);
 
-  // A pesquisa de pessoas espera a pessoa parar de digitar (e volta à 1ª página).
+  // A busca espera a pessoa parar de digitar.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query.trim());
-      setPeopleLimit(PEOPLE_PAGE);
-    }, 300);
+    const timer = setTimeout(() => setDebounced(query.trim()), 300);
     return () => clearTimeout(timer);
   }, [query]);
 
-  const people = useSearchUsers(
-    {
-      query: debouncedQuery,
-      role: onlyPros ? "profissional" : undefined,
-      limit: peopleLimit,
-    },
-    !!user,
-  );
-  const peopleList = people.data ?? [];
-  const peopleHasMore = peopleList.length >= peopleLimit;
-
-  // Buscas de conteúdo alimentam o tema da semana; buscas de pessoas (aba Pessoas ou @) não.
+  // Buscas de conteúdo alimentam o tema da semana; buscas por @pessoa não.
   useEffect(() => {
     const term = query.trim();
-    if (term.length < 3 || activeTab === "pessoas" || term.startsWith("@")) return;
-
+    if (term.length < 3 || term.startsWith("@")) return;
     const timer = setTimeout(() => {
       supabase.rpc("log_search", { p_term: term }).then(({ error }) => {
         if (error) console.error("Erro ao registrar termo de busca:", error);
       });
     }, 1000);
-
     return () => clearTimeout(timer);
-  }, [query, activeTab]);
+  }, [query]);
 
-  if (!authHydrated || !user) return <AuthGateLoading />;
+  const onPageChange = useCallback((index: number) => {
+    const id = PAGE_DEFS[index]?.id;
+    if (id) setVisited((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+  }, []);
 
-  const q = query.toLowerCase().trim();
+  const limitFor = (id: string) => FETCH + (more[id] ?? 0);
+  const q = debounced || undefined;
+  const feeds = {
+    tudo: useFeed({ scope: "todos", query: q, limit: limitFor("tudo") }, enabled && visited.has("tudo")),
+    receita: useFeed({ scope: "todos", type: "receita", query: q, limit: limitFor("receita") }, enabled && visited.has("receita")),
+    experiencia: useFeed({ scope: "todos", type: "experiencia", query: q, limit: limitFor("experiencia") }, enabled && visited.has("experiencia")),
+    pergunta: useFeed({ scope: "todos", type: "pergunta", query: q, limit: limitFor("pergunta") }, enabled && visited.has("pergunta")),
+    conversa: useFeed({ scope: "todos", type: "geral", query: q, limit: limitFor("conversa") }, enabled && visited.has("conversa")),
+  } as const;
 
-  // Filtragem
-  const matchingPosts = postsFeed.data ?? [];
-
-  const matchingRecipes = matchingPosts.filter((p) => p.type === "receita");
-  const matchingExperiences = matchingPosts.filter((p) => p.type === "experiencia");
-
-  const matchingChallenges = challenges.filter(
-    (c) =>
-      !q ||
-      c.title.toLowerCase().includes(q) ||
-      c.description.toLowerCase().includes(q) ||
-      c.category.toLowerCase().includes(q),
+  const people = useSearchUsers(
+    { query: debounced, role: onlyPros ? "profissional" : undefined, limit: PEOPLE_PAGE + (more.pessoas ?? 0) },
+    enabled && visited.has("pessoas"),
   );
 
-  const matchingCommunities = (communities || []).filter(
-    (c) =>
-      !q ||
-      c.name.toLowerCase().includes(q) ||
-      c.description.toLowerCase().includes(q) ||
-      c.category.toLowerCase().includes(q),
+  // Um link para um post (ex.: /receitas/<id>) abre o post em modal por cima da grade.
+  const linked = usePost(openId && !openPost ? openId : undefined);
+  const modalPost = openPost ?? (openId ? (linked.data ?? null) : null);
+  const closeModal = () => {
+    setOpenPost(null);
+    setOpenId(null);
+  };
+
+  const mixed = useMemo(
+    () => ({
+      tudo: trendingMix(feeds.tudo.data ?? [], seed),
+      receita: trendingMix(feeds.receita.data ?? [], seed),
+      experiencia: trendingMix(feeds.experiencia.data ?? [], seed),
+      pergunta: trendingMix(feeds.pergunta.data ?? [], seed),
+      conversa: trendingMix(feeds.conversa.data ?? [], seed),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [feeds.tudo.data, feeds.receita.data, feeds.experiencia.data, feeds.pergunta.data, feeds.conversa.data, seed],
   );
 
-  const matchingTheme =
-    weeklyTheme &&
-    (!q ||
-      weeklyTheme.title.toLowerCase().includes(q) ||
-      weeklyTheme.description.toLowerCase().includes(q))
-      ? [weeklyTheme]
-      : [];
-  const tabs: { id: SearchTab; label: string; count: number | string }[] = [
-    {
-      id: "tudo",
-      label: t("explore.tab.all"),
-      count:
-        matchingPosts.length +
-        matchingChallenges.length +
-        matchingCommunities.length +
-        matchingTheme.length,
-    },
-    { id: "receitas", label: t("explore.tab.recipes"), count: matchingRecipes.length },
-    { id: "experiencias", label: t("explore.tab.experiences"), count: matchingExperiences.length },
-    { id: "desafios", label: t("explore.tab.challenges"), count: matchingChallenges.length },
-    { id: "comunidades", label: t("explore.tab.communities"), count: matchingCommunities.length },
-    {
-      id: "pessoas",
-      label: t("explore.tab.people"),
-      count: peopleHasMore ? `${peopleList.length}+` : peopleList.length,
-    },
-  ];
+  const pageSize = useMemo(() => loadAppearance().feedPageSize || 20, []);
 
-  return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
+  const toolbar = (
+    <label className="flex w-[min(22rem,calc(100vw-2rem))] items-center gap-2 rounded-full border border-border/60 bg-card/90 px-4 py-2 shadow-soft backdrop-blur focus-within:border-accent">
+      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t("explore.placeholder")}
+        className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
+        aria-label={t("common.search")}
+      />
+      {query && (
+        <button
+          type="button"
+          onClick={() => setQuery("")}
+          className="grid h-5 w-5 shrink-0 cursor-pointer place-items-center rounded-full text-muted-foreground hover:text-foreground"
+          aria-label={pickName(["Limpar busca", "Clear search", "Borrar búsqueda", "Effacer la recherche"], locale)}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </label>
+  );
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {/* Caixa de Busca Principal */}
-        <div className="mx-auto max-w-3xl text-center space-y-4 mb-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
-            {t("explore.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("explore.subtitle")}</p>
-
-          <div className="relative mt-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-accent" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("explore.placeholder")}
-              className="w-full rounded-full border border-border bg-card pl-12 pr-4 py-3.5 text-sm text-foreground outline-none focus:border-accent shadow-card"
-              autoFocus
-            />
-          </div>
-
-          {/* Atalhos (antes no rodapé) */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Link
-              to="/receitas"
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
-            >
-              <ChefHat className="h-3.5 w-3.5 text-accent" /> {t("explore.communityRecipes")}
-            </Link>
-            <Link
-              to="/tema-da-semana"
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground transition hover:bg-secondary"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-accent" /> {t("weekly.badge")}
-            </Link>
-          </div>
-
-          {/* Abas */}
-          <div className="flex items-center justify-center gap-2 overflow-x-auto pt-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab.label} ({tab.count})
-              </button>
+  const grid = (id: string, posts: Post[], loading: boolean) => {
+    const limit = limitFor(id);
+    return (
+      <>
+        {loading && posts.length === 0 ? (
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3" aria-hidden="true">
+            {Array.from({ length: 9 }, (_, i) => (
+              <div key={i} className="aspect-square animate-pulse rounded-xl bg-secondary/50 sm:rounded-2xl" />
             ))}
           </div>
+        ) : posts.length === 0 ? (
+          <div className="mx-auto max-w-md rounded-3xl border border-dashed border-border p-10 text-center">
+            <Compass className="mx-auto mb-3 h-9 w-9 text-muted-foreground" />
+            <p className="text-sm font-semibold text-foreground">
+              {debounced ? `${t("explore.noResults")} “${debounced}”` : t("explore.noResults")}
+            </p>
+            {debounced && <p className="mt-1 text-xs text-muted-foreground">{t("explore.noResultsHint")}</p>}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
+            {posts.map((post) => (
+              <PostTile key={post.id} post={post} onOpen={setOpenPost} />
+            ))}
+          </div>
+        )}
+        {posts.length >= limit && (
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => setMore((m) => ({ ...m, [id]: (m[id] ?? 0) + pageSize }))}
+              className="cursor-pointer rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"
+            >
+              {t("espaco.loadMore")}
+            </button>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const peopleList = people.data ?? [];
+  const peoplePage = (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-display text-base font-bold text-foreground">
+          {debounced ? t("explore.people.results") : t("explore.people.suggested")}
+        </h2>
+        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-foreground">
+          <input
+            type="checkbox"
+            checked={onlyPros}
+            onChange={(e) => setOnlyPros(e.target.checked)}
+            className="h-4 w-4 accent-[var(--color-accent)]"
+          />
+          {t("explore.people.onlyPros")}
+        </label>
+      </div>
+      {people.isLoading ? (
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+      ) : peopleList.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border p-10 text-center">
+          <Compass className="mx-auto mb-3 h-9 w-9 text-muted-foreground" />
+          <p className="text-sm font-semibold text-foreground">{t("explore.noResults")} “{debounced}”</p>
         </div>
-
-        {/* Resultados */}
-        <div className="space-y-10">
-          {/* Pessoas (pesquisa de pessoas: nome, @, acento e erro de digitação) */}
-          {activeTab === "pessoas" && (
-            <div className="mx-auto max-w-3xl">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
-                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                  <Users className="h-4 w-4 text-accent" />
-                  <span>
-                    {debouncedQuery ? t("explore.people.results") : t("explore.people.suggested")} (
-                    {peopleHasMore ? `${peopleList.length}+` : peopleList.length})
+      ) : (
+        <ul className="grid gap-3 md:grid-cols-2">
+          {peopleList.map((person) => (
+            <li key={person.id} className="rounded-2xl border border-border bg-card p-4 shadow-xs">
+              <Link to="/perfil/$userId" params={{ userId: person.id }} className="flex items-start gap-3">
+                <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary text-sm font-extrabold text-primary-foreground">
+                  {person.avatar_url ? (
+                    <img src={person.avatar_url} alt={person.name} className="h-full w-full object-cover" />
+                  ) : (
+                    initials(person.name)
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                    <span className="truncate">{person.name}</span>
+                    {person.verified && <VerifiedBadge />}
                   </span>
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setOnlyPros((v) => !v)}
-                  aria-pressed={onlyPros}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition cursor-pointer ${
-                    onlyPros
-                      ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                      : "bg-secondary text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t("explore.people.onlyPros")}
-                </button>
-              </div>
-
-              {people.isLoading ? (
-                <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-              ) : peopleList.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-border p-12 text-center">
-                  <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                  <h3 className="text-base font-bold font-display text-foreground">
-                    {t("explore.noResults")} “{query}”
-                  </h3>
-                </div>
-              ) : (
-                <ul className="space-y-3">
-                  {peopleList.map((person) => (
-                    <li
-                      key={person.id}
-                      className="rounded-2xl border border-border bg-card p-4 shadow-xs"
-                    >
-                      <Link
-                        to="/perfil/$userId"
-                        params={{ userId: person.id }}
-                        className="flex items-start gap-3"
-                      >
-                        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary text-sm font-extrabold text-primary-foreground">
-                          {person.avatar_url ? (
-                            <img
-                              src={person.avatar_url}
-                              alt={person.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            initials(person.name)
-                          )}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                            <span className="truncate">{person.name}</span>
-                            {person.verified && <VerifiedBadge />}
-                          </span>
-                          <span className="block truncate text-xs text-muted-foreground">
-                            @{person.username}
-                            {person.verified && person.profession
-                              ? ` · ${td(person.profession)} · ${person.council} ${person.registration}/${person.uf}`
-                              : ""}
-                          </span>
-                          {person.mutual_friends > 0 && (
-                            <span className="mt-0.5 block text-[11px] font-medium text-accent">
-                              {t("explore.people.mutual").replace(
-                                "{n}",
-                                String(person.mutual_friends),
-                              )}
-                            </span>
-                          )}
-                          {person.is_private ? (
-                            <span className="mt-1 block text-[11px] text-muted-foreground">
-                              {t("explore.people.privateBio")}
-                            </span>
-                          ) : (
-                            person.bio && (
-                              <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
-                                {person.bio}
-                              </span>
-                            )
-                          )}
-                        </span>
-                      </Link>
-                      <RelationshipActions
-                        userId={person.id}
-                        name={person.name}
-                        relationship={person.relationship}
-                        targetIsProfessional={person.verified}
-                        viewerIsProfessional={!!user.professional}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {peopleHasMore && !people.isLoading && (
-                <div className="mt-5 text-center">
-                  <button
-                    type="button"
-                    disabled={people.isFetching}
-                    onClick={() => setPeopleLimit((n) => n + PEOPLE_PAGE)}
-                    className="rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary disabled:opacity-60 cursor-pointer"
-                  >
-                    {t("explore.people.more")}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Seção de Tema da Semana */}
-          {activeTab === "tudo" && matchingTheme.length > 0 && (
-            <div className="mb-6">
-              <WeeklyThemeCard theme={matchingTheme[0]} compact={true} />
-            </div>
-          )}
-
-          {/* Seção de Receitas */}
-          {(activeTab === "tudo" || activeTab === "receitas") && matchingRecipes.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                  <ChefHat className="h-4 w-4 text-accent" />
-                  <span>
-                    {t("explore.recipesFound")} ({matchingRecipes.length})
+                  <span className="block truncate text-xs text-muted-foreground">
+                    @{person.username}
+                    {person.verified && person.profession
+                      ? ` · ${td(person.profession)} · ${person.council} ${person.registration}/${person.uf}`
+                      : ""}
                   </span>
-                </h2>
-                {activeTab === "tudo" && (
-                  <button
-                    onClick={() => setActiveTab("receitas")}
-                    className="text-xs text-primary font-semibold hover:underline"
-                  >
-                    {t("profile.seeAll")}
-                  </button>
-                )}
-              </div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {matchingRecipes.slice(0, activeTab === "tudo" ? 3 : undefined).map((r) => (
-                  <PostCard key={r.id} post={r} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Seção de Experiências */}
-          {(activeTab === "tudo" || activeTab === "experiencias") &&
-            matchingExperiences.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                  <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-accent" />
-                    <span>
-                      {t("explore.experiencesFound")} ({matchingExperiences.length})
+                  {person.mutual_friends > 0 && (
+                    <span className="mt-0.5 block text-[11px] font-medium text-accent">
+                      {t("explore.people.mutual").replace("{n}", String(person.mutual_friends))}
                     </span>
-                  </h2>
-                </div>
-                <div className="space-y-4">
-                  {matchingExperiences.slice(0, activeTab === "tudo" ? 2 : undefined).map((exp) => (
-                    <PostCard key={exp.id} post={exp} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-          {/* Seção de Desafios */}
-          {(activeTab === "tudo" || activeTab === "desafios") && matchingChallenges.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                  <Award className="h-4 w-4 text-accent" />
-                  <span>
-                    {t("explore.tab.challenges")} ({matchingChallenges.length})
-                  </span>
-                </h2>
-              </div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {matchingChallenges.map((c) => (
-                  <ChallengeCard key={c.id} challenge={c} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Seção de Comunidades */}
-          {(activeTab === "tudo" || activeTab === "comunidades") &&
-            matchingCommunities.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-2">
-                  <h2 className="text-lg font-bold font-display text-foreground flex items-center gap-2">
-                    <Users className="h-4 w-4 text-accent" />
-                    <span>
-                      {t("explore.tab.communities")} ({matchingCommunities.length})
-                    </span>
-                  </h2>
-                </div>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {matchingCommunities.map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/comunidades/$slug"
-                      params={{ slug: c.slug }}
-                      className="block rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm"
-                    >
-                      <h3 className="text-base font-bold text-foreground font-display">{c.name}</h3>
-                      <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
-                        {c.description}
-                      </p>
-                      <div className="mt-4 flex items-center gap-2">
-                        <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-foreground">
-                          {td(c.category)}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {c.members.length}{" "}
-                          {c.members.length === 1 ? t("explore.member") : t("comunidades.members")}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          {/* Caso vazio */}
-          {activeTab !== "pessoas" &&
-            matchingPosts.length === 0 &&
-            matchingChallenges.length === 0 &&
-            matchingCommunities.length === 0 &&
-            matchingTheme.length === 0 && (
-              <div className="rounded-3xl border border-dashed border-border p-12 text-center max-w-md mx-auto">
-                <Compass className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <h3 className="text-base font-bold font-display text-foreground">
-                  {t("explore.noResults")} “{query}”
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">{t("explore.noResultsHint")}</p>
-              </div>
-            )}
+                  )}
+                  {person.is_private ? (
+                    <span className="mt-1 block text-[11px] text-muted-foreground">{t("explore.people.privateBio")}</span>
+                  ) : (
+                    person.bio && (
+                      <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">{person.bio}</span>
+                    )
+                  )}
+                </span>
+              </Link>
+              <RelationshipActions
+                userId={person.id}
+                name={person.name}
+                relationship={person.relationship}
+                targetIsProfessional={person.verified}
+                viewerIsProfessional={!!user?.professional}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      {peopleList.length >= PEOPLE_PAGE + (more.pessoas ?? 0) && (
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => setMore((m) => ({ ...m, pessoas: (m.pessoas ?? 0) + PEOPLE_PAGE }))}
+            className="cursor-pointer rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary"
+          >
+            {t("explore.people.more")}
+          </button>
         </div>
-      </main>
+      )}
     </div>
   );
+
+  const pages: FeedShellPage[] = PAGE_DEFS.map((def) => {
+    const label = pickName(def.label, locale);
+    if (def.id === "pessoas") return { id: def.id, label, toolbar, content: peoplePage };
+    const key = def.id as keyof typeof feeds;
+    return {
+      id: def.id,
+      label,
+      toolbar,
+      content: grid(def.id, mixed[key], feeds[key].isLoading),
+    };
+  });
+
+  return (
+    <>
+      <FeedShell pages={pages} initialPage={initialPage} onPageChange={onPageChange} columnClass="max-w-4xl" />
+      <PostModal post={modalPost} onClose={closeModal} />
+    </>
+  );
 }
+
+

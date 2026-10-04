@@ -26,7 +26,6 @@ import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as ReceitasRouteImport } from './routes/receitas'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
@@ -57,6 +56,7 @@ import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
 import { Route as PerfilPersonalizacaoRouteImport } from './routes/perfil.personalizacao'
 import { Route as ProfissionaisIndexRouteImport } from './routes/profissionais.index'
 import { Route as ProfissionaisProfessionalIdRouteImport } from './routes/profissionais.$professionalId'
+import { Route as ReceitasIndexRouteImport } from './routes/receitas.index'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 import { Route as PainelPacientesIndexRouteImport } from './routes/painel.pacientes.index'
 import { Route as PainelPacientesPatientIdRouteImport } from './routes/painel.pacientes.$patientId'
@@ -151,11 +151,6 @@ const PainelRoute = PainelRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReceitasRoute = ReceitasRouteImport.update({
-  id: '/receitas',
-  path: '/receitas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
@@ -309,6 +304,11 @@ const ProfissionaisProfessionalIdRoute =
     path: '/profissionais/$professionalId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ReceitasIndexRoute = ReceitasIndexRouteImport.update({
+  id: '/receitas/',
+  path: '/receitas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasIdRoute = ReceitasIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -385,7 +385,6 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
-  '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
@@ -417,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/desafios/': typeof DesafiosIndexRoute
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
+  '/receitas/': typeof ReceitasIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -441,7 +441,6 @@ export interface FileRoutesByTo {
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
@@ -472,6 +471,7 @@ export interface FileRoutesByTo {
   '/desafios': typeof DesafiosIndexRoute
   '/painel': typeof PainelIndexRoute
   '/profissionais': typeof ProfissionaisIndexRoute
+  '/receitas': typeof ReceitasIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -501,7 +501,6 @@ export interface FileRoutesById {
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
-  '/receitas': typeof ReceitasRouteWithChildren
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
@@ -533,6 +532,7 @@ export interface FileRoutesById {
   '/desafios/': typeof DesafiosIndexRoute
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
+  '/receitas/': typeof ReceitasIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -563,7 +563,6 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/painel'
     | '/privacidade'
-    | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
@@ -595,6 +594,7 @@ export interface FileRouteTypes {
     | '/desafios/'
     | '/painel/'
     | '/profissionais/'
+    | '/receitas/'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -619,7 +619,6 @@ export interface FileRouteTypes {
     | '/nina'
     | '/notificacoes'
     | '/privacidade'
-    | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
@@ -650,6 +649,7 @@ export interface FileRouteTypes {
     | '/desafios'
     | '/painel'
     | '/profissionais'
+    | '/receitas'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -678,7 +678,6 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/painel'
     | '/privacidade'
-    | '/receitas'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
@@ -710,6 +709,7 @@ export interface FileRouteTypes {
     | '/desafios/'
     | '/painel/'
     | '/profissionais/'
+    | '/receitas/'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -739,7 +739,6 @@ export interface RootRouteChildren {
   NotificacoesRoute: typeof NotificacoesRoute
   PainelRoute: typeof PainelRouteWithChildren
   PrivacidadeRoute: typeof PrivacidadeRoute
-  ReceitasRoute: typeof ReceitasRouteWithChildren
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SobreRoute: typeof SobreRoute
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
@@ -753,6 +752,7 @@ export interface RootRouteChildren {
   PerfilPersonalizacaoRoute: typeof PerfilPersonalizacaoRoute
   ProfissionaisProfessionalIdRoute: typeof ProfissionaisProfessionalIdRoute
   ProfissionaisIndexRoute: typeof ProfissionaisIndexRoute
+  ReceitasIndexRoute: typeof ReceitasIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -874,13 +874,6 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/receitas': {
-      id: '/receitas'
-      path: '/receitas'
-      fullPath: '/receitas'
-      preLoaderRoute: typeof ReceitasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recuperar-senha': {
@@ -1093,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfissionaisProfessionalIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/receitas/': {
+      id: '/receitas/'
+      path: '/receitas'
+      fullPath: '/receitas/'
+      preLoaderRoute: typeof ReceitasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receitas/$id': {
       id: '/receitas/$id'
       path: '/$id'
@@ -1245,18 +1245,6 @@ const PainelRouteChildren: PainelRouteChildren = {
 const PainelRouteWithChildren =
   PainelRoute._addFileChildren(PainelRouteChildren)
 
-interface ReceitasRouteChildren {
-  ReceitasIdRoute: typeof ReceitasIdRoute
-}
-
-const ReceitasRouteChildren: ReceitasRouteChildren = {
-  ReceitasIdRoute: ReceitasIdRoute,
-}
-
-const ReceitasRouteWithChildren = ReceitasRoute._addFileChildren(
-  ReceitasRouteChildren,
-)
-
 interface PerfilConfiguracoesRouteChildren {
   PerfilConfiguracoesContaRoute: typeof PerfilConfiguracoesContaRoute
   PerfilConfiguracoesDadosRoute: typeof PerfilConfiguracoesDadosRoute
@@ -1296,7 +1284,6 @@ const rootRouteChildren: RootRouteChildren = {
   NotificacoesRoute: NotificacoesRoute,
   PainelRoute: PainelRouteWithChildren,
   PrivacidadeRoute: PrivacidadeRoute,
-  ReceitasRoute: ReceitasRouteWithChildren,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   SobreRoute: SobreRoute,
   TemaDaSemanaRoute: TemaDaSemanaRoute,
@@ -1310,6 +1297,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilPersonalizacaoRoute: PerfilPersonalizacaoRoute,
   ProfissionaisProfessionalIdRoute: ProfissionaisProfessionalIdRoute,
   ProfissionaisIndexRoute: ProfissionaisIndexRoute,
+  ReceitasIndexRoute: ReceitasIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

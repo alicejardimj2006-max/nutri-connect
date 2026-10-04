@@ -140,31 +140,15 @@ export function railsFor(pathname: string): RailSet | null {
     };
   }
   if (p === "/explorar") {
+    // A página tem a altura da tela (como o Espaço): o que não couber nas colunas não aparece.
     return {
+      locked: true,
       left: (
         <>
-          <ProfileCard />
           <ExploreTopicsCard />
-          <FriendsCard />
-        </>
-      ),
-      right: (
-        <>
-          <SearchTipsCard />
-          <DailyTipCard />
-          <ProfessionalsCard limit={4} />
-          <SuggestedCommunitiesCard />
-        </>
-      ),
-    };
-  }
-  if (p === "/receitas" || /^\/receitas\/[^/]+$/.test(p)) {
-    return {
-      left: (
-        <>
           <TopRecipesCard />
           <PlateBuilderCard />
-          <ShoppingListCard />
+          <FriendsCard />
         </>
       ),
       right: (
@@ -172,7 +156,8 @@ export function railsFor(pathname: string): RailSet | null {
           <RecipeRouletteCard />
           <CookingTimerCard />
           <UnitConverterCard />
-          <WeeklyThemeCard />
+          <ShoppingListCard />
+          <SearchTipsCard />
         </>
       ),
     };
