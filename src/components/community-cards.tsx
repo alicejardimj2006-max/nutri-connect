@@ -414,8 +414,8 @@ export function PostCard({ post }: PostCardProps) {
   // --- RECEITA ---
   if (post.type === "receita") {
     return (
-      <PostCardFrame className={frameClass} footer={footer(false, true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
+      <PostCardFrame type={post.type} className={frameClass} footer={footer(false, true)}>
+        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider post-type-label">
           <ChefHat className="h-4 w-4" /> {t("postcard.communityRecipe")}
         </div>
 
@@ -487,8 +487,8 @@ export function PostCard({ post }: PostCardProps) {
   // --- EXPERIÊNCIA ---
   if (post.type === "experiencia") {
     return (
-      <PostCardFrame className={frameClass} footer={footer()}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-primary">
+      <PostCardFrame type={post.type} className={frameClass} footer={footer()}>
+        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider post-type-label">
           <Sparkles className="h-4 w-4" /> {t("postcard.communityStory")}
         </div>
 
@@ -520,8 +520,8 @@ export function PostCard({ post }: PostCardProps) {
   // --- PERGUNTA ---
   if (post.type === "pergunta") {
     return (
-      <PostCardFrame className={frameClass} footer={footer(true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
+      <PostCardFrame type={post.type} className={frameClass} footer={footer(true)}>
+        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider post-type-label">
           <HelpCircle className="h-4 w-4" /> {t("postcard.question")}
         </div>
 
@@ -545,7 +545,7 @@ export function PostCard({ post }: PostCardProps) {
 
   // --- GERAL (Fallback) ---
   return (
-    <PostCardFrame className={frameClass} footer={footer()}>
+    <PostCardFrame type={post.type} className={frameClass} footer={footer()}>
       {renderAuthorInfo()}
       {renderBlocks(["image", "title", "text"], {
         image: displayImage && (

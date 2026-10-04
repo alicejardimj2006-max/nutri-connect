@@ -421,6 +421,7 @@ function PostCard({
   return (
     <PostCardFrame
       size="sm"
+      type={post.type}
       className={`rounded-2xl border bg-card shadow-card ${post.pinned ? "border-accent/50" : ""}`}
     >
       {post.pinned && (

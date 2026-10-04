@@ -287,19 +287,24 @@ function ExplorarPage() {
 
   const pages: FeedShellPage[] = PAGE_DEFS.map((def) => {
     const label = pickName(def.label, locale);
-    if (def.id === "pessoas") return { id: def.id, label, toolbar, content: peoplePage };
+    if (def.id === "pessoas") return { id: def.id, label, content: peoplePage };
     const key = def.id as keyof typeof feeds;
     return {
       id: def.id,
       label,
-      toolbar,
       content: grid(def.id, mixed[key], feeds[key].isLoading),
     };
   });
 
   return (
     <>
-      <FeedShell pages={pages} initialPage={initialPage} onPageChange={onPageChange} columnClass="max-w-4xl" />
+      <FeedShell
+        pages={pages}
+        initialPage={initialPage}
+        onPageChange={onPageChange}
+        columnClass="max-w-4xl"
+        sharedToolbar={toolbar}
+      />
       <PostModal post={modalPost} onClose={closeModal} />
     </>
   );

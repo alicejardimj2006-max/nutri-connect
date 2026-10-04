@@ -31,6 +31,8 @@ function availableHeight() {
 interface PostCardFrameProps {
   /** Classes do cartão (borda, cantos, fundo, sombra). O espaçamento interno é do próprio invólucro. */
   className?: string;
+  /** Tipo da publicação: define a cor do cartão (ver "Cor de cada tipo de post" em styles.css). */
+  type?: string;
   size?: keyof typeof PADDING;
   /** Sempre visível, abaixo do "Ver mais" (ex.: ações da publicação). */
   footer?: React.ReactNode;
@@ -44,6 +46,7 @@ interface PostCardFrameProps {
  */
 export function PostCardFrame({
   className = "",
+  type,
   size = "md",
   footer,
   children,
@@ -105,6 +108,7 @@ export function PostCardFrame({
   return (
     <article
       ref={articleRef}
+      data-post-type={type}
       style={isExpanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
       className={`post-card flex min-w-0 flex-col overflow-hidden ${className}`}
     >
@@ -113,7 +117,10 @@ export function PostCardFrame({
           {children}
         </div>
         {clamped && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-card to-transparent" />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
+            style={{ background: "linear-gradient(to top, var(--post-fade, var(--card)), transparent)" }}
+          />
         )}
       </div>
 

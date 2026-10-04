@@ -79,8 +79,14 @@ export function FeedShell({
   onPageChange,
   wings,
   columnClass = "max-w-3xl",
+  sharedToolbar,
 }: {
   pages: FeedShellPage[];
+  /**
+   * Barra flutuante que NÃO acompanha o arrasto entre páginas (ex.: a busca do Explorar): fica parada
+   * logo abaixo do seletor, sobe com ele ao rolar e some ao rolar para baixo.
+   */
+  sharedToolbar?: ReactNode;
   initialPage?: number;
   onPageChange?: (index: number) => void;
   /** Colunas laterais próprias da página (as de sempre, sem rolagem). */
@@ -160,17 +166,37 @@ export function FeedShell({
   const scrollers = useRef<(HTMLDivElement | null)[]>([]);
   const navRef = useRef<HTMLDivElement>(null);
   const [navHeight, setNavHeight] = useState(38);
+  const navHeightRef = useRef(38);
+  const sharedRef = useRef<HTMLDivElement>(null);
+  const [sharedHeight, setSharedHeight] = useState(0);
+  useLayoutEffect(() => {
+    const pill = sharedRef.current?.firstElementChild;
+    if (!pill) {
+      setSharedHeight(0);
+      return;
+    }
+    const measure = () => setSharedHeight(Math.round(pill.getBoundingClientRect().height));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(pill);
+    return () => observer.disconnect();
+  }, [ready, !!sharedToolbar]);
   useLayoutEffect(() => {
     const pill = navRef.current?.firstElementChild;
     if (!pill) return;
-    const measure = () => setNavHeight(Math.round(pill.getBoundingClientRect().height));
+    const measure = () => {
+      const h = Math.round(pill.getBoundingClientRect().height);
+      navHeightRef.current = h;
+      setNavHeight(h);
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(pill);
     return () => observer.disconnect();
   }, [ready]);
   // Espaço igual (12px) entre a barra superior, o seletor, a barra flutuante e o primeiro item.
-  const topPad = topOffset + TOP_GAP + navHeight + TOP_GAP;
+  const topPad =
+    topOffset + TOP_GAP + navHeight + TOP_GAP + (sharedToolbar ? sharedHeight + TOP_GAP : 0);
 
   const moveNav = useCallback((top: number) => {
     const el = navRef.current;
@@ -178,6 +204,9 @@ export function FeedShell({
     el.style.transform = `translateY(${-Math.min(top, 96)}px)`;
     el.style.opacity = String(Math.max(0, 1 - top / 56));
     el.style.pointerEvents = top > 40 ? "none" : "";
+    // A barra compartilhada sobe junto com o seletor e para logo abaixo do cabeçalho.
+    const shared = sharedRef.current;
+    if (shared) shared.style.transform = `translateY(${-Math.min(top, navHeightRef.current + TOP_GAP)}px)`;
   }, []);
   const handleScroll = (e: UIEvent<HTMLDivElement>) => {
     const top = e.currentTarget.scrollTop;
@@ -258,6 +287,23 @@ export function FeedShell({
               </div>
             </div>
 
+            {sharedToolbar && (
+              <div
+                ref={sharedRef}
+                className="pointer-events-none absolute inset-x-0 z-20 flex justify-center px-2 will-change-transform"
+                style={{ top: topOffset + TOP_GAP + navHeight + TOP_GAP }}
+              >
+                <div
+                  className={cn(
+                    "pointer-events-auto max-w-full transition duration-200",
+                    !toolbarVisible && "pointer-events-none -translate-y-[200%] opacity-0",
+                  )}
+                >
+                  {sharedToolbar}
+                </div>
+              </div>
+            )}
+
             <Carousel
               setApi={setCarouselApi}
               opts={{ align: "start", startIndex: initialPage }}
@@ -271,7 +317,7 @@ export function FeedShell({
                         scrollers.current[index] = el;
                       }}
                       onScroll={handleScroll}
-                      className="overflow-y-auto overscroll-contain px-2 pb-28 lg:pb-8"
+                      className="overflow-y-auto overscroll-contain px-2 pb-6 lg:pb-8"
                       style={{ height: pageHeight }}
                     >
                       {/* Espaçador (não é padding: o 'sticky' mede a partir da borda de dentro do padding). */}
