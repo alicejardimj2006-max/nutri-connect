@@ -857,3 +857,29 @@ html[data-rails="on"] main {
     color: var(--muted-foreground);
   }
 }
+
+/* ─── Cards interativos (fun-cards.tsx) ─────────────────────────────────────── */
+@keyframes nc-burst {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.25); opacity: 0; }
+}
+.nc-burst { animation: nc-burst 0.95s ease-out forwards; }
+@keyframes nc-pop-in {
+  0% { transform: translateY(4px) scale(0.97); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+.nc-pop-in { animation: nc-pop-in 0.22s ease-out both; }
+@keyframes nc-breathe {
+  0%, 100% { transform: scale(0.8); }
+  50% { transform: scale(1.12); }
+}
+.nc-breathe { animation: nc-breathe 8s ease-in-out infinite; }
+
+/* Com as colunas laterais ligadas, o miolo da página usa o espaço que sobrou: contêineres de largura
+   fixa se soltam e as grades de cartões ganham quantas colunas couberem. */
+html[data-rails="on"] main :is([class*="max-w-7xl"], [class*="max-w-6xl"], [class*="max-w-5xl"], [class*="max-w-4xl"]) {
+  max-width: none;
+}
+html[data-rails="on"] main :is(.sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3, .xl\:grid-cols-3) {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+}

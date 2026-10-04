@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MapPin, Search, Stethoscope, Video } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
@@ -27,6 +27,12 @@ function DirectoryPage() {
   const [specialty, setSpecialty] = useState<string | null>(null);
   const [modality, setModality] = useState<ModalityFilter>("todos");
   const [onlyAccepting, setOnlyAccepting] = useState(true);
+  // O card "Qual profissional combina com você?" filtra a lista.
+  useEffect(() => {
+    const onQuery = (e: Event) => setQuery(String((e as CustomEvent<string>).detail ?? ""));
+    window.addEventListener("pros:query", onQuery);
+    return () => window.removeEventListener("pros:query", onQuery);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

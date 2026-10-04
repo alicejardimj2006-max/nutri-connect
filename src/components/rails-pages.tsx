@@ -28,6 +28,23 @@ import {
   UpcomingAppointmentsCard,
   WeeklyThemeCard,
 } from "@/components/rail-cards";
+import {
+  CommunityRouletteCard,
+  CookingTimerCard,
+  DailyTipCard,
+  ExploreTopicsCard,
+  HabitCheckinCard,
+  IcebreakerCard,
+  MindfulMealCard,
+  MoodCard,
+  PlateBuilderCard,
+  ProMatchCard,
+  QuizCard,
+  RecipeRouletteCard,
+  ShoppingListCard,
+  UnitConverterCard,
+  WeeklyPledgeCard,
+} from "@/components/fun-cards";
 
 export interface RailSet {
   left: ReactNode;
@@ -46,13 +63,14 @@ export function railsFor(pathname: string): RailSet | null {
         <>
           <ProfileCard />
           <MyCommunitiesCard />
+          <IcebreakerCard />
         </>
       ),
       right: (
         <>
-          <SuggestedCommunitiesCard limit={5} />
+          <CommunityRouletteCard />
+          <SuggestedCommunitiesCard limit={4} />
           <CommunityRulesCard />
-          <ProfessionalsCard />
         </>
       ),
     };
@@ -63,14 +81,15 @@ export function railsFor(pathname: string): RailSet | null {
       left: (
         <>
           <CommunityAboutCard slug={slug} />
+          <IcebreakerCard />
           <MyCommunitiesCard />
         </>
       ),
       right: (
         <>
           <CommunityMembersCard slug={slug} />
+          <CommunityRouletteCard />
           <SuggestedCommunitiesCard />
-          <WeeklyThemeCard />
         </>
       ),
     };
@@ -81,11 +100,13 @@ export function railsFor(pathname: string): RailSet | null {
         <>
           <ProfileCard />
           <ChallengeStatsCard />
+          <HabitCheckinCard />
         </>
       ),
       right: (
         <>
           <MyChallengesCard />
+          <QuizCard />
           <WeeklyThemeCard />
           <TrailCard />
         </>
@@ -98,12 +119,13 @@ export function railsFor(pathname: string): RailSet | null {
         <>
           <ChallengeInfoCard id={last(p)} />
           <ChallengeStatsCard />
+          <HabitCheckinCard />
         </>
       ),
       right: (
         <>
           <MyChallengesCard />
-          <WeeklyThemeCard />
+          <QuizCard />
           <TrailCard />
         </>
       ),
@@ -114,12 +136,14 @@ export function railsFor(pathname: string): RailSet | null {
       left: (
         <>
           <ProfileCard />
+          <ExploreTopicsCard />
           <FriendsCard />
         </>
       ),
       right: (
         <>
           <SearchTipsCard />
+          <DailyTipCard />
           <ProfessionalsCard limit={4} />
           <SuggestedCommunitiesCard />
         </>
@@ -131,14 +155,16 @@ export function railsFor(pathname: string): RailSet | null {
       left: (
         <>
           <TopRecipesCard />
-          <MyCommunitiesCard />
+          <PlateBuilderCard />
+          <ShoppingListCard />
         </>
       ),
       right: (
         <>
+          <RecipeRouletteCard />
+          <CookingTimerCard />
+          <UnitConverterCard />
           <WeeklyThemeCard />
-          <TrailCard />
-          <ProfessionalsCard />
         </>
       ),
     };
@@ -148,14 +174,15 @@ export function railsFor(pathname: string): RailSet | null {
       left: (
         <>
           <ProfileCard />
+          <WeeklyPledgeCard />
           <MyChallengesCard />
         </>
       ),
       right: (
         <>
           <TopRecipesCard />
+          <QuizCard />
           <TrailCard />
-          <SuggestedCommunitiesCard />
         </>
       ),
     };
@@ -165,14 +192,16 @@ export function railsFor(pathname: string): RailSet | null {
       left: (
         <>
           <NinaTopicsCard />
+          <MoodCard />
           <NinaUsageCard />
         </>
       ),
       right: (
         <>
+          <QuizCard />
+          <MindfulMealCard />
           <TrailCard />
           <EducationalNoticeCard />
-          <ProfessionalsCard />
         </>
       ),
     };
@@ -182,14 +211,15 @@ export function railsFor(pathname: string): RailSet | null {
       left: (
         <>
           <ProfileCard />
+          <DailyTipCard />
           <NotificationsHelpCard />
         </>
       ),
       right: (
         <>
+          <WeeklyPledgeCard />
           <FriendsCard />
           <MyChallengesCard />
-          <WeeklyThemeCard />
         </>
       ),
     };
@@ -211,7 +241,25 @@ export function railsFor(pathname: string): RailSet | null {
       ),
     };
   }
-  if (p === "/profissionais" || /^\/profissionais\/[^/]+$/.test(p)) {
+  if (p === "/profissionais") {
+    return {
+      left: (
+        <>
+          <ProMatchCard />
+          <ProfileCard />
+          <UpcomingAppointmentsCard />
+        </>
+      ),
+      right: (
+        <>
+          <HowBookingCard />
+          <EducationalNoticeCard />
+          <SuggestedCommunitiesCard />
+        </>
+      ),
+    };
+  }
+  if (/^\/profissionais\/[^/]+$/.test(p)) {
     return {
       left: (
         <>

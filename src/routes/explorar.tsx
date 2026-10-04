@@ -41,6 +41,12 @@ function ExplorarPage() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [onlyPros, setOnlyPros] = useState(false);
   const [peopleLimit, setPeopleLimit] = useState(PEOPLE_PAGE);
+  // Os temas do card lateral preenchem a busca.
+  useEffect(() => {
+    const onQuery = (e: Event) => setQuery(String((e as CustomEvent<string>).detail ?? ""));
+    window.addEventListener("explore:query", onQuery);
+    return () => window.removeEventListener("explore:query", onQuery);
+  }, []);
   // Receitas e experiências: a busca (sem acento, sem diferença de maiúsculas) roda no banco.
   const postsFeed = useFeed(
     { scope: "todos", query: debouncedQuery || undefined, limit: 50 },
