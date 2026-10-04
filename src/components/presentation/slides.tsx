@@ -8,6 +8,7 @@ import {
   BookOpen,
   Check,
   Compass,
+  Stethoscope,
   GitBranch,
   HeartHandshake,
   Home,
@@ -44,6 +45,7 @@ import {
   ChallengesMock,
   CommunitiesMock,
   DiscoverMock,
+  CareMock,
   FeedMock,
   ProfileMock,
   TrailMock,
@@ -752,6 +754,7 @@ const TOUR_ORDER: { key: TourKey; icon: LucideIcon }[] = [
   { key: "communities", icon: Users },
   { key: "challenges", icon: Award },
   { key: "discover", icon: Compass },
+  { key: "care", icon: Stethoscope },
 ];
 
 function TourIntro(c: PresentationCopy, goToStop: (i: number) => void) {
@@ -954,6 +957,17 @@ function tourSlide(key: TourKey, c: PresentationCopy, flip: boolean) {
           ambient={<FoodField items={["🔍", "🥕", "🍋", "🍅", "🥦", "🍓", "📖"]} count={7} />}
         >
           <DiscoverMock mock={c.mock} />
+        </TourLayout>
+      );
+    case "care":
+      return (
+        <TourLayout
+          slide={slide}
+          flip={flip}
+          glow="bg-emerald-500/20"
+          ambient={<FoodField items={["🩺", "💬", "📋", "💚", "📅"]} count={5} opacity={0.6} />}
+        >
+          <CareMock mock={c.mock} />
         </TourLayout>
       );
   }
@@ -1186,6 +1200,7 @@ const PART_SLIDES: Draft[][] = [
     tour("communities", false, "wave"),
     tour("challenges", true),
     tour("discover", false, "think"),
+    tour("care", true, "present"),
     {
       id: "curso",
       nina: (c) => c.course.nina,

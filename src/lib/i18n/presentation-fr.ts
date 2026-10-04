@@ -135,9 +135,9 @@ const fr: PresentationCopy = {
   },
   solution: {
     eyebrow: "Notre solution",
-    title: "NutriConnect : apprendre à mieux manger, ensemble",
-    text: "Un réseau social chaleureux où l'on partage recettes et expériences, où l'on apprend grâce à des parcours ludiques et où l'on peut compter sur des professionnels vérifiés.",
-    nina: "Imaginez un réseau social qui vous apprend et vous soutient en même temps. C'est nous !",
+    title: "NutriConnect : apprendre à mieux manger, ensemble et bien accompagné",
+    text: "Un réseau social bienveillant où l'on partage recettes et expériences, où l'on apprend avec des parcours ludiques et où l'on est suivi par des professionnels de santé vérifiés, avec consultation vidéo sur le site.",
+    nina: "Imaginez un réseau social qui vous apprend, vous soutient et vous mène au bon professionnel !",
     pillars: [
       {
         title: "Communauté",
@@ -145,34 +145,34 @@ const fr: PresentationCopy = {
       },
       {
         title: "Éducation",
-        text: "Des parcours d'apprentissage courts et amusants, pour adultes et enfants.",
+        text: "Des parcours courts et amusants, pour adultes et enfants, et Nina pour répondre aux questions.",
       },
       {
-        title: "Confiance",
-        text: "Des nutritionnistes à l'inscription (CRN) vérifiée, avec un badge professionnel.",
+        title: "Soin",
+        text: "Six professions vérifiées (nutrition, médecine, psychologie, sport, kinésithérapie et soins infirmiers), avec agenda, téléconsultation et suivi.",
       },
     ],
   },
   differentials: {
-    eyebrow: "Nos atouts",
+    eyebrow: "Différenciateurs",
     title: "Ce qui nous rend différents",
-    nina: "Ce n'est pas un compteur de calories de plus. C'est un endroit où l'on se sent chez soi.",
+    nina: "Ce n'est pas un énième compteur de calories. C'est un lieu où l'on appartient et où l'on est soigné.",
     items: [
       {
         title: "Réseau social + éducation",
-        text: "Nous associons l'échange d'un réseau social à des parcours d'apprentissage, ce que les concurrents proposent séparément.",
+        text: "Nous unissons l'échange d'un réseau social et des parcours d'apprentissage, que les concurrents séparent.",
       },
       {
-        title: "Contenu vérifié",
-        text: "Les professionnels passent par une vérification du CRN et reçoivent un badge, et le fil a un onglet rien que pour eux.",
+        title: "Du fil à la consultation",
+        text: "Des professionnels à l'inscription vérifiée consultent en vidéo sur le site, avec dossier, évaluations et plans liés au quotidien.",
       },
       {
         title: "Gamification",
-        text: "Des niveaux de Graine à Maître, des séries, de l'XP, des étapes dorées, des défis et le thème de la semaine.",
+        text: "Niveaux de Graine à Maître, séries, XP, étapes dorées, défis et thème de la semaine.",
       },
       {
-        title: "Accueil et inclusion",
-        text: "Sans culpabilité ni jugement, en 4 langues, avec des profils enfants et une personnalisation visuelle complète.",
+        title: "Sûr et bienveillant",
+        text: "L'IA vérifie chaque publication avant sa mise en ligne, sans culpabilité ni jugement, en 4 langues, avec profils enfants et personnalisation complète.",
       },
     ],
   },
@@ -236,7 +236,7 @@ const fr: PresentationCopy = {
         "Cherche des outils simples pour publier",
       ],
       helps:
-        "Badge de professionnel vérifié, onglet Professionnels dans le fil et communautés thématiques à animer.",
+        "Badge de professionnel vérifié, agenda avec paiement, téléconsultation et dossier sur le site, ainsi que des communautés thématiques à animer.",
     },
   },
   competitors: {
@@ -306,7 +306,7 @@ const fr: PresentationCopy = {
     features: [
       "Réseau social sur l'alimentation",
       "Éducation nutritionnelle ludique",
-      "Professionnels au CRN vérifié",
+      "Professionnels de santé vérifiés",
       "Axé sur les habitudes, sans compter les calories",
       "Recettes de la communauté",
       "Profils enfants sur le même compte",
@@ -327,7 +327,7 @@ const fr: PresentationCopy = {
       {
         title: "Partenaires clés",
         items: [
-          "Nutritionnistes inscrits au CRN",
+          "Professionnels de santé vérifiés (inscrits à leur ordre)",
           "Écoles et ONG d'éducation alimentaire",
           "Marchés et producteurs locaux",
         ],
@@ -337,30 +337,34 @@ const fr: PresentationCopy = {
         items: [
           "Création des parcours",
           "Vérification des professionnels",
-          "Modération de la communauté",
+          "Modération par IA avant publication",
         ],
       },
       {
         title: "Ressources clés",
-        items: ["Plateforme web responsive", "Contenu éducatif", "Marque et mascotte Nina"],
+        items: [
+          "Plateforme web responsive",
+          "Téléconsultation et dossier intégrés",
+          "Marque et mascotte Nina",
+        ],
       },
       {
         title: "Proposition de valeur",
         items: [
-          "Communauté + éducation + professionnels au même endroit",
-          "Gratuit pour commencer",
+          "Communauté + éducation + soin professionnel au même endroit",
+          "Gratuit pour qui veut apprendre",
         ],
       },
       {
         title: "Relation client",
-        items: ["Communautés et défis", "Thème de la semaine", "Niveaux, séries et XP"],
+        items: ["Communautés et défis", "Suivi entre les consultations", "Niveaux, séries et XP"],
       },
       {
         title: "Canaux",
         items: [
           "Site sur mobile et ordinateur",
           "Réseaux sociaux et recommandations",
-          "Partenariats avec des écoles",
+          "Partenariats avec écoles et cliniques",
         ],
       },
       {
@@ -368,23 +372,23 @@ const fr: PresentationCopy = {
         items: [
           "Adultes en rééducation alimentaire",
           "Familles avec enfants",
-          "Nutritionnistes en quête de visibilité",
+          "Professionnels de santé en quête de patients",
         ],
       },
       {
         title: "Structure de coûts",
         items: [
-          "Hébergement et base de données",
-          "Création et relecture de contenu",
+          "Hébergement, base de données et vidéo",
+          "IA, paiements et contenu",
           "Modération et marketing",
         ],
       },
       {
         title: "Sources de revenus",
         items: [
-          "Offre premium (freemium)",
-          "Profil mis en avant pour les professionnels",
-          "Licences pour les écoles et partenariats éthiques",
+          "Commission sur les consultations payées sur le site (10 % aujourd'hui)",
+          "Offres pour cliniques et équipes (prochaine étape)",
+          "Licences pour écoles et partenariats éthiques",
         ],
       },
     ],
@@ -425,32 +429,32 @@ const fr: PresentationCopy = {
   tourIntro: {
     eyebrow: "Visite de la plateforme",
     title: "Découvrez maintenant NutriConnect de l'intérieur",
-    text: "Nous allons parcourir chaque partie du site : le fil, le profil, la personnalisation, les parcours, les communautés, les défis et les découvertes.",
-    nina: "Suivez-moi ! Je vais vous montrer chaque recoin.",
+    text: "Parcourons chaque partie du site : le fil, le profil, la personnalisation, les parcours, les communautés, les défis, Explorer et le soin avec des professionnels.",
+    nina: "Venez avec moi ! Je vous montre chaque recoin.",
   },
   tour: {
     feed: {
-      eyebrow: "Espace du Jour",
+      eyebrow: "Espace du jour",
       title: "Un fil fait de vraies recettes et histoires",
-      text: "C'est ici que la communauté partage ce qu'elle a cuisiné, ce qu'elle a appris et comment elle vit son parcours.",
+      text: "C'est ici que la communauté partage ce qu'elle a cuisiné, appris et ressenti en chemin.",
       nina: "Ici, personne ne juge votre assiette. On célèbre chaque pas !",
       bullets: [
-        "Onglets Général, Amis et Professionnels",
-        "Publications avec photos, recettes et témoignages",
-        "Éditeur d'image avec filtres et recadrage",
-        "J'aime, commentaires et partage",
+        "Général et Thème de la semaine, avec filtres Tous, Amis et Professionnels",
+        "Recettes, expériences, questions et discussions, chacune avec sa couleur",
+        "L'IA vérifie le sujet et la photo avant publication",
+        "Éditeur d'image, réactions, commentaires et partage",
       ],
     },
     profile: {
-      eyebrow: "Profil et niveaux",
-      title: "Votre parcours, de Graine à Maître",
-      text: "Le profil montre l'évolution de chacun : niveau, série de jours, recettes préparées et défis en cours.",
-      nina: "Chaque recette, leçon et défi vous fait grandir, comme une petite plante !",
+      eyebrow: "Profil",
+      title: "Un profil à l'image de chacun",
+      text: "Le profil devient un espace libre : chacun arrange des blocs, choisit un thème et montre son parcours à sa façon.",
+      nina: "Chacun décore son coin. Et les visiteurs le voient tel quel !",
       bullets: [
-        "8 niveaux : Graine, Pousse, Feuille, Fleur, Fruit, Arbre, Forêt et Maître",
-        "Série de jours consécutifs",
-        "Recettes préparées, objectifs et défis actifs",
-        "Profil public ou privé, à vous de choisir",
+        "Des blocs déplaçables et redimensionnables",
+        "Thème propre, photo de profil et couverture",
+        "Niveau de Graine à Maître et série de jours",
+        "Recettes préparées, défis et communautés",
       ],
     },
     appearance: {
@@ -503,15 +507,27 @@ const fr: PresentationCopy = {
       ],
     },
     discover: {
-      eyebrow: "Recettes, Explorer et Thème de la Semaine",
-      title: "Il y a toujours quelque chose à découvrir",
-      text: "Des recettes de la communauté, une recherche par ingrédient et un thème hebdomadaire qui anime la conversation.",
-      nina: "Vous avez préparé une recette ? Touchez « Je l'ai préparée » et elle rejoint votre profil !",
+      eyebrow: "Explorer et Thème de la semaine",
+      title: "Il y a toujours du nouveau à découvrir",
+      text: "Explorer montre ce qui est tendance, en blocs colorés par type de publication, et le thème hebdomadaire anime la conversation.",
+      nina: "Vous avez préparé une recette ? Touchez « Je l'ai préparée » et elle va sur votre profil !",
       bullets: [
-        "Recettes avec le bouton « Je l'ai préparée »",
-        "Recherche dans les recettes, témoignages, défis et communautés",
+        "Pages Général (tendances), Recettes, Expériences, Questions, Discussions et Personnes",
+        "Recherche par ingrédient, tag ou personne",
+        "Recettes avec bouton « Je l'ai préparée »",
         "Thème de la semaine avec sondage et défi",
-        "Archives des thèmes précédents",
+      ],
+    },
+    care: {
+      eyebrow: "Soin avec des professionnels",
+      title: "Du fil à la consultation, sans quitter le site",
+      text: "Des professionnels vérifiés de six domaines consultent en vidéo sur NutriConnect et suivent le patient entre les rendez-vous.",
+      nina: "Quand vous avez besoin d'une vraie aide, le bon professionnel est à un clic !",
+      bullets: [
+        "Agenda avec paiement sécurisé et rappel de la salle",
+        "Téléconsultation chiffrée, rien à installer",
+        "Outils pendant l'appel : anamnèse, évaluations, évolution, plans et objectifs",
+        "Suivi du patient : plan, journal, évolution et examens",
       ],
     },
   },
@@ -521,8 +537,7 @@ const fr: PresentationCopy = {
     post1Text: "Premiers overnight oats ! Super bons avec banane et cannelle",
     post2Name: "Dr Camila Jardim",
     post2Time: "il y a 1 h",
-    post2Text:
-      "Astuce : commencez votre assiette par les légumes. Les fibres aident à la satiété",
+    post2Text: "Astuce : commencez votre assiette par les légumes. Les fibres aident à la satiété",
     profileName: "Juliana Martins",
     profileBio: "J'apprends à mieux manger, un jour à la fois.",
     nextLevel: "Niveau suivant",
@@ -559,6 +574,14 @@ const fr: PresentationCopy = {
     pollOptions: ["Manque de temps", "Manque d'idées", "Pas faim"],
     search: "Rechercher par ingrédient ou tag…",
     weekly: "Thème de la semaine",
+    careProName: "Dr Camila Jardim",
+    careRole: "Diététicienne",
+    careWhen: "Aujourd'hui, 15 h · En ligne",
+    careJoin: "Rejoindre la salle",
+    careTools: ["Anamnèse", "Évaluations", "Évolution", "Plans", "Objectifs"],
+    careAssessment: "Douleur (EVA)",
+    careScore: "3 · légère",
+    carePlan: "Exercices à domicile",
   },
   team: {
     eyebrow: "Équipe",
