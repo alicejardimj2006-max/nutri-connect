@@ -310,9 +310,9 @@ const ReceitasIndexRoute = ReceitasIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceitasIdRoute = ReceitasIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ReceitasRoute,
+  id: '/receitas/$id',
+  path: '/receitas/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PainelPacientesIndexRoute = PainelPacientesIndexRouteImport.update({
   id: '/pacientes/',
@@ -751,6 +751,7 @@ export interface RootRouteChildren {
   PerfilEditarRoute: typeof PerfilEditarRoute
   PerfilPersonalizacaoRoute: typeof PerfilPersonalizacaoRoute
   ProfissionaisProfessionalIdRoute: typeof ProfissionaisProfessionalIdRoute
+  ReceitasIdRoute: typeof ReceitasIdRoute
   ProfissionaisIndexRoute: typeof ProfissionaisIndexRoute
   ReceitasIndexRoute: typeof ReceitasIndexRoute
 }
@@ -1095,10 +1096,10 @@ declare module '@tanstack/react-router' {
     }
     '/receitas/$id': {
       id: '/receitas/$id'
-      path: '/$id'
+      path: '/receitas/$id'
       fullPath: '/receitas/$id'
       preLoaderRoute: typeof ReceitasIdRouteImport
-      parentRoute: typeof ReceitasRoute
+      parentRoute: typeof rootRouteImport
     }
     '/painel/pacientes/': {
       id: '/painel/pacientes/'
@@ -1296,6 +1297,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilEditarRoute: PerfilEditarRoute,
   PerfilPersonalizacaoRoute: PerfilPersonalizacaoRoute,
   ProfissionaisProfessionalIdRoute: ProfissionaisProfessionalIdRoute,
+  ReceitasIdRoute: ReceitasIdRoute,
   ProfissionaisIndexRoute: ProfissionaisIndexRoute,
   ReceitasIndexRoute: ReceitasIndexRoute,
 }
