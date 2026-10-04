@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Compass, Sparkles } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
@@ -124,11 +124,11 @@ function PostList({
   );
 }
 
-/** Navegação entre as duas páginas: fica só no topo do feed e rola junto com o conteúdo. */
+/** Navegação entre as duas páginas: parada no topo ao arrastar; sobe com a rolagem do feed. */
 function PagesNav({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
   const { t } = useI18n();
   return (
-    <div className="mx-auto flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft">
+    <div className="flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur">
       {PAGES.map((page, index) => (
         <button
           key={page.id}
@@ -168,25 +168,36 @@ function EspacoDeHojePage() {
     };
   }, [carouselApi]);
 
-  // Os filtros flutuam sobre o feed: somem ao rolar para baixo e voltam ao rolar para cima (ou no
-  // topo). Já o seletor de páginas só existe no topo do feed e rola junto com o conteúdo.
-  const [barsVisible, setBarsVisible] = useState(true);
-  const [atTop, setAtTop] = useState(true);
+  // Os filtros fazem parte da página Geral (acompanham o feed ao arrastar para o lado) e flutuam no
+  // alto dela: somem ao rolar para baixo e voltam ao rolar para cima (ou no topo).
+  // O seletor de páginas fica parado no topo ao arrastar para o lado, mas sobe e some junto com a
+  // rolagem do feed que está aberto.
+  const [filtersVisible, setFiltersVisible] = useState(true);
   const lastScrollTop = useRef(0);
-  const handleFeedScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const geralRef = useRef<HTMLDivElement>(null);
+  const temaRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const moveNav = useCallback((top: number) => {
+    const el = navRef.current;
+    if (!el) return;
+    el.style.transform = `translateY(${-Math.min(top, 96)}px)`;
+    el.style.opacity = String(Math.max(0, 1 - top / 56));
+    el.style.pointerEvents = top > 40 ? "none" : "";
+  }, []);
+  const handleGeralScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const top = e.currentTarget.scrollTop;
     const previous = lastScrollTop.current;
-    setAtTop(top <= 16);
-    if (top <= 16) setBarsVisible(true);
-    else if (top > previous + 4) setBarsVisible(false);
-    else if (top < previous - 4) setBarsVisible(true);
+    if (top <= 16) setFiltersVisible(true);
+    else if (top > previous + 4) setFiltersVisible(false);
+    else if (top < previous - 4) setFiltersVisible(true);
     lastScrollTop.current = top;
+    moveNav(top);
   };
+  const handleTemaScroll = (e: React.UIEvent<HTMLDivElement>) => moveNav(e.currentTarget.scrollTop);
+  // Ao trocar de página, o seletor acompanha a rolagem da página que ficou aberta.
   useEffect(() => {
-    setBarsVisible(true);
-    setAtTop(true);
-    lastScrollTop.current = 0;
-  }, [activePage]);
+    moveNav((activePage === 0 ? geralRef : temaRef).current?.scrollTop ?? 0);
+  }, [activePage, moveNav]);
 
   // Só o feed rola: cada página ocupa a altura que a coluna central tem (medida ao vivo),
   // então rolar uma não mexe na outra e a janela fica parada.
@@ -253,48 +264,48 @@ function EspacoDeHojePage() {
             className="relative mx-auto h-full min-h-0 w-full min-w-0 max-w-3xl overflow-x-clip"
           >
             <div
-              className={cn(
-                "pointer-events-none absolute inset-x-0 z-20 flex justify-center transition-all duration-200",
-                // No topo ficam logo abaixo do seletor de páginas; depois grudam no alto do feed.
-                atTop ? "top-16" : "top-3",
-                !barsVisible && "-translate-y-[160%] opacity-0",
-              )}
+              ref={navRef}
+              className="pointer-events-none absolute inset-x-0 top-3 z-30 flex justify-center will-change-transform"
             >
-              <div
-                className={cn(
-                  "flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur transition-opacity duration-200",
-                  barsVisible && activePage === 0 ? "pointer-events-auto" : "pointer-events-none opacity-0",
-                )}
-              >
-                {FILTERS.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    aria-pressed={filter === f.id}
-                    onClick={() => changeFilter(f.id)}
-                    className={cn(
-                      "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                      filter === f.id
-                        ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {t(f.labelKey)}
-                  </button>
-                ))}
+              <div className="pointer-events-auto">
+                <PagesNav active={activePage} onSelect={goToPage} />
               </div>
             </div>
             <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
               <CarouselContent className="-ml-12">
                 <CarouselItem className="pl-12">
                   <div
-                    onScroll={handleFeedScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-3 lg:pb-8"
+                    ref={geralRef}
+                    onScroll={handleGeralScroll}
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-[3.75rem] lg:pb-8"
                     style={{ height: pageHeight }}
                   >
-                    <PagesNav active={activePage} onSelect={goToPage} />
-                    {/* Espaço reservado para os filtros flutuantes no topo. */}
-                    <div className="h-[4.25rem]" aria-hidden="true" />
+                    {/* Filtros flutuantes: ficam no alto desta página, somem ao rolar para baixo. */}
+                    <div className="pointer-events-none sticky top-3 z-20 mb-4 flex justify-center">
+                      <div
+                        className={cn(
+                          "pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur transition duration-200",
+                          !filtersVisible && "pointer-events-none -translate-y-[160%] opacity-0",
+                        )}
+                      >
+                        {FILTERS.map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            aria-pressed={filter === f.id}
+                            onClick={() => changeFilter(f.id)}
+                            className={cn(
+                              "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+                              filter === f.id
+                                ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+                                : "text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            {t(f.labelKey)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <PostList
                       posts={geralPosts}
                       loading={geral.isLoading}
@@ -307,12 +318,11 @@ function EspacoDeHojePage() {
 
                 <CarouselItem className="pl-12">
                   <div
-                    onScroll={handleFeedScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-3 lg:pb-8"
+                    ref={temaRef}
+                    onScroll={handleTemaScroll}
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-[3.75rem] lg:pb-8"
                     style={{ height: pageHeight }}
                   >
-                    <PagesNav active={activePage} onSelect={goToPage} />
-                    <div className="h-4" aria-hidden="true" />
                     {text ? (
                       <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
                         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
