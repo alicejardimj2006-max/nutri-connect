@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  CheckCircle2,
   Clock,
   Loader2,
   Lock,
@@ -16,6 +15,7 @@ import {
   MonitorOff,
   MonitorUp,
   NotebookPen,
+  Paperclip,
   PhoneOff,
   RefreshCw,
   Send,
@@ -31,9 +31,6 @@ import { cn } from "@/lib/utils";
 import { useTr } from "@/components/settings-ui";
 import type { Names } from "@/lib/appearance-data";
 import type { Appointment, PersonSummary } from "@/lib/clinical/api";
-import * as api from "@/lib/clinical/api";
-import * as records from "@/lib/clinical/records";
-import { useClinicalMutation, useNotes } from "@/lib/clinical/queries";
 import { formatDate, formatTime } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import {
@@ -52,6 +49,13 @@ type Local = ReturnType<typeof useLocalMedia>;
 type Call = ReturnType<typeof useConsultationCall>;
 
 // ─────────────────────────────── Peças ───────────────────────────────
+
+/** Primeiro nome, pulando títulos como "Dr.", "Dra." e "Prof.". */
+export function firstName(name: string | undefined | null): string {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  const real = parts.find((p) => !/^(dr|dra|prof|profa|sr|sra|enf|nutri|psi|ft)\.?$/i.test(p));
+  return real ?? parts[0] ?? "";
+}
 
 export function RoomShell({ children }: { children: ReactNode }) {
   return (
@@ -108,7 +112,8 @@ function VideoEl({
     if (stream) void v.play().catch(() => {});
   }, [stream]);
   useEffect(() => {
-    const v = ref.current as (HTMLVideoElement & { setSinkId?: (id: string) => Promise<void> }) | null;
+    const v = ref.current as
+      (HTMLVideoElement & { setSinkId?: (id: string) => Promise<void> }) | null;
     if (v?.setSinkId && sinkId) void v.setSinkId(sinkId).catch(() => {});
   }, [sinkId]);
   return (
@@ -178,14 +183,40 @@ function QualityBadge({ quality, relayed }: { quality: Quality | null; relayed: 
   const tr = useTr();
   if (!quality) return null;
   const meta = {
-    boa: { Icon: SignalHigh, color: "text-emerald-400", text: tr(["Conexão boa", "Good connection", "Conexión buena", "Bonne connexion"]) },
-    instavel: { Icon: SignalMedium, color: "text-amber-300", text: tr(["Conexão instável", "Unstable connection", "Conexión inestable", "Connexion instable"]) },
-    ruim: { Icon: SignalLow, color: "text-red-400", text: tr(["Conexão fraca", "Weak connection", "Conexión débil", "Connexion faible"]) },
+    boa: {
+      Icon: SignalHigh,
+      color: "text-emerald-400",
+      text: tr(["Conexão boa", "Good connection", "Conexión buena", "Bonne connexion"]),
+    },
+    instavel: {
+      Icon: SignalMedium,
+      color: "text-amber-300",
+      text: tr([
+        "Conexão instável",
+        "Unstable connection",
+        "Conexión inestable",
+        "Connexion instable",
+      ]),
+    },
+    ruim: {
+      Icon: SignalLow,
+      color: "text-red-400",
+      text: tr(["Conexão fraca", "Weak connection", "Conexión débil", "Connexion faible"]),
+    },
   }[quality];
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-medium backdrop-blur"
-      title={relayed ? tr(["Via servidor de retransmissão", "Via relay server", "Vía servidor de retransmisión", "Via un serveur relais"]) : undefined}
+      title={
+        relayed
+          ? tr([
+              "Via servidor de retransmissão",
+              "Via relay server",
+              "Vía servidor de retransmisión",
+              "Via un serveur relais",
+            ])
+          : undefined
+      }
     >
       <meta.Icon className={cn("h-3.5 w-3.5", meta.color)} />
       <span className="hidden sm:inline">{meta.text}</span>
@@ -204,7 +235,11 @@ function ConsultClock({ appt, now }: { appt: Appointment; now: number }) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur",
-        over ? "bg-amber-500/25 text-amber-200" : left <= 5 ? "bg-amber-500/20 text-amber-100" : "bg-black/45",
+        over
+          ? "bg-amber-500/25 text-amber-200"
+          : left <= 5
+            ? "bg-amber-500/20 text-amber-100"
+            : "bg-black/45",
       )}
     >
       <Clock className="h-3.5 w-3.5" />
@@ -234,7 +269,9 @@ export function RoomNotice({
   return (
     <RoomShell>
       <div className="m-auto flex max-w-md flex-col items-center px-6 text-center">
-        <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-white/8 text-white/85">{icon}</div>
+        <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-white/8 text-white/85">
+          {icon}
+        </div>
         <h1 className="font-display text-2xl font-bold text-white">{title}</h1>
         {text && <p className="mt-2 text-sm leading-relaxed text-white/65">{text}</p>}
         {children}
@@ -243,7 +280,12 @@ export function RoomNotice({
           className="mt-7 inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/18"
         >
           <ArrowLeft className="h-4 w-4" />
-          {tr(["Voltar às consultas", "Back to appointments", "Volver a las consultas", "Retour aux consultations"])}
+          {tr([
+            "Voltar às consultas",
+            "Back to appointments",
+            "Volver a las consultas",
+            "Retour aux consultations",
+          ])}
         </Link>
       </div>
     </RoomShell>
@@ -293,7 +335,9 @@ function DeviceSelect({
   if (list.length < 2) return null;
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-white/50">{label}</span>
+      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-white/50">
+        {label}
+      </span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -311,12 +355,36 @@ function DeviceSelect({
 
 function PeerStatus({ peer, name }: { peer: PeerPresence | null; name: string }) {
   const tr = useTr();
-  const first = name.split(" ")[0] || name;
+  const first = firstName(name) || name;
   const [dot, text] = !peer
-    ? ["bg-white/30", tr([`${first} ainda não entrou`, `${first} hasn't joined yet`, `${first} aún no ha entrado`, `${first} n'est pas encore arrivé(e)`])]
+    ? [
+        "bg-white/30",
+        tr([
+          `${first} ainda não entrou`,
+          `${first} hasn't joined yet`,
+          `${first} aún no ha entrado`,
+          `${first} n'est pas encore arrivé(e)`,
+        ]),
+      ]
     : peer.inCall
-      ? ["bg-emerald-400 animate-pulse", tr([`${first} já está na consulta`, `${first} is already in the call`, `${first} ya está en la consulta`, `${first} est déjà dans l'appel`])]
-      : ["bg-amber-300", tr([`${first} está na sala de espera`, `${first} is in the waiting room`, `${first} está en la sala de espera`, `${first} est en salle d'attente`])];
+      ? [
+          "bg-emerald-400 animate-pulse",
+          tr([
+            `${first} já está na consulta`,
+            `${first} is already in the call`,
+            `${first} ya está en la consulta`,
+            `${first} est déjà dans l'appel`,
+          ]),
+        ]
+      : [
+          "bg-amber-300",
+          tr([
+            `${first} está na sala de espera`,
+            `${first} is in the waiting room`,
+            `${first} está en la sala de espera`,
+            `${first} est en salle d'attente`,
+          ]),
+        ];
   return (
     <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-1.5 text-xs font-medium">
       <span className={cn("h-2 w-2 rounded-full", dot)} />
@@ -351,7 +419,9 @@ export function Lobby({
   const level = useAudioLevel(local.stream, local.mic);
   const devices: Devices = local.devices;
   const canSink =
-    typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype && devices.audiooutput.length > 1;
+    typeof HTMLMediaElement !== "undefined" &&
+    "setSinkId" in HTMLMediaElement.prototype &&
+    devices.audiooutput.length > 1;
 
   return (
     <RoomShell>
@@ -369,7 +439,12 @@ export function Lobby({
         <span className="ml-auto inline-flex items-center gap-1.5 text-xs text-white/55">
           <ShieldCheck className="h-4 w-4 text-emerald-400" />
           <span className="hidden sm:inline">
-            {tr(["Chamada criptografada, sem gravação", "Encrypted call, never recorded", "Llamada cifrada, sin grabación", "Appel chiffré, jamais enregistré"])}
+            {tr([
+              "Chamada criptografada, sem gravação",
+              "Encrypted call, never recorded",
+              "Llamada cifrada, sin grabación",
+              "Appel chiffré, jamais enregistré",
+            ])}
           </span>
         </span>
       </header>
@@ -386,21 +461,36 @@ export function Lobby({
               ) : local.stream ? (
                 <div className="flex flex-col items-center gap-2 text-white/60">
                   <VideoOff className="h-8 w-8" />
-                  <span className="text-sm">{tr(["Câmera desligada", "Camera off", "Cámara apagada", "Caméra coupée"])}</span>
+                  <span className="text-sm">
+                    {tr(["Câmera desligada", "Camera off", "Cámara apagada", "Caméra coupée"])}
+                  </span>
                 </div>
               ) : (
                 <div className="flex max-w-sm flex-col items-center gap-4 px-6 text-center">
                   <Video className="h-9 w-9 text-white/60" />
-                  {local.error && <p className="text-sm leading-relaxed text-white/70">{tr(ERROR_TEXT[local.error])}</p>}
+                  {local.error && (
+                    <p className="text-sm leading-relaxed text-white/70">
+                      {tr(ERROR_TEXT[local.error])}
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => void local.start()}
                     className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0d0f12] transition hover:bg-white/90"
                   >
-                    {local.error ? <RefreshCw className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                    {local.error ? (
+                      <RefreshCw className="h-4 w-4" />
+                    ) : (
+                      <Video className="h-4 w-4" />
+                    )}
                     {local.error
                       ? tr(["Tentar de novo", "Try again", "Intentar de nuevo", "Réessayer"])
-                      : tr(["Ativar câmera e microfone", "Turn on camera and microphone", "Activar cámara y micrófono", "Activer caméra et micro"])}
+                      : tr([
+                          "Ativar câmera e microfone",
+                          "Turn on camera and microphone",
+                          "Activar cámara y micrófono",
+                          "Activer caméra et micro",
+                        ])}
                   </button>
                 </div>
               )}
@@ -412,7 +502,11 @@ export function Lobby({
               <RoundButton
                 on={local.mic}
                 disabled={!local.hasAudio}
-                label={local.mic ? tr(["Desligar microfone", "Mute", "Silenciar", "Couper le micro"]) : tr(["Ligar microfone", "Unmute", "Activar micrófono", "Activer le micro"])}
+                label={
+                  local.mic
+                    ? tr(["Desligar microfone", "Mute", "Silenciar", "Couper le micro"])
+                    : tr(["Ligar microfone", "Unmute", "Activar micrófono", "Activer le micro"])
+                }
                 onClick={local.toggleMic}
               >
                 {local.mic ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
@@ -420,7 +514,16 @@ export function Lobby({
               <RoundButton
                 on={local.cam}
                 disabled={!local.hasVideo}
-                label={local.cam ? tr(["Desligar câmera", "Turn camera off", "Apagar cámara", "Couper la caméra"]) : tr(["Ligar câmera", "Turn camera on", "Encender cámara", "Activer la caméra"])}
+                label={
+                  local.cam
+                    ? tr([
+                        "Desligar câmera",
+                        "Turn camera off",
+                        "Apagar cámara",
+                        "Couper la caméra",
+                      ])
+                    : tr(["Ligar câmera", "Turn camera on", "Encender cámara", "Activer la caméra"])
+                }
                 onClick={local.toggleCam}
               >
                 {local.cam ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
@@ -432,7 +535,10 @@ export function Lobby({
             <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-[11px] backdrop-blur">
               <Mic className="h-3.5 w-3.5" />
               <span className="flex h-2 w-16 overflow-hidden rounded-full bg-white/15" aria-hidden>
-                <span className="h-full rounded-full bg-emerald-400 transition-[width] duration-75" style={{ width: `${Math.round(level * 100)}%` }} />
+                <span
+                  className="h-full rounded-full bg-emerald-400 transition-[width] duration-75"
+                  style={{ width: `${Math.round(level * 100)}%` }}
+                />
               </span>
             </div>
           )}
@@ -443,13 +549,20 @@ export function Lobby({
           <RoomAvatar person={other} size={76} />
           <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-emerald-400">
             {role === "patient"
-              ? tr(["Sua consulta com", "Your appointment with", "Tu consulta con", "Votre consultation avec"])
+              ? tr([
+                  "Sua consulta com",
+                  "Your appointment with",
+                  "Tu consulta con",
+                  "Votre consultation avec",
+                ])
               : tr(["Consulta com", "Appointment with", "Consulta con", "Consultation avec"])}
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-white">{other?.name ?? "…"}</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold leading-tight text-white">
+            {other?.name ?? "…"}
+          </h1>
           <p className="mt-2 text-sm text-white/60">
-            {formatDate(appt.starts_at, locale, { weekday: "long", day: "numeric", month: "long" })} ·{" "}
-            {formatTime(appt.starts_at, locale)}–{formatTime(appt.ends_at, locale)}
+            {formatDate(appt.starts_at, locale, { weekday: "long", day: "numeric", month: "long" })}{" "}
+            · {formatTime(appt.starts_at, locale)}–{formatTime(appt.ends_at, locale)}
           </p>
           <div className="mt-4">
             {call.channelState === "ready" ? (
@@ -457,7 +570,12 @@ export function Lobby({
             ) : call.channelState === "connecting" ? (
               <span className="inline-flex items-center gap-2 text-xs text-white/55">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {tr(["Abrindo a sala…", "Opening the room…", "Abriendo la sala…", "Ouverture de la salle…"])}
+                {tr([
+                  "Abrindo a sala…",
+                  "Opening the room…",
+                  "Abriendo la sala…",
+                  "Ouverture de la salle…",
+                ])}
               </span>
             ) : null}
           </div>
@@ -503,7 +621,12 @@ export function Lobby({
             className="mt-7 inline-flex h-13 w-full max-w-sm cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-500 px-8 text-base font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Video className="h-5 w-5" />
-            {tr(["Entrar na consulta", "Join the appointment", "Entrar a la consulta", "Rejoindre la consultation"])}
+            {tr([
+              "Entrar na consulta",
+              "Join the appointment",
+              "Entrar a la consulta",
+              "Rejoindre la consultation",
+            ])}
           </button>
           <p className="mt-3 flex max-w-sm items-start gap-1.5 text-[11px] leading-relaxed text-white/45">
             <Lock className="mt-0.5 h-3 w-3 shrink-0" />
@@ -522,7 +645,14 @@ export function Lobby({
 
 // ─────────────────────────────── Chamada ───────────────────────────────
 
-type Panel = "chat" | "notes" | null;
+type Panel = "chat" | "tools" | null;
+
+/** Painel de ferramentas do profissional (montado pela página, com acesso à sessão). */
+export type ToolsRender = (opts: {
+  expanded: boolean;
+  toggleExpand: () => void;
+  close: () => void;
+}) => ReactNode;
 
 export function CallView({
   appt,
@@ -533,6 +663,9 @@ export function CallView({
   sinkId,
   now,
   onLeave,
+  tools,
+  overlays,
+  onUpload,
 }: {
   appt: Appointment;
   other?: PersonSummary;
@@ -542,14 +675,19 @@ export function CallView({
   sinkId: string;
   now: number;
   onLeave: () => void;
+  tools?: ToolsRender;
+  overlays?: ReactNode;
+  /** Paciente envia um arquivo (exame, foto) pelo chat. */
+  onUpload?: (file: File) => Promise<void>;
 }) {
   const tr = useTr();
   const rootRef = useRef<HTMLDivElement>(null);
   const [panel, setPanel] = useState<Panel>(null);
+  const [expanded, setExpanded] = useState(false);
   const [seen, setSeen] = useState(0);
   const [full, setFull] = useState(false);
   const peer = call.peer;
-  const first = (other?.name ?? "").split(" ")[0];
+  const first = firstName(other?.name);
 
   const unread = panel === "chat" ? 0 : call.messages.filter((m) => !m.mine).length - seen;
   useEffect(() => {
@@ -561,7 +699,8 @@ export function CallView({
   const [preview, setPreview] = useState<ChatMessage | null>(null);
   useEffect(() => {
     const theirs = call.messages.filter((m) => !m.mine);
-    if (theirs.length > lastCount.current && panel !== "chat") setPreview(theirs[theirs.length - 1]);
+    if (theirs.length > lastCount.current && panel !== "chat")
+      setPreview(theirs[theirs.length - 1]);
     lastCount.current = theirs.length;
   }, [call.messages, panel]);
   useEffect(() => {
@@ -599,9 +738,19 @@ export function CallView({
         : call.callState === "connecting"
           ? tr(["Conectando…", "Connecting…", "Conectando…", "Connexion…"])
           : !peer
-            ? tr([`Aguardando ${first} entrar…`, `Waiting for ${first} to join…`, `Esperando a que ${first} entre…`, `En attente de ${first}…`])
+            ? tr([
+                `Aguardando ${first} entrar…`,
+                `Waiting for ${first} to join…`,
+                `Esperando a que ${first} entre…`,
+                `En attente de ${first}…`,
+              ])
             : !peer.inCall
-              ? tr([`${first} está na sala de espera e já vai entrar`, `${first} is in the waiting room and will join soon`, `${first} está en la sala de espera y ya entra`, `${first} est en salle d'attente et arrive`])
+              ? tr([
+                  `${first} está na sala de espera e já vai entrar`,
+                  `${first} is in the waiting room and will join soon`,
+                  `${first} está en la sala de espera y ya entra`,
+                  `${first} est en salle d'attente et arrive`,
+                ])
               : tr(["Conectando…", "Connecting…", "Conectando…", "Connexion…"]);
 
   return (
@@ -614,14 +763,22 @@ export function CallView({
               stream={call.remoteStream}
               sinkId={sinkId}
               fit={peer?.sharing ? "contain" : "cover"}
-              className={cn("absolute inset-0 bg-black", (remoteCamOff || !remoteHasVideo) && "opacity-0")}
+              className={cn(
+                "absolute inset-0 bg-black",
+                (remoteCamOff || !remoteHasVideo) && "opacity-0",
+              )}
             />
           )}
 
           {(!showRemoteVideo || remoteCamOff || !remoteHasVideo) && (
             <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,#1d2a26_0%,#0d0f12_70%)]">
               <div className="flex flex-col items-center px-6 text-center">
-                <span className={cn("rounded-full", !showRemoteVideo && "animate-[pulse_2.4s_ease-in-out_infinite]")}>
+                <span
+                  className={cn(
+                    "rounded-full",
+                    !showRemoteVideo && "animate-[pulse_2.4s_ease-in-out_infinite]",
+                  )}
+                >
                   <RoomAvatar person={other} size={120} />
                 </span>
                 <p className="mt-5 font-display text-2xl font-bold text-white">{other?.name}</p>
@@ -667,7 +824,12 @@ export function CallView({
           {/* Você (miniatura) */}
           <div className="absolute right-3 top-14 z-10 aspect-[3/4] w-24 overflow-hidden rounded-2xl bg-[#1a1d22] shadow-xl ring-1 ring-white/15 sm:bottom-24 sm:right-4 sm:top-auto sm:aspect-video sm:w-52">
             {selfStream && (local.cam || call.sharing) ? (
-              <VideoEl stream={selfStream} muted mirror={!call.sharing} fit={call.sharing ? "contain" : "cover"} />
+              <VideoEl
+                stream={selfStream}
+                muted
+                mirror={!call.sharing}
+                fit={call.sharing ? "contain" : "cover"}
+              />
             ) : (
               <div className="grid h-full place-items-center text-white/50">
                 <VideoOff className="h-5 w-5" />
@@ -684,6 +846,8 @@ export function CallView({
               </span>
             )}
           </div>
+
+          {overlays}
 
           {preview && (
             <button
@@ -705,7 +869,11 @@ export function CallView({
               <RoundButton
                 on={local.mic}
                 disabled={!local.hasAudio}
-                label={local.mic ? tr(["Desligar microfone", "Mute", "Silenciar", "Couper le micro"]) : tr(["Ligar microfone", "Unmute", "Activar micrófono", "Activer le micro"])}
+                label={
+                  local.mic
+                    ? tr(["Desligar microfone", "Mute", "Silenciar", "Couper le micro"])
+                    : tr(["Ligar microfone", "Unmute", "Activar micrófono", "Activer le micro"])
+                }
                 onClick={local.toggleMic}
               >
                 {local.mic ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
@@ -713,7 +881,16 @@ export function CallView({
               <RoundButton
                 on={local.cam}
                 disabled={!local.hasVideo}
-                label={local.cam ? tr(["Desligar câmera", "Turn camera off", "Apagar cámara", "Couper la caméra"]) : tr(["Ligar câmera", "Turn camera on", "Encender cámara", "Activer la caméra"])}
+                label={
+                  local.cam
+                    ? tr([
+                        "Desligar câmera",
+                        "Turn camera off",
+                        "Apagar cámara",
+                        "Couper la caméra",
+                      ])
+                    : tr(["Ligar câmera", "Turn camera on", "Encender cámara", "Activer la caméra"])
+                }
                 onClick={local.toggleCam}
               >
                 {local.cam ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
@@ -722,10 +899,28 @@ export function CallView({
                 <span className="hidden sm:contents">
                   <RoundButton
                     on={!call.sharing}
-                    label={call.sharing ? tr(["Parar de compartilhar", "Stop sharing", "Dejar de compartir", "Arrêter le partage"]) : tr(["Compartilhar tela", "Share screen", "Compartir pantalla", "Partager l'écran"])}
+                    label={
+                      call.sharing
+                        ? tr([
+                            "Parar de compartilhar",
+                            "Stop sharing",
+                            "Dejar de compartir",
+                            "Arrêter le partage",
+                          ])
+                        : tr([
+                            "Compartilhar tela",
+                            "Share screen",
+                            "Compartir pantalla",
+                            "Partager l'écran",
+                          ])
+                    }
                     onClick={() => (call.sharing ? call.stopShare() : void call.startShare())}
                   >
-                    {call.sharing ? <MonitorOff className="h-5 w-5" /> : <MonitorUp className="h-5 w-5" />}
+                    {call.sharing ? (
+                      <MonitorOff className="h-5 w-5" />
+                    ) : (
+                      <MonitorUp className="h-5 w-5" />
+                    )}
                   </RoundButton>
                 </span>
               )}
@@ -737,38 +932,76 @@ export function CallView({
               >
                 <MessageSquare className="h-5 w-5" />
               </RoundButton>
-              {role === "professional" && (
+              {tools && (
                 <RoundButton
-                  on={panel !== "notes"}
-                  label={tr(["Prontuário da consulta", "Visit notes", "Notas de la consulta", "Notes de consultation"])}
-                  onClick={() => setPanel(panel === "notes" ? null : "notes")}
+                  on={panel !== "tools"}
+                  label={tr([
+                    "Ferramentas da consulta",
+                    "Visit tools",
+                    "Herramientas de la consulta",
+                    "Outils de consultation",
+                  ])}
+                  onClick={() => setPanel(panel === "tools" ? null : "tools")}
                 >
                   <NotebookPen className="h-5 w-5" />
                 </RoundButton>
               )}
               <span className="hidden sm:contents">
                 <RoundButton
-                  label={full ? tr(["Sair da tela cheia", "Exit full screen", "Salir de pantalla completa", "Quitter le plein écran"]) : tr(["Tela cheia", "Full screen", "Pantalla completa", "Plein écran"])}
+                  label={
+                    full
+                      ? tr([
+                          "Sair da tela cheia",
+                          "Exit full screen",
+                          "Salir de pantalla completa",
+                          "Quitter le plein écran",
+                        ])
+                      : tr(["Tela cheia", "Full screen", "Pantalla completa", "Plein écran"])
+                  }
                   onClick={toggleFull}
                 >
                   {full ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
                 </RoundButton>
               </span>
-              <RoundButton danger wide label={tr(["Sair da consulta", "Leave", "Salir de la consulta", "Quitter"])} onClick={onLeave}>
+              <RoundButton
+                danger
+                wide
+                label={tr(["Sair da consulta", "Leave", "Salir de la consulta", "Quitter"])}
+                onClick={onLeave}
+              >
                 <PhoneOff className="h-5 w-5" />
               </RoundButton>
             </div>
           </div>
         </div>
 
-        {/* Painel lateral (no celular, sobe por cima do vídeo) */}
-        {panel && (
+        {/* Ferramentas do profissional: painel claro, que pode ocupar metade da tela */}
+        {panel === "tools" && tools && (
+          <aside
+            className={cn(
+              "absolute inset-x-0 bottom-0 z-20 flex h-[80%] flex-col overflow-hidden rounded-t-3xl shadow-2xl sm:static sm:h-auto sm:rounded-none",
+              expanded ? "sm:w-[min(60rem,62vw)]" : "sm:w-[27rem]",
+            )}
+          >
+            {tools({
+              expanded,
+              toggleExpand: () => setExpanded((v) => !v),
+              close: () => setPanel(null),
+            })}
+          </aside>
+        )}
+
+        {/* Chat (no celular, sobe por cima do vídeo) */}
+        {panel === "chat" && (
           <aside className="absolute inset-x-0 bottom-0 z-20 flex h-[68%] flex-col rounded-t-3xl bg-[#16191e] shadow-2xl ring-1 ring-white/10 sm:static sm:h-auto sm:w-[22rem] sm:rounded-none sm:border-l sm:border-white/8 sm:ring-0">
             <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
               <h2 className="text-sm font-bold text-white">
-                {panel === "chat"
-                  ? tr(["Chat da consulta", "Appointment chat", "Chat de la consulta", "Chat de la consultation"])
-                  : tr(["Prontuário da consulta", "Visit notes", "Notas de la consulta", "Notes de consultation"])}
+                {tr([
+                  "Chat da consulta",
+                  "Appointment chat",
+                  "Chat de la consulta",
+                  "Chat de la consultation",
+                ])}
               </h2>
               <button
                 type="button"
@@ -779,11 +1012,12 @@ export function CallView({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            {panel === "chat" ? (
-              <ChatPanel messages={call.messages} onSend={call.sendChat} other={other} />
-            ) : (
-              <NotesPanel appt={appt} />
-            )}
+            <ChatPanel
+              messages={call.messages}
+              onSend={call.sendChat}
+              other={other}
+              onUpload={onUpload}
+            />
           </aside>
         )}
       </div>
@@ -795,14 +1029,18 @@ function ChatPanel({
   messages,
   onSend,
   other,
+  onUpload,
 }: {
   messages: ChatMessage[];
   onSend: (text: string) => void;
   other?: PersonSummary;
+  onUpload?: (file: File) => Promise<void>;
 }) {
   const tr = useTr();
   const { locale } = useClinicalI18n();
   const [text, setText] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -836,7 +1074,8 @@ function ChatPanel({
                 {m.text}
               </div>
               <span className="mt-0.5 px-1 text-[10px] text-white/40">
-                {m.mine ? tr(["Você", "You", "Tú", "Vous"]) : other?.name?.split(" ")[0]} · {formatTime(new Date(m.at), locale)}
+                {m.mine ? tr(["Você", "You", "Tú", "Vous"]) : firstName(other?.name)} ·{" "}
+                {formatTime(new Date(m.at), locale)}
               </span>
             </div>
           ))
@@ -849,6 +1088,48 @@ function ChatPanel({
           submit();
         }}
       >
+        {onUpload && (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                setUploading(true);
+                await onUpload(f).catch(() => {});
+                setUploading(false);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              aria-label={tr([
+                "Enviar exame ou arquivo",
+                "Send a test result or file",
+                "Enviar examen o archivo",
+                "Envoyer un examen ou un fichier",
+              ])}
+              title={tr([
+                "Enviar exame ou arquivo",
+                "Send a test result or file",
+                "Enviar examen o archivo",
+                "Envoyer un examen ou un fichier",
+              ])}
+              className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full bg-white/10 transition hover:bg-white/18 disabled:opacity-50"
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Paperclip className="h-4 w-4" />
+              )}
+            </button>
+          </>
+        )}
         <textarea
           rows={1}
           value={text}
@@ -859,7 +1140,12 @@ function ChatPanel({
               submit();
             }
           }}
-          placeholder={tr(["Escreva uma mensagem…", "Write a message…", "Escribe un mensaje…", "Écrire un message…"])}
+          placeholder={tr([
+            "Escreva uma mensagem…",
+            "Write a message…",
+            "Escribe un mensaje…",
+            "Écrire un message…",
+          ])}
           className="max-h-28 min-h-10 flex-1 resize-none rounded-2xl border border-white/12 bg-white/6 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/35 focus:border-emerald-400"
         />
         <button
@@ -875,133 +1161,6 @@ function ChatPanel({
   );
 }
 
-const fieldClass =
-  "w-full resize-none rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-emerald-400";
-
-/** Para o profissional: evolução (SOAP) ligada à consulta, resumo para o paciente e conclusão. */
-function NotesPanel({ appt }: { appt: Appointment }) {
-  const tr = useTr();
-  const { t } = useClinicalI18n();
-  const notes = useNotes(appt.patient_id);
-  const existing = notes.data?.find((n) => n.appointment_id === appt.id);
-  const [soap, setSoap] = useState({ subjective: "", objective: "", assessment: "", plan: "" });
-  const [summary, setSummary] = useState(appt.summary_for_patient ?? "");
-  const loaded = useRef(false);
-  useEffect(() => {
-    if (loaded.current || !notes.data) return;
-    loaded.current = true;
-    if (existing) {
-      setSoap({
-        subjective: existing.subjective ?? "",
-        objective: existing.objective ?? "",
-        assessment: existing.assessment ?? "",
-        plan: existing.plan ?? "",
-      });
-    }
-  }, [notes.data, existing]);
-
-  const saveNote = useClinicalMutation(
-    () =>
-      records.saveNote({
-        id: existing?.id,
-        patient_id: appt.patient_id,
-        appointment_id: appt.id,
-        subjective: soap.subjective.trim() || null,
-        objective: soap.objective.trim() || null,
-        assessment: soap.assessment.trim() || null,
-        plan: soap.plan.trim() || null,
-      }),
-    { success: tr(["Prontuário salvo", "Notes saved", "Notas guardadas", "Notes enregistrées"]) },
-  );
-  const finish = useClinicalMutation(
-    () =>
-      api.updateAppointment(appt.id, {
-        summary_for_patient: summary.trim() || null,
-        status: "realizada",
-      }),
-    { success: tr(["Consulta concluída", "Appointment completed", "Consulta concluida", "Consultation terminée"]) },
-  );
-  const saveSummary = useClinicalMutation(
-    () => api.updateAppointment(appt.id, { summary_for_patient: summary.trim() || null }),
-    { success: t("appt.saved") },
-  );
-
-  const fields: [keyof typeof soap, Names][] = [
-    ["subjective", ["Subjetivo (relato)", "Subjective", "Subjetivo", "Subjectif"]],
-    ["objective", ["Objetivo (medidas, exames)", "Objective", "Objetivo", "Objectif"]],
-    ["assessment", ["Avaliação", "Assessment", "Evaluación", "Évaluation"]],
-    ["plan", ["Plano / condutas", "Plan", "Plan", "Plan"]],
-  ];
-
-  return (
-    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
-      <section className="space-y-2.5">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-white/45">
-          {tr(["Evolução (só você vê)", "Progress note (only you)", "Evolución (solo tú)", "Évolution (vous seul)"])}
-        </p>
-        {fields.map(([key, label]) => (
-          <label key={key} className="block">
-            <span className="mb-1 block text-xs text-white/70">{tr(label)}</span>
-            <textarea
-              rows={2}
-              value={soap[key]}
-              onChange={(e) => setSoap((s) => ({ ...s, [key]: e.target.value }))}
-              className={fieldClass}
-            />
-          </label>
-        ))}
-        <button
-          type="button"
-          disabled={saveNote.isPending}
-          onClick={() => saveNote.mutate(undefined)}
-          className="w-full cursor-pointer rounded-full bg-white/10 py-2 text-sm font-semibold transition hover:bg-white/18 disabled:opacity-50"
-        >
-          {saveNote.isPending ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : tr(["Salvar evolução", "Save note", "Guardar evolución", "Enregistrer"])}
-        </button>
-      </section>
-
-      <section className="space-y-2.5 border-t border-white/8 pt-4">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-white/45">
-          {tr(["Orientações para o paciente", "Guidance for the patient", "Indicaciones para el paciente", "Conseils pour le patient"])}
-        </p>
-        <textarea
-          rows={4}
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          placeholder={tr([
-            "O paciente vê este resumo na página das consultas.",
-            "The patient sees this summary on their appointments page.",
-            "El paciente ve este resumen en su página de consultas.",
-            "Le patient voit ce résumé sur sa page de consultations.",
-          ])}
-          className={fieldClass}
-        />
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={saveSummary.isPending}
-            onClick={() => saveSummary.mutate(undefined)}
-            className="flex-1 cursor-pointer rounded-full bg-white/10 py-2 text-sm font-semibold transition hover:bg-white/18 disabled:opacity-50"
-          >
-            {tr(["Salvar", "Save", "Guardar", "Enregistrer"])}
-          </button>
-          {appt.status !== "realizada" && (
-            <button
-              type="button"
-              disabled={finish.isPending}
-              onClick={() => finish.mutate(undefined)}
-              className="inline-flex flex-[1.4] cursor-pointer items-center justify-center gap-1.5 rounded-full bg-emerald-500 py-2 text-sm font-semibold transition hover:bg-emerald-400 disabled:opacity-50"
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              {tr(["Concluir consulta", "Complete", "Concluir", "Terminer"])}
-            </button>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-}
-
 // ─────────────────────────────── Depois de sair ───────────────────────────────
 
 export function LeftView({
@@ -1011,6 +1170,7 @@ export function LeftView({
   onRejoin,
   backTo,
   canRejoin,
+  tools,
 }: {
   appt: Appointment;
   role: CallRole;
@@ -1018,15 +1178,22 @@ export function LeftView({
   onRejoin: () => void;
   backTo: string;
   canRejoin: boolean;
+  tools?: ToolsRender;
 }) {
   const tr = useTr();
   const [notes, setNotes] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   return (
     <RoomShell>
       <div className="m-auto flex w-full max-w-md flex-col items-center px-6 py-8 text-center">
         <RoomAvatar person={other} size={72} />
         <h1 className="mt-5 font-display text-2xl font-bold text-white">
-          {tr(["Você saiu da consulta", "You left the appointment", "Saliste de la consulta", "Vous avez quitté la consultation"])}
+          {tr([
+            "Você saiu da consulta",
+            "You left the appointment",
+            "Saliste de la consulta",
+            "Vous avez quitté la consultation",
+          ])}
         </h1>
         <p className="mt-2 text-sm text-white/60">
           {role === "patient"
@@ -1051,17 +1218,27 @@ export function LeftView({
               className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-500 font-semibold transition hover:bg-emerald-400"
             >
               <Video className="h-4 w-4" />
-              {tr(["Voltar para a consulta", "Rejoin", "Volver a la consulta", "Revenir à la consultation"])}
+              {tr([
+                "Voltar para a consulta",
+                "Rejoin",
+                "Volver a la consulta",
+                "Revenir à la consultation",
+              ])}
             </button>
           )}
-          {role === "professional" && (
+          {tools && (
             <button
               type="button"
               onClick={() => setNotes((v) => !v)}
               className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 font-semibold transition hover:bg-white/18"
             >
               <NotebookPen className="h-4 w-4" />
-              {tr(["Prontuário da consulta", "Visit notes", "Notas de la consulta", "Notes de consultation"])}
+              {tr([
+                "Ferramentas da consulta",
+                "Visit tools",
+                "Herramientas de la consulta",
+                "Outils de consultation",
+              ])}
             </button>
           )}
           <Link
@@ -1071,24 +1248,27 @@ export function LeftView({
             <ArrowLeft className="h-4 w-4" />
             {role === "patient"
               ? tr(["Minhas consultas", "My appointments", "Mis consultas", "Mes consultations"])
-              : tr(["Voltar à agenda", "Back to schedule", "Volver a la agenda", "Retour à l'agenda"])}
+              : tr([
+                  "Voltar à agenda",
+                  "Back to schedule",
+                  "Volver a la agenda",
+                  "Retour à l'agenda",
+                ])}
           </Link>
         </div>
       </div>
-      {notes && role === "professional" && (
-        <div className="absolute inset-x-0 bottom-0 flex h-[75%] flex-col rounded-t-3xl bg-[#16191e] ring-1 ring-white/10 sm:inset-y-0 sm:left-auto sm:right-0 sm:h-auto sm:w-[24rem] sm:rounded-none">
-          <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
-            <h2 className="text-sm font-bold text-white">{tr(["Prontuário da consulta", "Visit notes", "Notas de la consulta", "Notes de consultation"])}</h2>
-            <button
-              type="button"
-              onClick={() => setNotes(false)}
-              aria-label={tr(["Fechar", "Close", "Cerrar", "Fermer"])}
-              className="grid h-8 w-8 cursor-pointer place-items-center rounded-full hover:bg-white/10"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <NotesPanel appt={appt} />
+      {notes && tools && (
+        <div
+          className={cn(
+            "absolute inset-x-0 bottom-0 flex h-[80%] flex-col overflow-hidden rounded-t-3xl shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:h-auto sm:rounded-none",
+            expanded ? "sm:w-[min(60rem,70vw)]" : "sm:w-[27rem]",
+          )}
+        >
+          {tools({
+            expanded,
+            toggleExpand: () => setExpanded((v) => !v),
+            close: () => setNotes(false),
+          })}
         </div>
       )}
     </RoomShell>

@@ -14,6 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
+      clinical_assessments: {
+        Row: {
+          answered_by_patient: boolean
+          appointment_id: string | null
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          patient_id: string
+          professional_id: string
+          score: number | null
+          severity: string | null
+          shared_with_patient: boolean
+        }
+        Insert: {
+          answered_by_patient?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind: string
+          patient_id: string
+          professional_id: string
+          score?: number | null
+          severity?: string | null
+          shared_with_patient?: boolean
+        }
+        Update: {
+          answered_by_patient?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          patient_id?: string
+          professional_id?: string
+          score?: number | null
+          severity?: string | null
+          shared_with_patient?: boolean
+        }
+        Relationships: []
+      }
+      care_plans: {
+        Row: {
+          active: boolean
+          appointment_id: string | null
+          created_at: string
+          id: string
+          items: Json
+          kind: string
+          notes: string | null
+          patient_id: string
+          professional_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind: string
+          notes?: string | null
+          patient_id: string
+          professional_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind?: string
+          notes?: string | null
+          patient_id?: string
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      care_plan_checkins: {
+        Row: {
+          created_at: string
+          day: string
+          patient_id: string
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string
+          patient_id: string
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          patient_id?: string
+          plan_id?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string

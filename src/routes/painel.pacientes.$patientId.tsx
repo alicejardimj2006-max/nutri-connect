@@ -12,6 +12,13 @@ import { NotesPanel } from "@/components/clinical/notes-panel";
 import { RecordSummary } from "@/components/clinical/record-summary";
 import { DiaryFeed } from "@/components/clinical/diary";
 import { DocumentsPanel } from "@/components/clinical/documents-panel";
+import { AssessmentsPanel } from "@/components/clinical/assessments-panel";
+import { CarePlansPanel } from "@/components/clinical/care-plans-panel";
+import {
+  SUGGESTED_CARE_KINDS,
+  SUGGESTED_INSTRUMENTS,
+  professionKey,
+} from "@/lib/clinical/professions";
 import {
   Avatar,
   Card,
@@ -31,6 +38,7 @@ import {
   useLinks,
   usePatientPrivate,
   usePayments,
+  useProfessional,
   usePeople,
 } from "@/lib/clinical/queries";
 import { ageFrom, formatDate } from "@/lib/clinical/format";
@@ -40,8 +48,10 @@ const RECORD_TABS = [
   "resumo",
   "anamnese",
   "evolucao",
+  "avaliacoes",
   "antropometria",
   "plano",
+  "cuidados",
   "metas",
   "diario",
   "documentos",
@@ -73,6 +83,8 @@ function PatientRecordPage() {
   const links = useLinks("professional");
   const link = (links.data ?? []).find((l) => l.patient_id === patientId);
   const isActive = link?.status === "ativo";
+  const me = useProfessional(user?.id);
+  const profession = professionKey(me.data?.profession);
 
   const end = useClinicalMutation((id: string) => api.endLink(id), { success: t("link.ended") });
 
@@ -169,11 +181,20 @@ function PatientRecordPage() {
       {tab === "resumo" && (
         <>
           {isActive && <AiSummaryCard patientId={patientId} />}
-          <RecordSummary patientId={patientId} birthDate={priv.data?.birth_date} onOpenTab={setTab} />
+          <RecordSummary
+            patientId={patientId}
+            birthDate={priv.data?.birth_date}
+            onOpenTab={setTab}
+          />
         </>
       )}
       {tab === "anamnese" && user && (
-        <AnamnesisForm patientId={patientId} professionalId={user.id} readOnly={!isActive} />
+        <AnamnesisForm
+          patientId={patientId}
+          professionalId={user.id}
+          readOnly={!isActive}
+          profession={profession}
+        />
       )}
       {tab === "evolucao" && <NotesPanel patientId={patientId} readOnly={!isActive} />}
       {tab === "antropometria" && user && (
@@ -187,6 +208,22 @@ function PatientRecordPage() {
       )}
       {tab === "plano" && <MealPlansPanel patientId={patientId} readOnly={!isActive} />}
       {tab === "metas" && <GoalsPanel patientId={patientId} readOnly={!isActive} />}
+      {tab === "avaliacoes" && user && (
+        <AssessmentsPanel
+          patientId={patientId}
+          professionalId={user.id}
+          readOnly={!isActive}
+          suggested={SUGGESTED_INSTRUMENTS[profession]}
+        />
+      )}
+      {tab === "cuidados" && user && (
+        <CarePlansPanel
+          patientId={patientId}
+          professionalId={user.id}
+          readOnly={!isActive}
+          kinds={SUGGESTED_CARE_KINDS[profession]}
+        />
+      )}
       {tab === "diario" && user && (
         <DiaryFeed patientId={patientId} meId={user.id} canComment={isActive} isOwner={false} />
       )}

@@ -21,6 +21,8 @@ export interface FullMealPlan extends MealPlan {
 
 /** Estrutura da anamnese (guardada em anamneses.data). */
 export interface AnamnesisData {
+  /** Campos da anamnese específica da profissão (médica, psicológica, de treino…). */
+  especifica?: Record<string, string>;
   chiefComplaint?: string;
   goals?: string;
   clinicalHistory?: {

@@ -34,8 +34,37 @@ export interface ChatMessage {
   mine: boolean;
 }
 
+/** Eventos das ferramentas da consulta (formulários ao vivo, cronômetro, pedido de imagem…). */
+export type ToolEvent =
+  | { type: "form"; id: string; instrumentId: string }
+  | { type: "form-cancel"; id: string }
+  | {
+      type: "form-answer";
+      id: string;
+      instrumentId: string;
+      payload: number[] | Record<string, number | string | null>;
+    }
+  | { type: "form-declined"; id: string }
+  | {
+      type: "timer";
+      mode: "countdown" | "stopwatch" | "off";
+      startedAt: number;
+      seconds: number;
+      label?: string;
+    }
+  | { type: "snapshot-request"; id: string }
+  | { type: "snapshot-reply"; id: string; ok: boolean }
+  | { type: "snapshot-saved"; id: string }
+  | { type: "doc-uploaded"; title: string };
+
 type Signal =
-  | { kind: "offer" | "answer"; from: string; to: string; pc: string; sdp: RTCSessionDescriptionInit }
+  | {
+      kind: "offer" | "answer";
+      from: string;
+      to: string;
+      pc: string;
+      sdp: RTCSessionDescriptionInit;
+    }
   | { kind: "candidate"; from: string; to: string; pc: string; candidate: RTCIceCandidateInit }
   | { kind: "restart"; from: string; to: string; pc: string };
 
@@ -58,8 +87,16 @@ export interface Devices {
   audiooutput: MediaDeviceInfo[];
 }
 
-const AUDIO: MediaTrackConstraints = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
-const VIDEO: MediaTrackConstraints = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } };
+const AUDIO: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+};
+const VIDEO: MediaTrackConstraints = {
+  width: { ideal: 1280 },
+  height: { ideal: 720 },
+  frameRate: { ideal: 30 },
+};
 
 function mediaError(err: unknown): MediaError {
   const name = (err as { name?: string })?.name;
@@ -75,12 +112,18 @@ export function useLocalMedia() {
   const [starting, setStarting] = useState(false);
   const [mic, setMic] = useState(true);
   const [cam, setCam] = useState(true);
-  const [devices, setDevices] = useState<Devices>({ audioinput: [], videoinput: [], audiooutput: [] });
+  const [devices, setDevices] = useState<Devices>({
+    audioinput: [],
+    videoinput: [],
+    audiooutput: [],
+  });
   const [audioId, setAudioId] = useState<string>("");
   const [videoId, setVideoId] = useState<string>("");
   const streamRef = useRef<MediaStream | null>(null);
   /** Avisado quando um aparelho é trocado, para a chamada trocar a faixa enviada. */
-  const onReplace = useRef<(kind: "audio" | "video", track: MediaStreamTrack | null) => void>(() => {});
+  const onReplace = useRef<(kind: "audio" | "video", track: MediaStreamTrack | null) => void>(
+    () => {},
+  );
 
   const refreshDevices = useCallback(async () => {
     if (!navigator.mediaDevices?.enumerateDevices) return;
@@ -212,7 +255,9 @@ export function useAudioLevel(stream: MediaStream | null, enabled = true) {
       setLevel(0);
       return;
     }
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
     const analyser = ctx.createAnalyser();
@@ -275,6 +320,7 @@ export function useConsultationCall({
   const [relayed, setRelayed] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const toolHandlers = useRef(new Set<(e: ToolEvent) => void>());
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -365,7 +411,13 @@ export function useConsultationCall({
             () => {
               if (pcRef.current !== pc || pc.connectionState === "connected") return;
               if (role === "professional") void callRef.current(remoteSession);
-              else send("signal", { kind: "restart", from: session, to: remoteSession, pc: pcId } satisfies Signal);
+              else
+                send("signal", {
+                  kind: "restart",
+                  from: session,
+                  to: remoteSession,
+                  pc: pcId,
+                } satisfies Signal);
             },
             st === "failed" ? 300 : 5000,
           );
@@ -435,7 +487,8 @@ export function useConsultationCall({
         }
       } else if (s.kind === "candidate") {
         const pc = pcRef.current;
-        if (pc && same && pc.remoteDescription) await pc.addIceCandidate(s.candidate).catch(() => {});
+        if (pc && same && pc.remoteDescription)
+          await pc.addIceCandidate(s.candidate).catch(() => {});
         else if (!pc || same) pending.current.push(s.candidate);
       } else if (s.kind === "restart" && role === "professional" && link?.session === s.from) {
         await call(s.from);
@@ -488,7 +541,14 @@ export function useConsultationCall({
       ch.on("broadcast", { event: "chat" }, ({ payload }) => {
         const m = payload as Omit<ChatMessage, "mine">;
         if (!m?.text) return;
-        setMessages((list) => (list.some((x) => x.id === m.id) ? list : [...list, { ...m, mine: false }]));
+        setMessages((list) =>
+          list.some((x) => x.id === m.id) ? list : [...list, { ...m, mine: false }],
+        );
+      });
+      ch.on("broadcast", { event: "tool" }, ({ payload }) => {
+        if (payload && typeof (payload as ToolEvent).type === "string") {
+          toolHandlers.current.forEach((h) => h(payload as ToolEvent));
+        }
       });
       ch.subscribe((status) => {
         if (cancelled) return;
@@ -530,7 +590,16 @@ export function useConsultationCall({
   useEffect(() => {
     if (channelState !== "ready") return;
     void channelRef.current
-      ?.track({ userId, role, session, inCall, mic, cam, sharing, at: startedAt } satisfies PeerPresence)
+      ?.track({
+        userId,
+        role,
+        session,
+        inCall,
+        mic,
+        cam,
+        sharing,
+        at: startedAt,
+      } satisfies PeerPresence)
       .catch(() => {});
   }, [channelState, userId, role, session, inCall, mic, cam, sharing, startedAt]);
 
@@ -621,7 +690,9 @@ export function useConsultationCall({
 
   const startShare = useCallback(async () => {
     if (!navigator.mediaDevices?.getDisplayMedia) return false;
-    const display = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false }).catch(() => null);
+    const display = await navigator.mediaDevices
+      .getDisplayMedia({ video: true, audio: false })
+      .catch(() => null);
     const track = display?.getVideoTracks()[0];
     if (!track) return false;
     track.contentHint = "detail";
@@ -645,7 +716,42 @@ export function useConsultationCall({
     [send, userId],
   );
 
+  const sendTool = useCallback((e: ToolEvent) => send("tool", e), [send]);
+  const onTool = useCallback((h: (e: ToolEvent) => void) => {
+    toolHandlers.current.add(h);
+    return () => {
+      toolHandlers.current.delete(h);
+    };
+  }, []);
+
+  /** Uma foto do vídeo do outro lado (só com o consentimento dele). */
+  const captureRemote = useCallback(async (): Promise<Blob | null> => {
+    const track = pcRef.current
+      ?.getReceivers()
+      .map((r) => r.track)
+      .find((t) => t?.kind === "video" && t.readyState === "live");
+    if (!track) return null;
+    const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
+    video.srcObject = new MediaStream([track]);
+    await video.play().catch(() => {});
+    await new Promise((r) => setTimeout(r, 120));
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    if (!w || !h) return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, w, h);
+    video.srcObject = null;
+    return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", 0.92));
+  }, []);
+
   return {
+    sendTool,
+    onTool,
+    captureRemote,
     channelState,
     peer,
     remoteStream,

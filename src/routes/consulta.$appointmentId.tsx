@@ -5,9 +5,21 @@ import { CalendarClock, CalendarX, CreditCard, Loader2, MapPin } from "lucide-re
 import { useRequireAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useTr } from "@/components/settings-ui";
-import { CallView, LeftView, Lobby, RoomNotice, RoomShell } from "@/components/clinical/video-room";
+import {
+  CallView,
+  LeftView,
+  Lobby,
+  RoomNotice,
+  RoomShell,
+  type ToolsRender,
+} from "@/components/clinical/video-room";
+import { CallOverlays, ConsultTools, useConsultSession } from "@/components/clinical/consult-tools";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { uploadDocument } from "@/lib/clinical/care";
+import { professionKey } from "@/lib/clinical/professions";
 import type { Appointment } from "@/lib/clinical/api";
-import { usePeople } from "@/lib/clinical/queries";
+import { qk, usePeople, useProfessional } from "@/lib/clinical/queries";
 import { formatDate, formatTime } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import {
@@ -19,7 +31,9 @@ import {
 } from "@/lib/clinical/video-call";
 
 export const Route = createFileRoute("/consulta/$appointmentId")({
-  head: () => ({ meta: [{ title: "Videoconsulta — NutriConnect" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Videoconsulta — NutriConnect" }, { name: "robots", content: "noindex" }],
+  }),
   component: ConsultationRoomPage,
 });
 
@@ -32,7 +46,11 @@ function ConsultationRoomPage() {
     queryKey: ["clinical", "appointment", appointmentId],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("appointments").select("*").eq("id", appointmentId).maybeSingle();
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("id", appointmentId)
+        .maybeSingle();
       if (error) throw error;
       return data as Appointment | null;
     },
@@ -50,7 +68,12 @@ function ConsultationRoomPage() {
     return (
       <RoomNotice
         icon={<CalendarX className="h-7 w-7" />}
-        title={tr(["Consulta não encontrada", "Appointment not found", "Consulta no encontrada", "Consultation introuvable"])}
+        title={tr([
+          "Consulta não encontrada",
+          "Appointment not found",
+          "Consulta no encontrada",
+          "Consultation introuvable",
+        ])}
         text={tr([
           "Esta sala não existe ou não é sua.",
           "This room doesn't exist or isn't yours.",
@@ -95,6 +118,50 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
     onReplace: local.onReplace,
   });
 
+  const session = useConsultSession({ call, appt, role });
+  const proInfo = useProfessional(role === "professional" ? appt.professional_id : undefined);
+  const profession = professionKey(proInfo.data?.profession);
+  const qc = useQueryClient();
+  const tools: ToolsRender | undefined =
+    role === "professional"
+      ? ({ expanded, toggleExpand, close }) => (
+          <ConsultTools
+            appt={appt}
+            profession={profession}
+            session={session}
+            inCall={phase === "call"}
+            expanded={expanded}
+            onToggleExpand={toggleExpand}
+            onClose={close}
+          />
+        )
+      : undefined;
+  const onUpload =
+    role === "patient"
+      ? async (file: File) => {
+          try {
+            const title = file.name.replace(/\.[^.]+$/, "").slice(0, 80) || "Arquivo";
+            await uploadDocument({
+              patientId: appt.patient_id,
+              title,
+              kind:
+                file.type.startsWith("image/") || file.type === "application/pdf"
+                  ? "exame"
+                  : "documento",
+              file,
+              documentDate: new Date().toISOString().slice(0, 10),
+            });
+            await qc.invalidateQueries({ queryKey: qk.documents(appt.patient_id) });
+            session.notifyDocUploaded(title);
+            call.sendChat(
+              `${tr(["Enviei um arquivo", "I sent a file", "Envié un archivo", "J'ai envoyé un fichier"])}: ${title}`,
+            );
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : String(err));
+          }
+        }
+      : undefined;
+
   // A câmera liga sozinha ao abrir a sala (o navegador pede a permissão uma vez).
   const { start } = local;
   useEffect(() => {
@@ -102,15 +169,21 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (other?.name) document.title = `${tr(["Consulta com", "Appointment with", "Consulta con", "Consultation avec"])} ${other.name} — NutriConnect`;
+    if (other?.name)
+      document.title = `${tr(["Consulta com", "Appointment with", "Consulta con", "Consultation avec"])} ${other.name} — NutriConnect`;
   }, [other?.name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Durante a chamada: a tela não apaga e fechar a aba pede confirmação.
   useEffect(() => {
     if (phase !== "call") return;
     let lock: { release: () => Promise<void> } | null = null;
-    const nav = navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } };
-    void nav.wakeLock?.request("screen").then((l) => (lock = l)).catch(() => {});
+    const nav = navigator as Navigator & {
+      wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> };
+    };
+    void nav.wakeLock
+      ?.request("screen")
+      .then((l) => (lock = l))
+      .catch(() => {});
     const warn = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "";
@@ -125,14 +198,22 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
   const join = () => {
     setPhase("call");
     // Registra a entrada (comprovante de presença) e avisa a outra pessoa.
-    void supabase.rpc("join_consultation", { p_appointment: appt.id }).then(() => {}, () => {});
+    void supabase.rpc("join_consultation", { p_appointment: appt.id }).then(
+      () => {},
+      () => {},
+    );
   };
 
   if (state === "presencial") {
     return (
       <RoomNotice
         icon={<MapPin className="h-7 w-7" />}
-        title={tr(["Esta consulta é presencial", "This is an in-person appointment", "Esta consulta es presencial", "Cette consultation est en présentiel"])}
+        title={tr([
+          "Esta consulta é presencial",
+          "This is an in-person appointment",
+          "Esta consulta es presencial",
+          "Cette consultation est en présentiel",
+        ])}
         text={appt.location ?? undefined}
         backTo={backTo}
       />
@@ -142,7 +223,12 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
     return (
       <RoomNotice
         icon={<CreditCard className="h-7 w-7" />}
-        title={tr(["Falta confirmar o pagamento", "Payment pending", "Falta confirmar el pago", "Paiement en attente"])}
+        title={tr([
+          "Falta confirmar o pagamento",
+          "Payment pending",
+          "Falta confirmar el pago",
+          "Paiement en attente",
+        ])}
         text={tr([
           "A sala abre assim que o pagamento da consulta for confirmado.",
           "The room opens once the appointment payment is confirmed.",
@@ -157,11 +243,26 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
     return (
       <RoomNotice
         icon={<CalendarX className="h-7 w-7" />}
-        title={tr(["A sala desta consulta está fechada", "This appointment's room is closed", "La sala de esta consulta está cerrada", "La salle de cette consultation est fermée"])}
+        title={tr([
+          "A sala desta consulta está fechada",
+          "This appointment's room is closed",
+          "La sala de esta consulta está cerrada",
+          "La salle de cette consultation est fermée",
+        ])}
         text={
           appt.status === "cancelada"
-            ? tr(["A consulta foi cancelada.", "The appointment was cancelled.", "La consulta fue cancelada.", "La consultation a été annulée."])
-            : tr(["O horário da consulta já passou.", "The appointment time has passed.", "El horario de la consulta ya pasó.", "L'horaire de la consultation est passé."])
+            ? tr([
+                "A consulta foi cancelada.",
+                "The appointment was cancelled.",
+                "La consulta fue cancelada.",
+                "La consultation a été annulée.",
+              ])
+            : tr([
+                "O horário da consulta já passou.",
+                "The appointment time has passed.",
+                "El horario de la consulta ya pasó.",
+                "L'horaire de la consultation est passé.",
+              ])
         }
         backTo={backTo}
       />
@@ -177,13 +278,20 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
     return (
       <RoomNotice
         icon={<CalendarClock className="h-7 w-7" />}
-        title={tr(["A sala ainda não abriu", "The room isn't open yet", "La sala aún no abrió", "La salle n'est pas encore ouverte"])}
-        text={`${formatDate(appt.starts_at, locale, { weekday: "long", day: "numeric", month: "long" })} · ${formatTime(appt.starts_at, locale)}. ${tr([
-          `A sala abre ${ROOM_OPENS_MIN} minutos antes; deixe esta página aberta.`,
-          `The room opens ${ROOM_OPENS_MIN} minutes before; keep this page open.`,
-          `La sala abre ${ROOM_OPENS_MIN} minutos antes; deja esta página abierta.`,
-          `La salle ouvre ${ROOM_OPENS_MIN} minutes avant ; gardez cette page ouverte.`,
-        ])}`}
+        title={tr([
+          "A sala ainda não abriu",
+          "The room isn't open yet",
+          "La sala aún no abrió",
+          "La salle n'est pas encore ouverte",
+        ])}
+        text={`${formatDate(appt.starts_at, locale, { weekday: "long", day: "numeric", month: "long" })} · ${formatTime(appt.starts_at, locale)}. ${tr(
+          [
+            `A sala abre ${ROOM_OPENS_MIN} minutos antes; deixe esta página aberta.`,
+            `The room opens ${ROOM_OPENS_MIN} minutes before; keep this page open.`,
+            `La sala abre ${ROOM_OPENS_MIN} minutos antes; deja esta página abierta.`,
+            `La salle ouvre ${ROOM_OPENS_MIN} minutes avant ; gardez cette page ouverte.`,
+          ],
+        )}`}
         backTo={backTo}
       >
         <p className="mt-6 font-display text-4xl font-bold tabular-nums">
@@ -201,6 +309,7 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
         other={other}
         backTo={backTo}
         canRejoin={open}
+        tools={tools}
         onRejoin={() => {
           void local.start().then(join);
         }}
@@ -217,6 +326,9 @@ function Room({ appt, role, userId }: { appt: Appointment; role: CallRole; userI
         call={call}
         sinkId={sinkId}
         now={now}
+        tools={tools}
+        overlays={<CallOverlays session={session} role={role} other={other} />}
+        onUpload={onUpload}
         onLeave={() => {
           setPhase("left");
           local.stop();

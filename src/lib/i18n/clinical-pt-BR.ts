@@ -365,6 +365,8 @@ const clinicalPtBR = {
   "record.tab.antropometria": "Antropometria",
   "record.tab.plano": "Plano alimentar",
   "record.tab.metas": "Metas",
+  "record.tab.avaliacoes": "Avaliações",
+  "record.tab.cuidados": "Planos de cuidado",
   "record.tab.consultas": "Consultas",
   "summary.weight": "Peso atual",
   "summary.sinceStart": "{delta} desde o início",

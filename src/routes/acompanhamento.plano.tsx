@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileDown, History, Utensils } from "lucide-react";
 import { MacroBars, MealPlanView } from "@/components/clinical/meal-plan-view";
 import { NextMeal } from "@/components/clinical/next-meal";
+import { PatientCarePlans } from "@/components/clinical/care-plans-panel";
 import {
   Card,
   EmptyState,
@@ -39,6 +40,11 @@ function PatientPlanPage() {
     return (
       <>
         <PageHeader title={t("patientPlan.title")} />
+        {user && (
+          <div className="mb-6">
+            <PatientCarePlans patientId={user.id} />
+          </div>
+        )}
         <EmptyState
           icon={Utensils}
           title={t("patientPlan.empty")}
@@ -126,6 +132,11 @@ function PatientPlanPage() {
             ))}
           </ul>
         </Card>
+      )}
+      {user && (
+        <div className="mt-6">
+          <PatientCarePlans patientId={user.id} />
+        </div>
       )}
     </>
   );

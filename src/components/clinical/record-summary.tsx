@@ -55,8 +55,8 @@ export function RecordSummary({
   const totals = plan.data ? planTotals(plan.data) : null;
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="@container space-y-4">
+      <div className="grid grid-cols-2 gap-3 @3xl:grid-cols-4">
         <Stat
           icon={Scale}
           label={t("summary.weight")}
@@ -99,7 +99,7 @@ export function RecordSummary({
 
       {rows.length > 0 && <EvolutionCharts rows={rows} />}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 @2xl:grid-cols-2">
         <Card
           title={t("summary.activePlan")}
           action={

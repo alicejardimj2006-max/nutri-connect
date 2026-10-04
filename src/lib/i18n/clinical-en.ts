@@ -325,6 +325,8 @@ const clinical: Record<ClinicalKey, string> = {
   "record.tab.antropometria": "Anthropometry",
   "record.tab.plano": "Meal plan",
   "record.tab.metas": "Goals",
+  "record.tab.avaliacoes": "Assessments",
+  "record.tab.cuidados": "Care plans",
   "record.tab.consultas": "Appointments",
   "summary.weight": "Current weight",
   "summary.sinceStart": "{delta} since the start",

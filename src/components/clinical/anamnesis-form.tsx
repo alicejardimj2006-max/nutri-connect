@@ -7,6 +7,8 @@ import { formatDate } from "@/lib/clinical/format";
 import { useClinicalI18n, type ClinicalKey } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
 import { Card, EmptyState, Field, Loading, buttonPrimary, inputClass } from "./ui";
+import { useTr } from "@/components/settings-ui";
+import { EXTRA_ANAMNESIS, type ProfessionKey } from "@/lib/clinical/professions";
 
 type Section = keyof Pick<AnamnesisData, "clinicalHistory" | "lifestyle" | "eating">;
 
@@ -14,12 +16,21 @@ export function AnamnesisForm({
   patientId,
   professionalId,
   readOnly,
+  profession = "nutricao",
+  compact = false,
 }: {
   patientId: string;
   professionalId: string;
   readOnly: boolean;
+  /** Profissão de quem atende: acrescenta a seção específica (médica, psicológica, de treino…). */
+  profession?: ProfessionKey;
+  /** Dentro da chamada: botão de salvar fixo no rodapé do painel. */
+  compact?: boolean;
 }) {
   const { t, locale } = useClinicalI18n();
+  const tr = useTr();
+  const extra = EXTRA_ANAMNESIS[profession];
+  const showEating = !["psicologia", "fisioterapia"].includes(profession);
   const query = useAnamnesis(patientId, professionalId);
   const [data, setData] = useState<AnamnesisData>({});
   const [dirty, setDirty] = useState(false);
@@ -104,6 +115,24 @@ export function AnamnesisForm({
         </p>
       )}
 
+      {extra && (
+        <Group title={tr(extra.title)}>
+          {extra.fields.map((f) => (
+            <Field key={f.key} label={tr(f.label)}>
+              <textarea
+                rows={f.rows ?? 2}
+                disabled={readOnly}
+                className={cn(inputClass, "resize-y")}
+                value={data.especifica?.[f.key] ?? ""}
+                onChange={(e) =>
+                  setTop("especifica", { ...(data.especifica ?? {}), [f.key]: e.target.value })
+                }
+              />
+            </Field>
+          ))}
+        </Group>
+      )}
+
       <Group title={t("anamnesis.section.main")}>
         {text("anamnesis.chiefComplaint", data.chiefComplaint ?? "", (v) =>
           setTop("chiefComplaint", v),
@@ -164,22 +193,24 @@ export function AnamnesisForm({
         </label>
       </Group>
 
-      <Group title={t("anamnesis.section.eating")}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {line("anamnesis.mealsPerDay", "eating", "mealsPerDay", "number")}
-          {line("anamnesis.whoCooks", "eating", "whoCooks")}
-          {line("anamnesis.eatsOut", "eating", "eatsOut")}
-          {line("anamnesis.cravings", "eating", "cravings")}
-          {line("anamnesis.preferences", "eating", "preferences")}
-          {line("anamnesis.aversions", "eating", "aversions")}
-        </div>
-        {text(
-          "anamnesis.recall24h",
-          String(nested("eating", "recall24h")),
-          (v) => setNested("eating", "recall24h", v),
-          4,
-        )}
-      </Group>
+      {showEating && (
+        <Group title={t("anamnesis.section.eating")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {line("anamnesis.mealsPerDay", "eating", "mealsPerDay", "number")}
+            {line("anamnesis.whoCooks", "eating", "whoCooks")}
+            {line("anamnesis.eatsOut", "eating", "eatsOut")}
+            {line("anamnesis.cravings", "eating", "cravings")}
+            {line("anamnesis.preferences", "eating", "preferences")}
+            {line("anamnesis.aversions", "eating", "aversions")}
+          </div>
+          {text(
+            "anamnesis.recall24h",
+            String(nested("eating", "recall24h")),
+            (v) => setNested("eating", "recall24h", v),
+            4,
+          )}
+        </Group>
+      )}
 
       <Group title={t("anamnesis.section.other")}>
         {text("anamnesis.labNotes", data.labNotes ?? "", (v) => setTop("labNotes", v))}
@@ -187,7 +218,12 @@ export function AnamnesisForm({
       </Group>
 
       {!readOnly && (
-        <div className="sticky bottom-20 z-10 flex justify-end lg:bottom-4">
+        <div
+          className={cn(
+            "sticky z-10 flex justify-end",
+            compact ? "bottom-0" : "bottom-20 lg:bottom-4",
+          )}
+        >
           <button
             type="submit"
             className={cn(buttonPrimary, "shadow-lg")}
