@@ -140,7 +140,7 @@ export function newBlock(type: BlockType, partial: Partial<Block> = {}): Block {
     text: "",
     image: null,
     items: [],
-    opts: { count: 4, view: "list", emoji: type === "sticker" ? "🥑" : "", hideTitle: false },
+    opts: { count: 4, view: "list", emoji: type === "sticker" ? "apple" : "", hideTitle: false },
     style: { ...DEFAULT_STYLE },
     ...partial,
   };

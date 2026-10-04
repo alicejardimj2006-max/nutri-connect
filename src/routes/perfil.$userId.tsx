@@ -10,6 +10,8 @@ import {
   Inbox,
   Lock,
   LogOut,
+  Mail,
+  Phone,
   MoreVertical,
   Paintbrush,
   Pencil,
@@ -545,8 +547,15 @@ function PublicProfilePage() {
                     <p className="mt-0.5 max-w-prose text-xs sm:text-sm text-muted-foreground">{profile.bio}</p>
                     {remote && <ProfileCounts remote={remote} isProfessional={isProfessional} />}
                     {isSelf && user && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        📧 {user.email} {user.phone ? ` · 📞 ${user.phone}` : ""}
+                      <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Mail className="h-3.5 w-3.5" /> {user.email}
+                        </span>
+                        {user.phone && (
+                          <span className="inline-flex items-center gap-1">
+                            <Phone className="h-3.5 w-3.5" /> {user.phone}
+                          </span>
+                        )}
                       </p>
                     )}
                     {!isSelf && !unavailable && <RemoteContact userId={userId} />}
@@ -716,10 +725,17 @@ function RemoteContact({ userId }: { userId: string }) {
   }, [userId]);
   if (!contact || (!contact.email && !contact.phone)) return null;
   return (
-    <p className="text-xs text-muted-foreground mt-1">
-      {contact.email && `📧 ${contact.email}`}
-      {contact.email && contact.phone ? " · " : ""}
-      {contact.phone ? `📞 ${contact.phone}` : ""}
+    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+      {contact.email && (
+        <span className="inline-flex items-center gap-1">
+          <Mail className="h-3.5 w-3.5" /> {contact.email}
+        </span>
+      )}
+      {contact.phone && (
+        <span className="inline-flex items-center gap-1">
+          <Phone className="h-3.5 w-3.5" /> {contact.phone}
+        </span>
+      )}
     </p>
   );
 }

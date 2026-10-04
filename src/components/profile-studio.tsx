@@ -23,6 +23,7 @@ import {
 } from "@/components/appearance-editor";
 import { BLOCK_INFO } from "@/components/profile-blocks";
 import { MediaUpload } from "@/components/profile-media";
+import { IconGrid, IconPickerButton } from "@/components/profile-icons";
 import {
   ColorsSection,
   ProfileSection,
@@ -41,11 +42,6 @@ const input =
 const ghostBtn =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50";
 
-const EMOJIS = [
-  "🥑", "🍎", "🍊", "🍋", "🍓", "🍇", "🍉", "🍌", "🥕", "🥦", "🌽", "🍅", "🥬", "🍆", "🫐", "🥭",
-  "🍞", "🥐", "🧀", "🥚", "🍗", "🐟", "🥩", "🍚", "🍝", "🥗", "🍲", "🌮", "🍕", "🍰", "🍫", "☕",
-  "💧", "🌱", "🌿", "🌻", "🌈", "⭐", "✨", "🔥", "💪", "🧘", "🏃", "🚴", "🏊", "📚", "🎵", "❤️",
-];
 
 // ── Barra de edição ──────────────────────────────────────────────────────────
 
@@ -194,24 +190,6 @@ function Field({ label, children, hint }: { label: string; children: ReactNode; 
   );
 }
 
-function EmojiPicker({ value, onPick }: { value: string; onPick: (emoji: string) => void }) {
-  return (
-    <div className="flex flex-wrap gap-1">
-      {EMOJIS.map((e) => (
-        <button
-          key={e}
-          type="button"
-          onClick={() => onPick(e)}
-          aria-pressed={value === e}
-          className={`grid h-8 w-8 cursor-pointer place-items-center rounded-lg text-lg transition hover:bg-secondary ${value === e ? "bg-accent-soft ring-1 ring-accent" : ""}`}
-        >
-          {e}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function ItemsEditor({
   items,
   onChange,
@@ -230,13 +208,7 @@ function ItemsEditor({
     <div className="space-y-2">
       {items.map((it, i) => (
         <div key={i} className="flex items-start gap-2 rounded-xl border border-border bg-card p-2">
-          <input
-            value={it.emoji}
-            onChange={(e) => set(i, { emoji: e.target.value.slice(0, 8) })}
-            placeholder="🙂"
-            className={`${input} !w-14 text-center`}
-            aria-label="Emoji"
-          />
+          <IconPickerButton value={it.emoji} onPick={(emoji) => set(i, { emoji })} label={tr(["Escolher ícone", "Choose icon", "Elegir icono", "Choisir une icône"])} />
           <div className="min-w-0 flex-1 space-y-1.5">
             <input
               value={it.label}
@@ -350,8 +322,7 @@ export function BlockEditor({
 
       {block.type === "sticker" && (
         <Group title={tr(["Adesivo", "Sticker", "Adhesivo", "Autocollant"])}>
-          <EmojiPicker value={block.opts.emoji} onPick={(emoji) => setOpts({ emoji })} />
-          <input value={block.opts.emoji} onChange={(e) => setOpts({ emoji: e.target.value.slice(0, 8) })} className={`${input} mt-2 !w-24 text-center text-lg`} aria-label="Emoji" />
+          <IconGrid value={block.opts.emoji} onPick={(emoji) => setOpts({ emoji })} />
         </Group>
       )}
 

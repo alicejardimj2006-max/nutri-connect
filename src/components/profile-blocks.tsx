@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PostCard } from "@/components/community-cards";
+import { ProfileIcon } from "@/components/profile-icons";
 import { useTr } from "@/components/appearance-editor";
 import { useI18n } from "@/hooks/use-i18n";
 import { td } from "@/lib/i18n/data";
@@ -32,6 +33,7 @@ import type { getProfessionalInfo } from "@/lib/community-admin";
 import type { PublicProfile } from "@/lib/social/api";
 import type { Names } from "@/lib/appearance-data";
 import { BLOCK_SIZES, type Block, type BlockType } from "@/lib/profile-page";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 /** Tudo que os blocos precisam saber sobre o perfil que está sendo exibido. */
 export interface ProfileData {
@@ -129,7 +131,7 @@ export const BLOCK_INFO: Record<BlockType, { icon: LucideIcon; name: Names; hint
   sticker: {
     icon: Smile,
     name: ["Adesivo", "Sticker", "Adhesivo", "Autocollant"],
-    hint: ["Um emoji grande para decorar.", "A big emoji to decorate.", "Un emoji grande para decorar.", "Un grand emoji pour décorer."],
+    hint: ["Um ícone grande para decorar.", "A big icon to decorate.", "Un icono grande para decorar.", "Une grande icône pour décorer."],
   },
 };
 
@@ -248,8 +250,9 @@ function ChallengesBlock({ block }: { block: Block }) {
             className="block rounded-xl bg-secondary/50 p-3 text-xs transition hover:bg-secondary"
           >
             <div className="flex items-center justify-between gap-2 font-bold text-foreground">
-              <span className="truncate">
-                {c.badgeIcon} {c.title}
+              <span className="flex min-w-0 items-center gap-1.5">
+                <EmojiIcon emoji={c.badgeIcon} className="h-4 w-4 shrink-0 text-accent" fallback={null} />
+                <span className="truncate">{c.title}</span>
               </span>
               {c.completedBy.includes(d.userId) && <Award className="h-3.5 w-3.5 shrink-0 text-primary" />}
             </div>
@@ -415,7 +418,7 @@ function LinksBlock({ block }: { block: Block }) {
             rel="noopener noreferrer nofollow ugc"
             className="flex items-center gap-3 rounded-xl bg-secondary/50 px-3 py-2.5 text-sm font-semibold transition hover:bg-secondary"
           >
-            <span className="text-lg">{it.emoji || "🔗"}</span>
+            <ProfileIcon value={it.emoji} fallback={Link2} className="h-5 w-5 shrink-0" />
             <span className="min-w-0 flex-1">
               <span className="block truncate">{it.label || hostOf(it.url)}</span>
               <span className="block truncate text-[11px] font-normal opacity-60">{hostOf(it.url)}</span>
@@ -435,7 +438,7 @@ function FavoritesBlock({ block }: { block: Block }) {
     <ul className="flex flex-wrap gap-2" style={{ justifyContent: block.style.align === "center" ? "center" : block.style.align === "right" ? "flex-end" : "flex-start" }}>
       {block.items.map((it, i) => (
         <li key={i} className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
-          <span>{it.emoji}</span>
+          {it.emoji && <ProfileIcon value={it.emoji} className="h-4 w-4" />}
           {it.label}
         </li>
       ))}
@@ -445,8 +448,13 @@ function FavoritesBlock({ block }: { block: Block }) {
 
 function StickerBlock({ block }: { block: Block }) {
   return (
-    <div className="grid h-full place-items-center overflow-hidden" style={{ fontSize: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)) }}>
-      <span className="leading-none">{block.opts.emoji || "🥑"}</span>
+    <div className="grid h-full place-items-center overflow-hidden text-accent">
+      <span
+        className="block [&>svg]:h-full [&>svg]:w-full"
+        style={{ width: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)), height: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)) }}
+      >
+        <ProfileIcon value={block.opts.emoji || "apple"} className="" strokeWidth={1.6} />
+      </span>
     </div>
   );
 }
