@@ -70,7 +70,9 @@ function IdiomaPage() {
                 }`}
               >
                 <span className="flex items-center gap-3">
-                  <span className="text-2xl">{l.flag}</span>
+                  <span className="grid h-9 w-11 shrink-0 place-items-center rounded-lg bg-secondary text-xs font-black tracking-wider text-foreground">
+                    {l.flag}
+                  </span>
                   <span>
                     <span className="block text-sm font-bold text-foreground">{l.name}</span>
                     <span className="block text-[11px] text-muted-foreground">{l.namePt}</span>

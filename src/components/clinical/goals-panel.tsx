@@ -17,6 +17,7 @@ import {
   buttonSecondary,
   inputClass,
 } from "./ui";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export function GoalsPanel({ patientId, readOnly }: { patientId: string; readOnly: boolean }) {
   const { t, locale } = useClinicalI18n();
@@ -68,10 +69,10 @@ export function GoalsPanel({ patientId, readOnly }: { patientId: string; readOnl
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-xl"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-accent"
                     aria-hidden
                   >
-                    {g.icon}
+                    <EmojiIcon emoji={g.icon} className="h-5 w-5" fallback={null} />
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{g.title}</p>
@@ -209,13 +210,13 @@ export function GoalForm({
                 aria-pressed={icon === i}
                 onClick={() => setIcon(i)}
                 className={cn(
-                  "grid h-10 w-10 place-items-center rounded-xl border text-xl transition",
+                  "grid h-10 w-10 place-items-center rounded-xl border transition",
                   icon === i
-                    ? "border-primary bg-primary-soft"
-                    : "border-border bg-background hover:bg-secondary",
+                    ? "border-primary bg-primary-soft text-primary"
+                    : "border-border bg-background text-foreground hover:bg-secondary",
                 )}
               >
-                {i}
+                <EmojiIcon emoji={i} className="h-5 w-5" />
               </button>
             ))}
           </div>

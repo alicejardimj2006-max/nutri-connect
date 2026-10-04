@@ -4,8 +4,19 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Apple,
+  Carrot,
   CheckCircle2,
   ChefHat,
+  Cherry,
+  Citrus,
+  Heart,
+  LeafyGreen,
+  Leaf,
+  PartyPopper,
+  Sparkles,
+  Star,
+  type LucideIcon,
   Copy,
   Dices,
   Flame,
@@ -27,6 +38,7 @@ import {
   Wind,
   X,
 } from "lucide-react";
+import { EmojiIcon } from "@/components/emoji-icon";
 import { Panel } from "@/components/rail-cards";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunity } from "@/hooks/use-community";
@@ -89,19 +101,31 @@ function useBurst() {
   return [id, fire] as const;
 }
 
-const BURST = ["🎉", "✨", "🥕", "🍎", "🥦", "🍊", "⭐", "🥑", "🍓", "🎊"];
+// Confete de ícones nas cores da marca (sem emojis).
+const BURST: { icon: LucideIcon; color: string }[] = [
+  { icon: PartyPopper, color: "#d9692a" },
+  { icon: Sparkles, color: "#c58a12" },
+  { icon: Carrot, color: "#d9692a" },
+  { icon: Apple, color: "#d6456b" },
+  { icon: LeafyGreen, color: "#4f8a4b" },
+  { icon: Citrus, color: "#e8b13b" },
+  { icon: Star, color: "#c58a12" },
+  { icon: Heart, color: "#d6456b" },
+  { icon: Cherry, color: "#be185d" },
+  { icon: Leaf, color: "#4f8a4b" },
+];
 
 function Burst({ id }: { id: number }) {
   if (!id) return null;
   return (
     <div key={id} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
-      {BURST.map((emoji, i) => {
+      {BURST.map(({ icon: Icon, color }, i) => {
         const angle = (i / BURST.length) * Math.PI * 2;
         const radius = 90 + (i % 3) * 28;
         return (
           <span
             key={i}
-            className="nc-burst absolute left-1/2 top-1/2 text-xl"
+            className="nc-burst absolute left-1/2 top-1/2"
             style={
               {
                 "--dx": `${Math.round(Math.cos(angle) * radius)}px`,
@@ -110,7 +134,7 @@ function Burst({ id }: { id: number }) {
               } as React.CSSProperties
             }
           >
-            {emoji}
+            <Icon className="h-5 w-5" style={{ color }} strokeWidth={2.2} />
           </span>
         );
       })}
@@ -472,6 +496,11 @@ const FOODS: Food[] = [
 
 const MAX_ON_PLATE = 6;
 
+/** Cor de cada grupo do prato (verduras, proteínas, energia). */
+const GROUP_COLOR: Record<Group, string> = { veg: "#4f8a4b", protein: "#d9692a", carb: "#c58a12" };
+/** Cor de cada humor, do mais animado ao mais difícil. */
+const MOOD_COLORS = ["#4f8a4b", "#84a331", "#c58a12", "#d6456b"];
+
 /** Monte o prato tocando nos alimentos: o card avalia o equilíbrio (metade legumes e verduras). */
 export function PlateBuilderCard() {
   const tr = useTr();
@@ -523,7 +552,11 @@ export function PlateBuilderCard() {
             className="grid h-8 w-8 cursor-pointer place-items-center rounded-full text-xl transition hover:scale-110 disabled:cursor-default"
             aria-label={plate[slot] !== undefined ? tr(FOODS[plate[slot]].name) : undefined}
           >
-            {plate[slot] !== undefined ? <span className="nc-pop-in">{FOODS[plate[slot]].emoji}</span> : null}
+            {plate[slot] !== undefined ? (
+              <span className="nc-pop-in" style={{ color: GROUP_COLOR[FOODS[plate[slot]].group] }}>
+                <EmojiIcon emoji={FOODS[plate[slot]].emoji} className="h-5 w-5" />
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -539,7 +572,9 @@ export function PlateBuilderCard() {
             disabled={plate.length >= MAX_ON_PLATE}
             className={`${iconBtn} disabled:opacity-40`}
           >
-            <span className="text-base leading-none">{f.emoji}</span>
+            <span style={{ color: GROUP_COLOR[f.group] }}>
+              <EmojiIcon emoji={f.emoji} className="h-4 w-4" />
+            </span>
             {tr(f.name)}
           </button>
         ))}
@@ -945,7 +980,9 @@ export function HabitCheckinCard() {
                   on ? "border-accent/40 bg-accent/10 text-foreground" : "border-border/70 bg-secondary/40 text-muted-foreground hover:bg-secondary"
                 }`}
               >
-                <span className="text-lg">{h.emoji}</span>
+                <span className="text-accent">
+                  <EmojiIcon emoji={h.emoji} className="h-5 w-5" />
+                </span>
                 <span className="flex-1">{tr(h.name)}</span>
                 <CheckCircle2 className={`h-4 w-4 ${on ? "text-accent" : "text-muted-foreground/40"}`} />
               </button>
@@ -1284,7 +1321,9 @@ export function MoodCard() {
               picked === i ? "border-accent bg-accent/10" : "border-border/70 bg-secondary/40 hover:bg-secondary"
             }`}
           >
-            <span className="text-2xl leading-none">{m.emoji}</span>
+            <span style={{ color: MOOD_COLORS[i] }}>
+              <EmojiIcon emoji={m.emoji} className="h-7 w-7" />
+            </span>
             <span className="text-[10px] font-semibold text-muted-foreground">{tr(m.label)}</span>
           </button>
         ))}

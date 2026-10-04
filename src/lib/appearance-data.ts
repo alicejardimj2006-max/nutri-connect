@@ -1,5 +1,6 @@
 // Listas usadas pela personalização: paletas, fontes e modelos prontos de cada cartão.
 // Os nomes têm 4 idiomas, na ordem [pt-BR, en, es, fr].
+import { stripEmoji } from "@/lib/emoji";
 import type { Appearance } from "./appearance";
 
 export type Names = readonly [string, string, string, string];
@@ -8,7 +9,8 @@ const LOCALE_ORDER = ["pt-BR", "en", "es", "fr"] as const;
 /** Nome no idioma da pessoa (cai no português se o idioma for desconhecido). */
 export function pickName(names: Names, locale: string): string {
   const i = LOCALE_ORDER.indexOf(locale as (typeof LOCALE_ORDER)[number]);
-  return names[i < 0 ? 0 : i];
+  // O site não usa emojis nos textos.
+  return stripEmoji(names[i < 0 ? 0 : i]);
 }
 
 // ---------------------------------------------------------------------------

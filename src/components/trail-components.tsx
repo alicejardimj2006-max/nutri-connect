@@ -28,6 +28,7 @@ import { burstFrom } from "@/lib/confetti";
 import { useI18n } from "@/hooks/use-i18n";
 import { LEVEL_LABEL_KEYS } from "@/lib/i18n/content";
 import type { DictKey } from "@/lib/i18n";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 /* ---------------------------------- XP ---------------------------------- */
 
@@ -89,8 +90,8 @@ export function StreakBadge({ streak }: { streak: number }) {
         active ? "border-orange-500/25 bg-orange-500/10" : "border-border bg-secondary/40"
       }`}
     >
-      <div className={`text-3xl drop-shadow-sm ${active ? "nc-flame" : "grayscale opacity-50"}`}>
-        🔥
+      <div className={`drop-shadow-sm ${active ? "nc-flame text-orange-500" : "text-muted-foreground opacity-50"}`}>
+        <EmojiIcon emoji="🔥" className="h-8 w-8" />
       </div>
       <div>
         <div
@@ -147,7 +148,13 @@ function DailyGoalRing({ xp, goal }: { xp: number; goal: number }) {
           />
         </svg>
         <span className="absolute inset-0 grid place-items-center text-lg">
-          {done ? <span className="nc-pop">✅</span> : <Target className="h-5 w-5 text-sky-500" />}
+          {done ? (
+            <span className="nc-pop text-emerald-500">
+              <EmojiIcon emoji="✅" className="h-6 w-6" />
+            </span>
+          ) : (
+            <Target className="h-5 w-5 text-sky-500" />
+          )}
         </span>
       </div>
       <div>
@@ -244,7 +251,9 @@ export function TrailHeader(props: TrailHeaderProps) {
             <StreakBadge streak={props.streak} />
             <DailyGoalRing xp={props.dailyXP} goal={props.dailyGoal} />
             <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-amber-500/25 bg-amber-500/10 px-4 py-3">
-              <div className="text-3xl drop-shadow-sm">⭐</div>
+              <div className="text-amber-500 drop-shadow-sm">
+                <EmojiIcon emoji={"⭐"} className="h-8 w-8" />
+              </div>
               <div>
                 <div className="text-lg font-black leading-none text-amber-600 dark:text-amber-400">
                   {props.stars}/{props.maxStars}
@@ -353,10 +362,10 @@ export function TrailHero({ variant, name }: { variant: ProfileKind; name: strin
         {HERO_FLOATERS.map((f, i) => (
           <span
             key={i}
-            className="nc-fall absolute top-0 text-2xl opacity-0"
+            className="nc-fall absolute top-0 text-white/85 opacity-0"
             style={{ left: `${f.l}%`, animationDelay: `${f.d}s`, animationDuration: `${f.t}s` }}
           >
-            {f.e}
+            <EmojiIcon emoji={f.e} className="h-6 w-6" />
           </span>
         ))}
       </div>
@@ -463,8 +472,10 @@ export function TrailPicker({
                     <Icon className="h-6 w-6" strokeWidth={1.8} />
                   </span>
                 ) : (
-                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/70 text-3xl shadow-inner dark:bg-white/10">
-                    <span className={selected ? "nc-bob" : ""}>{trail.icon}</span>
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/70 text-primary shadow-inner dark:bg-white/10">
+                    <span className={selected ? "nc-bob" : ""}>
+                      <EmojiIcon emoji={trail.icon} className="h-7 w-7" />
+                    </span>
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
@@ -541,7 +552,11 @@ export function TrailAchievements({ unlocked }: { unlocked: string[] }) {
                   has ? "bg-white/70 shadow-inner dark:bg-white/10" : "bg-secondary"
                 }`}
               >
-                {has ? a.icon : <Lock className="h-5 w-5 text-muted-foreground/60" />}
+                {has ? (
+                  <EmojiIcon emoji={a.icon} className="h-6 w-6 text-amber-500" />
+                ) : (
+                  <Lock className="h-5 w-5 text-muted-foreground/60" />
+                )}
               </span>
               <div className="min-w-0">
                 <p
@@ -587,8 +602,8 @@ export function CommunityChallengeGroup({
   return (
     <div className="rounded-[2rem] border-2 border-border bg-card p-6 shadow-sm sm:p-8">
       <div className="mb-6 flex items-center gap-4">
-        <div className="nc-wobble grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-2xl shadow-inner">
-          👥
+        <div className="nc-wobble grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary shadow-inner">
+          <EmojiIcon emoji="👥" className="h-7 w-7" />
         </div>
         <div>
           <Link
@@ -632,7 +647,7 @@ export function CommunityChallengeGroup({
                     : "border-2 border-border bg-secondary"
                 }`}
               >
-                {isCompleted ? <CheckCircle2 className="h-6 w-6 text-white" /> : c.badgeIcon}
+                {isCompleted ? <CheckCircle2 className="h-6 w-6 text-white" /> : <EmojiIcon emoji={c.badgeIcon} className="h-5 w-5" />}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black text-foreground">{c.title}</p>

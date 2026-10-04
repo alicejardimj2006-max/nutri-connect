@@ -56,6 +56,7 @@ import { COMPANY } from "@/lib/legal";
 import { useFeed } from "@/lib/social/feed-queries";
 import { useFriends } from "@/lib/social/queries";
 import { ADULT_PROFILE_ID } from "@/lib/trail-profiles";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 /** Moldura padrão de um card lateral. */
 export function Panel({
@@ -319,7 +320,7 @@ export function MyChallengesCard() {
                   className="block rounded-xl bg-secondary/50 p-3 transition hover:bg-secondary"
                 >
                   <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <span>{c.badgeIcon}</span>
+                    <EmojiIcon emoji={c.badgeIcon} className="h-3.5 w-3.5 shrink-0 text-accent" fallback={null} />
                     <span className="truncate">{c.title}</span>
                   </span>
                   {total > 0 && (
@@ -849,7 +850,9 @@ export function ChallengeInfoCard({ id }: { id: string }) {
   return (
     <Panel title={tr(["Sobre o desafio", "About the challenge", "Sobre el desafío", "À propos du défi"])}>
       <div className="flex items-center gap-3">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-2xl">{c.badgeIcon}</span>
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent">
+          <EmojiIcon emoji={c.badgeIcon} className="h-6 w-6" />
+        </span>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-foreground">{c.badgeLabel}</p>
           <p className="text-[11px] text-muted-foreground">{c.duration}</p>

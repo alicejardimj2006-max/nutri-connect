@@ -21,6 +21,7 @@ import {
   type Unit,
 } from "@/lib/learning-trail";
 import { getUserLevel } from "@/lib/community";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export interface LessonModalProps {
   stop: Stop;
@@ -325,7 +326,7 @@ function TrueFalseView({
               activity.isTrue === v,
             )}`}
           >
-            <span className="text-3xl sm:text-4xl">{v ? "👍" : "👎"}</span>
+            <EmojiIcon emoji={v ? "👍" : "👎"} className="h-7 w-7 sm:h-8 sm:w-8" />
             {v ? t("lm.true") : t("lm.false")}
           </button>
         ))}
@@ -601,7 +602,7 @@ function ConceptView({ activity }: { activity: Extract<Activity, { type: "concep
         )}
         <div className="mb-2 min-w-0 flex-1">
           <p className="text-[11px] font-black uppercase tracking-widest text-primary">
-            {activity.emoji && <span className="mr-1">{activity.emoji}</span>}
+            {activity.emoji && <EmojiIcon emoji={activity.emoji} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" fallback={null} />}
             {t("lm.beforeStart")}
           </p>
           <h2 className="font-display text-xl font-extrabold leading-snug text-foreground sm:text-3xl">
@@ -792,8 +793,8 @@ function ScenarioView({
   return (
     <div className="nc-rise">
       <div className="mb-5 flex items-start gap-3 rounded-3xl border-2 border-dashed border-accent/40 bg-accent/5 p-4 sm:p-5">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/15 text-lg">
-          📖
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent">
+          <EmojiIcon emoji="📖" className="h-5 w-5" />
         </span>
         <div className="min-w-0">
           <p className="mb-1 text-[11px] font-black uppercase tracking-widest text-accent">
@@ -1186,7 +1187,7 @@ export function LessonModal({
             <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center py-4">
               <div className="mb-4 flex items-center gap-2">
                 <span className="rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
-                  {meta.emoji}{" "}
+                  <EmojiIcon emoji={meta.emoji} className="mr-1 inline h-3 w-3 align-[-1px]" fallback={null} />
                   {t("tm.levelN")
                     .replace("{n}", String(level))
                     .replace("{label}", t(`lv.${level}.label` as DictKey))}
@@ -1658,7 +1659,7 @@ function Chip({
     <div
       className={`nc-pop flex items-center justify-center gap-2 rounded-2xl border-2 px-3 py-2 text-sm font-black ${tones[tone]}`}
     >
-      <span className="text-xl">{icon}</span>
+      <EmojiIcon emoji={icon} className="h-5 w-5" />
       {text}
     </div>
   );
@@ -1667,7 +1668,9 @@ function Chip({
 function AchievementChip({ a }: { a: AchievementDef }) {
   return (
     <div className="nc-pop flex items-center gap-3 rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-100/80 to-yellow-100/50 px-3 py-2 text-left dark:from-amber-500/15 dark:to-yellow-500/10">
-      <span className="text-3xl">{a.icon}</span>
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400/25 text-amber-600">
+        <EmojiIcon emoji={a.icon} className="h-6 w-6" fallback={null} />
+      </span>
       <div>
         <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">
           {t("lm.newAchievement")}

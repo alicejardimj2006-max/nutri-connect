@@ -16,6 +16,8 @@ import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
+import { stripEmoji } from "@/lib/emoji";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export const Route = createFileRoute("/tema-da-semana")({
   head: () => ({
@@ -102,7 +104,7 @@ function TemaDaSemanaPage() {
                 <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10 pr-6">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
                     <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider">
-                      {weeklyTheme.badge}
+                      {stripEmoji(weeklyTheme.badge ?? "")}
                     </span>
                     <span className="text-xs font-medium text-white/90">
                       {weeklyTheme.currentWeek}
@@ -262,10 +264,12 @@ function TemaDaSemanaPage() {
                         </p>
                         <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
                           <span>
-                            🥗 {pt.recipesCount} {t("theme.recipesCount")}
+                            <EmojiIcon emoji={"🥗"} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
+                            {pt.recipesCount} {t("theme.recipesCount")}
                           </span>
                           <span>
-                            💬 {pt.reflectionsCount} {t("theme.storiesCount")}
+                            <EmojiIcon emoji={"💬"} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
+                            {pt.reflectionsCount} {t("theme.storiesCount")}
                           </span>
                         </div>
                       </div>

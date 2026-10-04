@@ -36,6 +36,7 @@ import {
 import { useTrailProfiles } from "@/lib/trail-profiles";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export const Route = createFileRoute("/desafios/")({
   head: () => ({
@@ -236,7 +237,7 @@ function DesafiosIndexPage() {
                       : "border-border bg-secondary/30 opacity-60"
                   }`}
                 >
-                  <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
+                  <EmojiIcon emoji={badge.achieved ? badge.icon : "🔒"} className={`h-4 w-4 ${badge.achieved ? "text-accent" : "text-muted-foreground"}`} />
                   <span className="text-[11px] font-bold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}
@@ -369,7 +370,9 @@ function DesafiosIndexPage() {
 
                 {userCommunityChallenges.length === 0 ? (
                   <div className="py-16 text-center rounded-3xl border bg-card p-8">
-                    <div className="text-4xl mb-3">👥</div>
+                    <div className="mb-3 flex justify-center text-muted-foreground">
+                      <EmojiIcon emoji="👥" className="h-10 w-10" strokeWidth={1.5} />
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">{t("dz.noCommChallenges")}</p>
                     <Link
                       to="/comunidades"

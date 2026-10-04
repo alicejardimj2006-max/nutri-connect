@@ -514,10 +514,10 @@ const es: PresentationCopy = {
   mock: {
     post1Name: "Ana Beatriz",
     post1Time: "hace 12 min",
-    post1Text: "¡Primera vez haciendo overnight oats! Quedó genial con plátano y canela 🍌",
+    post1Text: "¡Primera vez haciendo overnight oats! Quedó genial con plátano y canela",
     post2Name: "Dra. Camila Jardim",
     post2Time: "hace 1 h",
-    post2Text: "Consejo rápido: empieza el plato por las verduras. La fibra ayuda a la saciedad 🥗",
+    post2Text: "Consejo rápido: empieza el plato por las verduras. La fibra ayuda a la saciedad",
     profileName: "Juliana Martins",
     profileBio: "Aprendiendo a comer mejor, un día a la vez.",
     nextLevel: "Siguiente nivel",

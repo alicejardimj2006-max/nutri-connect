@@ -10,6 +10,7 @@ import {
   type ShapeId,
   type TextFontId,
 } from "./image-edit-data";
+import { emojiIconPath } from "@/components/emoji-icon";
 
 export type AdjustKey =
   | "exposure"
@@ -745,10 +746,21 @@ function drawSticker(ctx: Ctx, o: StickerOverlay, outW: number, outH: number) {
   if (o.flip) ctx.scale(-1, 1);
   const size = Math.max(8, o.size * outW);
   if (o.kind === "emoji") {
-    ctx.font = `${size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(o.glyph, 0, size * 0.06);
+    // Adesivo de ícone: o contorno do ícone (24×24) com um halo branco para destacar sobre a foto.
+    const path = emojiIconPath(o.glyph);
+    if (path) {
+      const k = size / 24;
+      ctx.scale(k, k);
+      ctx.translate(-12, -12);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(255,255,255,0.92)";
+      ctx.lineWidth = 4.5;
+      ctx.stroke(path);
+      ctx.strokeStyle = o.color;
+      ctx.lineWidth = 2.2;
+      ctx.stroke(path);
+    }
   } else {
     const r = size / 2;
     shapePath(ctx, o.glyph as ShapeId, r);

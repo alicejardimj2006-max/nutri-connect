@@ -5,6 +5,7 @@ import type { PresentationCopy } from "@/lib/i18n/presentation";
 import { FoodField, useStatic } from "./effects";
 import { Blob, Frame, Heading, Scene, StageNina, Words } from "./layout";
 import type { SlideApi } from "./slides";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 // As 5 partes da apresentação: uma por integrante. A ordem aqui é a ordem de apresentação e
 // corresponde a copy.parts (títulos traduzidos).
@@ -97,7 +98,9 @@ export function PresenterAvatar({
       className={`relative grid shrink-0 place-items-center rounded-full bg-gradient-to-br font-display font-bold text-[#342d24] ${presenter.gradient} ${box}`}
     >
       {initials(presenter.name)}
-      <span className={`absolute ${badge}`}>{presenter.emoji}</span>
+      <span className={`absolute ${badge} text-[#342d24]`}>
+        <EmojiIcon emoji={presenter.emoji} className="h-[1em] w-[1em]" tinted />
+      </span>
     </span>
   );
 }
@@ -198,7 +201,7 @@ export function PartDivider({
                     i === index ? "h-9 w-9 bg-white text-lg" : "h-6 w-6 bg-white/15 text-xs"
                   } ${i < index ? "opacity-60" : ""}`}
                 >
-                  {other.emoji}
+                  <EmojiIcon emoji={other.emoji} className="h-[1em] w-[1em]" tinted />
                 </span>
               ))}
             </div>
@@ -285,8 +288,8 @@ export function TeamRoster({
                       <span className="font-display text-5xl font-bold text-[#342d24]/80">
                         {initials(p.name)}
                       </span>
-                      <span className="nc-floaty absolute bottom-2 right-3 text-3xl">
-                        {p.emoji}
+                      <span className="nc-floaty absolute bottom-2 right-3">
+                        <EmojiIcon emoji={p.emoji} className="h-8 w-8" tinted />
                       </span>
                     </div>
                     <figcaption className="mt-2.5 text-center">
@@ -310,7 +313,7 @@ export function TeamRoster({
           </div>
         </div>
         <p className="mt-6 text-center text-xs text-muted-foreground print:hidden">
-          👆 {c.team.pickHint} · ⌨️ {c.ui.partsHint}
+          {c.team.pickHint} · {c.ui.partsHint}
         </p>
       </Frame>
     </Scene>
@@ -360,7 +363,8 @@ export function NinaIntroSlide({ c }: { c: PresentationCopy }) {
               className="nc-pop mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground"
               style={{ animationDelay: "500ms" }}
             >
-              🥼 {n.role}
+              <EmojiIcon emoji={"🥼"} className="h-3.5 w-3.5" />
+              {n.role}
             </span>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {n.traits.map((trait, i) => (
@@ -369,7 +373,9 @@ export function NinaIntroSlide({ c }: { c: PresentationCopy }) {
                   className="nc-rise flex gap-3 rounded-2xl border border-border bg-card p-4 shadow-card transition hover:-translate-y-0.5"
                   style={{ animationDelay: `${600 + i * 120}ms` }}
                 >
-                  <span className="text-2xl">{TRAIT_EMOJIS[i]}</span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
+                    <EmojiIcon emoji={TRAIT_EMOJIS[i]} className="h-5 w-5" />
+                  </span>
                   <div>
                     <h3 className="font-display text-base font-bold leading-snug">{trait.title}</h3>
                     <p className="mt-1 text-sm leading-snug text-muted-foreground">{trait.text}</p>
@@ -405,7 +411,7 @@ export function NinaIntroSlide({ c }: { c: PresentationCopy }) {
                       : "border-border bg-card hover:bg-secondary"
                   }`}
                 >
-                  <span className="text-lg">{b.emoji}</span>
+                  <EmojiIcon emoji={b.emoji} className="h-4 w-4" />
                   {n.actions[b.key]}
                 </button>
               ))}

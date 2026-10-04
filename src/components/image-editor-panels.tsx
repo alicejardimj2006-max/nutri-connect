@@ -1,5 +1,6 @@
 // Painéis das ferramentas de camadas do editor de fotos: texto, adesivos, desenho/censura e moldura.
 import { useState } from "react";
+import { EmojiIcon, tintForEmoji } from "@/components/emoji-icon";
 import {
   AlignCenter,
   AlignLeft,
@@ -321,7 +322,7 @@ export function StickerPanel({ ctx }: { ctx: PanelCtx }) {
       type: "sticker",
       kind,
       glyph,
-      color: "#ff4f9a",
+      color: (kind === "emoji" && tintForEmoji(glyph)) || "#ff4f9a",
       x: 0.5,
       y: 0.5,
       size: kind === "emoji" ? 0.14 : 0.16,
@@ -365,9 +366,9 @@ export function StickerPanel({ ctx }: { ctx: PanelCtx }) {
               key={g}
               type="button"
               onClick={() => add("emoji", g)}
-              className="rounded-lg p-1 text-xl leading-none transition hover:bg-secondary cursor-pointer"
+              className="grid place-items-center rounded-lg p-1.5 leading-none transition hover:bg-secondary cursor-pointer"
             >
-              {g}
+              <EmojiIcon emoji={g} tinted className="h-5 w-5" />
             </button>
           ))}
         </div>
@@ -412,9 +413,7 @@ export function StickerPanel({ ctx }: { ctx: PanelCtx }) {
             onChange={(v) => set({ opacity: v / 100 }, true)}
           />
           <Toggle label={tr(["Espelhar", "Flip", "Reflejar", "Retourner"])} checked={sel.flip} onChange={(flip) => set({ flip })} />
-          {sel.kind === "shape" && (
-            <ColorRow label={tr(["Cor", "Color", "Color", "Couleur"])} value={sel.color} onChange={(c) => c && set({ color: c })} />
-          )}
+          <ColorRow label={tr(["Cor", "Color", "Color", "Couleur"])} value={sel.color} onChange={(c) => c && set({ color: c })} />
           <LayerActions ctx={ctx} overlay={sel} />
         </>
       )}

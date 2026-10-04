@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
 import { Tape, useDelayedFlag, useStatic } from "./effects";
 import { StageNina } from "./layout";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 // Peças visuais únicas de cada slide (gráficos vivos, Venn, órbita, editor de código, mapa...).
 
@@ -28,7 +29,9 @@ function RingGauge({ percent, emoji }: { percent: number; emoji: string }) {
           style={{ "--nc-from": percent, animationDelay: "0.3s" } as React.CSSProperties}
         />
       </svg>
-      <span className="absolute inset-0 grid place-items-center text-3xl">{emoji}</span>
+      <span className="absolute inset-0 grid place-items-center text-primary">
+        <EmojiIcon emoji={emoji} className="h-8 w-8" />
+      </span>
     </div>
   );
 }
@@ -64,7 +67,7 @@ function PlatesRow() {
           }`}
           style={{ animationDelay: `${300 + i * 110}ms` }}
         >
-          🥗
+          <EmojiIcon emoji={"🥗"} className="h-[1em] w-[1em]" tinted />
         </span>
       ))}
     </div>
@@ -81,8 +84,9 @@ function BarsCompare({ pro, web }: { pro: string; web: string }) {
       {rows.map((r, i) => (
         <div key={r.label}>
           <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              {r.emoji} {r.label}
+            <span className="flex items-center gap-1">
+              <EmojiIcon emoji={r.emoji} className="h-3.5 w-3.5" />
+              {r.label}
             </span>
             <span className="font-semibold text-foreground">{r.value}%</span>
           </div>
@@ -215,7 +219,7 @@ export function FlipCard({
   if (isStatic) {
     return (
       <article className="rounded-3xl border border-border bg-card p-5 shadow-card">
-        <span className="text-4xl">{emoji}</span>
+        <span className="text-primary"><EmojiIcon emoji={emoji} className="h-10 w-10" /></span>
         <h3 className="mt-3 text-lg font-bold leading-snug">{title}</h3>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
       </article>
@@ -240,10 +244,10 @@ export function FlipCard({
           }`}
         >
           <span
-            className="nc-floaty text-6xl drop-shadow"
+            className="nc-floaty text-primary drop-shadow"
             style={{ animationDelay: `${index * 0.4}s` }}
           >
-            {emoji}
+            <EmojiIcon emoji={emoji} className="h-16 w-16" strokeWidth={1.5} />
           </span>
           <span className="mt-4 font-display text-xl font-bold leading-snug">{title}</span>
           <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium opacity-80">
@@ -285,7 +289,8 @@ export function ThoughtBubbles({ items }: { items: string[] }) {
             className="nc-floaty relative block rounded-2xl border border-border bg-card px-3 py-2 text-xs font-medium leading-snug shadow-card"
             style={{ animationDelay: `${i * 0.8}s`, animationDuration: "7s" }}
           >
-            💭 {it}
+            <EmojiIcon emoji={"💭"} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
+            {it}
           </span>
         </span>
       ))}
@@ -494,7 +499,7 @@ export function CompetitorOrbit({ c }: { c: PresentationCopy }) {
               </span>
             </p>
           </article>
-          <p className="mt-3 text-xs text-muted-foreground">👆 {k.pickHint}</p>
+          <p className="mt-3 text-xs text-muted-foreground">{k.pickHint}</p>
         </div>
       )}
     </div>

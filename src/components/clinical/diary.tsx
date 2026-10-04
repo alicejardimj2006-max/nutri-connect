@@ -33,6 +33,7 @@ import {
   buttonPrimary,
   inputClass,
 } from "./ui";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 const MOODS = ["😊", "😌", "😐", "😣", "😴", "😤"];
 
@@ -229,13 +230,13 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
                   aria-pressed={mood === m}
                   onClick={() => setMood(mood === m ? null : m)}
                   className={cn(
-                    "grid h-8 w-8 place-items-center rounded-lg border text-lg transition",
+                    "grid h-8 w-8 place-items-center rounded-lg border transition",
                     mood === m
-                      ? "border-primary bg-primary-soft"
+                      ? "border-primary bg-primary-soft text-primary"
                       : "border-border bg-background hover:bg-secondary",
                   )}
                 >
-                  {m}
+                  <EmojiIcon emoji={m} className="h-4.5 w-4.5" />
                 </button>
               ))}
             </div>
@@ -442,7 +443,9 @@ function EntryCard({
               </span>
             )}
             {entry.mood && (
-              <span className="rounded-full bg-secondary px-2 py-0.5">{entry.mood}</span>
+              <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5">
+                <EmojiIcon emoji={entry.mood} className="h-3.5 w-3.5" />
+              </span>
             )}
             {entry.followed_plan !== null && (
               <span

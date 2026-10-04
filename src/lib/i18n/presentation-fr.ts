@@ -518,11 +518,11 @@ const fr: PresentationCopy = {
   mock: {
     post1Name: "Ana Beatriz",
     post1Time: "il y a 12 min",
-    post1Text: "Premiers overnight oats ! Super bons avec banane et cannelle 🍌",
+    post1Text: "Premiers overnight oats ! Super bons avec banane et cannelle",
     post2Name: "Dr Camila Jardim",
     post2Time: "il y a 1 h",
     post2Text:
-      "Astuce : commencez votre assiette par les légumes. Les fibres aident à la satiété 🥗",
+      "Astuce : commencez votre assiette par les légumes. Les fibres aident à la satiété",
     profileName: "Juliana Martins",
     profileBio: "J'apprends à mieux manger, un jour à la fois.",
     nextLevel: "Niveau suivant",

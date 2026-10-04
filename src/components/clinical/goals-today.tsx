@@ -9,6 +9,7 @@ import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
 import { GoalForm, WeekStrip } from "./goals-panel";
 import { EmptyState, Loading, buttonGhost, buttonSecondary } from "./ui";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 /** Check-in de hoje nas metas ativas (visão do paciente). */
 export function TodayGoals({ patientId, compact }: { patientId: string; compact?: boolean }) {
@@ -96,10 +97,10 @@ function GoalCheckinCard({
     >
       <div className="flex items-start gap-3">
         <span
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-xl"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-accent"
           aria-hidden
         >
-          {goal.icon}
+          <EmojiIcon emoji={goal.icon} className="h-5 w-5" fallback={null} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground">{goal.title}</p>

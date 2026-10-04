@@ -1,6 +1,7 @@
 // Idioma da plataforma: carregamento, troca e tradução. Segue o mesmo padrão de
 // src/lib/appearance.ts (localStorage + evento customizado, sem Context).
 
+import { stripEmoji } from "@/lib/emoji";
 import { DEFAULT_LOCALE, detectBrowserLocale, isLocale, localeMeta, type Locale } from "./locales";
 import ptBR, { type DictKey } from "./pt-BR";
 import en from "./en";
@@ -65,13 +66,13 @@ export function initI18n(): () => void {
 /** Traduz uma chave para o idioma atualmente salvo. */
 export function t(key: DictKey): string {
   const dict = DICTS[loadLocale()];
-  return dict[key] ?? ptBR[key] ?? key;
+  return stripEmoji(dict[key] ?? ptBR[key] ?? key);
 }
 
 /** Traduz uma chave para um idioma específico (usado pelo hook, que já sabe o locale atual). */
 export function translate(locale: Locale, key: DictKey): string {
   const dict = DICTS[locale] ?? ptBR;
-  return dict[key] ?? ptBR[key] ?? key;
+  return stripEmoji(dict[key] ?? ptBR[key] ?? key);
 }
 
 /**

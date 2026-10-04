@@ -503,10 +503,10 @@ const en: PresentationCopy = {
   mock: {
     post1Name: "Ana Beatriz",
     post1Time: "12 min ago",
-    post1Text: "First time making overnight oats! Turned out great with banana and cinnamon 🍌",
+    post1Text: "First time making overnight oats! Turned out great with banana and cinnamon",
     post2Name: "Dr. Camila Jardim",
     post2Time: "1 h ago",
-    post2Text: "Quick tip: start your plate with vegetables. Fiber helps you feel full 🥗",
+    post2Text: "Quick tip: start your plate with vegetables. Fiber helps you feel full",
     profileName: "Juliana Martins",
     profileBio: "Learning to eat better, one day at a time.",
     nextLevel: "Next level",

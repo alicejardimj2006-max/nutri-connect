@@ -39,6 +39,7 @@ import {
   buttonSecondary,
   inputClass,
 } from "./ui";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 const ACTIVE: Appointment["status"][] = ["aguardando_pagamento", "agendada", "confirmada"];
 
@@ -136,7 +137,10 @@ export function AppointmentCard({
           {appt.price_cents > 0 && <span>{formatMoney(appt.price_cents, locale)}</span>}
         </div>
         {!compact && appt.modality === "presencial" && appt.location && isActive && (
-          <p className="mt-1 text-xs text-muted-foreground">📍 {appt.location}</p>
+          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+            <EmojiIcon emoji="📍" className="h-3.5 w-3.5 shrink-0" />
+            {appt.location}
+          </p>
         )}
         {!compact && appt.status === "cancelada" && appt.cancel_reason && (
           <p className="mt-1 text-xs text-muted-foreground">

@@ -43,6 +43,7 @@ import {
   type TrailProgress,
   type Unit,
 } from "@/lib/learning-trail";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 /** Ícones (lucide) das paradas do perfil adulto. */
 const STOP_ICONS: Record<string, LucideIcon> = {
@@ -182,9 +183,9 @@ function StopNode({
                 <Icon className="h-9 w-9 text-white drop-shadow" strokeWidth={2} />
               )
             ) : locked ? (
-              "🔒"
+              <EmojiIcon emoji="🔒" className="h-8 w-8 text-slate-500" />
             ) : (
-              stop.icon
+              <EmojiIcon emoji={stop.icon} className="h-9 w-9 text-white drop-shadow" strokeWidth={2} />
             )}
           </span>
           {!locked && (
@@ -362,7 +363,7 @@ function UnitBanner({
             )}
           </div>
           <h2 className="mt-0.5 font-display text-2xl font-black leading-tight text-inherit drop-shadow-sm sm:text-3xl">
-            {!adult && `${unit.icon} `}
+            {!adult && <EmojiIcon emoji={unit.icon} className="mr-2 inline h-6 w-6 align-[-3px]" fallback={null} />}
             {unit.title}
           </h2>
           <p className="mt-1 line-clamp-2 text-xs font-semibold leading-snug opacity-90 sm:text-sm">
@@ -629,7 +630,7 @@ function TrailFinale({
           allGold ? (adult ? "" : "nc-hop-loop") : adult ? "opacity-40" : "nc-bob grayscale"
         }`}
       >
-        {adult ? <Trophy className="h-16 w-16 text-amber-500" strokeWidth={1.6} /> : "🏆"}
+        <Trophy className="h-16 w-16 text-amber-500" strokeWidth={1.6} />
       </div>
       {allGold && <Sparkles radius={70} />}
       <h3 className="relative z-10 mt-3 font-display text-3xl font-black text-amber-500 drop-shadow-sm">
@@ -695,13 +696,15 @@ export function StopSheet({
                   {adult ? (
                     <StopIcon className="h-9 w-9 text-white" strokeWidth={1.8} />
                   ) : (
-                    <span className="nc-bob">{stop.icon}</span>
+                    <span className="nc-bob">
+                      <EmojiIcon emoji={stop.icon} className="h-9 w-9 text-white" strokeWidth={1.8} />
+                    </span>
                   )}
                 </div>
                 <div className="min-w-0">
                   <DialogDescription className="text-[11px] font-black uppercase tracking-widest text-white/85">
                     {unit?.title}
-                    {gold && (adult ? t("tm.goldenStop") : `${t("tm.goldenStop")} 👑`)}
+                    {gold && t("tm.goldenStop")}
                   </DialogDescription>
                   <DialogTitle className="mt-0.5 font-display text-2xl font-black leading-tight text-white">
                     {stop.title}
@@ -747,7 +750,7 @@ export function StopSheet({
                         adult ? (
                           <span className="text-xl font-black text-white">{n}</span>
                         ) : (
-                          meta.emoji
+                          <EmojiIcon emoji={meta.emoji} className="h-6 w-6 text-white" />
                         )
                       ) : (
                         <Lock className="h-6 w-6 text-slate-500" />

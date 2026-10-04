@@ -510,10 +510,10 @@ const ptBR: PresentationCopy = {
   mock: {
     post1Name: "Ana Beatriz",
     post1Time: "há 12 min",
-    post1Text: "Primeira vez fazendo overnight oats! Ficou ótimo com banana e canela 🍌",
+    post1Text: "Primeira vez fazendo overnight oats! Ficou ótimo com banana e canela",
     post2Name: "Dra. Camila Jardim",
     post2Time: "há 1 h",
-    post2Text: "Dica rápida: comece o prato pelos vegetais. As fibras ajudam na saciedade 🥗",
+    post2Text: "Dica rápida: comece o prato pelos vegetais. As fibras ajudam na saciedade",
     profileName: "Juliana Martins",
     profileBio: "Aprendendo a comer melhor, um dia de cada vez.",
     nextLevel: "Próximo nível",

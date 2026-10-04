@@ -7,6 +7,7 @@ import { initials, type Post, type PostType } from "@/lib/community";
 import { pickName, type Names } from "@/lib/appearance-data";
 import { normalizePostType, postDisplayImage, usePostTypeColor } from "@/lib/post-type";
 import { engagement } from "@/lib/trending";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 const TYPE_ICON: Record<PostType, typeof ChefHat> = {
   receita: ChefHat,
@@ -137,8 +138,8 @@ export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) =>
         <Icon className="h-3.5 w-3.5" />
       </span>
       {hot && (
-        <span className="absolute bottom-1.5 right-1.5 rounded-full bg-card/90 px-1.5 py-0.5 text-[10px] shadow-xs sm:bottom-2.5 sm:right-2.5">
-          🔥
+        <span className="absolute bottom-1.5 right-1.5 grid h-5 w-5 place-items-center rounded-full bg-card/90 text-orange-500 shadow-xs sm:bottom-2.5 sm:right-2.5">
+          <EmojiIcon emoji="🔥" className="h-3 w-3" />
         </span>
       )}
 

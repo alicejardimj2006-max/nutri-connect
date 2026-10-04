@@ -24,6 +24,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { ACCENT_PRESETS, HEADING_FONTS } from "@/lib/appearance-data";
 import type { DictKey } from "@/lib/i18n";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 // Mini-versões das telas do NutriConnect usadas no tour da apresentação. São estáticas (sem dados
 // do usuário) para funcionar antes do login, mas usam as mesmas cores, fontes e textos do site.
@@ -210,7 +211,8 @@ export function ProfileMock({ mock }: { mock: Mock }) {
               {t("hub.level").replace("{n}", String(current))}
             </p>
             <p className="font-display text-sm font-bold">
-              {LEVEL_ICONS[current - 1]} {t("hub.level.3")}
+              <EmojiIcon emoji={LEVEL_ICONS[current - 1]} className="mr-1 inline h-4 w-4 align-[-2px]" tinted />
+              {t("hub.level.3")}
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-3">
@@ -244,7 +246,7 @@ export function ProfileMock({ mock }: { mock: Mock }) {
                   i < current ? "bg-primary-soft" : "bg-secondary opacity-50 grayscale"
                 } ${i === current - 1 ? "ring-2 ring-accent" : ""}`}
               >
-                {icon}
+                <EmojiIcon emoji={icon} className="h-4 w-4" tinted />
               </span>
             ))}
           </div>
@@ -582,7 +584,7 @@ export function ChallengesMock({ mock }: { mock: Mock }) {
                           : "bg-secondary text-muted-foreground"
                     } ${checked && i === 3 ? "nc-pop" : ""}`}
                   >
-                    {i < doneDays ? <Check className="h-3.5 w-3.5" /> : "💧"}
+                    {i < doneDays ? <Check className="h-3.5 w-3.5" /> : <EmojiIcon emoji={"💧"} className="h-3.5 w-3.5" />}
                   </span>
                   <span className="text-[8px] text-muted-foreground">{d}</span>
                 </span>
@@ -599,7 +601,7 @@ export function ChallengesMock({ mock }: { mock: Mock }) {
                   : "bg-accent text-accent-foreground hover:bg-accent/90"
               }`}
             >
-              {checked ? `🎉 ${mock.checkedIn}` : mock.checkIn}
+              {checked ? mock.checkedIn : mock.checkIn}
             </button>
           </div>
         </div>

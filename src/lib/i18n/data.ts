@@ -1,6 +1,7 @@
 // Rótulos de dados estruturados (categorias, objetivos, profissões, dificuldades, tema da semana).
 // O valor salvo continua em português (é ele que filtra e compara); só o texto exibido é traduzido.
 
+import { stripEmoji } from "@/lib/emoji";
 import { loadLocale } from "./index";
 import type { Locale } from "./locales";
 
@@ -117,7 +118,7 @@ for (const [loc, i] of Object.entries(LOCALE_INDEX) as [Locale, number][]) {
 /** Traduz um rótulo de dado estruturado; se não houver tradução, devolve o valor original. */
 export function td(value: string | undefined | null, locale: Locale = loadLocale()): string {
   if (!value) return "";
-  return MAPS[locale]?.[value] ?? value;
+  return stripEmoji(MAPS[locale]?.[value] ?? value);
 }
 
 /* ------------------------------ Tema da semana ------------------------------ */

@@ -73,6 +73,7 @@ import {
   Words,
 } from "./layout";
 import { NinaIntroSlide, PartDivider, PRESENTERS, TeamRoster } from "./parts";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export interface SlideApi {
   next: () => void;
@@ -343,7 +344,7 @@ function ListCard({
               className="nc-pop shrink-0"
               style={{ animationDelay: `${delay + 200 + i * 120}ms` }}
             >
-              {bullets[i % bullets.length]}
+              <EmojiIcon emoji={bullets[i % bullets.length]} className="h-5 w-5 text-accent" />
             </span>
             {it}
           </li>
@@ -567,7 +568,14 @@ function Comparison(c: PresentationCopy) {
                         : "text-muted-foreground"
                     }`}
                   >
-                    {i === 0 ? `🏆 ${name}` : name}
+                    {i === 0 ? (
+                      <>
+                        <EmojiIcon emoji={"🏆"} className="mr-1 inline h-4 w-4 align-[-2px]" />
+                        {name}
+                      </>
+                    ) : (
+                      name
+                    )}
                   </th>
                 ))}
               </tr>
@@ -803,7 +811,7 @@ function DropRain() {
             } as React.CSSProperties
           }
         >
-          💧
+          <EmojiIcon emoji={"💧"} className="h-[1em] w-[1em]" tinted />
         </span>
       ))}
     </div>

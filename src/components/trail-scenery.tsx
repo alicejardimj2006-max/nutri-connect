@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { ProfileKind, SceneId } from "@/lib/trail-types";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 /** Cores de cada bioma (a unidade herda o tema do seu cenário). */
 export interface SceneTheme {
@@ -113,12 +114,11 @@ function Falling({ items }: { items: Floater[] }) {
           className="nc-fall absolute top-0 opacity-0"
           style={{
             left: `${it.left}%`,
-            fontSize: it.size,
             animationDelay: `${it.delay}s`,
             animationDuration: `${it.duration}s`,
           }}
         >
-          {it.emoji}
+          <EmojiIcon emoji={it.emoji} size={it.size} tinted strokeWidth={1.8} />
         </span>
       ))}
     </>
@@ -146,12 +146,11 @@ function Spots({ items }: { items: Spot[] }) {
             {
               left: `${s.x}%`,
               top: `${s.y}%`,
-              fontSize: s.size,
               animationDelay: `${s.delay ?? 0}s`,
             } as CSSProperties
           }
         >
-          {s.emoji}
+          <EmojiIcon emoji={s.emoji} size={s.size} tinted strokeWidth={s.size > 30 ? 1.4 : 1.8} />
         </span>
       ))}
     </>
