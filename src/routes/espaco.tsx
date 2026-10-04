@@ -293,8 +293,10 @@ function EspacoDeHojePage() {
                     ref={geralRef}
                     onScroll={handleGeralScroll}
                     className="overflow-y-auto overscroll-contain px-2 pb-28 lg:pb-8"
-                    style={{ height: pageHeight, paddingTop: topPad }}
+                    style={{ height: pageHeight }}
                   >
+                    {/* Espaçador (não é padding: o 'sticky' mede a partir da borda de dentro do padding). */}
+                    <div className="shrink-0" style={{ height: topPad }} aria-hidden="true" />
                     {/* Filtros flutuantes: ficam no alto desta página, somem ao rolar para baixo. */}
                     <div className="pointer-events-none sticky top-3 z-20 mb-3 flex justify-center">
                       <div
@@ -336,8 +338,10 @@ function EspacoDeHojePage() {
                     ref={temaRef}
                     onScroll={handleTemaScroll}
                     className="overflow-y-auto overscroll-contain px-2 pb-28 lg:pb-8"
-                    style={{ height: pageHeight, paddingTop: topPad }}
+                    style={{ height: pageHeight }}
                   >
+                    {/* Espaçador (não é padding: o 'sticky' mede a partir da borda de dentro do padding). */}
+                    <div className="shrink-0" style={{ height: topPad }} aria-hidden="true" />
                     {text ? (
                       <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
                         <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
