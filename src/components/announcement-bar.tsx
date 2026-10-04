@@ -1,6 +1,6 @@
 // Avisos da administração (anúncios) e aviso de conta suspensa. Aparecem como cartões flutuantes no
 // canto da tela (sem empurrar o conteúdo, porque várias páginas têm a altura exata da tela).
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, Info, ShieldAlert, X } from "lucide-react";
@@ -56,7 +56,10 @@ export function AnnouncementBar() {
     },
   });
 
-  if (!user) return null;
+  // Na sala de videoconsulta e na apresentação os avisos atrapalhariam.
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
+  if (!user || pathname.startsWith("/consulta/") || pathname.startsWith("/apresentacao"))
+    return null;
   const now = Date.now();
   const visible = (list.data ?? []).filter(
     (a) =>
@@ -78,7 +81,7 @@ export function AnnouncementBar() {
   if (!user.suspendedAt && visible.length === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-3 bottom-20 z-[60] flex flex-col items-end gap-2 lg:inset-x-auto lg:bottom-5 lg:right-5 lg:w-96">
+    <div className="pointer-events-none fixed inset-x-3 bottom-20 z-30 flex flex-col items-end gap-2 lg:inset-x-auto lg:bottom-5 lg:right-5 lg:w-96">
       {user.suspendedAt && (
         <div className="pointer-events-auto w-full rounded-2xl border-2 border-destructive bg-card p-4 shadow-card">
           <p className="flex items-center gap-2 text-sm font-bold text-destructive">
@@ -86,7 +89,10 @@ export function AnnouncementBar() {
           </p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Você pode ler o conteúdo, mas não pode publicar nem comentar. Se acha que foi um engano,{" "}
-            <Link to="/contato" className="font-semibold text-accent underline-offset-2 hover:underline">
+            <Link
+              to="/contato"
+              className="font-semibold text-accent underline-offset-2 hover:underline"
+            >
               fale com a equipe
             </Link>
             .
@@ -98,7 +104,9 @@ export function AnnouncementBar() {
         const body = (
           <>
             <p className="text-sm font-bold text-foreground">{a.title}</p>
-            {a.body && <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{a.body}</p>}
+            {a.body && (
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{a.body}</p>
+            )}
           </>
         );
         return (
@@ -115,7 +123,12 @@ export function AnnouncementBar() {
                     {body}
                   </Link>
                 ) : (
-                  <a href={a.link_url} target="_blank" rel="noopener noreferrer" className="block hover:opacity-80">
+                  <a
+                    href={a.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:opacity-80"
+                  >
                     {body}
                   </a>
                 )
