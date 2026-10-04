@@ -230,12 +230,13 @@ export function TrailCard() {
 
   if (!user) return null;
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft via-card to-primary-soft p-5 shadow-card">
+    <section className="@container relative overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft via-card to-primary-soft p-5 shadow-card">
       <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-accent/20 blur-2xl" />
-      <div className="flex items-end gap-3">
+      {/* Em colunas estreitas a Nina fica em cima e o balão embaixo, com a largura toda. */}
+      <div className="flex flex-col-reverse items-center gap-2 @[17rem]:flex-row @[17rem]:items-end @[17rem]:gap-3">
         <Mascot id="nina" size={92} mood="talk" />
-        <div className="relative min-w-0 flex-1 rounded-2xl rounded-bl-sm border border-border/70 bg-card/95 p-3 shadow-xs">
-          <p className="text-sm font-bold leading-snug text-foreground">
+        <div className="relative w-full min-w-0 flex-1 rounded-2xl rounded-bl-sm border border-border/70 bg-card/95 p-3 shadow-xs @max-[17rem]:rounded-bl-2xl">
+          <p className="text-left text-sm font-bold leading-snug text-foreground [hyphens:none] @max-[17rem]:text-center">
             {trail.started ? t("hub.trail.ninaContinue") : t("hub.trail.ninaStart")}
           </p>
         </div>
