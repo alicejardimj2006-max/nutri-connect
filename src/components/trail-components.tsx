@@ -90,7 +90,9 @@ export function StreakBadge({ streak }: { streak: number }) {
         active ? "border-orange-500/25 bg-orange-500/10" : "border-border bg-secondary/40"
       }`}
     >
-      <div className={`drop-shadow-sm ${active ? "nc-flame text-orange-500" : "text-muted-foreground opacity-50"}`}>
+      <div
+        className={`drop-shadow-sm ${active ? "nc-flame text-orange-500" : "text-muted-foreground opacity-50"}`}
+      >
         <EmojiIcon emoji="🔥" className="h-8 w-8" />
       </div>
       <div>
@@ -237,40 +239,42 @@ export function TrailHeader(props: TrailHeaderProps) {
           {props.profileSlot}
         </div>
 
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-8">
-          <div className="flex-1">
-            <XPBar
-              xp={props.xp}
-              level={props.level}
-              label={props.label}
-              xpInLevel={props.xpInLevel}
-              xpForNext={props.xpForNext}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <StreakBadge streak={props.streak} />
-            <DailyGoalRing xp={props.dailyXP} goal={props.dailyGoal} />
-            <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-amber-500/25 bg-amber-500/10 px-4 py-3">
-              <div className="text-amber-500 drop-shadow-sm">
-                <EmojiIcon emoji={"⭐"} className="h-8 w-8" />
-              </div>
-              <div>
-                <div className="text-lg font-black leading-none text-amber-600 dark:text-amber-400">
-                  {props.stars}/{props.maxStars}
-                </div>
-                <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-amber-600/70 dark:text-amber-400/70">
-                  {t("tc.stars")}
-                </div>
-              </div>
+        <div className="@container">
+          <div className="flex flex-col gap-5 @3xl:flex-row @3xl:items-center @3xl:gap-8">
+            <div className="min-w-0 flex-1">
+              <XPBar
+                xp={props.xp}
+                level={props.level}
+                label={props.label}
+                xpInLevel={props.xpInLevel}
+                xpForNext={props.xpForNext}
+              />
             </div>
-            <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-yellow-500/30 bg-yellow-400/15 px-4 py-3">
-              <Crown className="h-7 w-7 fill-yellow-400 text-yellow-500" />
-              <div>
-                <div className="text-lg font-black leading-none text-yellow-600 dark:text-yellow-400">
-                  {props.goldStops}/{props.totalStops}
+            <div className="flex flex-wrap items-center gap-3">
+              <StreakBadge streak={props.streak} />
+              <DailyGoalRing xp={props.dailyXP} goal={props.dailyGoal} />
+              <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-amber-500/25 bg-amber-500/10 px-4 py-3">
+                <div className="text-amber-500 drop-shadow-sm">
+                  <EmojiIcon emoji={"⭐"} className="h-8 w-8" />
                 </div>
-                <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-yellow-600/70 dark:text-yellow-400/70">
-                  {t("tc.gold")}
+                <div>
+                  <div className="text-lg font-black leading-none text-amber-600 dark:text-amber-400">
+                    {props.stars}/{props.maxStars}
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-amber-600/70 dark:text-amber-400/70">
+                    {t("tc.stars")}
+                  </div>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-3 rounded-2xl border-2 border-yellow-500/30 bg-yellow-400/15 px-4 py-3">
+                <Crown className="h-7 w-7 fill-yellow-400 text-yellow-500" />
+                <div>
+                  <div className="text-lg font-black leading-none text-yellow-600 dark:text-yellow-400">
+                    {props.goldStops}/{props.totalStops}
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-bold uppercase tracking-widest text-yellow-600/70 dark:text-yellow-400/70">
+                    {t("tc.gold")}
+                  </div>
                 </div>
               </div>
             </div>
@@ -647,7 +651,11 @@ export function CommunityChallengeGroup({
                     : "border-2 border-border bg-secondary"
                 }`}
               >
-                {isCompleted ? <CheckCircle2 className="h-6 w-6 text-white" /> : <EmojiIcon emoji={c.badgeIcon} className="h-5 w-5" />}
+                {isCompleted ? (
+                  <CheckCircle2 className="h-6 w-6 text-white" />
+                ) : (
+                  <EmojiIcon emoji={c.badgeIcon} className="h-5 w-5" />
+                )}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black text-foreground">{c.title}</p>

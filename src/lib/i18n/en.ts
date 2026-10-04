@@ -36,7 +36,8 @@ const en: Record<DictKey, string> = {
   "nina.clear": "Delete conversation",
   "nina.clearConfirm": "Delete your entire conversation history with Nina?",
   "nina.usage": "questions today",
-  "nina.disclaimer": "Nina is an educational AI and does not replace a dietitian or doctor. Conversations are kept for 90 days.",
+  "nina.disclaimer":
+    "Nina is an educational AI and does not replace a dietitian or doctor. Conversations are kept for 90 days.",
   "nina.error": "Nina couldn't answer. Please try again.",
   "nav.loading": "Loading…",
 
@@ -226,7 +227,7 @@ const en: Record<DictKey, string> = {
   "auth.feature1": "Themed communities to share experiences",
   "auth.feature2": "Real recipes shared by the community",
   "auth.feature3": "Habit challenges, at your own pace",
-  "auth.feature4": "A daily feed of real stories, without judgment",
+  "auth.feature4": "Verified health professionals, with video visits right on the site",
   "auth.tagline": "A social network about food",
   "auth.hero1": "Your food.",
   "auth.hero2": "Your journey.",
@@ -998,7 +999,8 @@ const en: Record<DictKey, string> = {
   "pz.layout.home": "Start page",
   "pz.layout.homeHint": "The page that opens when you enter the site.",
   "pz.layout.panels": "Side cards",
-  "pz.layout.panelsHint": "Shows cards beside each page's content on wide screens. When on, content width is automatic.",
+  "pz.layout.panelsHint":
+    "Shows cards beside each page's content on wide screens. When on, content width is automatic.",
   "pz.home.espaco": "Space",
   "pz.home.comunidades": "Communities",
   "pz.home.desafios": "Challenges",
@@ -1096,7 +1098,8 @@ const en: Record<DictKey, string> = {
   "verified.professional": "Verified professional",
   "frame.seeLess": "See less",
   "frame.seeMore": "See more",
-  "postcard.underReview": "Under moderation review: only you can see this post for now. It will show to others once approved.",
+  "postcard.underReview":
+    "Under moderation review: only you can see this post for now. It will show to others once approved.",
   "sm.publishedReview": "Posted! Your post passed the AI check and is live.",
   "img.enlarge": "Enlarge image:",
   "img.close": "Close image",

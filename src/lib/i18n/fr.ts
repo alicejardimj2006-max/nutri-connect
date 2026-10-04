@@ -32,11 +32,13 @@ const fr: Record<DictKey, string> = {
   "nina.subtitle": "Posez vos questions d'alimentation de façon simple et bienveillante.",
   "nina.placeholder": "Posez une question sur l'alimentation…",
   "nina.send": "Envoyer",
-  "nina.empty": "Salut, je suis Nina ! Comment puis-je vous aider avec votre alimentation aujourd'hui ?",
+  "nina.empty":
+    "Salut, je suis Nina ! Comment puis-je vous aider avec votre alimentation aujourd'hui ?",
   "nina.clear": "Supprimer la conversation",
   "nina.clearConfirm": "Supprimer tout l'historique de la conversation avec Nina ?",
   "nina.usage": "questions aujourd'hui",
-  "nina.disclaimer": "Nina est une IA éducative et ne remplace pas un(e) diététicien(ne) ou un médecin. Les conversations sont conservées 90 jours.",
+  "nina.disclaimer":
+    "Nina est une IA éducative et ne remplace pas un(e) diététicien(ne) ou un médecin. Les conversations sont conservées 90 jours.",
   "nina.error": "Nina n'a pas pu répondre. Réessayez.",
   "nav.loading": "Chargement…",
 
@@ -230,7 +232,7 @@ const fr: Record<DictKey, string> = {
   "auth.feature1": "Des communautés thématiques pour échanger des expériences",
   "auth.feature2": "De vraies recettes partagées par la communauté",
   "auth.feature3": "Des défis d'habitudes, à votre rythme",
-  "auth.feature4": "Un fil quotidien d'histoires vraies, sans jugement",
+  "auth.feature4": "Des professionnels de santé vérifiés, avec consultation vidéo sur le site",
   "auth.tagline": "Réseau social autour de l'alimentation",
   "auth.hero1": "Votre alimentation.",
   "auth.hero2": "Votre parcours.",
@@ -993,7 +995,8 @@ const fr: Record<DictKey, string> = {
   "pz.card.profile": "Profil et publications",
   "pz.card.profileHint": "Cartes, images, avatar et compteurs",
   "pz.sounds.title": "Sons",
-  "pz.sounds.hint": "Sons courts générés sur votre appareil, rien n'est téléchargé. Ils sont désactivés au départ.",
+  "pz.sounds.hint":
+    "Sons courts générés sur votre appareil, rien n'est téléchargé. Ils sont désactivés au départ.",
   "pz.sounds.enable": "Activer les sons",
   "pz.sounds.enableHint": "Active les sons du site sur tous les appareils de votre compte.",
   "pz.sounds.volume": "Volume",
@@ -1017,7 +1020,8 @@ const fr: Record<DictKey, string> = {
   "pz.layout.home": "Page d'accueil",
   "pz.layout.homeHint": "La page qui s'ouvre quand vous entrez sur le site.",
   "pz.layout.panels": "Cartes latérales",
-  "pz.layout.panelsHint": "Affiche des cartes à côté du contenu de chaque page sur grands écrans. Activées, la largeur du contenu est automatique.",
+  "pz.layout.panelsHint":
+    "Affiche des cartes à côté du contenu de chaque page sur grands écrans. Activées, la largeur du contenu est automatique.",
   "pz.home.espaco": "Espace",
   "pz.home.comunidades": "Communautés",
   "pz.home.desafios": "Défis",
@@ -1028,7 +1032,8 @@ const fr: Record<DictKey, string> = {
   "pz.a11y.contrast": "Contraste élevé",
   "pz.a11y.contrastHint": "Texte et bordures au contraste maximal.",
   "pz.a11y.readable": "Police de lecture facilitée",
-  "pz.a11y.readableHint": "Utilise Lexend, une police conçue pour faciliter la lecture, sur tout le site.",
+  "pz.a11y.readableHint":
+    "Utilise Lexend, une police conçue pour faciliter la lecture, sur tout le site.",
   "pz.a11y.focus": "Focus bien visible",
   "pz.a11y.focusHint": "Met en évidence par un contour épais l'élément sélectionné au clavier.",
   "pz.a11y.links": "Souligner les liens",
@@ -1116,7 +1121,8 @@ const fr: Record<DictKey, string> = {
   "verified.professional": "Professionnel vérifié",
   "frame.seeLess": "Voir moins",
   "frame.seeMore": "Voir plus",
-  "postcard.underReview": "En cours de modération : vous seul(e) voyez ce post pour l'instant. Il apparaîtra aux autres une fois approuvé.",
+  "postcard.underReview":
+    "En cours de modération : vous seul(e) voyez ce post pour l'instant. Il apparaîtra aux autres une fois approuvé.",
   "sm.publishedReview": "Publié ! Votre publication a passé l'analyse de l'IA et est en ligne.",
   "img.enlarge": "Agrandir l'image :",
   "img.close": "Fermer l'image",

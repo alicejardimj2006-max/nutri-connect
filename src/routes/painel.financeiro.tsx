@@ -63,9 +63,9 @@ function FinancePage() {
   const now = new Date();
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
   const range = monthRange(cursor.y, cursor.m);
-  const since = useMemo(
+  // Início do histórico: fixo enquanto a página está aberta.
+  const [since] = useState(
     () => new Date(now.getFullYear(), now.getMonth() - (HISTORY_MONTHS - 1), 1),
-    [],
   );
   const historyStart = range.from < since ? range.from : since;
 

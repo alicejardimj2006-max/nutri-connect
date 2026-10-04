@@ -36,7 +36,8 @@ const es: Record<DictKey, string> = {
   "nina.clear": "Borrar conversación",
   "nina.clearConfirm": "¿Borrar todo el historial de la conversación con Nina?",
   "nina.usage": "preguntas hoy",
-  "nina.disclaimer": "Nina es una IA educativa y no reemplaza a un(a) nutricionista o médico(a). Las conversaciones se guardan 90 días.",
+  "nina.disclaimer":
+    "Nina es una IA educativa y no reemplaza a un(a) nutricionista o médico(a). Las conversaciones se guardan 90 días.",
   "nina.error": "Nina no pudo responder. Inténtalo de nuevo.",
   "nav.loading": "Cargando…",
 
@@ -227,7 +228,7 @@ const es: Record<DictKey, string> = {
   "auth.feature1": "Comunidades temáticas para intercambiar experiencias",
   "auth.feature2": "Recetas reales compartidas por la comunidad",
   "auth.feature3": "Desafíos de hábitos, a tu propio ritmo",
-  "auth.feature4": "Un feed diario con historias reales, sin juicios",
+  "auth.feature4": "Profesionales de salud verificados, con consulta por video en el propio sitio",
   "auth.tagline": "Red social de alimentación",
   "auth.hero1": "Tu alimentación.",
   "auth.hero2": "Tu camino.",
@@ -983,7 +984,8 @@ const es: Record<DictKey, string> = {
   "pz.card.profile": "Perfil y publicaciones",
   "pz.card.profileHint": "Tarjetas, imágenes, avatar y números",
   "pz.sounds.title": "Sonidos",
-  "pz.sounds.hint": "Sonidos cortos generados en tu dispositivo, sin descargar nada. Empiezan desactivados.",
+  "pz.sounds.hint":
+    "Sonidos cortos generados en tu dispositivo, sin descargar nada. Empiezan desactivados.",
   "pz.sounds.enable": "Activar sonidos",
   "pz.sounds.enableHint": "Activa los sonidos del sitio en todos los dispositivos de tu cuenta.",
   "pz.sounds.volume": "Volumen",
@@ -1007,7 +1009,8 @@ const es: Record<DictKey, string> = {
   "pz.layout.home": "Página de inicio",
   "pz.layout.homeHint": "La página que se abre al entrar en el sitio.",
   "pz.layout.panels": "Tarjetas laterales",
-  "pz.layout.panelsHint": "Muestra tarjetas junto al contenido de cada página en pantallas anchas. Activadas, el ancho del contenido es automático.",
+  "pz.layout.panelsHint":
+    "Muestra tarjetas junto al contenido de cada página en pantallas anchas. Activadas, el ancho del contenido es automático.",
   "pz.home.espaco": "Espacio",
   "pz.home.comunidades": "Comunidades",
   "pz.home.desafios": "Desafíos",
@@ -1018,7 +1021,8 @@ const es: Record<DictKey, string> = {
   "pz.a11y.contrast": "Alto contraste",
   "pz.a11y.contrastHint": "Texto y bordes con el máximo contraste posible.",
   "pz.a11y.readable": "Fuente de lectura fácil",
-  "pz.a11y.readableHint": "Usa Lexend, una fuente pensada para facilitar la lectura, en todo el sitio.",
+  "pz.a11y.readableHint":
+    "Usa Lexend, una fuente pensada para facilitar la lectura, en todo el sitio.",
   "pz.a11y.focus": "Foco bien visible",
   "pz.a11y.focusHint": "Resalta con un contorno grueso el elemento seleccionado con el teclado.",
   "pz.a11y.links": "Subrayar enlaces",
@@ -1106,7 +1110,8 @@ const es: Record<DictKey, string> = {
   "verified.professional": "Profesional verificado",
   "frame.seeLess": "Ver menos",
   "frame.seeMore": "Ver más",
-  "postcard.underReview": "En revisión de moderación: por ahora solo tú ves esta publicación. Aparecerá para los demás cuando sea aprobada.",
+  "postcard.underReview":
+    "En revisión de moderación: por ahora solo tú ves esta publicación. Aparecerá para los demás cuando sea aprobada.",
   "sm.publishedReview": "¡Publicado! Tu publicación pasó el análisis de la IA y ya está en línea.",
   "img.enlarge": "Ampliar imagen:",
   "img.close": "Cerrar imagen",

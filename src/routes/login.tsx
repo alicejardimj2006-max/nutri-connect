@@ -5,7 +5,7 @@ import {
   Users,
   ChefHat,
   Award,
-  Compass,
+  Stethoscope,
   Presentation,
   ArrowRight,
 } from "lucide-react";
@@ -100,7 +100,7 @@ const FEATURES: { icon: typeof Users; key: DictKey }[] = [
   { icon: Users, key: "auth.feature1" },
   { icon: ChefHat, key: "auth.feature2" },
   { icon: Award, key: "auth.feature3" },
-  { icon: Compass, key: "auth.feature4" },
+  { icon: Stethoscope, key: "auth.feature4" },
 ];
 
 export function AuthLayout({
@@ -138,7 +138,7 @@ export function AuthLayout({
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> {t("auth.tagline")}
             </span>
-            <h2 className="mt-4 text-4xl font-extrabold leading-tight font-display">
+            <h2 className="mt-4 text-4xl font-extrabold leading-tight font-display text-primary-foreground">
               {t("auth.hero1")}
               <br />
               {t("auth.hero2")}

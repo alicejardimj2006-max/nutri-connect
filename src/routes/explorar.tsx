@@ -39,7 +39,11 @@ export const Route = createFileRoute("/explorar")({
 const PAGE_DEFS: { id: string; type?: PostType; label: Names }[] = [
   { id: "tudo", label: ["Geral", "General", "General", "Général"] },
   { id: "receita", type: "receita", label: ["Receitas", "Recipes", "Recetas", "Recettes"] },
-  { id: "experiencia", type: "experiencia", label: ["Experiências", "Experiences", "Experiencias", "Expériences"] },
+  {
+    id: "experiencia",
+    type: "experiencia",
+    label: ["Experiências", "Experiences", "Experiencias", "Expériences"],
+  },
   { id: "pergunta", type: "pergunta", label: ["Perguntas", "Questions", "Preguntas", "Questions"] },
   { id: "conversa", type: "geral", label: ["Conversas", "Chats", "Conversaciones", "Discussions"] },
   { id: "pessoas", label: ["Pessoas", "People", "Personas", "Personnes"] },
@@ -47,14 +51,21 @@ const PAGE_DEFS: { id: string; type?: PostType; label: Names }[] = [
 
 const FETCH = 60;
 const PEOPLE_PAGE = 20;
-const ALIASES: Record<string, string> = { receitas: "receita", experiencias: "experiencia", perguntas: "pergunta" };
+const ALIASES: Record<string, string> = {
+  receitas: "receita",
+  experiencias: "experiencia",
+  perguntas: "pergunta",
+};
 
 function ExplorarPage() {
   const { user } = useRequireAuth();
   const { t, locale } = useI18n();
   const search = Route.useSearch();
   const initialId = ALIASES[search.tipo ?? ""] ?? search.tipo ?? "tudo";
-  const initialPage = Math.max(0, PAGE_DEFS.findIndex((p) => p.id === initialId));
+  const initialPage = Math.max(
+    0,
+    PAGE_DEFS.findIndex((p) => p.id === initialId),
+  );
 
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -101,15 +112,34 @@ function ExplorarPage() {
   const limitFor = (id: string) => FETCH + (more[id] ?? 0);
   const q = debounced || undefined;
   const feeds = {
-    tudo: useFeed({ scope: "todos", query: q, limit: limitFor("tudo") }, enabled && visited.has("tudo")),
-    receita: useFeed({ scope: "todos", type: "receita", query: q, limit: limitFor("receita") }, enabled && visited.has("receita")),
-    experiencia: useFeed({ scope: "todos", type: "experiencia", query: q, limit: limitFor("experiencia") }, enabled && visited.has("experiencia")),
-    pergunta: useFeed({ scope: "todos", type: "pergunta", query: q, limit: limitFor("pergunta") }, enabled && visited.has("pergunta")),
-    conversa: useFeed({ scope: "todos", type: "geral", query: q, limit: limitFor("conversa") }, enabled && visited.has("conversa")),
+    tudo: useFeed(
+      { scope: "todos", query: q, limit: limitFor("tudo") },
+      enabled && visited.has("tudo"),
+    ),
+    receita: useFeed(
+      { scope: "todos", type: "receita", query: q, limit: limitFor("receita") },
+      enabled && visited.has("receita"),
+    ),
+    experiencia: useFeed(
+      { scope: "todos", type: "experiencia", query: q, limit: limitFor("experiencia") },
+      enabled && visited.has("experiencia"),
+    ),
+    pergunta: useFeed(
+      { scope: "todos", type: "pergunta", query: q, limit: limitFor("pergunta") },
+      enabled && visited.has("pergunta"),
+    ),
+    conversa: useFeed(
+      { scope: "todos", type: "geral", query: q, limit: limitFor("conversa") },
+      enabled && visited.has("conversa"),
+    ),
   } as const;
 
   const people = useSearchUsers(
-    { query: debounced, role: onlyPros ? "profissional" : undefined, limit: PEOPLE_PAGE + (more.pessoas ?? 0) },
+    {
+      query: debounced,
+      role: onlyPros ? "profissional" : undefined,
+      limit: PEOPLE_PAGE + (more.pessoas ?? 0),
+    },
     enabled && visited.has("pessoas"),
   );
 
@@ -129,8 +159,14 @@ function ExplorarPage() {
       pergunta: trendingMix(feeds.pergunta.data ?? [], seed),
       conversa: trendingMix(feeds.conversa.data ?? [], seed),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [feeds.tudo.data, feeds.receita.data, feeds.experiencia.data, feeds.pergunta.data, feeds.conversa.data, seed],
+    [
+      feeds.tudo.data,
+      feeds.receita.data,
+      feeds.experiencia.data,
+      feeds.pergunta.data,
+      feeds.conversa.data,
+      seed,
+    ],
   );
 
   const pageSize = useMemo(() => loadAppearance().feedPageSize || 20, []);
@@ -151,7 +187,10 @@ function ExplorarPage() {
           type="button"
           onClick={() => setQuery("")}
           className="grid h-5 w-5 shrink-0 cursor-pointer place-items-center rounded-full text-muted-foreground hover:text-foreground"
-          aria-label={pickName(["Limpar busca", "Clear search", "Borrar búsqueda", "Effacer la recherche"], locale)}
+          aria-label={pickName(
+            ["Limpar busca", "Clear search", "Borrar búsqueda", "Effacer la recherche"],
+            locale,
+          )}
         >
           <X className="h-4 w-4" />
         </button>
@@ -166,7 +205,10 @@ function ExplorarPage() {
         {loading && posts.length === 0 ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3" aria-hidden="true">
             {Array.from({ length: 9 }, (_, i) => (
-              <div key={i} className="aspect-square animate-pulse rounded-xl bg-secondary/50 sm:rounded-2xl" />
+              <div
+                key={i}
+                className="aspect-square animate-pulse rounded-xl bg-secondary/50 sm:rounded-2xl"
+              />
             ))}
           </div>
         ) : posts.length === 0 ? (
@@ -175,7 +217,9 @@ function ExplorarPage() {
             <p className="text-sm font-semibold text-foreground">
               {debounced ? `${t("explore.noResults")} “${debounced}”` : t("explore.noResults")}
             </p>
-            {debounced && <p className="mt-1 text-xs text-muted-foreground">{t("explore.noResultsHint")}</p>}
+            {debounced && (
+              <p className="mt-1 text-xs text-muted-foreground">{t("explore.noResultsHint")}</p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
@@ -221,16 +265,26 @@ function ExplorarPage() {
       ) : peopleList.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border p-10 text-center">
           <Compass className="mx-auto mb-3 h-9 w-9 text-muted-foreground" />
-          <p className="text-sm font-semibold text-foreground">{t("explore.noResults")} “{debounced}”</p>
+          <p className="text-sm font-semibold text-foreground">
+            {t("explore.noResults")} “{debounced}”
+          </p>
         </div>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {peopleList.map((person) => (
             <li key={person.id} className="rounded-2xl border border-border bg-card p-4 shadow-xs">
-              <Link to="/perfil/$userId" params={{ userId: person.id }} className="flex items-start gap-3">
+              <Link
+                to="/perfil/$userId"
+                params={{ userId: person.id }}
+                className="flex items-start gap-3"
+              >
                 <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary text-sm font-extrabold text-primary-foreground">
                   {person.avatar_url ? (
-                    <img src={person.avatar_url} alt={person.name} className="h-full w-full object-cover" />
+                    <img
+                      src={person.avatar_url}
+                      alt={person.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     initials(person.name)
                   )}
@@ -252,10 +306,14 @@ function ExplorarPage() {
                     </span>
                   )}
                   {person.is_private ? (
-                    <span className="mt-1 block text-[11px] text-muted-foreground">{t("explore.people.privateBio")}</span>
+                    <span className="mt-1 block text-[11px] text-muted-foreground">
+                      {t("explore.people.privateBio")}
+                    </span>
                   ) : (
                     person.bio && (
-                      <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">{person.bio}</span>
+                      <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">
+                        {person.bio}
+                      </span>
                     )
                   )}
                 </span>
@@ -309,5 +367,3 @@ function ExplorarPage() {
     </>
   );
 }
-
-

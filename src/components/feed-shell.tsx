@@ -47,7 +47,11 @@ function PagesNav({
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   useEffect(() => {
-    refs.current[active]?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    refs.current[active]?.scrollIntoView({
+      inline: "center",
+      block: "nearest",
+      behavior: "smooth",
+    });
   }, [active]);
   return (
     <div className="no-scrollbar flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur">
@@ -169,6 +173,7 @@ export function FeedShell({
   const navHeightRef = useRef(38);
   const sharedRef = useRef<HTMLDivElement>(null);
   const [sharedHeight, setSharedHeight] = useState(0);
+  const hasSharedToolbar = !!sharedToolbar;
   useLayoutEffect(() => {
     const pill = sharedRef.current?.firstElementChild;
     if (!pill) {
@@ -180,7 +185,7 @@ export function FeedShell({
     const observer = new ResizeObserver(measure);
     observer.observe(pill);
     return () => observer.disconnect();
-  }, [ready, !!sharedToolbar]);
+  }, [ready, hasSharedToolbar]);
   useLayoutEffect(() => {
     const pill = navRef.current?.firstElementChild;
     if (!pill) return;
@@ -206,7 +211,8 @@ export function FeedShell({
     el.style.pointerEvents = top > 40 ? "none" : "";
     // A barra compartilhada sobe junto com o seletor e para logo abaixo do cabeçalho.
     const shared = sharedRef.current;
-    if (shared) shared.style.transform = `translateY(${-Math.min(top, navHeightRef.current + TOP_GAP)}px)`;
+    if (shared)
+      shared.style.transform = `translateY(${-Math.min(top, navHeightRef.current + TOP_GAP)}px)`;
   }, []);
   const handleScroll = (e: UIEvent<HTMLDivElement>) => {
     const top = e.currentTarget.scrollTop;
@@ -330,7 +336,8 @@ export function FeedShell({
                           <div
                             className={cn(
                               "pointer-events-auto max-w-full transition duration-200",
-                              !toolbarVisible && "pointer-events-none -translate-y-[160%] opacity-0",
+                              !toolbarVisible &&
+                                "pointer-events-none -translate-y-[160%] opacity-0",
                             )}
                           >
                             {page.toolbar}

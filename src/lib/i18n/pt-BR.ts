@@ -39,7 +39,8 @@ const ptBR = {
   "nina.clear": "Apagar conversa",
   "nina.clearConfirm": "Apagar todo o histórico da conversa com a Nina?",
   "nina.usage": "perguntas hoje",
-  "nina.disclaimer": "A Nina é uma IA educativa e não substitui nutricionista ou médico(a). As conversas ficam guardadas por 90 dias.",
+  "nina.disclaimer":
+    "A Nina é uma IA educativa e não substitui nutricionista ou médico(a). As conversas ficam guardadas por 90 dias.",
   "nina.error": "A Nina não conseguiu responder. Tente novamente.",
   "nav.loading": "Carregando…",
 
@@ -239,7 +240,7 @@ const ptBR = {
   "auth.feature1": "Comunidades temáticas para trocar experiências",
   "auth.feature2": "Receitas de verdade compartilhadas pela comunidade",
   "auth.feature3": "Desafios de hábitos, no seu próprio ritmo",
-  "auth.feature4": "Um feed diário com histórias reais, sem julgamento",
+  "auth.feature4": "Profissionais de saúde verificados, com consulta por vídeo no próprio site",
   "auth.tagline": "Rede social de alimentação",
   "auth.hero1": "Sua alimentação.",
   "auth.hero2": "Sua jornada.",
@@ -1017,7 +1018,8 @@ const ptBR = {
   "pz.layout.home": "Página inicial",
   "pz.layout.homeHint": "A página que abre quando você entra no site.",
   "pz.layout.panels": "Cards laterais",
-  "pz.layout.panelsHint": "Mostra cards ao lado do conteúdo de cada página, em telas largas. Ligados, a largura do conteúdo é automática.",
+  "pz.layout.panelsHint":
+    "Mostra cards ao lado do conteúdo de cada página, em telas largas. Ligados, a largura do conteúdo é automática.",
   "pz.home.espaco": "Espaço",
   "pz.home.comunidades": "Comunidades",
   "pz.home.desafios": "Desafios",
@@ -1115,7 +1117,8 @@ const ptBR = {
   "verified.professional": "Profissional verificado",
   "frame.seeLess": "Ver menos",
   "frame.seeMore": "Ver mais",
-  "postcard.underReview": "Em análise pela moderação: só você vê este post por enquanto. Ele aparece para os outros assim que for aprovado.",
+  "postcard.underReview":
+    "Em análise pela moderação: só você vê este post por enquanto. Ele aparece para os outros assim que for aprovado.",
   "sm.publishedReview": "Publicado! Sua publicação passou pela análise da IA e já está no ar.",
   "img.enlarge": "Ampliar imagem:",
   "img.close": "Fechar imagem",

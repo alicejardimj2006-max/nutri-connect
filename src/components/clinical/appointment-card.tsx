@@ -92,101 +92,110 @@ export function AppointmentCard({
   return (
     <article
       className={cn(
-        "flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-xs sm:flex-row sm:items-center",
+        "@container rounded-2xl border border-border/70 bg-card p-4 shadow-xs",
         appt.status === "cancelada" && "opacity-70",
       )}
     >
-      <div className="flex w-full items-center gap-3 sm:w-auto">
-        <div className="grid w-14 shrink-0 place-items-center rounded-xl bg-secondary py-2 text-center">
-          <span className="text-[10px] font-semibold uppercase text-muted-foreground">
-            {formatDate(start, locale, { month: "short" })}
-          </span>
-          <span className="font-display text-xl font-bold leading-none text-foreground">
-            {start.getDate()}
-          </span>
-          <span className="text-[11px] font-semibold text-accent">{formatTime(start, locale)}</span>
+      {/* O layout segue a largura do card (que pode estar numa coluna estreita), não a da tela. */}
+      <div className="flex flex-col gap-3 @xl:flex-row @xl:items-center">
+        <div className="flex w-full items-center gap-3 @xl:w-auto">
+          <div className="grid w-14 shrink-0 place-items-center rounded-xl bg-secondary py-2 text-center">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+              {formatDate(start, locale, { month: "short" })}
+            </span>
+            <span className="font-display text-xl font-bold leading-none text-foreground">
+              {start.getDate()}
+            </span>
+            <span className="text-[11px] font-semibold text-accent">
+              {formatTime(start, locale)}
+            </span>
+          </div>
+          <div className="min-w-0 flex-1 @xl:hidden">
+            <PersonLine person={person} />
+          </div>
         </div>
-        <div className="min-w-0 flex-1 sm:hidden">
-          <PersonLine person={person} />
+
+        <div className="min-w-0 flex-1">
+          <div className="hidden @xl:block">
+            <PersonLine person={person} />
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              {appt.modality === "online" ? (
+                <Video className="h-3.5 w-3.5" />
+              ) : (
+                <MapPin className="h-3.5 w-3.5" />
+              )}
+              {t(`modality.${appt.modality}`)}
+            </span>
+            <span>
+              {formatDate(start, locale, { weekday: "long", day: "numeric", month: "long" })} ·{" "}
+              {formatTime(start, locale)}–{formatTime(appt.ends_at, locale)}
+            </span>
+            {appt.price_cents > 0 && <span>{formatMoney(appt.price_cents, locale)}</span>}
+          </div>
+          {!compact && appt.modality === "presencial" && appt.location && isActive && (
+            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <EmojiIcon emoji="📍" className="h-3.5 w-3.5 shrink-0" />
+              {appt.location}
+            </p>
+          )}
+          {!compact && appt.status === "cancelada" && appt.cancel_reason && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("appt.cancelReasonLabel")}: {appt.cancel_reason}
+            </p>
+          )}
+          {!compact && role === "patient" && appt.summary_for_patient && (
+            <p className="mt-2 rounded-xl bg-primary-soft/60 px-3 py-2 text-xs leading-relaxed text-foreground">
+              <FileText className="mr-1 inline h-3.5 w-3.5 text-primary" />
+              {appt.summary_for_patient}
+            </p>
+          )}
         </div>
-      </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="hidden sm:block">
-          <PersonLine person={person} />
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            {appt.modality === "online" ? (
-              <Video className="h-3.5 w-3.5" />
-            ) : (
-              <MapPin className="h-3.5 w-3.5" />
-            )}
-            {t(`modality.${appt.modality}`)}
-          </span>
-          <span>
-            {formatDate(start, locale, { weekday: "long", day: "numeric", month: "long" })} ·{" "}
-            {formatTime(start, locale)}–{formatTime(appt.ends_at, locale)}
-          </span>
-          {appt.price_cents > 0 && <span>{formatMoney(appt.price_cents, locale)}</span>}
-        </div>
-        {!compact && appt.modality === "presencial" && appt.location && isActive && (
-          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <EmojiIcon emoji="📍" className="h-3.5 w-3.5 shrink-0" />
-            {appt.location}
-          </p>
-        )}
-        {!compact && appt.status === "cancelada" && appt.cancel_reason && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("appt.cancelReasonLabel")}: {appt.cancel_reason}
-          </p>
-        )}
-        {!compact && role === "patient" && appt.summary_for_patient && (
-          <p className="mt-2 rounded-xl bg-primary-soft/60 px-3 py-2 text-xs leading-relaxed text-foreground">
-            <FileText className="mr-1 inline h-3.5 w-3.5 text-primary" />
-            {appt.summary_for_patient}
-          </p>
-        )}
-      </div>
+        <div className="flex flex-wrap items-center gap-2 @xl:justify-end">
+          <AppointmentStatusBadge status={appt.status} />
+          {payment && appt.price_cents > 0 && <PaymentStatusBadge status={payment.status} />}
 
-      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-        <AppointmentStatusBadge status={appt.status} />
-        {payment && appt.price_cents > 0 && <PaymentStatusBadge status={payment.status} />}
+          {canJoin(appt) && (
+            <Link
+              to="/consulta/$appointmentId"
+              params={{ appointmentId: appt.id }}
+              className={buttonPrimary}
+            >
+              <Video className="h-4 w-4" /> {t("appt.join")}
+            </Link>
+          )}
 
-        {canJoin(appt) && (
-          <Link
-            to="/consulta/$appointmentId"
-            params={{ appointmentId: appt.id }}
-            className={buttonPrimary}
-          >
-            <Video className="h-4 w-4" /> {t("appt.join")}
-          </Link>
-        )}
-
-        {role === "patient" && appt.status === "aguardando_pagamento" && onPay && (
-          <button type="button" className={buttonPrimary} onClick={() => onPay(appt)}>
-            <CreditCard className="h-4 w-4" /> {t("appt.payNow")}
-          </button>
-        )}
-
-        {role === "patient" && isActive && isFuture && (
-          <>
-            {appt.status !== "aguardando_pagamento" && (
-              <button type="button" className={buttonGhost} onClick={() => setDialog("reschedule")}>
-                <CalendarClock className="h-4 w-4" /> {t("appt.reschedule")}
-              </button>
-            )}
-            <button type="button" className={buttonGhost} onClick={() => setDialog("cancel")}>
-              <XCircle className="h-4 w-4" /> {t("common.cancel")}
+          {role === "patient" && appt.status === "aguardando_pagamento" && onPay && (
+            <button type="button" className={buttonPrimary} onClick={() => onPay(appt)}>
+              <CreditCard className="h-4 w-4" /> {t("appt.payNow")}
             </button>
-          </>
-        )}
+          )}
 
-        {role === "professional" && (
-          <button type="button" className={buttonSecondary} onClick={() => setDialog("manage")}>
-            {t("appt.manage")}
-          </button>
-        )}
+          {role === "patient" && isActive && isFuture && (
+            <>
+              {appt.status !== "aguardando_pagamento" && (
+                <button
+                  type="button"
+                  className={buttonGhost}
+                  onClick={() => setDialog("reschedule")}
+                >
+                  <CalendarClock className="h-4 w-4" /> {t("appt.reschedule")}
+                </button>
+              )}
+              <button type="button" className={buttonGhost} onClick={() => setDialog("cancel")}>
+                <XCircle className="h-4 w-4" /> {t("common.cancel")}
+              </button>
+            </>
+          )}
+
+          {role === "professional" && (
+            <button type="button" className={buttonSecondary} onClick={() => setDialog("manage")}>
+              {t("appt.manage")}
+            </button>
+          )}
+        </div>
       </div>
 
       {dialog === "cancel" && (

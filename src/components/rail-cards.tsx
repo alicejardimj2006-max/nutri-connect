@@ -39,7 +39,7 @@ import { CATEGORIES, getUserLevel, getUserStreak, getUserXP, initials } from "@/
 import { setCommunityFilters, useCommunityFilters } from "@/lib/community-filters";
 import { getProfessionalInfo } from "@/lib/community-admin";
 import { formatDate, formatTime } from "@/lib/clinical/format";
-import { useAppointments } from "@/lib/clinical/queries";
+import { useAppointments, useLinks } from "@/lib/clinical/queries";
 import { LEVEL_LABEL_KEYS } from "@/lib/i18n/content";
 import {
   TRAIL_CHANGE_EVENT,
@@ -137,13 +137,18 @@ export function ProfileCard() {
         >
           {initials(user.name)}
         </Link>
-        <p className="mt-2 truncate font-display text-base font-bold text-foreground">{user.name}</p>
+        <p className="mt-2 truncate font-display text-base font-bold text-foreground">
+          {user.name}
+        </p>
         <p className="text-xs text-muted-foreground">
           {t("hub.level").replace("{n}", String(lvl.level))} ·{" "}
           {t(LEVEL_LABEL_KEYS[lvl.label] ?? "hub.level.1")}
         </p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-secondary">
-          <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
+          <div
+            className="h-full rounded-full bg-accent transition-all"
+            style={{ width: `${pct}%` }}
+          />
         </div>
         <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
           <span>
@@ -189,7 +194,9 @@ export function MyCommunitiesCard() {
                   <Users className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-foreground">{c.name}</span>
+                  <span className="block truncate text-sm font-semibold text-foreground">
+                    {c.name}
+                  </span>
                   <span className="block text-[11px] text-muted-foreground">
                     {c.members.length} {t("comunidades.members")}
                   </span>
@@ -201,7 +208,10 @@ export function MyCommunitiesCard() {
       ) : (
         <div className="py-2 text-center">
           <p className="text-xs text-muted-foreground">{t("hub.noCommunities")}</p>
-          <Link to="/comunidades" className="mt-2 inline-block text-xs font-semibold text-accent hover:underline">
+          <Link
+            to="/comunidades"
+            className="mt-2 inline-block text-xs font-semibold text-accent hover:underline"
+          >
             {t("hub.exploreCommunities")}
           </Link>
         </div>
@@ -218,13 +228,19 @@ export function TrailCard() {
 
   const trail = useMemo(() => {
     const trails = getTrails("adult", locale);
-    if (!trailProgress) return { trail: trails[0], stopTitle: null as string | null, pct: 0, started: false };
+    if (!trailProgress)
+      return { trail: trails[0], stopTitle: null as string | null, pct: 0, started: false };
     for (const tr of trails) {
       const id = getCurrentStopId(trailProgress, tr.units);
       if (id) {
         const stop = tr.units.flatMap((u) => u.stops).find((s) => s.id === id);
         const summary = getTrailSummary(trailProgress, tr);
-        return { trail: tr, stopTitle: stop?.title ?? null, pct: summary.pct, started: summary.levels > 0 };
+        return {
+          trail: tr,
+          stopTitle: stop?.title ?? null,
+          pct: summary.pct,
+          started: summary.levels > 0,
+        };
       }
     }
     return { trail: trails[0], stopTitle: null, pct: 100, started: true };
@@ -245,7 +261,9 @@ export function TrailCard() {
       </div>
       {trail.trail && (
         <div className="mt-7">
-          <p className="truncate text-xs font-bold uppercase tracking-wider text-accent">{trail.trail.title}</p>
+          <p className="truncate text-xs font-bold uppercase tracking-wider text-accent">
+            {trail.trail.title}
+          </p>
           {trail.stopTitle && (
             <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {t("hub.trail.next")} {trail.stopTitle}
@@ -273,13 +291,18 @@ export function WeeklyThemeCard() {
   if (!hydrated || !weeklyTheme) return null;
   return (
     <Panel title={weeklyTheme.badge || t("weekly.badge")}>
-      <p className="font-display text-base font-bold leading-snug text-foreground">{weeklyTheme.title}</p>
+      <p className="font-display text-base font-bold leading-snug text-foreground">
+        {weeklyTheme.title}
+      </p>
       {weeklyTheme.questionOfTheWeek && (
         <p className="mt-2 rounded-xl bg-secondary/50 p-3 text-xs italic text-foreground/85">
           “{weeklyTheme.questionOfTheWeek}”
         </p>
       )}
-      <Link to="/tema-da-semana" className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline">
+      <Link
+        to="/tema-da-semana"
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+      >
         {t("hub.weekly.cta")} <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </Panel>
@@ -293,7 +316,9 @@ export function MyChallengesCard() {
   const mine = useMemo(
     () =>
       user
-        ? challenges.filter((c) => c.participants.includes(user.id) && !c.completedBy.includes(user.id))
+        ? challenges.filter(
+            (c) => c.participants.includes(user.id) && !c.completedBy.includes(user.id),
+          )
         : [],
     [challenges, user],
   );
@@ -320,7 +345,11 @@ export function MyChallengesCard() {
                   className="block rounded-xl bg-secondary/50 p-3 transition hover:bg-secondary"
                 >
                   <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <EmojiIcon emoji={c.badgeIcon} className="h-3.5 w-3.5 shrink-0 text-accent" fallback={null} />
+                    <EmojiIcon
+                      emoji={c.badgeIcon}
+                      className="h-3.5 w-3.5 shrink-0 text-accent"
+                      fallback={null}
+                    />
                     <span className="truncate">{c.title}</span>
                   </span>
                   {total > 0 && (
@@ -337,7 +366,10 @@ export function MyChallengesCard() {
           })}
         </ul>
       ) : (
-        <Link to="/desafios" className="block py-2 text-center text-xs font-semibold text-accent hover:underline">
+        <Link
+          to="/desafios"
+          className="block py-2 text-center text-xs font-semibold text-accent hover:underline"
+        >
           {t("profile.pickChallenge")}
         </Link>
       )}
@@ -368,8 +400,12 @@ export function SuggestedCommunitiesCard({ limit = 3 }: { limit?: number }) {
                 <MessageCircle className="h-4 w-4" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-foreground">{c.name}</span>
-                <span className="block truncate text-[11px] text-muted-foreground">{td(c.category)}</span>
+                <span className="block truncate text-sm font-semibold text-foreground">
+                  {c.name}
+                </span>
+                <span className="block truncate text-[11px] text-muted-foreground">
+                  {td(c.category)}
+                </span>
               </span>
             </Link>
           </li>
@@ -384,7 +420,8 @@ export function ProfessionalsCard({ limit = 3 }: { limit?: number }) {
   const { t } = useI18n();
   const { profiles } = useCommunity();
   const pros = useMemo(
-    () => profiles.filter((p) => p.role === "profissional" && p.userId !== user?.id).slice(0, limit),
+    () =>
+      profiles.filter((p) => p.role === "profissional" && p.userId !== user?.id).slice(0, limit),
     [profiles, user, limit],
   );
   if (pros.length === 0) return null;
@@ -415,7 +452,11 @@ export function ProfessionalsCard({ limit = 3 }: { limit?: number }) {
                     <span className="truncate">{p.name}</span>
                     <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />
                   </span>
-                  {info && <span className="block truncate text-[11px] text-muted-foreground">{td(info.profession)}</span>}
+                  {info && (
+                    <span className="block truncate text-[11px] text-muted-foreground">
+                      {td(info.profession)}
+                    </span>
+                  )}
                 </span>
               </Link>
             </li>
@@ -437,7 +478,11 @@ function LinkList({ title, items }: { title: Names; items: LinkItem[] }) {
       <ul className="grid gap-0.5">
         {items.map((s) => (
           <li key={s.to}>
-            <Link to={s.to} className={linkRow} activeProps={{ className: "bg-primary-soft text-primary" }}>
+            <Link
+              to={s.to}
+              className={linkRow}
+              activeProps={{ className: "bg-primary-soft text-primary" }}
+            >
               <s.icon className="h-4 w-4 text-accent" />
               {tr(s.names)}
             </Link>
@@ -455,10 +500,22 @@ export function ShortcutsCard() {
       items={[
         { to: "/espaco", icon: Home, names: ["Espaço", "Space", "Espacio", "Espace"] },
         { to: "/explorar", icon: Compass, names: ["Explorar", "Explore", "Explorar", "Explorer"] },
-        { to: "/comunidades", icon: Users, names: ["Comunidades", "Communities", "Comunidades", "Communautés"] },
+        {
+          to: "/comunidades",
+          icon: Users,
+          names: ["Comunidades", "Communities", "Comunidades", "Communautés"],
+        },
         { to: "/desafios", icon: Award, names: ["Desafios", "Challenges", "Desafíos", "Défis"] },
-        { to: "/tema-da-semana", icon: Sparkles, names: ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"] },
-        { to: "/notificacoes", icon: Bell, names: ["Notificações", "Notifications", "Notificaciones", "Notifications"] },
+        {
+          to: "/tema-da-semana",
+          icon: Sparkles,
+          names: ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"],
+        },
+        {
+          to: "/notificacoes",
+          icon: Bell,
+          names: ["Notificações", "Notifications", "Notificaciones", "Notifications"],
+        },
       ]}
     />
   );
@@ -469,13 +526,56 @@ export function SettingsNavCard() {
     <LinkList
       title={["Configurações", "Settings", "Ajustes", "Réglages"]}
       items={[
-        { to: "/perfil/configuracoes/conta", icon: UserCog, names: ["Conta e segurança", "Account and security", "Cuenta y seguridad", "Compte et sécurité"] },
-        { to: "/perfil/configuracoes/privacidade", icon: ShieldCheck, names: ["Privacidade", "Privacy", "Privacidad", "Confidentialité"] },
-        { to: "/perfil/configuracoes/notificacoes", icon: Bell, names: ["Notificações", "Notifications", "Notificaciones", "Notifications"] },
-        { to: "/perfil/personalizacao", icon: Palette, names: ["Personalização", "Personalization", "Personalización", "Personnalisation"] },
-        { to: "/perfil/configuracoes/idioma", icon: Globe, names: ["Idioma e região", "Language and region", "Idioma y región", "Langue et région"] },
-        { to: "/perfil/configuracoes/dados", icon: Database, names: ["Dados e histórico", "Data and history", "Datos e historial", "Données et historique"] },
-        { to: "/perfil/configuracoes", icon: Settings, names: ["Todas as configurações", "All settings", "Todos los ajustes", "Tous les réglages"] },
+        {
+          to: "/perfil/configuracoes/conta",
+          icon: UserCog,
+          names: [
+            "Conta e segurança",
+            "Account and security",
+            "Cuenta y seguridad",
+            "Compte et sécurité",
+          ],
+        },
+        {
+          to: "/perfil/configuracoes/privacidade",
+          icon: ShieldCheck,
+          names: ["Privacidade", "Privacy", "Privacidad", "Confidentialité"],
+        },
+        {
+          to: "/perfil/configuracoes/notificacoes",
+          icon: Bell,
+          names: ["Notificações", "Notifications", "Notificaciones", "Notifications"],
+        },
+        {
+          to: "/perfil/personalizacao",
+          icon: Palette,
+          names: ["Personalização", "Personalization", "Personalización", "Personnalisation"],
+        },
+        {
+          to: "/perfil/configuracoes/idioma",
+          icon: Globe,
+          names: ["Idioma e região", "Language and region", "Idioma y región", "Langue et région"],
+        },
+        {
+          to: "/perfil/configuracoes/dados",
+          icon: Database,
+          names: [
+            "Dados e histórico",
+            "Data and history",
+            "Datos e historial",
+            "Données et historique",
+          ],
+        },
+        {
+          to: "/perfil/configuracoes",
+          icon: Settings,
+          names: [
+            "Todas as configurações",
+            "All settings",
+            "Todos los ajustes",
+            "Tous les réglages",
+          ],
+        },
       ]}
     />
   );
@@ -484,13 +584,53 @@ export function SettingsNavCard() {
 export function LegalLinksCard() {
   return (
     <LinkList
-      title={["Sobre e documentos", "About and documents", "Acerca de y documentos", "À propos et documents"]}
+      title={[
+        "Sobre e documentos",
+        "About and documents",
+        "Acerca de y documentos",
+        "À propos et documents",
+      ]}
       items={[
-        { to: "/sobre", icon: Heart, names: ["Sobre o NutriConnect", "About NutriConnect", "Acerca de NutriConnect", "À propos de NutriConnect"] },
-        { to: "/termos", icon: FileText, names: ["Termos de Uso", "Terms of Use", "Términos de Uso", "Conditions d'utilisation"] },
-        { to: "/privacidade", icon: ShieldCheck, names: ["Política de Privacidade", "Privacy Policy", "Política de Privacidad", "Politique de confidentialité"] },
-        { to: "/diretrizes", icon: Users, names: ["Diretrizes da Comunidade", "Community Guidelines", "Normas de la comunidad", "Règles de la communauté"] },
-        { to: "/contato", icon: Mail, names: ["Fale conosco", "Contact us", "Contáctanos", "Nous contacter"] },
+        {
+          to: "/sobre",
+          icon: Heart,
+          names: [
+            "Sobre o NutriConnect",
+            "About NutriConnect",
+            "Acerca de NutriConnect",
+            "À propos de NutriConnect",
+          ],
+        },
+        {
+          to: "/termos",
+          icon: FileText,
+          names: ["Termos de Uso", "Terms of Use", "Términos de Uso", "Conditions d'utilisation"],
+        },
+        {
+          to: "/privacidade",
+          icon: ShieldCheck,
+          names: [
+            "Política de Privacidade",
+            "Privacy Policy",
+            "Política de Privacidad",
+            "Politique de confidentialité",
+          ],
+        },
+        {
+          to: "/diretrizes",
+          icon: Users,
+          names: [
+            "Diretrizes da Comunidade",
+            "Community Guidelines",
+            "Normas de la comunidad",
+            "Règles de la communauté",
+          ],
+        },
+        {
+          to: "/contato",
+          icon: Mail,
+          names: ["Fale conosco", "Contact us", "Contáctanos", "Nous contacter"],
+        },
       ]}
     />
   );
@@ -508,11 +648,22 @@ export function ContactCard() {
           "Questions, signalements de contenu et demandes sur vos données personnelles arrivent à notre équipe via Nous contacter.",
         ])}
       </p>
-      <a href={`mailto:${COMPANY.supportEmail}`} className="mt-3 block truncate text-xs font-bold text-accent hover:underline">
+      <a
+        href={`mailto:${COMPANY.supportEmail}`}
+        className="mt-3 block truncate text-xs font-bold text-accent hover:underline"
+      >
         {COMPANY.supportEmail}
       </a>
-      <Link to="/contato" className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline">
-        {tr(["Abrir o Fale conosco", "Open Contact us", "Abrir Contáctanos", "Ouvrir Nous contacter"])}
+      <Link
+        to="/contato"
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+      >
+        {tr([
+          "Abrir o Fale conosco",
+          "Open Contact us",
+          "Abrir Contáctanos",
+          "Ouvrir Nous contacter",
+        ])}
         <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </Panel>
@@ -522,12 +673,34 @@ export function ContactCard() {
 export function SecurityTipsCard() {
   const tr = useTr();
   const tips: Names[] = [
-    ["Use uma senha única, longa e que só você conheça.", "Use a unique, long password that only you know.", "Usa una contraseña única, larga y que solo tú conozcas.", "Utilisez un mot de passe unique, long et que vous seul connaissez."],
-    ["Entrou em um computador de outra pessoa? Encerre todas as sessões na Conta.", "Signed in on someone else's computer? End all sessions in Account.", "¿Entraste en el ordenador de otra persona? Cierra todas las sesiones en Cuenta.", "Connecté sur l'ordinateur de quelqu'un ? Fermez toutes les sessions dans Compte."],
-    ["Desconfie de mensagens pedindo senha ou pagamento fora do site.", "Be wary of messages asking for a password or payment outside the site.", "Desconfía de mensajes que piden contraseña o pago fuera del sitio.", "Méfiez-vous des messages demandant mot de passe ou paiement hors du site."],
+    [
+      "Use uma senha única, longa e que só você conheça.",
+      "Use a unique, long password that only you know.",
+      "Usa una contraseña única, larga y que solo tú conozcas.",
+      "Utilisez un mot de passe unique, long et que vous seul connaissez.",
+    ],
+    [
+      "Entrou em um computador de outra pessoa? Encerre todas as sessões na Conta.",
+      "Signed in on someone else's computer? End all sessions in Account.",
+      "¿Entraste en el ordenador de otra persona? Cierra todas las sesiones en Cuenta.",
+      "Connecté sur l'ordinateur de quelqu'un ? Fermez toutes les sessions dans Compte.",
+    ],
+    [
+      "Desconfie de mensagens pedindo senha ou pagamento fora do site.",
+      "Be wary of messages asking for a password or payment outside the site.",
+      "Desconfía de mensajes que piden contraseña o pago fuera del sitio.",
+      "Méfiez-vous des messages demandant mot de passe ou paiement hors du site.",
+    ],
   ];
   return (
-    <Panel title={tr(["Dicas de segurança", "Security tips", "Consejos de seguridad", "Conseils de sécurité"])}>
+    <Panel
+      title={tr([
+        "Dicas de segurança",
+        "Security tips",
+        "Consejos de seguridad",
+        "Conseils de sécurité",
+      ])}
+    >
       <ul className="space-y-2.5">
         {tips.map((tip, i) => (
           <li key={i} className="flex gap-2.5 text-xs leading-relaxed text-muted-foreground">
@@ -543,13 +716,33 @@ export function SecurityTipsCard() {
 export function CommunityRulesCard() {
   const tr = useTr();
   const rules: Names[] = [
-    ["Quem cria uma comunidade é uma pessoa usuária; profissionais verificados entram como administradores.", "A community is created by a user; verified professionals join as administrators.", "Una comunidad la crea una persona usuaria; los profesionales verificados entran como administradores.", "Une communauté est créée par un utilisateur ; les professionnels vérifiés rejoignent comme administrateurs."],
-    ["Só se publica em comunidades ativas, com administração completa.", "You can only post in active communities, with full administration.", "Solo se publica en comunidades activas, con administración completa.", "On ne publie que dans les communautés actives, avec administration complète."],
-    ["Conteúdo denunciado por várias pessoas fica oculto até a equipe revisar.", "Content reported by several people stays hidden until the team reviews it.", "El contenido denunciado por varias personas queda oculto hasta que el equipo lo revise.", "Le contenu signalé par plusieurs personnes reste masqué jusqu'à examen par l'équipe."],
+    [
+      "Quem cria uma comunidade é uma pessoa usuária; profissionais verificados entram como administradores.",
+      "A community is created by a user; verified professionals join as administrators.",
+      "Una comunidad la crea una persona usuaria; los profesionales verificados entran como administradores.",
+      "Une communauté est créée par un utilisateur ; les professionnels vérifiés rejoignent comme administrateurs.",
+    ],
+    [
+      "Só se publica em comunidades ativas, com administração completa.",
+      "You can only post in active communities, with full administration.",
+      "Solo se publica en comunidades activas, con administración completa.",
+      "On ne publie que dans les communautés actives, avec administration complète.",
+    ],
+    [
+      "Conteúdo denunciado por várias pessoas fica oculto até a equipe revisar.",
+      "Content reported by several people stays hidden until the team reviews it.",
+      "El contenido denunciado por varias personas queda oculto hasta que el equipo lo revise.",
+      "Le contenu signalé par plusieurs personnes reste masqué jusqu'à examen par l'équipe.",
+    ],
   ];
   return (
     <Panel
-      title={tr(["Como funcionam as comunidades", "How communities work", "Cómo funcionan las comunidades", "Comment fonctionnent les communautés"])}
+      title={tr([
+        "Como funcionam as comunidades",
+        "How communities work",
+        "Cómo funcionan las comunidades",
+        "Comment fonctionnent les communautés",
+      ])}
       action={
         <Link to="/diretrizes" className={smallLink}>
           {tr(["Diretrizes", "Guidelines", "Normas", "Règles"])}
@@ -571,12 +764,34 @@ export function CommunityRulesCard() {
 export function HowBookingCard() {
   const tr = useTr();
   const steps: Names[] = [
-    ["Escolha um(a) profissional verificado(a) e um horário.", "Pick a verified professional and a time slot.", "Elige un profesional verificado y un horario.", "Choisissez un professionnel vérifié et un créneau."],
-    ["O horário fica reservado por 30 minutos enquanto você paga.", "The slot is held for 30 minutes while you pay.", "El horario queda reservado 30 minutos mientras pagas.", "Le créneau est réservé 30 minutes pendant le paiement."],
-    ["Cancelando com 24 h de antecedência, o estorno é integral.", "Cancelling 24 h ahead gives a full refund.", "Cancelando con 24 h de antelación, el reembolso es íntegro.", "En annulant 24 h à l'avance, le remboursement est intégral."],
+    [
+      "Escolha um(a) profissional verificado(a) e um horário.",
+      "Pick a verified professional and a time slot.",
+      "Elige un profesional verificado y un horario.",
+      "Choisissez un professionnel vérifié et un créneau.",
+    ],
+    [
+      "O horário fica reservado por 30 minutos enquanto você paga.",
+      "The slot is held for 30 minutes while you pay.",
+      "El horario queda reservado 30 minutos mientras pagas.",
+      "Le créneau est réservé 30 minutes pendant le paiement.",
+    ],
+    [
+      "Cancelando com 24 h de antecedência, o estorno é integral.",
+      "Cancelling 24 h ahead gives a full refund.",
+      "Cancelando con 24 h de antelación, el reembolso es íntegro.",
+      "En annulant 24 h à l'avance, le remboursement est intégral.",
+    ],
   ];
   return (
-    <Panel title={tr(["Como funciona o agendamento", "How booking works", "Cómo funciona la reserva", "Comment fonctionne la réservation"])}>
+    <Panel
+      title={tr([
+        "Como funciona o agendamento",
+        "How booking works",
+        "Cómo funciona la reserva",
+        "Comment fonctionne la réservation",
+      ])}
+    >
       <ol className="space-y-3">
         {steps.map((s, i) => (
           <li key={i} className="flex gap-3 text-xs leading-relaxed text-muted-foreground">
@@ -589,7 +804,12 @@ export function HowBookingCard() {
       </ol>
       <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
         <CreditCard className="h-3.5 w-3.5" />
-        {tr(["Pagamento seguro pelo Stripe.", "Secure payment by Stripe.", "Pago seguro con Stripe.", "Paiement sécurisé par Stripe."])}
+        {tr([
+          "Pagamento seguro pelo Stripe.",
+          "Secure payment by Stripe.",
+          "Pago seguro con Stripe.",
+          "Paiement sécurisé par Stripe.",
+        ])}
       </p>
     </Panel>
   );
@@ -598,7 +818,14 @@ export function HowBookingCard() {
 export function EducationalNoticeCard() {
   const tr = useTr();
   return (
-    <Panel title={tr(["Conteúdo educativo", "Educational content", "Contenido educativo", "Contenu éducatif"])}>
+    <Panel
+      title={tr([
+        "Conteúdo educativo",
+        "Educational content",
+        "Contenido educativo",
+        "Contenu éducatif",
+      ])}
+    >
       <p className="text-xs leading-relaxed text-muted-foreground">
         {tr([
           "As informações do NutriConnect têm caráter educativo e não substituem a avaliação de um(a) nutricionista ou médico(a). Em urgências, procure atendimento imediato.",
@@ -607,8 +834,16 @@ export function EducationalNoticeCard() {
           "Les informations de NutriConnect sont éducatives et ne remplacent pas l'avis d'un nutritionniste ou d'un médecin. En urgence, consultez immédiatement.",
         ])}
       </p>
-      <Link to="/termos" className="mt-3 inline-block text-xs font-bold text-accent hover:underline">
-        {tr(["Ler os Termos de Uso", "Read the Terms of Use", "Leer los Términos de Uso", "Lire les Conditions d'utilisation"])}
+      <Link
+        to="/termos"
+        className="mt-3 inline-block text-xs font-bold text-accent hover:underline"
+      >
+        {tr([
+          "Ler os Termos de Uso",
+          "Read the Terms of Use",
+          "Leer los Términos de Uso",
+          "Lire les Conditions d'utilisation",
+        ])}
       </Link>
     </Panel>
   );
@@ -633,13 +868,25 @@ export function FriendsCard() {
         <ul className="space-y-1">
           {list.slice(0, 5).map((f) => (
             <li key={f.id}>
-              <Link to="/perfil/$userId" params={{ userId: f.id }} className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary">
+              <Link
+                to="/perfil/$userId"
+                params={{ userId: f.id }}
+                className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary"
+              >
                 <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full avatar-shape bg-primary-soft text-xs font-bold text-primary">
-                  {f.avatarUrl ? <img src={f.avatarUrl} alt="" className="h-full w-full object-cover" /> : initials(f.name)}
+                  {f.avatarUrl ? (
+                    <img src={f.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    initials(f.name)
+                  )}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-foreground">{f.name}</span>
-                  <span className="block truncate text-[11px] text-muted-foreground">@{f.username}</span>
+                  <span className="block truncate text-sm font-semibold text-foreground">
+                    {f.name}
+                  </span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    @{f.username}
+                  </span>
                 </span>
               </Link>
             </li>
@@ -648,10 +895,23 @@ export function FriendsCard() {
       ) : (
         <div className="py-2 text-center">
           <p className="text-xs text-muted-foreground">
-            {tr(["Você ainda não tem amigos por aqui.", "You don't have friends here yet.", "Aún no tienes amigos aquí.", "Vous n'avez pas encore d'amis ici."])}
+            {tr([
+              "Você ainda não tem amigos por aqui.",
+              "You don't have friends here yet.",
+              "Aún no tienes amigos aquí.",
+              "Vous n'avez pas encore d'amis ici.",
+            ])}
           </p>
-          <Link to="/explorar" className="mt-2 inline-block text-xs font-semibold text-accent hover:underline">
-            {tr(["Encontrar pessoas", "Find people", "Encontrar personas", "Trouver des personnes"])}
+          <Link
+            to="/explorar"
+            className="mt-2 inline-block text-xs font-semibold text-accent hover:underline"
+          >
+            {tr([
+              "Encontrar pessoas",
+              "Find people",
+              "Encontrar personas",
+              "Trouver des personnes",
+            ])}
           </Link>
         </div>
       )}
@@ -666,7 +926,10 @@ export function TopRecipesCard() {
   const top = useMemo(
     () =>
       [...(feed.data ?? [])]
-        .sort((a, b) => b.preparedBy.length + b.supports.length - (a.preparedBy.length + a.supports.length))
+        .sort(
+          (a, b) =>
+            b.preparedBy.length + b.supports.length - (a.preparedBy.length + a.supports.length),
+        )
         .slice(0, 5),
     [feed.data],
   );
@@ -683,14 +946,21 @@ export function TopRecipesCard() {
       <ul className="space-y-1">
         {top.map((r) => (
           <li key={r.id}>
-            <Link to="/explorar" search={{ post: r.id }} className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary">
+            <Link
+              to="/explorar"
+              search={{ post: r.id }}
+              className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary"
+            >
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
                 <ChefHat className="h-4 w-4" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-foreground">{r.title || "—"}</span>
+                <span className="block truncate text-sm font-semibold text-foreground">
+                  {r.title || r.text.slice(0, 60) || "—"}
+                </span>
                 <span className="block truncate text-[11px] text-muted-foreground">
-                  {r.preparedBy.length} {tr(["preparos", "made it", "preparaciones", "préparations"])} · {r.authorName}
+                  {r.preparedBy.length}{" "}
+                  {tr(["preparos", "made it", "preparaciones", "préparations"])} · {r.authorName}
                 </span>
               </span>
             </Link>
@@ -716,7 +986,12 @@ export function UpcomingAppointmentsCard() {
   const to = role === "professional" ? "/painel/agenda" : "/acompanhamento/consultas";
   return (
     <Panel
-      title={tr(["Próximas consultas", "Upcoming appointments", "Próximas consultas", "Prochaines consultations"])}
+      title={tr([
+        "Próximas consultas",
+        "Upcoming appointments",
+        "Próximas consultas",
+        "Prochaines consultations",
+      ])}
       action={
         <Link to={to} className={smallLink}>
           {tr(["Ver", "View", "Ver", "Voir"])}
@@ -730,11 +1005,17 @@ export function UpcomingAppointmentsCard() {
               <CalendarClock className="h-4 w-4 shrink-0 text-accent" />
               <span className="min-w-0 text-xs">
                 <span className="block font-semibold capitalize text-foreground">
-                  {formatDate(a.starts_at, locale, { weekday: "short", day: "numeric", month: "short" })}
+                  {formatDate(a.starts_at, locale, {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })}
                 </span>
                 <span className="text-muted-foreground">
                   {formatTime(a.starts_at, locale)} ·{" "}
-                  {a.modality === "online" ? tr(["On-line", "Online", "En línea", "En ligne"]) : tr(["Presencial", "In person", "Presencial", "En personne"])}
+                  {a.modality === "online"
+                    ? tr(["On-line", "Online", "En línea", "En ligne"])
+                    : tr(["Presencial", "In person", "Presencial", "En personne"])}
                 </span>
               </span>
             </li>
@@ -743,12 +1024,113 @@ export function UpcomingAppointmentsCard() {
       ) : (
         <div className="py-2 text-center">
           <p className="text-xs text-muted-foreground">
-            {tr(["Nenhuma consulta marcada.", "No appointments booked.", "Ninguna consulta reservada.", "Aucune consultation prévue."])}
+            {tr([
+              "Nenhuma consulta marcada.",
+              "No appointments booked.",
+              "Ninguna consulta reservada.",
+              "Aucune consultation prévue.",
+            ])}
           </p>
-          <Link to="/profissionais" className="mt-2 inline-block text-xs font-semibold text-accent hover:underline">
-            {tr(["Encontrar profissional", "Find a professional", "Encontrar profesional", "Trouver un professionnel"])}
+          <Link
+            to="/profissionais"
+            className="mt-2 inline-block text-xs font-semibold text-accent hover:underline"
+          >
+            {tr([
+              "Encontrar profissional",
+              "Find a professional",
+              "Encontrar profesional",
+              "Trouver un professionnel",
+            ])}
           </Link>
         </div>
+      )}
+    </Panel>
+  );
+}
+
+/** Pendências do(a) profissional: consultas a concluir, de hoje e pedidos de acompanhamento. */
+export function ProTasksCard() {
+  const { user } = useAuth();
+  const tr = useTr();
+  const from = useMemo(() => new Date(Date.now() - 21 * 86_400_000).toISOString(), []);
+  const appts = useAppointments(
+    { role: "professional", from, ascending: true, limit: 200 },
+    !!user?.professional,
+  );
+  const links = useLinks("professional", !!user?.professional);
+  if (!user?.professional) return null;
+  const now = Date.now();
+  const today = new Date().toDateString();
+  const list = appts.data ?? [];
+  const open = ["agendada", "confirmada"];
+  const toClose = list.filter(
+    (a) => open.includes(a.status) && new Date(a.ends_at).getTime() < now,
+  ).length;
+  const todayCount = list.filter(
+    (a) =>
+      open.includes(a.status) &&
+      new Date(a.starts_at).toDateString() === today &&
+      new Date(a.ends_at).getTime() >= now,
+  ).length;
+  const requests = (links.data ?? []).filter((l) => l.status === "pendente").length;
+  const rows: { n: number; label: Names; to: string; tone: string }[] = [
+    {
+      n: todayCount,
+      label: ["Consultas hoje", "Visits today", "Consultas hoy", "Consultations aujourd'hui"],
+      to: "/painel/agenda",
+      tone: "text-accent",
+    },
+    {
+      n: toClose,
+      label: [
+        "Consultas para concluir",
+        "Visits to wrap up",
+        "Consultas por cerrar",
+        "Consultations à clôturer",
+      ],
+      to: "/painel/agenda",
+      tone: "text-amber-600 dark:text-amber-400",
+    },
+    {
+      n: requests,
+      label: [
+        "Pedidos de acompanhamento",
+        "Care requests",
+        "Solicitudes de seguimiento",
+        "Demandes de suivi",
+      ],
+      to: "/painel/pacientes",
+      tone: "text-primary",
+    },
+  ];
+  return (
+    <Panel title={tr(["Suas pendências", "Your to-dos", "Tus pendientes", "Vos tâches"])}>
+      <ul className="space-y-1.5">
+        {rows.map((r) => (
+          <li key={r.label[0]}>
+            <Link
+              to={r.to}
+              className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary"
+            >
+              <span
+                className={`w-8 text-center font-display text-xl font-bold tabular-nums ${r.n ? r.tone : "text-muted-foreground"}`}
+              >
+                {r.n}
+              </span>
+              <span className="text-sm text-foreground">{tr(r.label)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {toClose > 0 && (
+        <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+          {tr([
+            "Marque como realizada (ou falta) e registre a evolução para manter o prontuário em dia.",
+            "Mark as done (or no-show) and write the note to keep records up to date.",
+            "Marca como realizada (o ausencia) y registra la evolución.",
+            "Marquez comme réalisée (ou absence) et rédigez l'évolution.",
+          ])}
+        </p>
       )}
     </Panel>
   );
@@ -762,27 +1144,46 @@ export function CommunityAboutCard({ slug }: { slug: string }) {
   const c = communities.find((x) => x.slug === slug);
   if (!c) return null;
   return (
-    <Panel title={tr(["Sobre a comunidade", "About the community", "Sobre la comunidad", "À propos de la communauté"])}>
+    <Panel
+      title={tr([
+        "Sobre a comunidade",
+        "About the community",
+        "Sobre la comunidad",
+        "À propos de la communauté",
+      ])}
+    >
       <p className="text-sm font-bold text-foreground">{c.name}</p>
-      <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-accent">{td(c.category)}</p>
-      {c.description && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{c.description}</p>}
+      <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-accent">
+        {td(c.category)}
+      </p>
+      {c.description && (
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{c.description}</p>
+      )}
       {c.objective && (
-        <p className="mt-2 rounded-xl bg-secondary/50 p-3 text-xs italic text-foreground/85">{c.objective}</p>
+        <p className="mt-2 rounded-xl bg-secondary/50 p-3 text-xs italic text-foreground/85">
+          {c.objective}
+        </p>
       )}
       <dl className="mt-3 space-y-1.5 text-xs">
         <div className="flex justify-between gap-3">
-          <dt className="text-muted-foreground">{tr(["Membros", "Members", "Miembros", "Membres"])}</dt>
+          <dt className="text-muted-foreground">
+            {tr(["Membros", "Members", "Miembros", "Membres"])}
+          </dt>
           <dd className="font-semibold text-foreground">{c.members.length}</dd>
         </div>
         {c.adminUserName && (
           <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{tr(["Administração", "Admin", "Administración", "Administration"])}</dt>
+            <dt className="text-muted-foreground">
+              {tr(["Administração", "Admin", "Administración", "Administration"])}
+            </dt>
             <dd className="truncate font-semibold text-foreground">{c.adminUserName}</dd>
           </div>
         )}
         {c.professionalName && (
           <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{tr(["Profissional", "Professional", "Profesional", "Professionnel"])}</dt>
+            <dt className="text-muted-foreground">
+              {tr(["Profissional", "Professional", "Profesional", "Professionnel"])}
+            </dt>
             <dd className="flex items-center gap-1 truncate font-semibold text-foreground">
               {c.professionalName} <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-accent" />
             </dd>
@@ -803,7 +1204,11 @@ export function CommunityMembersCard({ slug }: { slug: string }) {
       <ul className="space-y-1">
         {c.members.slice(0, 8).map((m) => (
           <li key={m.userId}>
-            <Link to="/perfil/$userId" params={{ userId: m.userId }} className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary">
+            <Link
+              to="/perfil/$userId"
+              params={{ userId: m.userId }}
+              className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary"
+            >
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-[11px] font-bold text-primary">
                 {initials(m.name)}
               </span>
@@ -833,7 +1238,9 @@ export function ChallengeStatsCard() {
       <div className="grid grid-cols-3 gap-2 text-center">
         {stats.map(([label, value]) => (
           <div key={label[0]} className="rounded-xl bg-secondary/50 p-2.5">
-            <p className="font-display text-xl font-extrabold text-foreground">{Math.max(0, value)}</p>
+            <p className="font-display text-xl font-extrabold text-foreground">
+              {Math.max(0, value)}
+            </p>
             <p className="text-[10px] font-medium text-muted-foreground">{tr(label)}</p>
           </div>
         ))}
@@ -848,7 +1255,9 @@ export function ChallengeInfoCard({ id }: { id: string }) {
   const c = challenges.find((x) => x.id === id);
   if (!c) return null;
   return (
-    <Panel title={tr(["Sobre o desafio", "About the challenge", "Sobre el desafío", "À propos du défi"])}>
+    <Panel
+      title={tr(["Sobre o desafio", "About the challenge", "Sobre el desafío", "À propos du défi"])}
+    >
       <div className="flex items-center gap-3">
         <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent-soft text-accent">
           <EmojiIcon emoji={c.badgeIcon} className="h-6 w-6" />
@@ -864,11 +1273,15 @@ export function ChallengeInfoCard({ id }: { id: string }) {
           <dd className="font-semibold text-foreground">{c.steps.length}</dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-muted-foreground">{tr(["Participantes", "Participants", "Participantes", "Participants"])}</dt>
+          <dt className="text-muted-foreground">
+            {tr(["Participantes", "Participants", "Participantes", "Participants"])}
+          </dt>
           <dd className="font-semibold text-foreground">{c.participants.length}</dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-muted-foreground">{tr(["Concluíram", "Completed it", "Lo completaron", "L'ont terminé"])}</dt>
+          <dt className="text-muted-foreground">
+            {tr(["Concluíram", "Completed it", "Lo completaron", "L'ont terminé"])}
+          </dt>
           <dd className="font-semibold text-foreground">{c.completedBy.length}</dd>
         </div>
       </dl>
@@ -879,12 +1292,42 @@ export function ChallengeInfoCard({ id }: { id: string }) {
 // ───────────────────────────── Nina e notificações ─────────────────────────────
 
 const NINA_TOPICS: Names[] = [
-  ["Como montar um prato equilibrado no almoço?", "How do I build a balanced lunch plate?", "¿Cómo armar un plato equilibrado en el almuerzo?", "Comment composer une assiette équilibrée au déjeuner ?"],
-  ["Quais lanches rápidos posso levar para o trabalho?", "What quick snacks can I take to work?", "¿Qué meriendas rápidas puedo llevar al trabajo?", "Quelles collations rapides emporter au travail ?"],
-  ["O que são alimentos ultraprocessados?", "What are ultra-processed foods?", "¿Qué son los alimentos ultraprocesados?", "Que sont les aliments ultra-transformés ?"],
-  ["Como ler o rótulo de um alimento?", "How do I read a food label?", "¿Cómo leer la etiqueta de un alimento?", "Comment lire l'étiquette d'un aliment ?"],
-  ["Dicas para beber mais água ao longo do dia", "Tips to drink more water through the day", "Consejos para beber más agua durante el día", "Conseils pour boire plus d'eau dans la journée"],
-  ["Como planejar as compras da semana?", "How do I plan the weekly grocery shop?", "¿Cómo planificar las compras de la semana?", "Comment planifier les courses de la semaine ?"],
+  [
+    "Como montar um prato equilibrado no almoço?",
+    "How do I build a balanced lunch plate?",
+    "¿Cómo armar un plato equilibrado en el almuerzo?",
+    "Comment composer une assiette équilibrée au déjeuner ?",
+  ],
+  [
+    "Quais lanches rápidos posso levar para o trabalho?",
+    "What quick snacks can I take to work?",
+    "¿Qué meriendas rápidas puedo llevar al trabajo?",
+    "Quelles collations rapides emporter au travail ?",
+  ],
+  [
+    "O que são alimentos ultraprocessados?",
+    "What are ultra-processed foods?",
+    "¿Qué son los alimentos ultraprocesados?",
+    "Que sont les aliments ultra-transformés ?",
+  ],
+  [
+    "Como ler o rótulo de um alimento?",
+    "How do I read a food label?",
+    "¿Cómo leer la etiqueta de un alimento?",
+    "Comment lire l'étiquette d'un aliment ?",
+  ],
+  [
+    "Dicas para beber mais água ao longo do dia",
+    "Tips to drink more water through the day",
+    "Consejos para beber más agua durante el día",
+    "Conseils pour boire plus d'eau dans la journée",
+  ],
+  [
+    "Como planejar as compras da semana?",
+    "How do I plan the weekly grocery shop?",
+    "¿Cómo planificar las compras de la semana?",
+    "Comment planifier les courses de la semaine ?",
+  ],
 ];
 
 /** Perguntas prontas: o clique preenche a conversa da Nina. */
@@ -897,7 +1340,9 @@ export function NinaTopicsCard() {
           <li key={i}>
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent("nina:prompt", { detail: tr(q) }))}
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("nina:prompt", { detail: tr(q) }))
+              }
               className="w-full cursor-pointer rounded-xl bg-secondary/50 px-3 py-2 text-left text-xs font-medium text-foreground transition hover:bg-secondary"
             >
               {tr(q)}
@@ -929,12 +1374,27 @@ export function NinaUsageCard() {
         {count}
         <span className="text-sm font-semibold text-muted-foreground"> / 20</span>
       </p>
-      <p className="text-[11px] text-muted-foreground">{tr(["perguntas feitas à Nina hoje", "questions asked to Nina today", "preguntas hechas a Nina hoy", "questions posées à Nina aujourd'hui"])}</p>
+      <p className="text-[11px] text-muted-foreground">
+        {tr([
+          "perguntas feitas à Nina hoje",
+          "questions asked to Nina today",
+          "preguntas hechas a Nina hoy",
+          "questions posées à Nina aujourd'hui",
+        ])}
+      </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
         <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
       </div>
-      <Link to="/perfil/configuracoes/dados" className="mt-3 inline-block text-[11px] font-semibold text-primary hover:underline">
-        {tr(["Gerenciar minhas conversas", "Manage my conversations", "Gestionar mis conversaciones", "Gérer mes conversations"])}
+      <Link
+        to="/perfil/configuracoes/dados"
+        className="mt-3 inline-block text-[11px] font-semibold text-primary hover:underline"
+      >
+        {tr([
+          "Gerenciar minhas conversas",
+          "Manage my conversations",
+          "Gestionar mis conversaciones",
+          "Gérer mes conversations",
+        ])}
       </Link>
     </Panel>
   );
@@ -943,7 +1403,14 @@ export function NinaUsageCard() {
 export function NotificationsHelpCard() {
   const tr = useTr();
   return (
-    <Panel title={tr(["Controle seus avisos", "Control your alerts", "Controla tus avisos", "Contrôlez vos alertes"])}>
+    <Panel
+      title={tr([
+        "Controle seus avisos",
+        "Control your alerts",
+        "Controla tus avisos",
+        "Contrôlez vos alertes",
+      ])}
+    >
       <p className="text-xs leading-relaxed text-muted-foreground">
         {tr([
           "Escolha quais tipos de aviso receber, defina um horário de silêncio e decida se o texto aparece nos avisos do navegador.",
@@ -952,8 +1419,16 @@ export function NotificationsHelpCard() {
           "Choisissez les types d'alertes, définissez des heures de silence et décidez si le texte apparaît dans les alertes du navigateur.",
         ])}
       </p>
-      <Link to="/perfil/configuracoes/notificacoes" className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline">
-        {tr(["Abrir notificações", "Open notifications", "Abrir notificaciones", "Ouvrir les notifications"])}
+      <Link
+        to="/perfil/configuracoes/notificacoes"
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+      >
+        {tr([
+          "Abrir notificações",
+          "Open notifications",
+          "Abrir notificaciones",
+          "Ouvrir les notifications",
+        ])}
         <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </Panel>
@@ -963,12 +1438,29 @@ export function NotificationsHelpCard() {
 export function SearchTipsCard() {
   const tr = useTr();
   const tips: Names[] = [
-    ["Busque por nome, @usuário, receita ou tema.", "Search by name, @username, recipe or topic.", "Busca por nombre, @usuario, receta o tema.", "Cherchez par nom, @utilisateur, recette ou thème."],
-    ["A busca ignora acentos e tolera pequenos erros de digitação.", "Search ignores accents and tolerates small typos.", "La búsqueda ignora acentos y tolera pequeños errores.", "La recherche ignore les accents et tolère les petites fautes."],
-    ["Use os filtros para achar profissionais verificados por especialidade.", "Use filters to find verified professionals by specialty.", "Usa los filtros para hallar profesionales verificados por especialidad.", "Utilisez les filtres pour trouver des professionnels vérifiés par spécialité."],
+    [
+      "Busque por nome, @usuário, receita ou tema.",
+      "Search by name, @username, recipe or topic.",
+      "Busca por nombre, @usuario, receta o tema.",
+      "Cherchez par nom, @utilisateur, recette ou thème.",
+    ],
+    [
+      "A busca ignora acentos e tolera pequenos erros de digitação.",
+      "Search ignores accents and tolerates small typos.",
+      "La búsqueda ignora acentos y tolera pequeños errores.",
+      "La recherche ignore les accents et tolère les petites fautes.",
+    ],
+    [
+      "Use os filtros para achar profissionais verificados por especialidade.",
+      "Use filters to find verified professionals by specialty.",
+      "Usa los filtros para hallar profesionales verificados por especialidad.",
+      "Utilisez les filtres pour trouver des professionnels vérifiés par spécialité.",
+    ],
   ];
   return (
-    <Panel title={tr(["Dicas de busca", "Search tips", "Consejos de búsqueda", "Conseils de recherche"])}>
+    <Panel
+      title={tr(["Dicas de busca", "Search tips", "Consejos de búsqueda", "Conseils de recherche"])}
+    >
       <ul className="space-y-2.5">
         {tips.map((tip, i) => (
           <li key={i} className="flex gap-2.5 text-xs leading-relaxed text-muted-foreground">

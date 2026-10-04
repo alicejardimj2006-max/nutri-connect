@@ -254,7 +254,12 @@ export function railsFor(pathname: string): RailSet | null {
       ),
     };
   }
-  if (p === "/perfil/configuracoes" || p.startsWith("/perfil/configuracoes/") || p === "/perfil/personalizacao" || p === "/perfil/editar") {
+  if (
+    p === "/perfil/configuracoes" ||
+    p.startsWith("/perfil/configuracoes/") ||
+    p === "/perfil/personalizacao" ||
+    p === "/perfil/editar"
+  ) {
     return {
       left: (
         <>
@@ -298,7 +303,7 @@ export function railsFor(pathname: string): RailSet | null {
       ),
       right: (
         <>
-          <HowBookingCard />
+          <CommunityRulesCard />
           <ContactCard />
           <LegalLinksCard />
         </>
