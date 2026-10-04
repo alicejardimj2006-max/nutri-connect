@@ -135,7 +135,7 @@ function ContaPage() {
         <span>{t("settings.account.back")}</span>
       </Link>
 
-      <h1 className="text-3xl font-extrabold font-display text-foreground mb-8">
+      <h1 className="sr-only">
         {t("settings.account.title")}
       </h1>
 

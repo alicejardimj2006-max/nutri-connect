@@ -37,10 +37,9 @@ function PersonalizationPage() {
           <span>{t("custom.back")}</span>
         </Link>
 
-        <h1 className="mb-1 font-display text-3xl font-extrabold text-foreground">
+        <h1 className="sr-only">
           {t("custom.title")}
         </h1>
-        <p className="mb-8 text-sm text-muted-foreground">{t("custom.intro")}</p>
 
         <PersonalizationPanel
           card={cartao}

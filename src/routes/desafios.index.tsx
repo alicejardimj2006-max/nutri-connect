@@ -181,17 +181,7 @@ function DesafiosIndexPage() {
   return (
     <>
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8">
-        {/* Cabeçalho */}
-        <div className="border-b border-border/70 pb-6 mb-8">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent mb-2">
-            <Award className="h-3.5 w-3.5" />
-            <span>{t("dz.badge")}</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
-            {t("dz.title")}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{t("dz.intro")}</p>
-        </div>
+        <h1 className="sr-only">{t("dz.title")}</h1>
 
         {/* Barra de XP, nível, ofensiva e meta do dia (com o seletor de perfil embutido) */}
         <TrailHeader

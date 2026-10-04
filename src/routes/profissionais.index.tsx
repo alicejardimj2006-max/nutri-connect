@@ -55,8 +55,7 @@ function DirectoryPage() {
     <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-12">
-        <h1 className="font-display text-3xl font-extrabold">{t("directory.title")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("directory.subtitle")}</p>
+        <h1 className="sr-only">{t("directory.title")}</h1>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
           <div className="relative">

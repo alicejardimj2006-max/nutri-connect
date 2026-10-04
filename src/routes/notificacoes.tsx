@@ -42,7 +42,7 @@ function NotificacoesPage() {
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
         <div className="mx-auto w-full max-w-2xl">
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-foreground mb-8">
+          <h1 className="sr-only">
             {t("notif.title")}
           </h1>
 

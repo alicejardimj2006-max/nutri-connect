@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { playSound } from "@/lib/sounds";
 import { VerifiedBadge } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
+import { postDisplayImage } from "@/lib/post-type";
 import { PostImage } from "@/components/post-image";
 import { ReportButton } from "@/components/report-button";
 import {
@@ -139,13 +140,7 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
-  let displayImage = post.image;
-  if (!displayImage) {
-    if (post.id === "p-rec-1") displayImage = "/images/recipes/default-recipe.jpg";
-    else if (post.id === "p-rec-2") displayImage = "/images/recipes/roasted-veg.jpg";
-    else if (post.type === "receita") displayImage = "/images/recipes/default-recipe.jpg";
-    else if (post.id === "p-exp-1") displayImage = "/images/experiences/cooking.jpg";
-  }
+  const displayImage = postDisplayImage(post);
 
   const avatarImage = getAvatarSrc(post.authorId, post.authorAvatar);
   const authorIsProfessional = post.authorRole
@@ -415,7 +410,7 @@ export function PostCard({ post }: PostCardProps) {
   if (post.type === "receita") {
     return (
       <PostCardFrame type={post.type} className={frameClass} footer={footer(false, true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider post-type-label">
+        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--pt)" }}>
           <ChefHat className="h-4 w-4" /> {t("postcard.communityRecipe")}
         </div>
 
@@ -488,7 +483,7 @@ export function PostCard({ post }: PostCardProps) {
   if (post.type === "experiencia") {
     return (
       <PostCardFrame type={post.type} className={frameClass} footer={footer()}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider post-type-label">
+        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--pt)" }}>
           <Sparkles className="h-4 w-4" /> {t("postcard.communityStory")}
         </div>
 
@@ -521,7 +516,7 @@ export function PostCard({ post }: PostCardProps) {
   if (post.type === "pergunta") {
     return (
       <PostCardFrame type={post.type} className={frameClass} footer={footer(true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider post-type-label">
+        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--pt)" }}>
           <HelpCircle className="h-4 w-4" /> {t("postcard.question")}
         </div>
 

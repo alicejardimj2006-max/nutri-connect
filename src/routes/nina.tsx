@@ -127,8 +127,7 @@ function NinaPage() {
         <div className="mb-4 flex shrink-0 items-center gap-4">
           <Mascot id="nina" mood={sending ? "talk" : "idle"} size={72} />
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl font-extrabold">{t("nina.title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("nina.subtitle")}</p>
+            <h1 className="sr-only">{t("nina.title")}</h1>
           </div>
           {messages.length > 0 && (
             <button

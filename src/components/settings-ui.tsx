@@ -31,9 +31,7 @@ export function SettingsPage({
         <ArrowLeft className="h-4 w-4" />
         <span>{t("settings.account.back")}</span>
       </Link>
-      <h1 className="mb-1 font-display text-3xl font-extrabold text-foreground">{title}</h1>
-      {hint && <p className="mb-8 text-sm text-muted-foreground">{hint}</p>}
-      {!hint && <div className="mb-7" />}
+      <h1 className="sr-only">{title}</h1>
       <div className="space-y-6">{children}</div>
     </div>
   );

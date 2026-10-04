@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, Home, Users, Award, Plus, Sparkles, CalendarDays } from "lucide-react";
+import { Search, Bell, Home, Users, Award, Plus, Sparkles, CalendarDays, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
+import { useIsDark } from "@/lib/post-type";
 
 /** Páginas que rolam por dentro (ex.: Espaço de hoje) avisam por aqui quando as barras devem recolher. */
 export const CHROME_HIDE_EVENT = "chrome:hide";
@@ -52,11 +53,113 @@ function useHideOnScroll(pathname: string) {
   return hidden || external;
 }
 
+
+/**
+ * Cada página tem a sua cor: o ícone da página em que a pessoa está fica colorido (e ganha um fundo
+ * suave), os outros ficam discretos. Vale para a barra de cima, a de baixo (celular) e o desktop.
+ */
+const NAV_COLORS = {
+  espaco: ["#d9692a", "#f08a4b"],
+  comunidades: ["#3b7bbf", "#6aa6e6"],
+  desafios: ["#c58a12", "#e8b13b"],
+  nina: ["#8a5fb0", "#b48ad6"],
+  explorar: ["#0f9aa8", "#4fc3cf"],
+  notificacoes: ["#d6456b", "#ef7a98"],
+  tema: ["#4f8a4b", "#78b873"],
+  perfil: ["#5b6fd6", "#8f9df0"],
+} as const;
+type NavKey = keyof typeof NAV_COLORS;
+
+type NavPath =
+  | "/espaco"
+  | "/comunidades"
+  | "/desafios"
+  | "/nina"
+  | "/explorar"
+  | "/notificacoes"
+  | "/tema-da-semana";
+
+function useNavState(navKey: NavKey, base: string) {
+  const dark = useIsDark();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const color = NAV_COLORS[navKey][dark ? 1 : 0];
+  const active = pathname === base || pathname.startsWith(`${base}/`);
+  return { color, active, tint: `color-mix(in srgb, ${color} 15%, transparent)` };
+}
+
+type NavVariant = "desktop" | "top" | "bottom";
+
+function NavTab({
+  to,
+  navKey,
+  icon: Icon,
+  label,
+  variant,
+  showLabel = true,
+}: {
+  to: NavPath;
+  navKey: NavKey;
+  icon: LucideIcon;
+  label: string;
+  variant: NavVariant;
+  showLabel?: boolean;
+}) {
+  const { color, active, tint } = useNavState(navKey, to);
+  if (variant === "bottom") {
+    return (
+      <Link
+        to={to}
+        aria-current={active ? "page" : undefined}
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground transition"
+        style={active ? { color } : undefined}
+      >
+        <span
+          className="grid h-7 w-12 place-items-center rounded-full transition"
+          style={active ? { backgroundColor: tint } : undefined}
+        >
+          <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
+        </span>
+        <span className={active ? "font-bold" : ""}>{label}</span>
+      </Link>
+    );
+  }
+  if (variant === "top") {
+    return (
+      <Link
+        to={to}
+        aria-label={label}
+        aria-current={active ? "page" : undefined}
+        title={label}
+        className={`grid h-10 w-10 place-items-center rounded-full transition ${active ? "" : "text-foreground hover:bg-secondary"}`}
+        style={active ? { color, backgroundColor: tint } : undefined}
+      >
+        <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
+      </Link>
+    );
+  }
+  return (
+    <Link
+      to={to}
+      aria-label={showLabel ? undefined : label}
+      aria-current={active ? "page" : undefined}
+      title={showLabel ? undefined : label}
+      className={`flex items-center gap-2 rounded-full text-sm font-medium transition ${
+        showLabel ? "px-4 py-2" : "h-10 w-10 justify-center"
+      } ${active ? "font-bold" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
+      style={active ? { color, backgroundColor: tint } : undefined}
+    >
+      <Icon className="h-4 w-4" strokeWidth={active ? 2.4 : 2} />
+      {showLabel && label}
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   const { user } = useAuth();
   const { t } = useI18n();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const hidden = useHideOnScroll(pathname);
+  const profile = useNavState("perfil", "/perfil");
 
   return (
     <>
@@ -69,23 +172,9 @@ export function SiteHeader() {
         <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:hidden">
           {/* Dois botões de cada lado e a logo no centro exato da tela. */}
           <div className="flex items-center">
-            <Link
-              to="/notificacoes"
-              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-              aria-label={t("nav.notifications")}
-              title={t("nav.notifications")}
-            >
-              <Bell className="h-5 w-5" />
-            </Link>
+            <NavTab to="/notificacoes" navKey="notificacoes" icon={Bell} label={t("nav.notifications")} variant="top" />
             {user ? (
-              <Link
-                to="/tema-da-semana"
-                className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-                aria-label={t("weekly.badge")}
-                title={t("weekly.badge")}
-              >
-                <CalendarDays className="h-5 w-5" />
-              </Link>
+              <NavTab to="/tema-da-semana" navKey="tema" icon={CalendarDays} label={t("weekly.badge")} variant="top" />
             ) : (
               <span className="h-10 w-10" aria-hidden="true" />
             )}
@@ -99,25 +188,11 @@ export function SiteHeader() {
 
           <div className="flex items-center">
             {user ? (
-              <Link
-                to="/nina"
-                className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-                aria-label={t("nav.nina")}
-                title={t("nav.nina")}
-              >
-                <Sparkles className="h-5 w-5" />
-              </Link>
+              <NavTab to="/nina" navKey="nina" icon={Sparkles} label={t("nav.nina")} variant="top" />
             ) : (
               <span className="h-10 w-10" aria-hidden="true" />
             )}
-            <Link
-              to="/explorar"
-              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-              aria-label={t("nav.search")}
-              title={t("nav.search")}
-            >
-              <Search className="h-5 w-5" />
-            </Link>
+            <NavTab to="/explorar" navKey="explorar" icon={Search} label={t("nav.search")} variant="top" />
           </div>
         </div>
 
@@ -125,38 +200,10 @@ export function SiteHeader() {
         <div className="relative mx-auto hidden h-16 max-w-7xl items-center justify-between gap-4 px-6 lg:flex">
           {user ? (
             <nav aria-label={t("nav.mainAria")} className="flex items-center gap-1">
-              <Link
-                to="/espaco"
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "text-accent" }}
-              >
-                <Home className="h-4 w-4" />
-                {t("nav.space")}
-              </Link>
-              <Link
-                to="/comunidades"
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "text-accent" }}
-              >
-                <Users className="h-4 w-4" />
-                {t("nav.communities")}
-              </Link>
-              <Link
-                to="/desafios"
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "text-accent" }}
-              >
-                <Award className="h-4 w-4" />
-                {t("nav.challenges")}
-              </Link>
-              <Link
-                to="/nina"
-                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "text-accent" }}
-              >
-                <Sparkles className="h-4 w-4" />
-                {t("nav.nina")}
-              </Link>
+              <NavTab to="/espaco" navKey="espaco" icon={Home} label={t("nav.space")} variant="desktop" />
+              <NavTab to="/comunidades" navKey="comunidades" icon={Users} label={t("nav.communities")} variant="desktop" />
+              <NavTab to="/desafios" navKey="desafios" icon={Award} label={t("nav.challenges")} variant="desktop" />
+              <NavTab to="/nina" navKey="nina" icon={Sparkles} label={t("nav.nina")} variant="desktop" />
             </nav>
           ) : (
             <span />
@@ -172,23 +219,8 @@ export function SiteHeader() {
           </Link>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Link
-              to="/explorar"
-              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-              aria-label={t("nav.search")}
-              title={t("nav.search")}
-            >
-              <Search className="h-5 w-5" />
-            </Link>
-
-            <Link
-              to="/notificacoes"
-              className="grid h-10 w-10 place-items-center rounded-full text-foreground transition hover:bg-secondary"
-              aria-label={t("nav.notifications")}
-              title={t("nav.notifications")}
-            >
-              <Bell className="h-5 w-5" />
-            </Link>
+            <NavTab to="/explorar" navKey="explorar" icon={Search} label={t("nav.search")} variant="desktop" showLabel={false} />
+            <NavTab to="/notificacoes" navKey="notificacoes" icon={Bell} label={t("nav.notifications")} variant="desktop" showLabel={false} />
 
             {user && (
               <ShareModal
@@ -210,7 +242,8 @@ export function SiteHeader() {
                 to="/perfil/$userId"
                 params={{ userId: user.id }}
                 className="grid h-10 w-10 place-items-center rounded-full avatar-shape bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80"
-                activeProps={{ className: "ring-2 ring-accent" }}
+                style={profile.active ? { boxShadow: `0 0 0 2px ${profile.color}`, color: profile.color } : undefined}
+                aria-current={profile.active ? "page" : undefined}
                 aria-label={t("nav.profile")}
                 title={t("nav.profile")}
               >
@@ -244,23 +277,8 @@ export function SiteHeader() {
           aria-label={t("nav.mainAria")}
           className="transition-transform duration-300 data-[hidden=true]:translate-y-[calc(100%+1rem)] fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)] lg:hidden"
         >
-          <Link
-            to="/espaco"
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
-            activeProps={{ className: "text-accent" }}
-          >
-            <Home className="h-5 w-5" />
-            <span>{t("nav.space")}</span>
-          </Link>
-
-          <Link
-            to="/comunidades"
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
-            activeProps={{ className: "text-accent" }}
-          >
-            <Users className="h-5 w-5" />
-            <span>{t("nav.communities")}</span>
-          </Link>
+          <NavTab to="/espaco" navKey="espaco" icon={Home} label={t("nav.space")} variant="bottom" />
+          <NavTab to="/comunidades" navKey="comunidades" icon={Users} label={t("nav.communities")} variant="bottom" />
 
           <div className="flex flex-1 items-center justify-center">
             <ShareModal
@@ -276,25 +294,27 @@ export function SiteHeader() {
             />
           </div>
 
-          <Link
-            to="/desafios"
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
-            activeProps={{ className: "text-accent" }}
-          >
-            <Award className="h-5 w-5" />
-            <span>{t("nav.challenges")}</span>
-          </Link>
+          <NavTab to="/desafios" navKey="desafios" icon={Award} label={t("nav.challenges")} variant="bottom" />
 
           <Link
             to="/perfil/$userId"
             params={{ userId: user.id }}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium text-muted-foreground"
-            activeProps={{ className: "text-accent" }}
+            aria-current={profile.active ? "page" : undefined}
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground transition"
+            style={profile.active ? { color: profile.color } : undefined}
           >
-            <span className="grid h-5 w-5 place-items-center rounded-full avatar-shape bg-primary-soft text-[10px] font-bold text-primary">
-              {user.name.charAt(0).toUpperCase()}
+            <span
+              className="grid h-7 w-12 place-items-center rounded-full transition"
+              style={profile.active ? { backgroundColor: profile.tint } : undefined}
+            >
+              <span
+                className="grid h-5 w-5 place-items-center rounded-full avatar-shape bg-primary-soft text-[10px] font-bold text-primary"
+                style={profile.active ? { boxShadow: `0 0 0 2px ${profile.color}`, color: profile.color } : undefined}
+              >
+                {user.name.charAt(0).toUpperCase()}
+              </span>
             </span>
-            <span>{t("nav.profile")}</span>
+            <span className={profile.active ? "font-bold" : ""}>{t("nav.profile")}</span>
           </Link>
         </nav>
       )}

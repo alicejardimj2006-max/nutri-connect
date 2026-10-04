@@ -151,19 +151,10 @@ function ConfiguracoesPage() {
         <span>Voltar para o perfil</span>
       </Link>
 
-      <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">
+      <h1 className="sr-only">
         {t("settings.title")}
       </h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        {t("settings.subtitle")} Para mudar seu nome, bio ou jornada, use{" "}
-        <Link
-          to="/perfil/editar"
-          className="font-semibold text-accent hover:underline underline-offset-2"
-        >
-          Editar perfil
-        </Link>
-        .
-      </p>
+      <div className="mb-6" />
 
       <div className="space-y-5">
         <label className="relative block">

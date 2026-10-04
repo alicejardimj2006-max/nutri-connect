@@ -883,34 +883,3 @@ html[data-rails="on"] main :is([class*="max-w-7xl"], [class*="max-w-6xl"], [clas
 html[data-rails="on"] main :is(.sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3, .xl\:grid-cols-3) {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
 }
-
-/* ─── Cor de cada tipo de post ─────────────────────────────────────────────────
-   Receita = laranja, experiência = verde, pergunta = azul, conversa = roxo. Vale para o cartão do
-   feed, para o modal e para as miniaturas do Explorar: só de bater o olho dá para saber o tipo.
-   Fora de @layer para vencer os utilitários de borda e fundo do cartão. */
-:root {
-  --pt-receita: #d9692a;
-  --pt-experiencia: #4f8a4b;
-  --pt-pergunta: #3b7bbf;
-  --pt-geral: #8a5fb0;
-}
-:root.dark {
-  --pt-receita: #f08a4b;
-  --pt-experiencia: #78b873;
-  --pt-pergunta: #6aa6e6;
-  --pt-geral: #b48ad6;
-}
-[data-post-type="receita"] { --pt: var(--pt-receita); }
-[data-post-type="experiencia"] { --pt: var(--pt-experiencia); }
-[data-post-type="pergunta"] { --pt: var(--pt-pergunta); }
-[data-post-type="geral"] { --pt: var(--pt-geral); }
-.post-card[data-post-type],
-.post-tile[data-post-type] {
-  border-color: color-mix(in srgb, var(--pt) 55%, var(--border));
-  background-color: color-mix(in srgb, var(--pt) 6%, var(--card));
-  /* O degradê do "Ver mais" usa a mesma cor do cartão tingido. */
-  --post-fade: color-mix(in srgb, var(--pt) 6%, var(--card));
-}
-.post-type-label {
-  color: var(--pt);
-}

@@ -164,7 +164,7 @@ function ExplorarPage() {
     return (
       <>
         {loading && posts.length === 0 ? (
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-3" aria-hidden="true">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3" aria-hidden="true">
             {Array.from({ length: 9 }, (_, i) => (
               <div key={i} className="aspect-square animate-pulse rounded-xl bg-secondary/50 sm:rounded-2xl" />
             ))}
@@ -178,7 +178,7 @@ function ExplorarPage() {
             {debounced && <p className="mt-1 text-xs text-muted-foreground">{t("explore.noResultsHint")}</p>}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
             {posts.map((post) => (
               <PostTile key={post.id} post={post} onOpen={setOpenPost} />
             ))}

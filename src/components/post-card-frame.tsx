@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { useAppearance } from "@/hooks/use-appearance";
+import { usePostTypeStyle } from "@/lib/post-type";
 
 const PADDING = {
   md: {
@@ -104,12 +105,16 @@ export function PostCardFrame({
   const isExpanded = expanded || appearance.expandPosts;
   const clamped = !isExpanded && overflowing;
   const pad = PADDING[size];
+  const typeStyle = usePostTypeStyle(type);
 
   return (
     <article
       ref={articleRef}
       data-post-type={type}
-      style={isExpanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
+      style={{
+        ...typeStyle,
+        ...(isExpanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }),
+      }}
       className={`post-card flex min-w-0 flex-col overflow-hidden ${className}`}
     >
       <div ref={regionRef} className={`relative min-h-0 overflow-hidden ${pad.top}`}>
