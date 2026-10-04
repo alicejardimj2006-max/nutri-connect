@@ -1,9 +1,10 @@
 // Troca de foto de perfil, capa e fotos dos blocos: escolhe o arquivo, edita (corte, filtros…) no
 // mesmo editor das fotos de post e envia. A IA analisa ANTES de salvar: se reprovar, nada é
 // gravado e a pessoa vê o motivo.
-import { useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { ImageEditor } from "@/components/image-editor";
+// O editor de fotos é pesado: só é baixado quando a pessoa escolhe uma foto.
+const ImageEditor = lazy(() => import("@/components/image-editor").then((m) => ({ default: m.ImageEditor })));
 import { useTr } from "@/components/appearance-editor";
 import { DEFAULT_EDITS } from "@/lib/image-edit";
 import { ProfileRejectedError, uploadProfileImage } from "@/lib/profile-page";
@@ -108,6 +109,7 @@ export function MediaUpload({
       />
       {children(() => input.current?.click(), busy)}
       {source && (
+        <Suspense fallback={null}>
         <ImageEditor
           open
           src={source}
@@ -124,6 +126,7 @@ export function MediaUpload({
           }}
           onApply={(dataUrl) => void send(dataUrl)}
         />
+        </Suspense>
       )}
     </>
   );

@@ -1,7 +1,7 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
   Camera,
@@ -38,15 +38,7 @@ import { useAdultTrailProgress } from "@/components/rail-cards";
 import { ProfileCanvas } from "@/components/profile-canvas";
 import { ProfileDataProvider, type ProfileData } from "@/components/profile-blocks";
 import { MediaUpload } from "@/components/profile-media";
-import {
-  AddBlockDialog,
-  BlockEditor,
-  HeaderEditor,
-  StudioBar,
-  StudioDrawer,
-  ThemeEditor,
-  type StudioPanel,
-} from "@/components/profile-studio";
+import type { StudioPanel } from "@/components/profile-studio";
 import { useTr } from "@/components/appearance-editor";
 import { getActiveStreak } from "@/lib/learning-trail";
 import { applyScopedAppearance } from "@/lib/appearance";
@@ -56,7 +48,6 @@ import {
   ProfileRejectedError,
   defaultPage,
   freeSpot,
-  importSiteTheme,
   newBlock,
   readPage,
   resolveCollisions,
@@ -77,6 +68,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// As ferramentas de edição só são baixadas quando a pessoa pede para personalizar.
+const ProfileStudioLayer = lazy(() => import("@/components/profile-studio-layer"));
 
 export const Route = createFileRoute("/perfil/$userId")({
   head: () => ({
@@ -118,8 +112,8 @@ function PublicProfilePage() {
   // Publicações da pessoa e receitas que ela preparou: do banco, e só se este perfil pode ser visto
   // (perfil privado de quem não é amigo não carrega nada).
   const canSeeContent = !!user && remoteProfile.data?.can_view_content !== false;
-  const postsQuery = useFeed({ scope: "autor", author: userId, limit: 50 }, canSeeContent);
-  const preparedQuery = useFeed({ scope: "preparados", author: userId, limit: 50 }, canSeeContent);
+  const postsQuery = useFeed({ scope: "autor", author: userId, limit: 30 }, canSeeContent);
+  const preparedQuery = useFeed({ scope: "preparados", author: userId, limit: 30 }, canSeeContent);
   useFeedRealtime(user?.id);
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
@@ -146,7 +140,8 @@ function PublicProfilePage() {
   // O tema de quem montou o perfil vale enquanto a página está aberta (e só nela): a personalização
   // de quem visita não se aplica ao perfil dos outros. Acessibilidade do visitante continua valendo.
   const themeKey = JSON.stringify(page.theme);
-  const themeReady = !!record && !!user;
+  // Vale assim que a página carregou (ou na hora, se a pessoa já está editando).
+  const themeReady = !!user && (editing || !pageQuery.isLoading);
   useEffect(() => {
     if (!themeReady) return;
     applyScopedAppearance(themeToAppearance(JSON.parse(themeKey)));
@@ -316,7 +311,7 @@ function PublicProfilePage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
       <main className="mx-auto w-full max-w-[96rem] flex-1 px-4 py-8 sm:px-6 lg:px-10">
-        {!hydrated || (!isSelf && remoteProfile.isLoading) || pageQuery.isLoading ? (
+        {!isSelf && remoteProfile.isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
           <>
@@ -597,7 +592,10 @@ function PublicProfilePage() {
                 </p>
               </div>
             )}
-            {!contentLocked && (
+            {!contentLocked && pageQuery.isLoading && (
+              <div className="h-96 animate-pulse rounded-3xl bg-secondary/40" aria-hidden="true" />
+            )}
+            {!contentLocked && !pageQuery.isLoading && (
               <ProfileDataProvider value={data}>
                 <ProfileCanvas
                   layout={page.layout}
@@ -633,8 +631,9 @@ function PublicProfilePage() {
             )}
 
             {editing && draft && (
-              <>
-                <StudioBar
+              <Suspense fallback={null}>
+                <ProfileStudioLayer
+                  draft={draft}
                   dirty={dirty}
                   saving={savePage.isPending}
                   panel={panel}
@@ -642,56 +641,22 @@ function PublicProfilePage() {
                     setPanel(p);
                     if (p !== "block") setSelectedId(null);
                   }}
-                  onAdd={() => setAddOpen(true)}
+                  addOpen={addOpen}
+                  onAddOpen={setAddOpen}
+                  selected={selected}
+                  isProfessional={isProfessional}
+                  hasBanner={!!bannerUrl}
+                  onAddBlock={addBlock}
+                  onPatchBlock={patchBlock}
+                  onRemoveBlock={removeBlock}
+                  onDraft={updateDraft}
                   onReset={resetPage}
                   onSave={handleSave}
                   onCancel={cancelEditing}
+                  onMediaDone={afterMedia}
+                  onRemoveBanner={removeBanner}
                 />
-                <AddBlockDialog
-                  open={addOpen}
-                  onClose={() => setAddOpen(false)}
-                  onPick={addBlock}
-                  isProfessional={isProfessional}
-                />
-                {panel === "theme" && (
-                  <StudioDrawer
-                    title={tr(["Tema do perfil", "Profile theme", "Tema del perfil", "Thème du profil"])}
-                    onClose={() => setPanel(null)}
-                  >
-                    <ThemeEditor
-                      theme={draft.theme}
-                      onChange={(theme) => updateDraft((p) => ({ ...p, theme }))}
-                      onImportSiteTheme={() => updateDraft((p) => ({ ...p, theme: importSiteTheme() }))}
-                    />
-                  </StudioDrawer>
-                )}
-                {panel === "header" && (
-                  <StudioDrawer
-                    title={tr(["Capa e foto de perfil", "Cover and profile photo", "Portada y foto de perfil", "Couverture et photo de profil"])}
-                    onClose={() => setPanel(null)}
-                  >
-                    <HeaderEditor
-                      header={draft.header}
-                      onChange={(patch) => updateDraft((p) => ({ ...p, header: { ...p.header, ...patch } }))}
-                      onMediaDone={afterMedia}
-                      hasBanner={!!bannerUrl}
-                      onRemoveBanner={removeBanner}
-                    />
-                  </StudioDrawer>
-                )}
-                {panel === "block" && selected && (
-                  <StudioDrawer
-                    title={tr(["Editar bloco", "Edit block", "Editar bloque", "Modifier le bloc"])}
-                    onClose={() => setPanel(null)}
-                  >
-                    <BlockEditor
-                      block={selected}
-                      onChange={(patch) => patchBlock(selected.id, patch)}
-                      onDelete={() => removeBlock(selected.id)}
-                    />
-                  </StudioDrawer>
-                )}
-              </>
+              </Suspense>
             )}
           </>
         )}

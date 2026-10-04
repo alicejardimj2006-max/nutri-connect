@@ -366,6 +366,8 @@ export function useProfilePage(userId: string | undefined) {
     queryFn: () => fetchProfilePage(userId!),
     enabled: !!userId,
     staleTime: 30_000,
+    // Sem a página salva (ou sem rede) mostra o perfil padrão na hora, sem ficar tentando de novo.
+    retry: false,
   });
 }
 
