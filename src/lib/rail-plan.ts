@@ -13,7 +13,12 @@ export interface RailPlan {
  * Cada coluna recebe os seus, na ordem, enquanto couberem em `maxHeight`; o que sobrar tenta a coluna
  * com mais espaço livre. Cards de altura 0 (sem dados) não ocupam espaço.
  */
-export function planRails(heights: number[], leftCount: number, maxHeight: number, gap: number): RailPlan {
+export function planRails(
+  heights: number[],
+  leftCount: number,
+  maxHeight: number,
+  gap: number,
+): RailPlan {
   const plan: RailPlan = { left: [], right: [], rest: [] };
   const used = { left: 0, right: 0 };
   const spilled: number[] = [];
@@ -36,7 +41,8 @@ export function planRails(heights: number[], leftCount: number, maxHeight: numbe
     if (!tryPlace(side, i)) spilled.push(i);
   });
   for (const i of spilled) {
-    const order: ("left" | "right")[] = used.left <= used.right ? ["left", "right"] : ["right", "left"];
+    const order: ("left" | "right")[] =
+      used.left <= used.right ? ["left", "right"] : ["right", "left"];
     if (!order.some((side) => tryPlace(side, i))) plan.rest.push(i);
   }
   return plan;

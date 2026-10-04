@@ -86,7 +86,12 @@ export default function ProfileStudioLayer({
       )}
       {panel === "header" && (
         <StudioDrawer
-          title={tr(["Capa e foto de perfil", "Cover and profile photo", "Portada y foto de perfil", "Couverture et photo de profil"])}
+          title={tr([
+            "Capa e foto de perfil",
+            "Cover and profile photo",
+            "Portada y foto de perfil",
+            "Couverture et photo de profil",
+          ])}
           onClose={() => onPanel(null)}
         >
           <HeaderEditor
@@ -100,7 +105,12 @@ export default function ProfileStudioLayer({
       )}
       {panel === "block" && selected && (
         <StudioDrawer
-          title={tr(["Ajustes do bloco", "Block settings", "Ajustes del bloque", "Réglages du bloc"])}
+          title={tr([
+            "Ajustes do bloco",
+            "Block settings",
+            "Ajustes del bloque",
+            "Réglages du bloc",
+          ])}
           onClose={() => onPanel(null)}
         >
           <BlockEditor

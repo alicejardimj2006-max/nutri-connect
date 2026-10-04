@@ -1,7 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, ExternalLink, Mail, MoreHorizontal, ShieldCheck, ShieldOff, UserCheck, UserX } from "lucide-react";
+import {
+  Download,
+  ExternalLink,
+  Mail,
+  MoreHorizontal,
+  ShieldCheck,
+  ShieldOff,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import {
   Badge,
   ConfirmDialog,
@@ -16,7 +25,13 @@ import {
   shortDate,
   useDebounced,
 } from "@/components/admin/admin-ui";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   adminActions,
   adminRpc,
@@ -58,7 +73,12 @@ export function UsersSection({ me }: { me: string }) {
     try {
       const rows: AdminUser[] = [];
       for (let o = 0; o < 2000; o += 100) {
-        const page = await adminRpc<AdminUser[]>("admin_search_users", { p_query: q, p_filter: filter, p_limit: 100, p_offset: o });
+        const page = await adminRpc<AdminUser[]>("admin_search_users", {
+          p_query: q,
+          p_filter: filter,
+          p_limit: 100,
+          p_offset: o,
+        });
         rows.push(...page);
         if (page.length < 100) break;
       }
@@ -77,7 +97,10 @@ export function UsersSection({ me }: { me: string }) {
           criada_em: u.created_at,
         })),
       );
-      void adminActions.log("exportou_pessoas", "export", "pessoas", { filtro: filter, total: rows.length });
+      void adminActions.log("exportou_pessoas", "export", "pessoas", {
+        filtro: filter,
+        total: rows.length,
+      });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível exportar.");
     }
@@ -95,16 +118,28 @@ export function UsersSection({ me }: { me: string }) {
         }
       >
         <div className="flex flex-wrap items-center gap-3">
-          <SearchBox value={query} onChange={(v) => { setQuery(v); setOffset(0); }} placeholder="Nome, @usuário ou e-mail…" />
+          <SearchBox
+            value={query}
+            onChange={(v) => {
+              setQuery(v);
+              setOffset(0);
+            }}
+            placeholder="Nome, @usuário ou e-mail…"
+          />
           <div className="no-scrollbar flex max-w-full gap-1.5 overflow-x-auto">
             {FILTERS.map(([id, label]) => (
               <button
                 key={id}
                 type="button"
                 aria-pressed={filter === id}
-                onClick={() => { setFilter(id); setOffset(0); }}
+                onClick={() => {
+                  setFilter(id);
+                  setOffset(0);
+                }}
                 className={`shrink-0 cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
-                  filter === id ? "border-accent bg-accent-soft text-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground"
+                  filter === id
+                    ? "border-accent bg-accent-soft text-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {label}
@@ -124,14 +159,20 @@ export function UsersSection({ me }: { me: string }) {
             <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70">
               {list.map((u) => (
                 <li key={u.id} className="flex flex-wrap items-center gap-3 bg-card px-4 py-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-soft text-xs font-extrabold text-primary">{initials(u.name)}</span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-soft text-xs font-extrabold text-primary">
+                    {initials(u.name)}
+                  </span>
                   <div className="min-w-0 flex-1 basis-56">
                     <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold text-foreground">
                       <span className="truncate">{u.name || "(sem nome)"}</span>
                       {u.verified && <Badge tone="info">Profissional</Badge>}
                       {u.is_admin && <Badge tone="good">Admin</Badge>}
                       {u.suspended_at && <Badge tone="bad">Suspensa</Badge>}
-                      {u.reports_pending > 0 && <Badge tone="warn">{u.reports_pending} denúncia{u.reports_pending > 1 ? "s" : ""}</Badge>}
+                      {u.reports_pending > 0 && (
+                        <Badge tone="warn">
+                          {u.reports_pending} denúncia{u.reports_pending > 1 ? "s" : ""}
+                        </Badge>
+                      )}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
                       @{u.username} · {u.email ?? "sem e-mail"}
@@ -149,26 +190,51 @@ export function UsersSection({ me }: { me: string }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-60">
                       <DropdownMenuItem asChild>
-                        <Link to="/perfil/$userId" params={{ userId: u.id }} className="flex cursor-pointer items-center gap-2">
+                        <Link
+                          to="/perfil/$userId"
+                          params={{ userId: u.id }}
+                          className="flex cursor-pointer items-center gap-2"
+                        >
                           <ExternalLink className="h-4 w-4" /> Abrir perfil
                         </Link>
                       </DropdownMenuItem>
                       {u.email && (
                         <DropdownMenuItem asChild>
-                          <a href={`mailto:${u.email}`} className="flex cursor-pointer items-center gap-2">
+                          <a
+                            href={`mailto:${u.email}`}
+                            className="flex cursor-pointer items-center gap-2"
+                          >
                             <Mail className="h-4 w-4" /> Enviar e-mail
                           </a>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       {u.id !== me && !u.is_admin && (
-                        <DropdownMenuItem onClick={() => (u.suspended_at ? suspendAction.mutate({ user: u.id, suspend: false, reason: "" }) : setSuspend(u))} className="flex cursor-pointer items-center gap-2">
-                          {u.suspended_at ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4 text-destructive" />}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            u.suspended_at
+                              ? suspendAction.mutate({ user: u.id, suspend: false, reason: "" })
+                              : setSuspend(u)
+                          }
+                          className="flex cursor-pointer items-center gap-2"
+                        >
+                          {u.suspended_at ? (
+                            <UserCheck className="h-4 w-4" />
+                          ) : (
+                            <UserX className="h-4 w-4 text-destructive" />
+                          )}
                           {u.suspended_at ? "Reativar conta" : "Suspender conta"}
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => setToggleAdmin(u)} className="flex cursor-pointer items-center gap-2">
-                        {u.is_admin ? <ShieldOff className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                      <DropdownMenuItem
+                        onClick={() => setToggleAdmin(u)}
+                        className="flex cursor-pointer items-center gap-2"
+                      >
+                        {u.is_admin ? (
+                          <ShieldOff className="h-4 w-4" />
+                        ) : (
+                          <ShieldCheck className="h-4 w-4" />
+                        )}
                         {u.is_admin ? "Remover administrador" : "Tornar administrador"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -190,17 +256,37 @@ export function UsersSection({ me }: { me: string }) {
         askReason
         busy={suspendAction.isPending}
         onClose={() => setSuspend(null)}
-        onConfirm={(reason) => suspend && suspendAction.mutate({ user: suspend.id, suspend: true, reason }, { onSuccess: () => setSuspend(null) })}
+        onConfirm={(reason) =>
+          suspend &&
+          suspendAction.mutate(
+            { user: suspend.id, suspend: true, reason },
+            { onSuccess: () => setSuspend(null) },
+          )
+        }
       />
       <ConfirmDialog
         open={!!toggleAdmin}
-        title={toggleAdmin?.is_admin ? `Remover ${toggleAdmin?.name} dos administradores?` : `Tornar ${toggleAdmin?.name} administrador?`}
-        description={toggleAdmin?.is_admin ? "A pessoa perde o acesso a este painel." : "A pessoa passa a ter acesso total a este painel, inclusive para suspender contas."}
+        title={
+          toggleAdmin?.is_admin
+            ? `Remover ${toggleAdmin?.name} dos administradores?`
+            : `Tornar ${toggleAdmin?.name} administrador?`
+        }
+        description={
+          toggleAdmin?.is_admin
+            ? "A pessoa perde o acesso a este painel."
+            : "A pessoa passa a ter acesso total a este painel, inclusive para suspender contas."
+        }
         confirmLabel={toggleAdmin?.is_admin ? "Remover" : "Conceder"}
         danger={!!toggleAdmin?.is_admin}
         busy={adminAction.isPending}
         onClose={() => setToggleAdmin(null)}
-        onConfirm={() => toggleAdmin && adminAction.mutate({ user: toggleAdmin.id, make: !toggleAdmin.is_admin }, { onSuccess: () => setToggleAdmin(null) })}
+        onConfirm={() =>
+          toggleAdmin &&
+          adminAction.mutate(
+            { user: toggleAdmin.id, make: !toggleAdmin.is_admin },
+            { onSuccess: () => setToggleAdmin(null) },
+          )
+        }
       />
     </div>
   );
@@ -208,7 +294,11 @@ export function UsersSection({ me }: { me: string }) {
 
 // ── Fale conosco ─────────────────────────────────────────────────────────────
 
-const STATUS_LABEL = { novo: "Nova", em_atendimento: "Em atendimento", resolvido: "Resolvida" } as const;
+const STATUS_LABEL = {
+  novo: "Nova",
+  em_atendimento: "Em atendimento",
+  resolvido: "Resolvida",
+} as const;
 const STATUS_TONE = { novo: "warn", em_atendimento: "info", resolvido: "good" } as const;
 
 export function ContactSection() {
@@ -216,7 +306,10 @@ export function ContactSection() {
   const [filter, setFilter] = useState<"todas" | "novo" | "em_atendimento" | "resolvido">("novo");
   const [openId, setOpenId] = useState<string | null>(null);
   const setStatus = useAdminAction(async (p: { id: string; status: keyof typeof STATUS_LABEL }) => {
-    const { error } = await supabase.from("contact_messages").update({ status: p.status }).eq("id", p.id);
+    const { error } = await supabase
+      .from("contact_messages")
+      .update({ status: p.status })
+      .eq("id", p.id);
     if (error) throw new Error(error.message);
     void adminActions.log("fale_conosco_status", "contact_message", p.id, { status: p.status });
   }, "Status atualizado.");
@@ -234,10 +327,15 @@ export function ContactSection() {
             aria-pressed={filter === id}
             onClick={() => setFilter(id)}
             className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
-              filter === id ? "border-accent bg-accent-soft text-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground"
+              filter === id
+                ? "border-accent bg-accent-soft text-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
             }`}
           >
-            {id === "todas" ? "Todas" : STATUS_LABEL[id]} <span className="opacity-60">{id === "todas" ? all.length : all.filter((m) => m.status === id).length}</span>
+            {id === "todas" ? "Todas" : STATUS_LABEL[id]}{" "}
+            <span className="opacity-60">
+              {id === "todas" ? all.length : all.filter((m) => m.status === id).length}
+            </span>
           </button>
         ))}
       </div>
@@ -253,7 +351,11 @@ export function ContactSection() {
             const open = openId === m.id;
             return (
               <li key={m.id} className="rounded-2xl border border-border/70 bg-card">
-                <button type="button" onClick={() => setOpenId(open ? null : m.id)} className="flex w-full cursor-pointer flex-wrap items-center gap-3 px-4 py-3 text-left">
+                <button
+                  type="button"
+                  onClick={() => setOpenId(open ? null : m.id)}
+                  className="flex w-full cursor-pointer flex-wrap items-center gap-3 px-4 py-3 text-left"
+                >
                   <div className="min-w-0 flex-1 basis-60">
                     <p className="truncate text-sm font-semibold text-foreground">{m.subject}</p>
                     <p className="truncate text-xs text-muted-foreground">
@@ -265,16 +367,28 @@ export function ContactSection() {
                 </button>
                 {open && (
                   <div className="border-t border-border/60 px-4 py-4">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{m.message}</p>
-                    {m.phone && <p className="mt-2 text-xs text-muted-foreground">Telefone: {m.phone}</p>}
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                      {m.message}
+                    </p>
+                    {m.phone && (
+                      <p className="mt-2 text-xs text-muted-foreground">Telefone: {m.phone}</p>
+                    )}
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      <a href={`mailto:${m.email}?subject=${encodeURIComponent("Re: " + m.subject)}`} className={btnCls}>
+                      <a
+                        href={`mailto:${m.email}?subject=${encodeURIComponent("Re: " + m.subject)}`}
+                        className={btnCls}
+                      >
                         <Mail className="h-3.5 w-3.5" /> Responder por e-mail
                       </a>
                       <select
                         aria-label="Mudar status"
                         value={m.status}
-                        onChange={(e) => setStatus.mutate({ id: m.id, status: e.target.value as keyof typeof STATUS_LABEL })}
+                        onChange={(e) =>
+                          setStatus.mutate({
+                            id: m.id,
+                            status: e.target.value as keyof typeof STATUS_LABEL,
+                          })
+                        }
                         className={`${inputCls} !w-auto`}
                       >
                         {(Object.keys(STATUS_LABEL) as (keyof typeof STATUS_LABEL)[]).map((s) => (

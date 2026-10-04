@@ -1,4 +1,11 @@
-import { createContext, createElement, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   APPEARANCE_EVENT,
   DEFAULT_APPEARANCE,

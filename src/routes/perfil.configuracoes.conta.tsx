@@ -46,12 +46,26 @@ function ContaPage() {
     e.preventDefault();
     const email = newEmail.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      toast.error(tr(["Informe um e-mail válido.", "Enter a valid email.", "Introduce un correo válido.", "Saisissez un e-mail valide."]));
+      toast.error(
+        tr([
+          "Informe um e-mail válido.",
+          "Enter a valid email.",
+          "Introduce un correo válido.",
+          "Saisissez un e-mail valide.",
+        ]),
+      );
       return;
     }
     const { error } = await supabase.auth.updateUser({ email });
     if (error) {
-      toast.error(tr(["Não foi possível trocar o e-mail agora.", "Could not change the email right now.", "No se pudo cambiar el correo ahora.", "Impossible de changer l'e-mail pour le moment."]));
+      toast.error(
+        tr([
+          "Não foi possível trocar o e-mail agora.",
+          "Could not change the email right now.",
+          "No se pudo cambiar el correo ahora.",
+          "Impossible de changer l'e-mail pour le moment.",
+        ]),
+      );
       return;
     }
     setNewEmail("");
@@ -67,7 +81,17 @@ function ContaPage() {
   };
 
   const handleSignOutEverywhere = async () => {
-    if (!window.confirm(tr(["Sair de todos os aparelhos, inclusive este?", "Sign out of all devices, including this one?", "¿Cerrar sesión en todos los dispositivos, incluido este?", "Se déconnecter de tous les appareils, y compris celui-ci ?"]))) return;
+    if (
+      !window.confirm(
+        tr([
+          "Sair de todos os aparelhos, inclusive este?",
+          "Sign out of all devices, including this one?",
+          "¿Cerrar sesión en todos los dispositivos, incluido este?",
+          "Se déconnecter de tous les appareils, y compris celui-ci ?",
+        ]),
+      )
+    )
+      return;
     await supabase.auth.signOut({ scope: "global" });
     navigate({ to: "/login" });
   };
@@ -135,9 +159,7 @@ function ContaPage() {
         <span>{t("settings.account.back")}</span>
       </Link>
 
-      <h1 className="sr-only">
-        {t("settings.account.title")}
-      </h1>
+      <h1 className="sr-only">{t("settings.account.title")}</h1>
 
       <div className="space-y-6">
         {/* Informações pessoais */}
@@ -160,10 +182,20 @@ function ContaPage() {
         {/* Acesso e segurança */}
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
           <h2 className="text-sm font-bold font-display text-foreground">
-            {tr(["Acesso e segurança", "Access and security", "Acceso y seguridad", "Accès et sécurité"])}
+            {tr([
+              "Acesso e segurança",
+              "Access and security",
+              "Acceso y seguridad",
+              "Accès et sécurité",
+            ])}
           </h2>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            {tr(["E-mail de acesso atual:", "Current sign-in email:", "Correo de acceso actual:", "E-mail de connexion actuel :"])}{" "}
+            {tr([
+              "E-mail de acesso atual:",
+              "Current sign-in email:",
+              "Correo de acceso actual:",
+              "E-mail de connexion actuel :",
+            ])}{" "}
             <span className="font-semibold text-foreground">{user.email}</span>
           </p>
           <form onSubmit={handleChangeEmail} className="mt-4 flex flex-wrap items-center gap-2">
@@ -187,8 +219,17 @@ function ContaPage() {
                 "Perdu un appareil ou connecté sur l'ordinateur de quelqu'un ? Fermez toutes les sessions ouvertes.",
               ])}
             </p>
-            <button type="button" onClick={handleSignOutEverywhere} className={`${buttonClass} mt-3`}>
-              {tr(["Sair de todos os aparelhos", "Sign out of all devices", "Cerrar sesión en todos los dispositivos", "Se déconnecter de tous les appareils"])}
+            <button
+              type="button"
+              onClick={handleSignOutEverywhere}
+              className={`${buttonClass} mt-3`}
+            >
+              {tr([
+                "Sair de todos os aparelhos",
+                "Sign out of all devices",
+                "Cerrar sesión en todos los dispositivos",
+                "Se déconnecter de tous les appareils",
+              ])}
             </button>
           </div>
         </section>

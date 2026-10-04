@@ -174,9 +174,7 @@ export function FreeColor({
   const shown = value ?? fallback;
   return (
     <div className="space-y-3">
-      {presets && (
-        <ColorSwatches label={label} presets={presets} value={value} onPick={onChange} />
-      )}
+      {presets && <ColorSwatches label={label} presets={presets} value={value} onPick={onChange} />}
       <div className="flex flex-wrap items-center gap-2.5">
         <label
           className="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border-2 border-foreground/30 shadow-xs"

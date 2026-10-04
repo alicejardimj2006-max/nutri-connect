@@ -364,7 +364,11 @@ function parseHex(hex: string): [number, number, number] {
 
 function toHex([r, g, b]: [number, number, number]): string {
   return `#${[r, g, b]
-    .map((v) => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, "0"))
+    .map((v) =>
+      Math.round(Math.min(255, Math.max(0, v)))
+        .toString(16)
+        .padStart(2, "0"),
+    )
     .join("")}`;
 }
 
@@ -395,7 +399,17 @@ function scaleSaturation(hex: string, factor: number): string {
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = l - c / 2;
   const [r1, g1, b1] =
-    h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    h < 60
+      ? [c, x, 0]
+      : h < 120
+        ? [x, c, 0]
+        : h < 180
+          ? [0, c, x]
+          : h < 240
+            ? [0, x, c]
+            : h < 300
+              ? [x, 0, c]
+              : [c, 0, x];
   return toHex([(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255]);
 }
 
@@ -536,10 +550,16 @@ export function computeAppearanceCss(a: Appearance): AppearanceCss {
     const recolor = isHex(customBg) || isHex(a.cardColor);
     const factor = a.colorIntensity / 100;
     const tint = (hex: string) => (factor !== 1 ? scaleSaturation(hex, factor) : hex);
-    if (isHex(a.accent) && (recolor || factor !== 1 || a.accent.toLowerCase() !== DEFAULT_APPEARANCE.accent)) {
+    if (
+      isHex(a.accent) &&
+      (recolor || factor !== 1 || a.accent.toLowerCase() !== DEFAULT_APPEARANCE.accent)
+    ) {
       Object.assign(vars, brandVars("accent", tint(a.accent), surfaceIsDark, card));
     }
-    if (isHex(a.primary) && (recolor || factor !== 1 || a.primary.toLowerCase() !== DEFAULT_APPEARANCE.primary)) {
+    if (
+      isHex(a.primary) &&
+      (recolor || factor !== 1 || a.primary.toLowerCase() !== DEFAULT_APPEARANCE.primary)
+    ) {
       Object.assign(vars, brandVars("primary", tint(a.primary), surfaceIsDark, card));
     }
 

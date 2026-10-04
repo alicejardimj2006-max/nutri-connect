@@ -5,7 +5,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 type RpcClient = {
-  rpc: (name: string, args?: Record<string, unknown>) => PromiseLike<{
+  rpc: (
+    name: string,
+    args?: Record<string, unknown>,
+  ) => PromiseLike<{
     data: unknown;
     error: { message: string; code?: string } | null;
   }>;
@@ -23,7 +26,11 @@ export async function adminRpc<T>(name: string, args: Record<string, unknown> = 
   const { data, error } = await (supabase as unknown as RpcClient).rpc(name, args);
   if (error) {
     // 42883 = função inexistente; PGRST202 = a API não conhece a função.
-    if (error.code === "42883" || error.code === "PGRST202" || /could not find the function/i.test(error.message)) {
+    if (
+      error.code === "42883" ||
+      error.code === "PGRST202" ||
+      /could not find the function/i.test(error.message)
+    ) {
       throw new AdminSetupError();
     }
     throw new Error(error.message);
@@ -181,10 +188,20 @@ export interface ContactMessage {
 const key = (...parts: unknown[]) => ["admin", ...parts] as const;
 
 export function useOverview() {
-  return useQuery({ queryKey: key("overview"), queryFn: () => adminRpc<Overview>("admin_overview"), staleTime: 30_000, retry: false });
+  return useQuery({
+    queryKey: key("overview"),
+    queryFn: () => adminRpc<Overview>("admin_overview"),
+    staleTime: 30_000,
+    retry: false,
+  });
 }
 
-export function useAdminUsers(params: { query: string; filter: string; offset: number; limit: number }) {
+export function useAdminUsers(params: {
+  query: string;
+  filter: string;
+  offset: number;
+  limit: number;
+}) {
   return useQuery({
     queryKey: key("users", params),
     queryFn: () =>
@@ -199,7 +216,12 @@ export function useAdminUsers(params: { query: string; filter: string; offset: n
   });
 }
 
-export function useAdminPosts(params: { query: string; status: string; offset: number; limit: number }) {
+export function useAdminPosts(params: {
+  query: string;
+  status: string;
+  offset: number;
+  limit: number;
+}) {
   return useQuery({
     queryKey: key("posts", params),
     queryFn: () =>
@@ -218,14 +240,22 @@ export function useAdminPayments(params: { status: string; offset: number; limit
   return useQuery({
     queryKey: key("payments", params),
     queryFn: () =>
-      adminRpc<AdminPayment[]>("admin_payments", { p_status: params.status, p_limit: params.limit, p_offset: params.offset }),
+      adminRpc<AdminPayment[]>("admin_payments", {
+        p_status: params.status,
+        p_limit: params.limit,
+        p_offset: params.offset,
+      }),
     placeholderData: (prev) => prev,
     retry: false,
   });
 }
 
 export function useAiStats(days: number) {
-  return useQuery({ queryKey: key("ai", days), queryFn: () => adminRpc<AiStats>("admin_ai_stats", { p_days: days }), retry: false });
+  return useQuery({
+    queryKey: key("ai", days),
+    queryFn: () => adminRpc<AiStats>("admin_ai_stats", { p_days: days }),
+    retry: false,
+  });
 }
 
 export function useAuditLog() {
@@ -264,7 +294,11 @@ export function useThemes() {
   return useQuery({
     queryKey: key("themes"),
     queryFn: async () => {
-      const res = await supabase.from("weekly_themes").select("*").order("week_start", { ascending: false }).limit(40);
+      const res = await supabase
+        .from("weekly_themes")
+        .select("*")
+        .order("week_start", { ascending: false })
+        .limit(40);
       if (res.error) throw new Error(res.error.message);
       return (res.data ?? []) as unknown as ThemeRow[];
     },
@@ -275,7 +309,11 @@ export function useContactMessages() {
   return useQuery({
     queryKey: key("contact"),
     queryFn: async () => {
-      const res = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false }).limit(150);
+      const res = await supabase
+        .from("contact_messages")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(150);
       if (res.error) throw new Error(res.error.message);
       return (res.data ?? []) as unknown as ContactMessage[];
     },
@@ -313,11 +351,15 @@ export function useAdminAction<TVars>(fn: (vars: TVars) => Promise<unknown>, suc
 export const adminActions = {
   setSuspended: (p: { user: string; suspend: boolean; reason: string }) =>
     adminRpc("admin_set_suspended", { p_user: p.user, p_suspend: p.suspend, p_reason: p.reason }),
-  setAdmin: (p: { user: string; make: boolean }) => adminRpc("admin_set_admin", { p_user: p.user, p_make: p.make }),
-  postHidden: (p: { post: string; hidden: boolean }) => adminRpc("admin_set_post_hidden", { p_post: p.post, p_hidden: p.hidden }),
-  postPinned: (p: { post: string; pinned: boolean }) => adminRpc("admin_set_post_pinned", { p_post: p.post, p_pinned: p.pinned }),
+  setAdmin: (p: { user: string; make: boolean }) =>
+    adminRpc("admin_set_admin", { p_user: p.user, p_make: p.make }),
+  postHidden: (p: { post: string; hidden: boolean }) =>
+    adminRpc("admin_set_post_hidden", { p_post: p.post, p_hidden: p.hidden }),
+  postPinned: (p: { post: string; pinned: boolean }) =>
+    adminRpc("admin_set_post_pinned", { p_post: p.post, p_pinned: p.pinned }),
   deletePost: (post: string) => adminRpc("admin_delete_post", { p_post: post }),
-  setSetting: (p: { key: string; value: number }) => adminRpc("admin_set_setting", { p_key: p.key, p_value: p.value }),
+  setSetting: (p: { key: string; value: number }) =>
+    adminRpc("admin_set_setting", { p_key: p.key, p_value: p.value }),
   saveAnnouncement: (a: Partial<Announcement> & { title: string }) =>
     adminRpc<string>("admin_save_announcement", {
       p_id: a.id ?? null,
@@ -347,10 +389,13 @@ export function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   }
   const cols = Object.keys(rows[0]);
   const esc = (v: unknown) => {
-    const s = v === null || v === undefined ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
+    const s =
+      v === null || v === undefined ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const csv = [cols.join(";"), ...rows.map((r) => cols.map((c) => esc(r[c])).join(";"))].join("\r\n");
+  const csv = [cols.join(";"), ...rows.map((r) => cols.map((c) => esc(r[c])).join(";"))].join(
+    "\r\n",
+  );
   const url = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;

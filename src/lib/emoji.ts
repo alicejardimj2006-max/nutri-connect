@@ -18,5 +18,7 @@ export function stripEmoji(text: string): string {
 /** Divide um texto que começa com emoji em [ícone, resto]. */
 export function splitLeadingEmoji(text: string): { emoji: string | null; rest: string } {
   const m = /^((?:[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}]\u{FE0F}?)+)\s*/u.exec(text);
-  return m ? { emoji: Array.from(m[1])[0], rest: text.slice(m[0].length) } : { emoji: null, rest: text };
+  return m
+    ? { emoji: Array.from(m[1])[0], rest: text.slice(m[0].length) }
+    : { emoji: null, rest: text };
 }

@@ -81,7 +81,10 @@ function BackToTop() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   if (!show) return null;
-  const label = pickName(["Voltar ao topo", "Back to top", "Volver arriba", "Haut de page"], locale);
+  const label = pickName(
+    ["Voltar ao topo", "Back to top", "Volver arriba", "Haut de page"],
+    locale,
+  );
   return (
     <button
       type="button"

@@ -43,7 +43,10 @@ export function useRailsOn(): boolean {
   return useSyncExternalStore(
     (fn) => {
       const observer = new MutationObserver(fn);
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-rails"] });
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-rails"],
+      });
       return () => observer.disconnect();
     },
     () => document.documentElement.getAttribute("data-rails") === "on",

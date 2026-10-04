@@ -11,14 +11,7 @@ import {
 } from "./appearance";
 
 export type SoundKind =
-  | "notification"
-  | "message"
-  | "achievement"
-  | "click"
-  | "send"
-  | "success"
-  | "error"
-  | "support";
+  "notification" | "message" | "achievement" | "click" | "send" | "success" | "error" | "support";
 
 interface Voice {
   wave: OscillatorType;

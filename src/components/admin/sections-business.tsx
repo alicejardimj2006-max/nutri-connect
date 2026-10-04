@@ -62,7 +62,11 @@ export function FinanceSection() {
   const exportAll = async () => {
     const rows: AdminPayment[] = [];
     for (let off = 0; off < 2000; off += 100) {
-      const page = await adminRpc<AdminPayment[]>("admin_payments", { p_status: status, p_limit: 100, p_offset: off });
+      const page = await adminRpc<AdminPayment[]>("admin_payments", {
+        p_status: status,
+        p_limit: 100,
+        p_offset: off,
+      });
       rows.push(...page);
       if (page.length < 100) break;
     }
@@ -89,10 +93,20 @@ export function FinanceSection() {
     <div className="space-y-4">
       {o && (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Total aprovado" value={money(o.paid_cents)} icon={Banknote} tone="good" />
+          <StatCard
+            label="Total aprovado"
+            value={money(o.paid_cents)}
+            icon={Banknote}
+            tone="good"
+          />
           <StatCard label="Taxa da plataforma" value={money(o.fees_cents)} icon={Percent} />
           <StatCard label="Reembolsado" value={money(o.refunded_cents)} icon={RotateCcw} />
-          <StatCard label="Consultas próximas" value={o.appointments_upcoming} sub={`${o.appointments_7d} marcadas em 7 dias`} icon={Users} />
+          <StatCard
+            label="Consultas próximas"
+            value={o.appointments_upcoming}
+            sub={`${o.appointments_7d} marcadas em 7 dias`}
+            icon={Users}
+          />
         </div>
       )}
       <Panel
@@ -105,14 +119,27 @@ export function FinanceSection() {
         }
       >
         <div className="no-scrollbar mb-4 flex max-w-full gap-1.5 overflow-x-auto">
-          {["todos", "aprovado", "pendente", "em_processamento", "reembolsado", "recusado", "cancelado"].map((s) => (
+          {[
+            "todos",
+            "aprovado",
+            "pendente",
+            "em_processamento",
+            "reembolsado",
+            "recusado",
+            "cancelado",
+          ].map((s) => (
             <button
               key={s}
               type="button"
               aria-pressed={status === s}
-              onClick={() => { setStatus(s); setOffset(0); }}
+              onClick={() => {
+                setStatus(s);
+                setOffset(0);
+              }}
               className={`shrink-0 cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
-                status === s ? "border-accent bg-accent-soft text-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground"
+                status === s
+                  ? "border-accent bg-accent-soft text-foreground"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
               {s === "todos" ? "Todos" : PAY_LABEL[s as AdminPayment["status"]]}
@@ -140,16 +167,23 @@ export function FinanceSection() {
               <tbody className="divide-y divide-border/60 bg-card">
                 {list.map((p) => (
                   <tr key={p.id}>
-                    <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">{dateTime(p.created_at)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
+                      {dateTime(p.created_at)}
+                    </td>
                     <td className="px-4 py-3 text-foreground">
-                      {p.patient_name} <span className="text-muted-foreground">→</span> {p.professional_name}
+                      {p.patient_name} <span className="text-muted-foreground">→</span>{" "}
+                      {p.professional_name}
                       <span className="block text-[11px] text-muted-foreground">
                         {p.provider === "manual" ? "Registro manual" : "Online"}
                         {p.method ? ` · ${p.method}` : ""}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right font-semibold">{money(p.amount_cents)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right text-muted-foreground">{money(p.platform_fee_cents)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right font-semibold">
+                      {money(p.amount_cents)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right text-muted-foreground">
+                      {money(p.platform_fee_cents)}
+                    </td>
                     <td className="px-4 py-3">
                       <Badge tone={PAY_TONE[p.status]}>{PAY_LABEL[p.status]}</Badge>
                     </td>
@@ -179,7 +213,12 @@ export function AiSection() {
         title="Uso da IA"
         hint="Nina, resumos clínicos e a análise automática de publicações e fotos."
         action={
-          <select aria-label="Período" value={days} onChange={(e) => setDays(Number(e.target.value))} className={`${inputCls} !w-auto`}>
+          <select
+            aria-label="Período"
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+            className={`${inputCls} !w-auto`}
+          >
             {[7, 14, 30, 60].map((d) => (
               <option key={d} value={d}>
                 Últimos {d} dias
@@ -196,11 +235,25 @@ export function AiSection() {
           <>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard label="Pessoas usando hoje" value={s.users_today} icon={Users} />
-              <StatCard label={`Conversas com a Nina (${days} dias)`} value={s.nina_messages} icon={BrainCircuit} />
-              <StatCard label="Conteúdos barrados pela IA" value={s.flagged_total} sub={`${s.flagged_pending} aguardando revisão`} icon={Flag} tone={s.flagged_pending > 0 ? "alert" : "default"} />
+              <StatCard
+                label={`Conversas com a Nina (${days} dias)`}
+                value={s.nina_messages}
+                icon={BrainCircuit}
+              />
+              <StatCard
+                label="Conteúdos barrados pela IA"
+                value={s.flagged_total}
+                sub={`${s.flagged_pending} aguardando revisão`}
+                icon={Flag}
+                tone={s.flagged_pending > 0 ? "alert" : "default"}
+              />
               <StatCard
                 label="Acertos da IA na revisão"
-                value={s.upheld + s.overturned > 0 ? `${Math.round((s.upheld / (s.upheld + s.overturned)) * 100)}%` : "—"}
+                value={
+                  s.upheld + s.overturned > 0
+                    ? `${Math.round((s.upheld / (s.upheld + s.overturned)) * 100)}%`
+                    : "—"
+                }
                 sub={`${s.upheld} confirmadas · ${s.overturned} revertidas`}
                 icon={BrainCircuit}
                 tone="good"
@@ -211,8 +264,16 @@ export function AiSection() {
                 labels={s.by_day.map((d) => dm(d.day))}
                 series={[
                   { name: "Nina", color: "#8a5fb0", values: s.by_day.map((d) => d.nina) },
-                  { name: "Resumos clínicos", color: "#0f9aa8", values: s.by_day.map((d) => d.summary) },
-                  { name: "Moderação", color: "#d9692a", values: s.by_day.map((d) => d.moderation) },
+                  {
+                    name: "Resumos clínicos",
+                    color: "#0f9aa8",
+                    values: s.by_day.map((d) => d.summary),
+                  },
+                  {
+                    name: "Moderação",
+                    color: "#d9692a",
+                    values: s.by_day.map((d) => d.moderation),
+                  },
                 ]}
               />
               <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
@@ -222,10 +283,15 @@ export function AiSection() {
             </div>
             {s.top_today.length > 0 && (
               <div className="mt-5">
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Quem mais usou hoje</h3>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Quem mais usou hoje
+                </h3>
                 <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {s.top_today.map((t, i) => (
-                    <li key={i} className="flex items-center justify-between rounded-xl bg-secondary/50 px-3 py-2 text-sm">
+                    <li
+                      key={i}
+                      className="flex items-center justify-between rounded-xl bg-secondary/50 px-3 py-2 text-sm"
+                    >
                       <span className="truncate">{t.name}</span>
                       <b>{t.count}</b>
                     </li>
@@ -247,7 +313,17 @@ const AI_LIMITS = [
   ["ai_limit_moderation", "Análises de publicação e foto por pessoa/dia", 2000],
 ] as const;
 
-function NumberSetting({ settingKey, label, max, unit }: { settingKey: string; label: string; max: number; unit?: string }) {
+function NumberSetting({
+  settingKey,
+  label,
+  max,
+  unit,
+}: {
+  settingKey: string;
+  label: string;
+  max: number;
+  unit?: string;
+}) {
   const settings = useSettings();
   const current = settings.data?.[settingKey];
   const [value, setValue] = useState<string | null>(null);
@@ -259,14 +335,27 @@ function NumberSetting({ settingKey, label, max, unit }: { settingKey: string; l
       <label className="block min-w-[14rem] flex-1 space-y-1.5">
         <span className="text-xs font-semibold text-foreground">{label}</span>
         <div className="flex items-center gap-2">
-          <input type="number" min={0} max={max} step={settingKey === "platform_fee_percent" ? 0.5 : 1} value={shown} onChange={(e) => setValue(e.target.value)} className={`${inputCls} max-w-[10rem]`} />
+          <input
+            type="number"
+            min={0}
+            max={max}
+            step={settingKey === "platform_fee_percent" ? 0.5 : 1}
+            value={shown}
+            onChange={(e) => setValue(e.target.value)}
+            className={`${inputCls} max-w-[10rem]`}
+          />
           {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
         </div>
       </label>
       <button
         type="button"
         disabled={!changed || shown === "" || save.isPending}
-        onClick={() => save.mutate({ key: settingKey, value: Number(shown) }, { onSuccess: () => setValue(null) })}
+        onClick={() =>
+          save.mutate(
+            { key: settingKey, value: Number(shown) },
+            { onSuccess: () => setValue(null) },
+          )
+        }
         className={btnPrimary}
       >
         <Save className="h-3.5 w-3.5" /> Salvar
@@ -277,7 +366,10 @@ function NumberSetting({ settingKey, label, max, unit }: { settingKey: string; l
 
 function LimitsPanel() {
   return (
-    <Panel title="Limites diários" hint="Valem para cada pessoa e começam a valer na hora. Use 0 para desligar o recurso.">
+    <Panel
+      title="Limites diários"
+      hint="Valem para cada pessoa e começam a valer na hora. Use 0 para desligar o recurso."
+    >
       <div className="space-y-4">
         {AI_LIMITS.map(([key, label, max]) => (
           <NumberSetting key={key} settingKey={key} label={label} max={max} />
@@ -292,23 +384,47 @@ function LimitsPanel() {
 export function SettingsSection() {
   return (
     <div className="space-y-4">
-      <Panel title="Pagamentos e consultas" hint="Mudam só as consultas novas; as já marcadas mantêm o que foi combinado.">
+      <Panel
+        title="Pagamentos e consultas"
+        hint="Mudam só as consultas novas; as já marcadas mantêm o que foi combinado."
+      >
         <div className="space-y-4">
-          <NumberSetting settingKey="platform_fee_percent" label="Taxa da plataforma sobre cada consulta" max={50} unit="%" />
-          <NumberSetting settingKey="payment_hold_minutes" label="Tempo para pagar e segurar o horário" max={240} unit="minutos" />
-          <NumberSetting settingKey="min_booking_notice_hours" label="Antecedência mínima para marcar" max={168} unit="horas" />
+          <NumberSetting
+            settingKey="platform_fee_percent"
+            label="Taxa da plataforma sobre cada consulta"
+            max={50}
+            unit="%"
+          />
+          <NumberSetting
+            settingKey="payment_hold_minutes"
+            label="Tempo para pagar e segurar o horário"
+            max={240}
+            unit="minutos"
+          />
+          <NumberSetting
+            settingKey="min_booking_notice_hours"
+            label="Antecedência mínima para marcar"
+            max={168}
+            unit="horas"
+          />
         </div>
       </Panel>
       <LimitsPanel />
       <Panel title="Sobre esta versão">
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Versão dos documentos legais</dt>
+            <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Versão dos documentos legais
+            </dt>
             <dd className="mt-0.5 text-foreground">{LEGAL_VERSION}</dd>
           </div>
           <div>
-            <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Pagamentos</dt>
-            <dd className="mt-0.5 text-foreground">Stripe (chaves e webhook ficam nos segredos do Supabase)</dd>
+            <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Pagamentos
+            </dt>
+            <dd className="mt-0.5 text-foreground">
+              Stripe (chaves e webhook ficam nos segredos do Supabase)
+            </dd>
           </div>
         </dl>
       </Panel>
@@ -361,7 +477,13 @@ export function AuditSection() {
           onClick={() =>
             downloadCsv(
               `auditoria-${new Date().toISOString().slice(0, 10)}.csv`,
-              rows.map((r) => ({ quando: r.created_at, quem: r.admin_name, acao: ACTION_LABEL[r.action] ?? r.action, alvo: `${r.target_type ?? ""} ${r.target_id ?? ""}`.trim(), detalhes: r.details })),
+              rows.map((r) => ({
+                quando: r.created_at,
+                quem: r.admin_name,
+                acao: ACTION_LABEL[r.action] ?? r.action,
+                alvo: `${r.target_type ?? ""} ${r.target_id ?? ""}`.trim(),
+                detalhes: r.details,
+              })),
             )
           }
           className={btnCls}
@@ -371,7 +493,11 @@ export function AuditSection() {
       }
     >
       <div className="mb-4">
-        <SearchBox value={query} onChange={setQuery} placeholder="Filtrar por pessoa, ação ou detalhe…" />
+        <SearchBox
+          value={query}
+          onChange={setQuery}
+          placeholder="Filtrar por pessoa, ação ou detalhe…"
+        />
       </div>
       {log.error ? (
         <QueryError error={log.error} />
@@ -383,7 +509,9 @@ export function AuditSection() {
         <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70">
           {rows.map((r) => (
             <li key={r.id} className="flex flex-wrap items-start gap-3 bg-card px-4 py-3">
-              <span className="w-32 shrink-0 text-xs text-muted-foreground">{dateTime(r.created_at)}</span>
+              <span className="w-32 shrink-0 text-xs text-muted-foreground">
+                {dateTime(r.created_at)}
+              </span>
               <div className="min-w-0 flex-1 basis-60">
                 <p className="text-sm text-foreground">
                   <b>{r.admin_name || "—"}</b> · {ACTION_LABEL[r.action] ?? r.action}
@@ -392,7 +520,9 @@ export function AuditSection() {
                   <p className="mt-0.5 break-all text-[11px] text-muted-foreground">
                     {r.target_type ? `${r.target_type}: ` : ""}
                     {r.target_id}
-                    {Object.keys(r.details ?? {}).length > 0 ? ` · ${JSON.stringify(r.details)}` : ""}
+                    {Object.keys(r.details ?? {}).length > 0
+                      ? ` · ${JSON.stringify(r.details)}`
+                      : ""}
                   </p>
                 )}
               </div>

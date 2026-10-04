@@ -237,7 +237,10 @@ function DesafiosIndexPage() {
                       : "border-border bg-secondary/30 opacity-60"
                   }`}
                 >
-                  <EmojiIcon emoji={badge.achieved ? badge.icon : "🔒"} className={`h-4 w-4 ${badge.achieved ? "text-accent" : "text-muted-foreground"}`} />
+                  <EmojiIcon
+                    emoji={badge.achieved ? badge.icon : "🔒"}
+                    className={`h-4 w-4 ${badge.achieved ? "text-accent" : "text-muted-foreground"}`}
+                  />
                   <span className="text-[11px] font-bold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}

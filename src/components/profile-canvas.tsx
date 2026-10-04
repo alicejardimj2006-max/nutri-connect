@@ -122,10 +122,13 @@ export function ProfileCanvas({
         const dy = old.top - now.top;
         if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
         el.getAnimations().forEach((a) => a.cancel());
-        el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }], {
-          duration: 300,
-          easing: EASE,
-        });
+        el.animate(
+          [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
+          {
+            duration: 300,
+            easing: EASE,
+          },
+        );
       });
     }
     placeDragged();
@@ -153,7 +156,10 @@ export function ProfileCanvas({
       d.el.style.height = `${Math.max(minPx(min.h, rowStep, GAP_PX), d.startH + dyPx)}px`;
       moved = {
         ...o,
-        w: Math.min(GRID_COLUMNS - o.x, Math.max(min.w, Math.round((d.startW + GAP_PX + dxPx) / colStep))),
+        w: Math.min(
+          GRID_COLUMNS - o.x,
+          Math.max(min.w, Math.round((d.startW + GAP_PX + dxPx) / colStep)),
+        ),
         h: Math.min(40, Math.max(min.h, Math.round((d.startH + GAP_PX + dyPx) / rowStep))),
       };
     }
@@ -161,7 +167,12 @@ export function ProfileCanvas({
     if (key !== d.key) {
       d.key = key;
       capture();
-      onChange(resolveCollisions(d.base.map((b) => (b.id === d.id ? moved : b)), d.id));
+      onChange(
+        resolveCollisions(
+          d.base.map((b) => (b.id === d.id ? moved : b)),
+          d.id,
+        ),
+      );
     } else {
       placeDragged();
     }
@@ -176,7 +187,8 @@ export function ProfileCanvas({
     }
     const edge = 90;
     let speed = 0;
-    if (d.py > window.innerHeight - edge) speed = Math.min(22, (d.py - (window.innerHeight - edge)) / 3);
+    if (d.py > window.innerHeight - edge)
+      speed = Math.min(22, (d.py - (window.innerHeight - edge)) / 3);
     else if (d.py < edge + 40) speed = -Math.min(22, (edge + 40 - d.py) / 3);
     if (speed !== 0) {
       window.scrollBy(0, speed);
@@ -243,7 +255,10 @@ export function ProfileCanvas({
       el.style.transform = "";
       const nat = el.getBoundingClientRect();
       el.animate(
-        [{ transform: `translate(${cur.left - nat.left}px, ${cur.top - nat.top}px) ${LIFT}` }, { transform: "none" }],
+        [
+          { transform: `translate(${cur.left - nat.left}px, ${cur.top - nat.top}px) ${LIFT}` },
+          { transform: "none" },
+        ],
         { duration: 220, easing: EASE },
       );
     } else {
@@ -286,7 +301,12 @@ export function ProfileCanvas({
           y: Math.max(0, block.y + dir[1]),
         };
     capture();
-    onChange(resolveCollisions(layout.map((b) => (b.id === block.id ? next : b)), block.id));
+    onChange(
+      resolveCollisions(
+        layout.map((b) => (b.id === block.id ? next : b)),
+        block.id,
+      ),
+    );
   };
 
   /** No celular: troca de lugar com o vizinho de cima ou de baixo. */
@@ -297,7 +317,11 @@ export function ProfileCanvas({
     const other = order[i + dir];
     if (!other) return;
     const swapped = layout.map((b) =>
-      b.id === block.id ? { ...b, x: other.x, y: other.y } : b.id === other.id ? { ...b, x: block.x, y: block.y } : b,
+      b.id === block.id
+        ? { ...b, x: other.x, y: other.y }
+        : b.id === other.id
+          ? { ...b, x: block.x, y: block.y }
+          : b,
     );
     onChange(resolveCollisions(swapped, block.id));
   };
@@ -315,7 +339,10 @@ export function ProfileCanvas({
             <div
               key={block.id}
               className={`relative ${editing && selectedId === block.id ? "rounded-3xl ring-2 ring-accent" : ""}`}
-              style={{ minHeight: px, height: block.type === "posts" || block.type === "recipes" ? undefined : px }}
+              style={{
+                minHeight: px,
+                height: block.type === "posts" || block.type === "recipes" ? undefined : px,
+              }}
               onClick={() => editing && onSelect?.(block.id)}
             >
               <BlockView block={block} />
@@ -324,16 +351,38 @@ export function ProfileCanvas({
                   className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-full border border-border bg-card/95 p-1 shadow-soft"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button type="button" disabled={i === 0} onClick={() => shift(block, -1)} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary disabled:opacity-30" aria-label={tr(["Subir", "Move up", "Subir", "Monter"])}>
+                  <button
+                    type="button"
+                    disabled={i === 0}
+                    onClick={() => shift(block, -1)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary disabled:opacity-30"
+                    aria-label={tr(["Subir", "Move up", "Subir", "Monter"])}
+                  >
                     <ArrowUp className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" disabled={i === sorted.length - 1} onClick={() => shift(block, 1)} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary disabled:opacity-30" aria-label={tr(["Descer", "Move down", "Bajar", "Descendre"])}>
+                  <button
+                    type="button"
+                    disabled={i === sorted.length - 1}
+                    onClick={() => shift(block, 1)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary disabled:opacity-30"
+                    aria-label={tr(["Descer", "Move down", "Bajar", "Descendre"])}
+                  >
                     <ArrowDown className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" onClick={() => onEdit?.(block.id)} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary" aria-label={tr(["Editar", "Edit", "Editar", "Modifier"])}>
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(block.id)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary"
+                    aria-label={tr(["Editar", "Edit", "Editar", "Modifier"])}
+                  >
                     <Settings2 className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" onClick={() => onDelete?.(block.id)} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full text-destructive hover:bg-destructive/10" aria-label={tr(["Remover", "Remove", "Quitar", "Supprimer"])}>
+                  <button
+                    type="button"
+                    onClick={() => onDelete?.(block.id)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-full text-destructive hover:bg-destructive/10"
+                    aria-label={tr(["Remover", "Remove", "Quitar", "Supprimer"])}
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -375,7 +424,10 @@ export function ProfileCanvas({
             className={`group relative min-h-0 min-w-0 will-change-transform ${
               selected ? "rounded-3xl ring-2 ring-accent ring-offset-2 ring-offset-background" : ""
             } ${isDragging ? "[&>section]:shadow-2xl" : ""}`}
-            style={{ gridColumn: `${block.x + 1} / span ${block.w}`, gridRow: `${block.y + 1} / span ${block.h}` }}
+            style={{
+              gridColumn: `${block.x + 1} / span ${block.w}`,
+              gridRow: `${block.y + 1} / span ${block.h}`,
+            }}
           >
             <BlockView block={block} />
             {editing && (
@@ -391,7 +443,9 @@ export function ProfileCanvas({
                 />
                 <div
                   className={`absolute left-1/2 top-0 z-20 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-border bg-card/95 p-1 shadow-soft transition ${
-                    selected || isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+                    selected || isDragging
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -403,15 +457,41 @@ export function ProfileCanvas({
                     onPointerCancel={end}
                     onKeyDown={(e) => keyMove(e, block)}
                     className="flex h-7 cursor-grab touch-none select-none items-center gap-1 rounded-full bg-secondary px-2 text-[11px] font-semibold text-foreground active:cursor-grabbing"
-                    aria-label={tr(["Arrastar bloco (setas movem, Shift+setas muda o tamanho)", "Drag block (arrows move, Shift+arrows resize)", "Arrastrar bloque (flechas mueven, Shift+flechas cambia el tamaño)", "Glisser le bloc (flèches déplacent, Maj+flèches redimensionne)"])}
+                    aria-label={tr([
+                      "Arrastar bloco (setas movem, Shift+setas muda o tamanho)",
+                      "Drag block (arrows move, Shift+arrows resize)",
+                      "Arrastrar bloque (flechas mueven, Shift+flechas cambia el tamaño)",
+                      "Glisser le bloc (flèches déplacent, Maj+flèches redimensionne)",
+                    ])}
                   >
                     <GripVertical className="h-3.5 w-3.5" />
                     {tr(BLOCK_INFO[block.type].name)}
                   </button>
-                  <button type="button" onClick={() => onEdit?.(block.id)} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary" aria-label={tr(["Ajustes do bloco", "Block settings", "Ajustes del bloque", "Réglages du bloc"])} title={tr(["Ajustes do bloco", "Block settings", "Ajustes del bloque", "Réglages du bloc"])}>
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(block.id)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-full hover:bg-secondary"
+                    aria-label={tr([
+                      "Ajustes do bloco",
+                      "Block settings",
+                      "Ajustes del bloque",
+                      "Réglages du bloc",
+                    ])}
+                    title={tr([
+                      "Ajustes do bloco",
+                      "Block settings",
+                      "Ajustes del bloque",
+                      "Réglages du bloc",
+                    ])}
+                  >
                     <Settings2 className="h-3.5 w-3.5" />
                   </button>
-                  <button type="button" onClick={() => onDelete?.(block.id)} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full text-destructive hover:bg-destructive/10" aria-label={tr(["Remover", "Remove", "Quitar", "Supprimer"])}>
+                  <button
+                    type="button"
+                    onClick={() => onDelete?.(block.id)}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-full text-destructive hover:bg-destructive/10"
+                    aria-label={tr(["Remover", "Remove", "Quitar", "Supprimer"])}
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -428,7 +508,14 @@ export function ProfileCanvas({
                   }`}
                   aria-label={tr(["Mudar o tamanho", "Resize", "Cambiar tamaño", "Redimensionner"])}
                 >
-                  <svg viewBox="0 0 10 10" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                  <svg
+                    viewBox="0 0 10 10"
+                    className="h-3 w-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  >
                     <path d="M2 8 8 2M5 8l3-3" />
                   </svg>
                 </button>

@@ -66,7 +66,15 @@ function DadosPage() {
     setBusy("export");
     const { data, error } = await supabase.rpc("export_my_data");
     setBusy(null);
-    if (error || !data) return void toast.error(tr(["Não foi possível gerar o arquivo agora.", "Could not generate the file right now.", "No se pudo generar el archivo ahora.", "Impossible de générer le fichier pour le moment."]));
+    if (error || !data)
+      return void toast.error(
+        tr([
+          "Não foi possível gerar o arquivo agora.",
+          "Could not generate the file right now.",
+          "No se pudo generar el archivo ahora.",
+          "Impossible de générer le fichier pour le moment.",
+        ]),
+      );
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -77,38 +85,92 @@ function DadosPage() {
   };
 
   const clearNina = async () => {
-    if (!window.confirm(tr(["Apagar todas as suas conversas com a Nina? Isso não pode ser desfeito.", "Delete all your conversations with Nina? This cannot be undone.", "¿Borrar todas tus conversaciones con Nina? No se puede deshacer.", "Supprimer toutes vos conversations avec Nina ? Action irréversible."]))) return;
+    if (
+      !window.confirm(
+        tr([
+          "Apagar todas as suas conversas com a Nina? Isso não pode ser desfeito.",
+          "Delete all your conversations with Nina? This cannot be undone.",
+          "¿Borrar todas tus conversaciones con Nina? No se puede deshacer.",
+          "Supprimer toutes vos conversations avec Nina ? Action irréversible.",
+        ]),
+      )
+    )
+      return;
     setBusy("nina");
     const { error } = await supabase.from("nina_messages").delete().eq("user_id", user.id);
     setBusy(null);
-    if (error) return void toast.error(tr(["Não foi possível apagar agora.", "Could not delete right now.", "No se pudo borrar ahora.", "Impossible de supprimer pour le moment."]));
-    toast.success(tr(["Conversas apagadas.", "Conversations deleted.", "Conversaciones borradas.", "Conversations supprimées."]));
+    if (error)
+      return void toast.error(
+        tr([
+          "Não foi possível apagar agora.",
+          "Could not delete right now.",
+          "No se pudo borrar ahora.",
+          "Impossible de supprimer pour le moment.",
+        ]),
+      );
+    toast.success(
+      tr([
+        "Conversas apagadas.",
+        "Conversations deleted.",
+        "Conversaciones borradas.",
+        "Conversations supprimées.",
+      ]),
+    );
     void qc.invalidateQueries({ queryKey: ["settings", "nina-count"] });
   };
 
   const clearTrail = () => {
     const keys = trailKeys();
     if (keys.length === 0) {
-      return void toast.info(tr(["Não há progresso da trilha salvo neste aparelho.", "There is no trail progress saved on this device.", "No hay progreso de la ruta guardado en este dispositivo.", "Aucune progression du parcours n'est enregistrée sur cet appareil."]));
+      return void toast.info(
+        tr([
+          "Não há progresso da trilha salvo neste aparelho.",
+          "There is no trail progress saved on this device.",
+          "No hay progreso de la ruta guardado en este dispositivo.",
+          "Aucune progression du parcours n'est enregistrée sur cet appareil.",
+        ]),
+      );
     }
-    if (!window.confirm(tr([
-      "Apagar o progresso da trilha e os perfis infantis salvos neste aparelho? Esses dados ficam só aqui e não podem ser recuperados.",
-      "Delete the trail progress and child profiles saved on this device? This data lives only here and cannot be recovered.",
-      "¿Borrar el progreso de la ruta y los perfiles infantiles guardados en este dispositivo? Estos datos solo están aquí y no se pueden recuperar.",
-      "Supprimer la progression du parcours et les profils enfants enregistrés sur cet appareil ? Ces données ne sont qu'ici et sont irrécupérables.",
-    ]))) return;
+    if (
+      !window.confirm(
+        tr([
+          "Apagar o progresso da trilha e os perfis infantis salvos neste aparelho? Esses dados ficam só aqui e não podem ser recuperados.",
+          "Delete the trail progress and child profiles saved on this device? This data lives only here and cannot be recovered.",
+          "¿Borrar el progreso de la ruta y los perfiles infantiles guardados en este dispositivo? Estos datos solo están aquí y no se pueden recuperar.",
+          "Supprimer la progression du parcours et les profils enfants enregistrés sur cet appareil ? Ces données ne sont qu'ici et sont irrécupérables.",
+        ]),
+      )
+    )
+      return;
     for (const k of keys) window.localStorage.removeItem(k);
-    toast.success(tr(["Progresso da trilha apagado deste aparelho.", "Trail progress deleted from this device.", "Progreso de la ruta borrado de este dispositivo.", "Progression du parcours supprimée de cet appareil."]));
+    toast.success(
+      tr([
+        "Progresso da trilha apagado deste aparelho.",
+        "Trail progress deleted from this device.",
+        "Progreso de la ruta borrado de este dispositivo.",
+        "Progression du parcours supprimée de cet appareil.",
+      ]),
+    );
   };
 
   const kindName = (kind: string) =>
     kind === "saude"
       ? tr(["Dados de saúde", "Health data", "Datos de salud", "Données de santé"])
-      : tr(["Termos e Política de Privacidade", "Terms and Privacy Policy", "Términos y Política de Privacidad", "Conditions et Politique de confidentialité"]);
+      : tr([
+          "Termos e Política de Privacidade",
+          "Terms and Privacy Policy",
+          "Términos y Política de Privacidad",
+          "Conditions et Politique de confidentialité",
+        ]);
 
   return (
     <SettingsPage
-      title={tr(["Dados e histórico", "Data and history", "Datos e historial", "Données et historique"])}
+      title={tr([
+        "Dados e histórico",
+        "Data and history",
+        "Datos e historial",
+        "Données et historique",
+      ])}
       hint={tr([
         "Veja, baixe ou apague o que o NutriConnect guarda sobre você.",
         "See, download or delete what NutriConnect keeps about you.",
@@ -125,16 +187,31 @@ function DadosPage() {
           "Une copie de tout ce que nous savons sur votre compte, en fichier JSON.",
         ])}
       >
-        <button type="button" onClick={exportData} disabled={busy === "export"} className={buttonClass}>
+        <button
+          type="button"
+          onClick={exportData}
+          disabled={busy === "export"}
+          className={buttonClass}
+        >
           <Download className="h-3.5 w-3.5" />
           {busy === "export"
             ? tr(["Gerando…", "Generating…", "Generando…", "Génération…"])
-            : tr(["Baixar meus dados (JSON)", "Download my data (JSON)", "Descargar mis datos (JSON)", "Télécharger mes données (JSON)"])}
+            : tr([
+                "Baixar meus dados (JSON)",
+                "Download my data (JSON)",
+                "Descargar mis datos (JSON)",
+                "Télécharger mes données (JSON)",
+              ])}
         </button>
       </SettingsCard>
 
       <SettingsCard
-        title={tr(["Conversas com a Nina", "Conversations with Nina", "Conversaciones con Nina", "Conversations avec Nina"])}
+        title={tr([
+          "Conversas com a Nina",
+          "Conversations with Nina",
+          "Conversaciones con Nina",
+          "Conversations avec Nina",
+        ])}
         hint={tr([
           "As conversas ficam guardadas por 90 dias e depois são apagadas sozinhas.",
           "Conversations are kept for 90 days and then deleted automatically.",
@@ -168,12 +245,22 @@ function DadosPage() {
       >
         <button type="button" onClick={clearTrail} className={dangerButtonClass}>
           <Trash2 className="h-3.5 w-3.5" />
-          {tr(["Apagar progresso da trilha deste aparelho", "Delete trail progress from this device", "Borrar el progreso de la ruta de este dispositivo", "Supprimer la progression du parcours de cet appareil"])}
+          {tr([
+            "Apagar progresso da trilha deste aparelho",
+            "Delete trail progress from this device",
+            "Borrar el progreso de la ruta de este dispositivo",
+            "Supprimer la progression du parcours de cet appareil",
+          ])}
         </button>
       </SettingsCard>
 
       <SettingsCard
-        title={tr(["Meus consentimentos", "My consents", "Mis consentimientos", "Mes consentements"])}
+        title={tr([
+          "Meus consentimentos",
+          "My consents",
+          "Mis consentimientos",
+          "Mes consentements",
+        ])}
         hint={tr([
           `Registro de quando você aceitou os documentos (versão atual: ${LEGAL_VERSION}).`,
           `Record of when you accepted the documents (current version: ${LEGAL_VERSION}).`,
@@ -184,33 +271,57 @@ function DadosPage() {
         {consents.data && consents.data.length > 0 ? (
           <ul className="divide-y divide-border/60 rounded-xl border border-border/60">
             {consents.data.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-xs">
+              <li
+                key={c.id}
+                className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-xs"
+              >
                 <span className="font-medium text-foreground">{kindName(c.kind)}</span>
                 <span className="text-muted-foreground">
                   {c.granted
                     ? tr(["aceito", "accepted", "aceptado", "accepté"])
                     : tr(["revogado", "revoked", "revocado", "révoqué"])}{" "}
                   · v{c.version} ·{" "}
-                  {formatDate(c.created_at, locale, { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {formatDate(c.created_at, locale, {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
           <p className="text-xs text-muted-foreground">
-            {tr(["Nenhum registro ainda.", "No records yet.", "Aún no hay registros.", "Aucun enregistrement pour le moment."])}
+            {tr([
+              "Nenhum registro ainda.",
+              "No records yet.",
+              "Aún no hay registros.",
+              "Aucun enregistrement pour le moment.",
+            ])}
           </p>
         )}
         <Link
           to="/perfil/configuracoes/privacidade"
           className="inline-block text-xs font-semibold text-accent underline-offset-2 hover:underline"
         >
-          {tr(["Gerenciar o consentimento de saúde →", "Manage health-data consent →", "Gestionar el consentimiento de datos de salud →", "Gérer le consentement pour les données de santé →"])}
+          {tr([
+            "Gerenciar o consentimento de saúde →",
+            "Manage health-data consent →",
+            "Gestionar el consentimiento de datos de salud →",
+            "Gérer le consentement pour les données de santé →",
+          ])}
         </Link>
       </SettingsCard>
 
       <SettingsCard
-        title={tr(["Excluir a conta", "Delete account", "Eliminar la cuenta", "Supprimer le compte"])}
+        title={tr([
+          "Excluir a conta",
+          "Delete account",
+          "Eliminar la cuenta",
+          "Supprimer le compte",
+        ])}
         hint={tr([
           "Apaga a sua conta e os seus dados pessoais, salvo o que a lei exige guardar.",
           "Deletes your account and personal data, except what the law requires us to keep.",
@@ -220,7 +331,12 @@ function DadosPage() {
         tone="danger"
       >
         <Link to="/perfil/configuracoes/conta" className={dangerButtonClass}>
-          {tr(["Ir para exclusão da conta", "Go to account deletion", "Ir a eliminar la cuenta", "Aller à la suppression du compte"])}
+          {tr([
+            "Ir para exclusão da conta",
+            "Go to account deletion",
+            "Ir a eliminar la cuenta",
+            "Aller à la suppression du compte",
+          ])}
         </Link>
       </SettingsCard>
     </SettingsPage>

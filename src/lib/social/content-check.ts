@@ -64,7 +64,10 @@ export async function checkContent(input: PostCheckInput | CommentCheckInput): P
   }
   if (!data || data.ok === false) throw new Error(data?.message || UNAVAILABLE);
   if (!data.approved) {
-    throw new ContentRejectedError(data.message || "Este conteúdo não pode ser publicado.", data.code ?? "inadequado");
+    throw new ContentRejectedError(
+      data.message || "Este conteúdo não pode ser publicado.",
+      data.code ?? "inadequado",
+    );
   }
   return {
     imageUrl: data.imageUrl ?? null,

@@ -68,9 +68,7 @@ function PrivacidadePage() {
         <span>{t("settings.account.back")}</span>
       </Link>
 
-      <h1 className="sr-only">
-        {t("settings.privacy.title")}
-      </h1>
+      <h1 className="sr-only">{t("settings.privacy.title")}</h1>
 
       <div className="space-y-6">
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">

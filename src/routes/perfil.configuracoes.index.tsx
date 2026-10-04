@@ -90,7 +90,8 @@ function ConfiguracoesPage() {
       tone: "bg-primary-soft text-primary",
       title: t("settings.section.account.title"),
       hint: t("settings.section.account.hint"),
-      keywords: "senha e-mail email telefone cpf sessão aparelhos segurança excluir conta password security",
+      keywords:
+        "senha e-mail email telefone cpf sessão aparelhos segurança excluir conta password security",
     },
     {
       to: "/perfil/configuracoes/privacidade",
@@ -121,15 +122,30 @@ function ConfiguracoesPage() {
       icon: Globe,
       tone: "bg-accent-soft text-accent",
       title: tr(["Idioma e região", "Language and region", "Idioma y región", "Langue et région"]),
-      hint: tr(["Idioma, formato de data e hora e fuso horário", "Language, date and time format and time zone", "Idioma, formato de fecha y hora y zona horaria", "Langue, format de date et d'heure et fuseau horaire"]),
+      hint: tr([
+        "Idioma, formato de data e hora e fuso horário",
+        "Language, date and time format and time zone",
+        "Idioma, formato de fecha y hora y zona horaria",
+        "Langue, format de date et d'heure et fuseau horaire",
+      ]),
       keywords: "idioma língua data hora fuso horário region language time zone",
     },
     {
       to: "/perfil/configuracoes/dados",
       icon: Database,
       tone: "bg-chart-5/15 text-chart-5",
-      title: tr(["Dados e histórico", "Data and history", "Datos e historial", "Données et historique"]),
-      hint: tr(["Baixar seus dados, apagar conversas e ver consentimentos", "Download your data, delete conversations and view consents", "Descargar tus datos, borrar conversaciones y ver consentimientos", "Télécharger vos données, supprimer des conversations et voir les consentements"]),
+      title: tr([
+        "Dados e histórico",
+        "Data and history",
+        "Datos e historial",
+        "Données et historique",
+      ]),
+      hint: tr([
+        "Baixar seus dados, apagar conversas e ver consentimentos",
+        "Download your data, delete conversations and view consents",
+        "Descargar tus datos, borrar conversaciones y ver consentimientos",
+        "Télécharger vos données, supprimer des conversations et voir les consentements",
+      ]),
       keywords: "baixar exportar dados lgpd apagar nina conversas histórico consentimentos trilha",
     },
   ];
@@ -151,9 +167,7 @@ function ConfiguracoesPage() {
         <span>Voltar para o perfil</span>
       </Link>
 
-      <h1 className="sr-only">
-        {t("settings.title")}
-      </h1>
+      <h1 className="sr-only">{t("settings.title")}</h1>
       <div className="mb-6" />
 
       <div className="space-y-5">
@@ -163,7 +177,12 @@ function ConfiguracoesPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={tr(["Buscar nas configurações (senha, sons, fuso, dados…)", "Search settings (password, sounds, time zone, data…)", "Buscar en ajustes (contraseña, sonidos, zona horaria, datos…)", "Rechercher dans les réglages (mot de passe, sons, fuseau, données…)"])}
+            placeholder={tr([
+              "Buscar nas configurações (senha, sons, fuso, dados…)",
+              "Search settings (password, sounds, time zone, data…)",
+              "Buscar en ajustes (contraseña, sonidos, zona horaria, datos…)",
+              "Rechercher dans les réglages (mot de passe, sons, fuseau, données…)",
+            ])}
             className="w-full rounded-2xl border border-border/70 bg-card py-3 pl-10 pr-4 text-sm text-foreground shadow-xs outline-none focus:border-accent"
           />
         </label>
@@ -174,7 +193,14 @@ function ConfiguracoesPage() {
             return !q || `${c.title} ${c.hint} ${c.keywords}`.toLowerCase().includes(q);
           })
           .map((c) => (
-            <LinkCard key={c.to} to={c.to} icon={c.icon} tone={c.tone} title={c.title} hint={c.hint} />
+            <LinkCard
+              key={c.to}
+              to={c.to}
+              icon={c.icon}
+              tone={c.tone}
+              title={c.title}
+              hint={c.hint}
+            />
           ))}
 
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">

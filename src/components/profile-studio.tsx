@@ -13,14 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import {
-  Group,
-  Segmented,
-  Slider,
-  Switch,
-  FreeColor,
-  useTr,
-} from "@/components/appearance-editor";
+import { Group, Segmented, Slider, Switch, FreeColor, useTr } from "@/components/appearance-editor";
 import { BLOCK_INFO } from "@/components/profile-blocks";
 import { MediaUpload } from "@/components/profile-media";
 import { IconGrid, IconPickerButton } from "@/components/profile-icons";
@@ -30,9 +23,22 @@ import {
   ShapesSection,
   TextSection,
 } from "@/components/personalization-sections";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AppearanceOverride } from "@/hooks/use-appearance";
-import { themeToAppearance, BLOCK_TYPES, type Block, type BlockItem, type BlockType, type ProfilePage } from "@/lib/profile-page";
+import {
+  themeToAppearance,
+  BLOCK_TYPES,
+  type Block,
+  type BlockItem,
+  type BlockType,
+  type ProfilePage,
+} from "@/lib/profile-page";
 import type { Appearance } from "@/lib/appearance";
 
 export type StudioPanel = "theme" | "header" | "block" | null;
@@ -41,7 +47,6 @@ const input =
   "w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent";
 const ghostBtn =
   "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50";
-
 
 // ── Barra de edição ──────────────────────────────────────────────────────────
 
@@ -65,23 +70,41 @@ export function StudioBar({
   onCancel: () => void;
 }) {
   const tr = useTr();
-  const tab = (active: boolean) =>
-    `${ghostBtn} ${active ? "!border-accent !bg-accent-soft" : ""}`;
+  const tab = (active: boolean) => `${ghostBtn} ${active ? "!border-accent !bg-accent-soft" : ""}`;
   return (
     <div className="fixed inset-x-3 bottom-20 z-40 mx-auto flex max-w-fit flex-wrap items-center justify-center gap-2 rounded-3xl border border-border bg-card/95 p-2 shadow-card backdrop-blur lg:bottom-5">
       <button type="button" onClick={onAdd} className={ghostBtn}>
         <Plus className="h-3.5 w-3.5" />
         {tr(["Adicionar bloco", "Add block", "Añadir bloque", "Ajouter un bloc"])}
       </button>
-      <button type="button" onClick={() => onPanel(panel === "theme" ? null : "theme")} className={tab(panel === "theme")}>
+      <button
+        type="button"
+        onClick={() => onPanel(panel === "theme" ? null : "theme")}
+        className={tab(panel === "theme")}
+      >
         <Palette className="h-3.5 w-3.5" />
         {tr(["Tema", "Theme", "Tema", "Thème"])}
       </button>
-      <button type="button" onClick={() => onPanel(panel === "header" ? null : "header")} className={tab(panel === "header")}>
+      <button
+        type="button"
+        onClick={() => onPanel(panel === "header" ? null : "header")}
+        className={tab(panel === "header")}
+      >
         <LayoutTemplate className="h-3.5 w-3.5" />
         {tr(["Capa e foto", "Cover and photo", "Portada y foto", "Couverture et photo"])}
       </button>
-      <button type="button" onClick={onReset} className={ghostBtn} disabled={saving} title={tr(["Voltar ao perfil padrão", "Back to default profile", "Volver al perfil estándar", "Revenir au profil par défaut"])}>
+      <button
+        type="button"
+        onClick={onReset}
+        className={ghostBtn}
+        disabled={saving}
+        title={tr([
+          "Voltar ao perfil padrão",
+          "Back to default profile",
+          "Volver al perfil estándar",
+          "Revenir au profil par défaut",
+        ])}
+      >
         <RotateCcw className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">{tr(["Padrão", "Default", "Estándar", "Défaut"])}</span>
       </button>
@@ -97,7 +120,12 @@ export function StudioBar({
       >
         <Check className="h-3.5 w-3.5" />
         {saving
-          ? tr(["Analisando e salvando…", "Checking and saving…", "Analizando y guardando…", "Analyse et enregistrement…"])
+          ? tr([
+              "Analisando e salvando…",
+              "Checking and saving…",
+              "Analizando y guardando…",
+              "Analyse et enregistrement…",
+            ])
           : tr(["Salvar perfil", "Save profile", "Guardar perfil", "Enregistrer le profil"])}
       </button>
     </div>
@@ -120,7 +148,12 @@ export function StudioDrawer({
     <aside className="fixed bottom-0 right-0 top-16 z-50 flex w-full max-w-md flex-col border-l border-border bg-background shadow-card sm:top-20">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-3">
         <h2 className="font-display text-base font-bold text-foreground">{title}</h2>
-        <button type="button" onClick={onClose} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full hover:bg-secondary" aria-label={tr(["Fechar", "Close", "Cerrar", "Fermer"])}>
+        <button
+          type="button"
+          onClick={onClose}
+          className="grid h-8 w-8 cursor-pointer place-items-center rounded-full hover:bg-secondary"
+          aria-label={tr(["Fechar", "Close", "Cerrar", "Fermer"])}
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -147,9 +180,16 @@ export function AddBlockDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{tr(["Adicionar um bloco", "Add a block", "Añadir un bloque", "Ajouter un bloc"])}</DialogTitle>
+          <DialogTitle>
+            {tr(["Adicionar um bloco", "Add a block", "Añadir un bloque", "Ajouter un bloc"])}
+          </DialogTitle>
           <DialogDescription>
-            {tr(["Escolha o que quer mostrar. Depois é só arrastar e mudar o tamanho.", "Pick what to show. Then drag it and resize it.", "Elige qué mostrar. Después arrástralo y cambia su tamaño.", "Choisissez ce que vous voulez afficher, puis déplacez-le et redimensionnez-le."])}
+            {tr([
+              "Escolha o que quer mostrar. Depois é só arrastar e mudar o tamanho.",
+              "Pick what to show. Then drag it and resize it.",
+              "Elige qué mostrar. Después arrástralo y cambia su tamaño.",
+              "Choisissez ce que vous voulez afficher, puis déplacez-le et redimensionnez-le.",
+            ])}
           </DialogDescription>
         </DialogHeader>
         <div className="grid max-h-[60vh] gap-2 overflow-y-auto sm:grid-cols-2">
@@ -208,7 +248,11 @@ function ItemsEditor({
     <div className="space-y-2">
       {items.map((it, i) => (
         <div key={i} className="flex items-start gap-2 rounded-xl border border-border bg-card p-2">
-          <IconPickerButton value={it.emoji} onPick={(emoji) => set(i, { emoji })} label={tr(["Escolher ícone", "Choose icon", "Elegir icono", "Choisir une icône"])} />
+          <IconPickerButton
+            value={it.emoji}
+            onPick={(emoji) => set(i, { emoji })}
+            label={tr(["Escolher ícone", "Choose icon", "Elegir icono", "Choisir une icône"])}
+          />
           <div className="min-w-0 flex-1 space-y-1.5">
             <input
               value={it.label}
@@ -226,13 +270,22 @@ function ItemsEditor({
               />
             )}
           </div>
-          <button type="button" onClick={() => onChange(items.filter((_, k) => k !== i))} className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full text-destructive hover:bg-destructive/10" aria-label={tr(["Remover", "Remove", "Quitar", "Supprimer"])}>
+          <button
+            type="button"
+            onClick={() => onChange(items.filter((_, k) => k !== i))}
+            className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full text-destructive hover:bg-destructive/10"
+            aria-label={tr(["Remover", "Remove", "Quitar", "Supprimer"])}
+          >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
       ))}
       {items.length < max && (
-        <button type="button" onClick={() => onChange([...items, { label: "", url: "", emoji: "" }])} className={ghostBtn}>
+        <button
+          type="button"
+          onClick={() => onChange([...items, { label: "", url: "", emoji: "" }])}
+          className={ghostBtn}
+        >
           <Plus className="h-3.5 w-3.5" />
           {tr(["Adicionar item", "Add item", "Añadir elemento", "Ajouter un élément"])}
         </button>
@@ -258,7 +311,8 @@ export function BlockEditor({
   const info = BLOCK_INFO[block.type];
   const s = block.style;
   const setStyle = (patch: Partial<Block["style"]>) => onChange({ style: { ...s, ...patch } });
-  const setOpts = (patch: Partial<Block["opts"]>) => onChange({ opts: { ...block.opts, ...patch } });
+  const setOpts = (patch: Partial<Block["opts"]>) =>
+    onChange({ opts: { ...block.opts, ...patch } });
 
   return (
     <div className="space-y-6">
@@ -266,28 +320,64 @@ export function BlockEditor({
 
       {!NO_TITLE.includes(block.type) && (
         <>
-          <Field label={tr(["Título do bloco", "Block title", "Título del bloque", "Titre du bloc"])}>
-            <input value={block.title} onChange={(e) => onChange({ title: e.target.value.slice(0, 80) })} placeholder={tr(info.name)} className={input} />
+          <Field
+            label={tr(["Título do bloco", "Block title", "Título del bloque", "Titre du bloc"])}
+          >
+            <input
+              value={block.title}
+              onChange={(e) => onChange({ title: e.target.value.slice(0, 80) })}
+              placeholder={tr(info.name)}
+              className={input}
+            />
           </Field>
           <Switch
             checked={block.opts.hideTitle}
             onChange={(hideTitle) => setOpts({ hideTitle })}
-            label={tr(["Esconder o título", "Hide the title", "Ocultar el título", "Masquer le titre"])}
+            label={tr([
+              "Esconder o título",
+              "Hide the title",
+              "Ocultar el título",
+              "Masquer le titre",
+            ])}
             hint=""
           />
         </>
       )}
 
       {block.type === "quote" && (
-        <Field label={tr(["Quem disse (opcional)", "Who said it (optional)", "Quién lo dijo (opcional)", "Qui l'a dit (facultatif)"])}>
-          <input value={block.title} onChange={(e) => onChange({ title: e.target.value.slice(0, 80) })} className={input} />
+        <Field
+          label={tr([
+            "Quem disse (opcional)",
+            "Who said it (optional)",
+            "Quién lo dijo (opcional)",
+            "Qui l'a dit (facultatif)",
+          ])}
+        >
+          <input
+            value={block.title}
+            onChange={(e) => onChange({ title: e.target.value.slice(0, 80) })}
+            className={input}
+          />
         </Field>
       )}
 
       {TEXT_TYPES.includes(block.type) && (
         <Field
-          label={block.type === "image" ? tr(["Legenda", "Caption", "Leyenda", "Légende"]) : tr(["Texto", "Text", "Texto", "Texte"])}
-          hint={block.type === "about" ? tr(["Se ficar vazio, mostra a sua bio.", "If empty, your bio is shown.", "Si queda vacío, se muestra tu bio.", "Si vide, votre bio est affichée."]) : undefined}
+          label={
+            block.type === "image"
+              ? tr(["Legenda", "Caption", "Leyenda", "Légende"])
+              : tr(["Texto", "Text", "Texto", "Texte"])
+          }
+          hint={
+            block.type === "about"
+              ? tr([
+                  "Se ficar vazio, mostra a sua bio.",
+                  "If empty, your bio is shown.",
+                  "Si queda vacío, se muestra tu bio.",
+                  "Si vide, votre bio est affichée.",
+                ])
+              : undefined
+          }
         >
           <textarea
             rows={block.type === "image" ? 2 : 6}
@@ -313,7 +403,11 @@ export function BlockEditor({
             )}
           </MediaUpload>
           {block.image && (
-            <button type="button" onClick={() => onChange({ image: null })} className="ml-3 cursor-pointer text-xs font-medium text-destructive hover:underline">
+            <button
+              type="button"
+              onClick={() => onChange({ image: null })}
+              className="ml-3 cursor-pointer text-xs font-medium text-destructive hover:underline"
+            >
               {tr(["Remover foto", "Remove photo", "Quitar foto", "Retirer la photo"])}
             </button>
           )}
@@ -327,20 +421,46 @@ export function BlockEditor({
       )}
 
       {block.type === "links" && (
-        <Group title={tr(["Seus links", "Your links", "Tus enlaces", "Vos liens"])} hint={tr(["Só endereços https públicos. Links suspeitos são recusados ao salvar.", "Public https addresses only. Suspicious links are refused when saving.", "Solo direcciones https públicas. Los enlaces sospechosos se rechazan al guardar.", "Adresses https publiques uniquement. Les liens suspects sont refusés."])}>
-          <ItemsEditor items={block.items} onChange={(items) => onChange({ items })} withUrl max={12} />
+        <Group
+          title={tr(["Seus links", "Your links", "Tus enlaces", "Vos liens"])}
+          hint={tr([
+            "Só endereços https públicos. Links suspeitos são recusados ao salvar.",
+            "Public https addresses only. Suspicious links are refused when saving.",
+            "Solo direcciones https públicas. Los enlaces sospechosos se rechazan al guardar.",
+            "Adresses https publiques uniquement. Les liens suspects sont refusés.",
+          ])}
+        >
+          <ItemsEditor
+            items={block.items}
+            onChange={(items) => onChange({ items })}
+            withUrl
+            max={12}
+          />
         </Group>
       )}
 
       {block.type === "favorites" && (
         <Group title={tr(["O que você ama", "What you love", "Lo que amas", "Ce que vous aimez"])}>
-          <ItemsEditor items={block.items} onChange={(items) => onChange({ items })} withUrl={false} max={16} />
+          <ItemsEditor
+            items={block.items}
+            onChange={(items) => onChange({ items })}
+            withUrl={false}
+            max={16}
+          />
         </Group>
       )}
 
       {COUNT_TYPES.includes(block.type) && (
         <Group title={tr(["Quantidade", "Amount", "Cantidad", "Cantidad"])}>
-          <Slider label="count" value={block.opts.count} min={1} max={12} step={1} onChange={(count) => setOpts({ count })} display={String(block.opts.count)} />
+          <Slider
+            label="count"
+            value={block.opts.count}
+            min={1}
+            max={12}
+            step={1}
+            onChange={(count) => setOpts({ count })}
+            display={String(block.opts.count)}
+          />
         </Group>
       )}
 
@@ -363,14 +483,54 @@ export function BlockEditor({
           {tr(["Aparência do bloco", "Block look", "Aspecto del bloque", "Apparence du bloc"])}
         </h3>
 
-        <Group title={tr(["Cor de fundo", "Background", "Fondo", "Fond"])} hint={tr(["Sem cor própria, usa a cor dos cartões do tema.", "Without a color, uses the theme card color.", "Sin color, usa el color de las tarjetas del tema.", "Sans couleur, utilise celle des cartes du thème."])}>
-          <FreeColor label="bg" value={s.bg} fallback="#ffffff" onChange={(bg) => setStyle({ bg })} resetLabel={tr(["Usar a do tema", "Use theme color", "Usar la del tema", "Utiliser celle du thème"])} />
+        <Group
+          title={tr(["Cor de fundo", "Background", "Fondo", "Fond"])}
+          hint={tr([
+            "Sem cor própria, usa a cor dos cartões do tema.",
+            "Without a color, uses the theme card color.",
+            "Sin color, usa el color de las tarjetas del tema.",
+            "Sans couleur, utilise celle des cartes du thème.",
+          ])}
+        >
+          <FreeColor
+            label="bg"
+            value={s.bg}
+            fallback="#ffffff"
+            onChange={(bg) => setStyle({ bg })}
+            resetLabel={tr([
+              "Usar a do tema",
+              "Use theme color",
+              "Usar la del tema",
+              "Utiliser celle du thème",
+            ])}
+          />
         </Group>
-        <Group title={tr(["Transparência do fundo", "Background opacity", "Opacidad del fondo", "Opacité du fond"])}>
-          <Slider label="opacity" value={s.bgOpacity} min={0} max={100} step={5} onChange={(bgOpacity) => setStyle({ bgOpacity })} display={`${s.bgOpacity}%`} />
+        <Group
+          title={tr([
+            "Transparência do fundo",
+            "Background opacity",
+            "Opacidad del fondo",
+            "Opacité du fond",
+          ])}
+        >
+          <Slider
+            label="opacity"
+            value={s.bgOpacity}
+            min={0}
+            max={100}
+            step={5}
+            onChange={(bgOpacity) => setStyle({ bgOpacity })}
+            display={`${s.bgOpacity}%`}
+          />
         </Group>
         <Group title={tr(["Cor do texto", "Text color", "Color del texto", "Couleur du texte"])}>
-          <FreeColor label="text" value={s.textColor} fallback="#222222" onChange={(textColor) => setStyle({ textColor })} resetLabel={tr(["Automática", "Automatic", "Automático", "Automatique"])} />
+          <FreeColor
+            label="text"
+            value={s.textColor}
+            fallback="#222222"
+            onChange={(textColor) => setStyle({ textColor })}
+            resetLabel={tr(["Automática", "Automatic", "Automático", "Automatique"])}
+          />
         </Group>
         <Group title={tr(["Borda", "Border", "Borde", "Bordure"])}>
           <Segmented
@@ -379,21 +539,48 @@ export function BlockEditor({
               { id: "none" as const, label: tr(["Sem", "None", "Sin", "Aucune"]) },
               { id: "thin" as const, label: tr(["Fina", "Thin", "Fina", "Fine"]) },
               { id: "accent" as const, label: tr(["Destaque", "Accent", "Acento", "Accent"]) },
-              { id: "dashed" as const, label: tr(["Tracejada", "Dashed", "Discontinua", "Pointillée"]) },
+              {
+                id: "dashed" as const,
+                label: tr(["Tracejada", "Dashed", "Discontinua", "Pointillée"]),
+              },
             ]}
             value={s.border}
             onChange={(border) => setStyle({ border })}
           />
         </Group>
         <Group title={tr(["Cantos", "Corners", "Esquinas", "Coins"])}>
-          <Slider label="radius" value={s.radius ?? 24} min={0} max={40} step={2} onChange={(radius) => setStyle({ radius })} display={`${s.radius ?? 24}px`} />
+          <Slider
+            label="radius"
+            value={s.radius ?? 24}
+            min={0}
+            max={40}
+            step={2}
+            onChange={(radius) => setStyle({ radius })}
+            display={`${s.radius ?? 24}px`}
+          />
           {s.radius !== null && (
-            <button type="button" onClick={() => setStyle({ radius: null })} className="mt-1 cursor-pointer text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
-              {tr(["Usar os do tema", "Use theme corners", "Usar los del tema", "Utiliser ceux du thème"])}
+            <button
+              type="button"
+              onClick={() => setStyle({ radius: null })}
+              className="mt-1 cursor-pointer text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
+            >
+              {tr([
+                "Usar os do tema",
+                "Use theme corners",
+                "Usar los del tema",
+                "Utiliser ceux du thème",
+              ])}
             </button>
           )}
         </Group>
-        <Group title={tr(["Alinhamento do texto", "Text alignment", "Alineación del texto", "Alignement du texte"])}>
+        <Group
+          title={tr([
+            "Alinhamento do texto",
+            "Text alignment",
+            "Alineación del texto",
+            "Alignement du texte",
+          ])}
+        >
           <Segmented
             columns="grid-cols-3"
             options={[
@@ -417,10 +604,19 @@ export function BlockEditor({
             onChange={(pad) => setStyle({ pad })}
           />
         </Group>
-        <Switch checked={s.shadow} onChange={(shadow) => setStyle({ shadow })} label={tr(["Sombra", "Shadow", "Sombra", "Ombre"])} hint="" />
+        <Switch
+          checked={s.shadow}
+          onChange={(shadow) => setStyle({ shadow })}
+          label={tr(["Sombra", "Shadow", "Sombra", "Ombre"])}
+          hint=""
+        />
       </div>
 
-      <button type="button" onClick={onDelete} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-xs font-semibold text-destructive transition hover:bg-destructive/10">
+      <button
+        type="button"
+        onClick={onDelete}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-xs font-semibold text-destructive transition hover:bg-destructive/10"
+      >
         <Trash2 className="h-3.5 w-3.5" />
         {tr(["Remover este bloco", "Remove this block", "Quitar este bloque", "Supprimer ce bloc"])}
       </button>
@@ -452,19 +648,20 @@ export function ThemeEditor({
     { id: "colors", label: tr(["Cores", "Colors", "Colores", "Couleurs"]) },
     { id: "text", label: tr(["Texto", "Text", "Texto", "Texte"]) },
     { id: "shapes", label: tr(["Formatos", "Shapes", "Formas", "Formes"]) },
-    { id: "cards", label: tr(["Cartões e fotos", "Cards and photos", "Tarjetas y fotos", "Cartes et photos"]) },
+    {
+      id: "cards",
+      label: tr(["Cartões e fotos", "Cards and photos", "Tarjetas y fotos", "Cartes et photos"]),
+    },
   ];
   return (
     <div className="space-y-5">
       <p className="text-xs text-muted-foreground">
-        {tr(
-          [
-            "O tema vale só para a sua página: quem visitar vê as suas cores e fontes, não as próprias. Acessibilidade de cada visitante é sempre respeitada.",
-            "The theme applies only to your page: visitors see your colors and fonts, not their own. Each visitor's accessibility settings are always respected.",
-            "El tema solo vale para tu página: quien visite verá tus colores y fuentes, no los suyos. La accesibilidad de cada visitante siempre se respeta.",
-            "Le thème ne s'applique qu'à votre page : les visiteurs voient vos couleurs et polices, pas les leurs. L'accessibilité de chaque visiteur est toujours respectée.",
-          ],
-        )}
+        {tr([
+          "O tema vale só para a sua página: quem visitar vê as suas cores e fontes, não as próprias. Acessibilidade de cada visitante é sempre respeitada.",
+          "The theme applies only to your page: visitors see your colors and fonts, not their own. Each visitor's accessibility settings are always respected.",
+          "El tema solo vale para tu página: quien visite verá tus colores y fuentes, no los suyos. La accesibilidad de cada visitante siempre se respeta.",
+          "Le thème ne s'applique qu'à votre page : les visiteurs voient vos couleurs et polices, pas les leurs. L'accessibilité de chaque visiteur est toujours respectée.",
+        ])}
       </p>
       <div className="flex flex-wrap gap-1.5">
         {tabs.map((x) => (
@@ -488,11 +685,21 @@ export function ThemeEditor({
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={onImportSiteTheme} className={ghostBtn}>
           <Palette className="h-3.5 w-3.5" />
-          {tr(["Usar o meu tema do site", "Use my site theme", "Usar mi tema del sitio", "Utiliser mon thème du site"])}
+          {tr([
+            "Usar o meu tema do site",
+            "Use my site theme",
+            "Usar mi tema del sitio",
+            "Utiliser mon thème du site",
+          ])}
         </button>
         <button type="button" onClick={() => onChange({})} className={ghostBtn}>
           <RotateCcw className="h-3.5 w-3.5" />
-          {tr(["Voltar ao tema padrão", "Back to default theme", "Volver al tema estándar", "Revenir au thème par défaut"])}
+          {tr([
+            "Voltar ao tema padrão",
+            "Back to default theme",
+            "Volver al tema estándar",
+            "Revenir au thème par défaut",
+          ])}
         </button>
       </div>
     </div>
@@ -517,13 +724,28 @@ export function HeaderEditor({
   const tr = useTr();
   return (
     <div className="space-y-6">
-      <Group title={tr(["Fotos", "Photos", "Fotos", "Photos"])} hint={tr(["Toda foto é analisada pela IA antes de ser salva.", "Every photo is checked by AI before it is saved.", "Toda foto es analizada por la IA antes de guardarse.", "Chaque photo est analysée par l'IA avant d'être enregistrée."])}>
+      <Group
+        title={tr(["Fotos", "Photos", "Fotos", "Photos"])}
+        hint={tr([
+          "Toda foto é analisada pela IA antes de ser salva.",
+          "Every photo is checked by AI before it is saved.",
+          "Toda foto es analizada por la IA antes de guardarse.",
+          "Chaque photo est analysée par l'IA avant d'être enregistrée.",
+        ])}
+      >
         <div className="flex flex-wrap gap-2">
           <MediaUpload target="avatar" onDone={onMediaDone}>
             {(open, busy) => (
               <button type="button" onClick={open} disabled={busy} className={ghostBtn}>
                 <Camera className="h-3.5 w-3.5" />
-                {busy ? tr(["Analisando…", "Checking…", "Analizando…", "Analyse…"]) : tr(["Trocar foto de perfil", "Change profile photo", "Cambiar foto de perfil", "Changer la photo de profil"])}
+                {busy
+                  ? tr(["Analisando…", "Checking…", "Analizando…", "Analyse…"])
+                  : tr([
+                      "Trocar foto de perfil",
+                      "Change profile photo",
+                      "Cambiar foto de perfil",
+                      "Changer la photo de profil",
+                    ])}
               </button>
             )}
           </MediaUpload>
@@ -531,22 +753,50 @@ export function HeaderEditor({
             {(open, busy) => (
               <button type="button" onClick={open} disabled={busy} className={ghostBtn}>
                 <ImagePlus className="h-3.5 w-3.5" />
-                {busy ? tr(["Analisando…", "Checking…", "Analizando…", "Analyse…"]) : tr(["Trocar capa", "Change cover", "Cambiar portada", "Changer la couverture"])}
+                {busy
+                  ? tr(["Analisando…", "Checking…", "Analizando…", "Analyse…"])
+                  : tr(["Trocar capa", "Change cover", "Cambiar portada", "Changer la couverture"])}
               </button>
             )}
           </MediaUpload>
           {hasBanner && (
-            <button type="button" onClick={onRemoveBanner} className={`${ghostBtn} !text-destructive`}>
+            <button
+              type="button"
+              onClick={onRemoveBanner}
+              className={`${ghostBtn} !text-destructive`}
+            >
               <Trash2 className="h-3.5 w-3.5" />
               {tr(["Remover capa", "Remove cover", "Quitar portada", "Retirer la couverture"])}
             </button>
           )}
         </div>
       </Group>
-      <Group title={tr(["Altura da capa", "Cover height", "Altura de la portada", "Hauteur de la couverture"])}>
-        <Slider label="banner" value={header.bannerHeight} min={120} max={360} step={8} onChange={(bannerHeight) => onChange({ bannerHeight })} display={`${header.bannerHeight}px`} />
+      <Group
+        title={tr([
+          "Altura da capa",
+          "Cover height",
+          "Altura de la portada",
+          "Hauteur de la couverture",
+        ])}
+      >
+        <Slider
+          label="banner"
+          value={header.bannerHeight}
+          min={120}
+          max={360}
+          step={8}
+          onChange={(bannerHeight) => onChange({ bannerHeight })}
+          display={`${header.bannerHeight}px`}
+        />
       </Group>
-      <Group title={tr(["Tamanho da foto de perfil", "Profile photo size", "Tamaño de la foto de perfil", "Taille de la photo de profil"])}>
+      <Group
+        title={tr([
+          "Tamanho da foto de perfil",
+          "Profile photo size",
+          "Tamaño de la foto de perfil",
+          "Taille de la photo de profil",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
@@ -558,12 +808,25 @@ export function HeaderEditor({
           onChange={(avatarSize) => onChange({ avatarSize })}
         />
       </Group>
-      <Group title={tr(["Posição da foto e do nome", "Photo and name position", "Posición de la foto y el nombre", "Position de la photo et du nom"])}>
+      <Group
+        title={tr([
+          "Posição da foto e do nome",
+          "Photo and name position",
+          "Posición de la foto y el nombre",
+          "Position de la photo et du nom",
+        ])}
+      >
         <Segmented
           columns="grid-cols-2"
           options={[
-            { id: "left" as const, label: tr(["À esquerda", "Left", "A la izquierda", "À gauche"]) },
-            { id: "center" as const, label: tr(["Centralizada", "Centered", "Centrada", "Centrée"]) },
+            {
+              id: "left" as const,
+              label: tr(["À esquerda", "Left", "A la izquierda", "À gauche"]),
+            },
+            {
+              id: "center" as const,
+              label: tr(["Centralizada", "Centered", "Centrada", "Centrée"]),
+            },
           ]}
           value={header.avatarPos}
           onChange={(avatarPos) => onChange({ avatarPos, align: avatarPos })}
@@ -572,7 +835,12 @@ export function HeaderEditor({
       <Switch
         checked={header.dim}
         onChange={(dim) => onChange({ dim })}
-        label={tr(["Escurecer a base da capa", "Darken the cover's bottom", "Oscurecer la base de la portada", "Assombrir le bas de la couverture"])}
+        label={tr([
+          "Escurecer a base da capa",
+          "Darken the cover's bottom",
+          "Oscurecer la base de la portada",
+          "Assombrir le bas de la couverture",
+        ])}
         hint=""
       />
     </div>

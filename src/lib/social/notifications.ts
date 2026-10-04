@@ -20,7 +20,9 @@ export const NOTIFICATIONS_KEY = ["social", "notifications"] as const;
 async function fetchNotifications(): Promise<NotificationRow[]> {
   const res = await supabase
     .from("notifications")
-    .select("id, type, actor_id, entity_type, entity_id, data, read_at, created_at, actor:profiles!actor_id(name, username, avatar_url)")
+    .select(
+      "id, type, actor_id, entity_type, entity_id, data, read_at, created_at, actor:profiles!actor_id(name, username, avatar_url)",
+    )
     .order("created_at", { ascending: false })
     .limit(200);
   if (res.error) throw new Error(res.error.message);
@@ -28,7 +30,12 @@ async function fetchNotifications(): Promise<NotificationRow[]> {
 }
 
 export function useNotifications(enabled = true) {
-  return useQuery({ queryKey: NOTIFICATIONS_KEY, queryFn: fetchNotifications, enabled, staleTime: 15_000 });
+  return useQuery({
+    queryKey: NOTIFICATIONS_KEY,
+    queryFn: fetchNotifications,
+    enabled,
+    staleTime: 15_000,
+  });
 }
 
 /** Quantas notificações ainda não foram vistas (para o ponto na barra de navegação). */
@@ -95,7 +102,11 @@ export function useMarkAllRead() {
 /** Apaga as notificações já resolvidas (lidas). */
 export function useClearResolved() {
   return useNotificationMutation(async (userId: string) => {
-    const { error } = await supabase.from("notifications").delete().eq("user_id", userId).not("read_at", "is", null);
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId)
+      .not("read_at", "is", null);
     if (error) throw new Error(error.message);
   });
 }

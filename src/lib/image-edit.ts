@@ -457,9 +457,18 @@ export function renderEdits(
           g += -tint * 0.09;
         }
         if (hueDeg !== 0) {
-          const nr = (0.299 + 0.701 * cosH + 0.168 * sinH) * r + (0.587 - 0.587 * cosH + 0.33 * sinH) * g + (0.114 - 0.114 * cosH - 0.497 * sinH) * b;
-          const ng = (0.299 - 0.299 * cosH - 0.328 * sinH) * r + (0.587 + 0.413 * cosH + 0.035 * sinH) * g + (0.114 - 0.114 * cosH + 0.292 * sinH) * b;
-          const nb = (0.299 - 0.3 * cosH + 1.25 * sinH) * r + (0.587 - 0.588 * cosH - 1.05 * sinH) * g + (0.114 + 0.886 * cosH - 0.203 * sinH) * b;
+          const nr =
+            (0.299 + 0.701 * cosH + 0.168 * sinH) * r +
+            (0.587 - 0.587 * cosH + 0.33 * sinH) * g +
+            (0.114 - 0.114 * cosH - 0.497 * sinH) * b;
+          const ng =
+            (0.299 - 0.299 * cosH - 0.328 * sinH) * r +
+            (0.587 + 0.413 * cosH + 0.035 * sinH) * g +
+            (0.114 - 0.114 * cosH + 0.292 * sinH) * b;
+          const nb =
+            (0.299 - 0.3 * cosH + 1.25 * sinH) * r +
+            (0.587 - 0.588 * cosH - 1.05 * sinH) * g +
+            (0.114 + 0.886 * cosH - 0.203 * sinH) * b;
           r = nr;
           g = ng;
           b = nb;
@@ -1000,7 +1009,13 @@ export function overlayBox(o: Overlay, outW: number, outH: number): OverlayBox |
     return { cx: o.x * outW, cy: o.y * outH, w: s * 1.1, h: s * 1.1, rotation: o.rotation };
   }
   if (o.type === "censor") {
-    return { cx: (o.x + o.w / 2) * outW, cy: (o.y + o.h / 2) * outH, w: o.w * outW, h: o.h * outH, rotation: 0 };
+    return {
+      cx: (o.x + o.w / 2) * outW,
+      cy: (o.y + o.h / 2) * outH,
+      w: o.w * outW,
+      h: o.h * outH,
+      rotation: 0,
+    };
   }
   if (o.type === "text") {
     const ctx = measurer();
@@ -1014,7 +1029,13 @@ export function overlayBox(o: Overlay, outW: number, outH: number): OverlayBox |
 }
 
 /** Camada de cima sob o ponto (nx, ny em 0–1), ou null. Traços não são selecionáveis por toque. */
-export function hitOverlay(overlays: Overlay[], nx: number, ny: number, outW: number, outH: number) {
+export function hitOverlay(
+  overlays: Overlay[],
+  nx: number,
+  ny: number,
+  outW: number,
+  outH: number,
+) {
   const px = nx * outW;
   const py = ny * outH;
   for (let i = overlays.length - 1; i >= 0; i--) {

@@ -68,15 +68,7 @@ const THUMB_W = 88;
 const MAX_HISTORY = 60;
 
 type TabId =
-  | "crop"
-  | "light"
-  | "color"
-  | "looks"
-  | "detail"
-  | "text"
-  | "stickers"
-  | "draw"
-  | "frame";
+  "crop" | "light" | "color" | "looks" | "detail" | "text" | "stickers" | "draw" | "frame";
 
 const TABS: {
   id: TabId;
@@ -88,7 +80,17 @@ const TABS: {
     id: "crop",
     label: "ie.tab.crop",
     icon: Crop,
-    keys: ["rotation", "straighten", "flipH", "flipV", "zoom", "offX", "offY", "aspect", "customRatio"],
+    keys: [
+      "rotation",
+      "straighten",
+      "flipH",
+      "flipV",
+      "zoom",
+      "offX",
+      "offY",
+      "aspect",
+      "customRatio",
+    ],
   },
   {
     id: "light",
@@ -110,7 +112,12 @@ const TABS: {
     keys: ["sharpness", "clarity", "blur", "tilt", "vignette", "grain", "sepia"],
   },
   { id: "text", label: ["Texto", "Text", "Texto", "Texte"], icon: Type, keys: [] },
-  { id: "stickers", label: ["Adesivos", "Stickers", "Adhesivos", "Autocollants"], icon: Smile, keys: [] },
+  {
+    id: "stickers",
+    label: ["Adesivos", "Stickers", "Adhesivos", "Autocollants"],
+    icon: Smile,
+    keys: [],
+  },
   { id: "draw", label: ["Desenho", "Draw", "Dibujo", "Dessin"], icon: Pencil, keys: [] },
   {
     id: "frame",
@@ -381,8 +388,10 @@ export function ImageEditor({
 
   const dirtyAny = useMemo(
     () =>
-      isDirty(edits, (Object.keys(DEFAULT_EDITS) as (keyof ImageEdits)[]).filter((k) => k !== "overlays")) ||
-      edits.overlays.length > 0,
+      isDirty(
+        edits,
+        (Object.keys(DEFAULT_EDITS) as (keyof ImageEdits)[]).filter((k) => k !== "overlays"),
+      ) || edits.overlays.length > 0,
     [edits],
   );
 
@@ -474,7 +483,13 @@ export function ImageEditor({
               : { ...o, points: [o.points[0], [nx, ny] as [number, number]] };
           }
           if (o.type === "censor") {
-            return { ...o, x: Math.min(d.ox, nx), y: Math.min(d.oy, ny), w: Math.abs(nx - d.ox), h: Math.abs(ny - d.oy) };
+            return {
+              ...o,
+              x: Math.min(d.ox, nx),
+              y: Math.min(d.oy, ny),
+              w: Math.abs(nx - d.ox),
+              h: Math.abs(ny - d.oy),
+            };
           }
           return o;
         }),
@@ -558,7 +573,9 @@ export function ImageEditor({
     />
   );
 
-  const visibleLooks = LOOKS.filter((l) => lookCategory === "all" || l.category === lookCategory || l.id === "none");
+  const visibleLooks = LOOKS.filter(
+    (l) => lookCategory === "all" || l.category === lookCategory || l.id === "none",
+  );
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
@@ -760,7 +777,12 @@ export function ImageEditor({
                   </div>
                   {edits.aspect === "free" && (
                     <Slider
-                      label={tr(["Proporção (largura ÷ altura)", "Ratio (width ÷ height)", "Proporción (ancho ÷ alto)", "Rapport (largeur ÷ hauteur)"])}
+                      label={tr([
+                        "Proporção (largura ÷ altura)",
+                        "Ratio (width ÷ height)",
+                        "Proporción (ancho ÷ alto)",
+                        "Rapport (largeur ÷ hauteur)",
+                      ])}
                       value={Math.round(edits.customRatio * 100) / 100}
                       min={0.3}
                       max={3.5}
@@ -851,10 +873,20 @@ export function ImageEditor({
                   {adjSlider("hue", ["Matiz", "Hue", "Matiz", "Teinte"], -180, 180)}
                   {adjSlider("saturation", "ie.saturation")}
                   {adjSlider("vibrance", "ie.vibrance")}
-                  {adjSlider("colorize", ["Colorização", "Colorize", "Colorización", "Colorisation"], 0, 100)}
+                  {adjSlider(
+                    "colorize",
+                    ["Colorização", "Colorize", "Colorización", "Colorisation"],
+                    0,
+                    100,
+                  )}
                   {edits.colorize > 0 && (
                     <ColorRow
-                      label={tr(["Cor da colorização", "Colorize color", "Color de la colorización", "Couleur de colorisation"])}
+                      label={tr([
+                        "Cor da colorização",
+                        "Colorize color",
+                        "Color de la colorización",
+                        "Couleur de colorisation",
+                      ])}
                       value={edits.colorizeColor}
                       onChange={(c) => c && change({ colorizeColor: c })}
                     />
@@ -931,7 +963,17 @@ export function ImageEditor({
                   {adjSlider("sharpness", "ie.sharpness", 0, 100)}
                   {adjSlider("clarity", ["Clareza", "Clarity", "Claridad", "Clarté"])}
                   {adjSlider("blur", "ie.blur", 0, 100)}
-                  {adjSlider("tilt", ["Desfoque de profundidade", "Depth blur", "Desenfoque de profundidad", "Flou de profondeur"], 0, 100)}
+                  {adjSlider(
+                    "tilt",
+                    [
+                      "Desfoque de profundidade",
+                      "Depth blur",
+                      "Desenfoque de profundidad",
+                      "Flou de profondeur",
+                    ],
+                    0,
+                    100,
+                  )}
                   {adjSlider("vignette", "ie.vignette")}
                   {adjSlider("grain", "ie.grain", 0, 100)}
                   {adjSlider("sepia", ["Sépia", "Sepia", "Sepia", "Sépia"], 0, 100)}
@@ -990,4 +1032,3 @@ export function ImageEditor({
     </Dialog>
   );
 }
-

@@ -28,7 +28,8 @@ function useCountdown(until: string | null | undefined) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
     if (!until) return;
-    const tick = () => setLeft(Math.max(0, Math.floor((new Date(until).getTime() - Date.now()) / 1000)));
+    const tick = () =>
+      setLeft(Math.max(0, Math.floor((new Date(until).getTime() - Date.now()) / 1000)));
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
@@ -76,7 +77,11 @@ function FitToHeight({ children }: { children: ReactNode }) {
         ref={inner}
         style={
           scale < 1
-            ? { transform: `scale(${scale})`, transformOrigin: "top left", width: `${100 / scale}%` }
+            ? {
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+                width: `${100 / scale}%`,
+              }
             : undefined
         }
       >
@@ -174,7 +179,8 @@ function PagamentoPage() {
           <Notice title="Consulta não encontrada">
             Não encontramos essa consulta na sua conta.
           </Notice>
-        ) : a.status !== "aguardando_pagamento" && !["agendada", "confirmada"].includes(a.status) ? (
+        ) : a.status !== "aguardando_pagamento" &&
+          !["agendada", "confirmada"].includes(a.status) ? (
           <Notice title="Esta consulta não está aguardando pagamento">
             O horário pode ter sido cancelado ou já ter passado.
           </Notice>
@@ -269,7 +275,8 @@ function PagamentoPage() {
               </section>
 
               <p className="px-1 text-[11px] leading-snug text-muted-foreground">
-                Pagamento seguro pelo Stripe: não guardamos os dados do seu cartão.<br />
+                Pagamento seguro pelo Stripe: não guardamos os dados do seu cartão.
+                <br />
                 Cancelamento com pelo menos 24 horas de antecedência dá direito ao estorno. Veja os{" "}
                 <Link to="/termos" className="underline">
                   Termos de Uso

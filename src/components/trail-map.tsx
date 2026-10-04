@@ -185,7 +185,11 @@ function StopNode({
             ) : locked ? (
               <EmojiIcon emoji="🔒" className="h-8 w-8 text-slate-500" />
             ) : (
-              <EmojiIcon emoji={stop.icon} className="h-9 w-9 text-white drop-shadow" strokeWidth={2} />
+              <EmojiIcon
+                emoji={stop.icon}
+                className="h-9 w-9 text-white drop-shadow"
+                strokeWidth={2}
+              />
             )}
           </span>
           {!locked && (
@@ -363,7 +367,13 @@ function UnitBanner({
             )}
           </div>
           <h2 className="mt-0.5 font-display text-2xl font-black leading-tight text-inherit drop-shadow-sm sm:text-3xl">
-            {!adult && <EmojiIcon emoji={unit.icon} className="mr-2 inline h-6 w-6 align-[-3px]" fallback={null} />}
+            {!adult && (
+              <EmojiIcon
+                emoji={unit.icon}
+                className="mr-2 inline h-6 w-6 align-[-3px]"
+                fallback={null}
+              />
+            )}
             {unit.title}
           </h2>
           <p className="mt-1 line-clamp-2 text-xs font-semibold leading-snug opacity-90 sm:text-sm">
@@ -697,7 +707,11 @@ export function StopSheet({
                     <StopIcon className="h-9 w-9 text-white" strokeWidth={1.8} />
                   ) : (
                     <span className="nc-bob">
-                      <EmojiIcon emoji={stop.icon} className="h-9 w-9 text-white" strokeWidth={1.8} />
+                      <EmojiIcon
+                        emoji={stop.icon}
+                        className="h-9 w-9 text-white"
+                        strokeWidth={1.8}
+                      />
                     </span>
                   )}
                 </div>

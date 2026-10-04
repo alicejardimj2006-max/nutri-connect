@@ -182,7 +182,9 @@ export function Toggle({
       className="flex w-full cursor-pointer items-center justify-between gap-3 text-xs font-medium text-foreground"
     >
       {label}
-      <span className={`relative h-5 w-9 rounded-full transition ${checked ? "bg-primary" : "bg-border"}`}>
+      <span
+        className={`relative h-5 w-9 rounded-full transition ${checked ? "bg-primary" : "bg-border"}`}
+      >
         <span
           className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-xs transition-all ${
             checked ? "left-[1.1rem]" : "left-0.5"
@@ -195,6 +197,8 @@ export function Toggle({
 
 export function Heading({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{children}</p>
+    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      {children}
+    </p>
   );
 }

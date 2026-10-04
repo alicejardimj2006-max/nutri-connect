@@ -4,7 +4,9 @@
 import { lazy, Suspense, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 // O editor de fotos é pesado: só é baixado quando a pessoa escolhe uma foto.
-const ImageEditor = lazy(() => import("@/components/image-editor").then((m) => ({ default: m.ImageEditor })));
+const ImageEditor = lazy(() =>
+  import("@/components/image-editor").then((m) => ({ default: m.ImageEditor })),
+);
 import { useTr } from "@/components/appearance-editor";
 import { DEFAULT_EDITS } from "@/lib/image-edit";
 import { ProfileRejectedError, uploadProfileImage } from "@/lib/profile-page";
@@ -66,11 +68,25 @@ export function MediaUpload({
   const pick = async (file: File | undefined) => {
     if (!file) return;
     if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-      toast.error(tr(["Use uma imagem JPG, PNG ou WebP.", "Use a JPG, PNG or WebP image.", "Usa una imagen JPG, PNG o WebP.", "Utilisez une image JPG, PNG ou WebP."]));
+      toast.error(
+        tr([
+          "Use uma imagem JPG, PNG ou WebP.",
+          "Use a JPG, PNG or WebP image.",
+          "Usa una imagen JPG, PNG o WebP.",
+          "Utilisez une image JPG, PNG ou WebP.",
+        ]),
+      );
       return;
     }
     if (file.size > MAX_FILE) {
-      toast.error(tr(["A imagem é grande demais (máximo de 12 MB).", "The image is too large (12 MB max).", "La imagen es demasiado grande (máximo 12 MB).", "L'image est trop grande (12 Mo max)."]));
+      toast.error(
+        tr([
+          "A imagem é grande demais (máximo de 12 MB).",
+          "The image is too large (12 MB max).",
+          "La imagen es demasiado grande (máximo 12 MB).",
+          "L'image est trop grande (12 Mo max).",
+        ]),
+      );
       return;
     }
     setSource(await readFile(file));
@@ -85,12 +101,29 @@ export function MediaUpload({
       toast.success(tr(["Foto salva!", "Photo saved!", "¡Foto guardada!", "Photo enregistrée !"]));
     } catch (err) {
       if (err instanceof ProfileRejectedError) {
-        toast.error(tr(["Foto não aprovada", "Photo not approved", "Foto no aprobada", "Photo non approuvée"]), {
-          description: err.message,
-          duration: 10000,
-        });
+        toast.error(
+          tr([
+            "Foto não aprovada",
+            "Photo not approved",
+            "Foto no aprobada",
+            "Photo non approuvée",
+          ]),
+          {
+            description: err.message,
+            duration: 10000,
+          },
+        );
       } else {
-        toast.error(err instanceof Error ? err.message : tr(["Não foi possível enviar a foto.", "Could not upload the photo.", "No se pudo enviar la foto.", "Impossible d'envoyer la photo."]));
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : tr([
+                "Não foi possível enviar a foto.",
+                "Could not upload the photo.",
+                "No se pudo enviar la foto.",
+                "Impossible d'envoyer la photo.",
+              ]),
+        );
       }
     } finally {
       setBusy(false);
@@ -110,22 +143,22 @@ export function MediaUpload({
       {children(() => input.current?.click(), busy)}
       {source && (
         <Suspense fallback={null}>
-        <ImageEditor
-          open
-          src={source}
-          initial={
-            target === "avatar"
-              ? { ...DEFAULT_EDITS, aspect: "1:1" }
-              : target === "banner"
-                ? { ...DEFAULT_EDITS, aspect: "free", customRatio: 3.2 }
-                : undefined
-          }
-          onCancel={() => {
-            setSource(null);
-            if (input.current) input.current.value = "";
-          }}
-          onApply={(dataUrl) => void send(dataUrl)}
-        />
+          <ImageEditor
+            open
+            src={source}
+            initial={
+              target === "avatar"
+                ? { ...DEFAULT_EDITS, aspect: "1:1" }
+                : target === "banner"
+                  ? { ...DEFAULT_EDITS, aspect: "free", customRatio: 3.2 }
+                  : undefined
+            }
+            onCancel={() => {
+              setSource(null);
+              if (input.current) input.current.value = "";
+            }}
+            onApply={(dataUrl) => void send(dataUrl)}
+          />
         </Suspense>
       )}
     </>

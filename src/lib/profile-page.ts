@@ -5,7 +5,12 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DEFAULT_APPEARANCE, loadAppearance, sanitizeAppearance, type Appearance } from "@/lib/appearance";
+import {
+  DEFAULT_APPEARANCE,
+  loadAppearance,
+  sanitizeAppearance,
+  type Appearance,
+} from "@/lib/appearance";
 
 // ── Modelo ───────────────────────────────────────────────────────────────────
 
@@ -108,22 +113,23 @@ export const DEFAULT_HEADER: ProfileHeader = {
 };
 
 /** Tamanho inicial de cada tipo de bloco (colunas × linhas). */
-export const BLOCK_SIZES: Record<BlockType, { w: number; h: number; minW: number; minH: number }> = {
-  stats: { w: 12, h: 3, minW: 4, minH: 2 },
-  posts: { w: 8, h: 14, minW: 4, minH: 5 },
-  recipes: { w: 8, h: 11, minW: 4, minH: 5 },
-  challenges: { w: 4, h: 7, minW: 3, minH: 4 },
-  communities: { w: 4, h: 5, minW: 3, minH: 3 },
-  level: { w: 4, h: 5, minW: 3, minH: 3 },
-  pro: { w: 4, h: 6, minW: 3, minH: 4 },
-  about: { w: 6, h: 6, minW: 3, minH: 3 },
-  text: { w: 6, h: 5, minW: 2, minH: 2 },
-  quote: { w: 6, h: 4, minW: 3, minH: 2 },
-  image: { w: 4, h: 8, minW: 2, minH: 3 },
-  links: { w: 4, h: 6, minW: 3, minH: 3 },
-  favorites: { w: 4, h: 5, minW: 3, minH: 3 },
-  sticker: { w: 2, h: 3, minW: 2, minH: 2 },
-};
+export const BLOCK_SIZES: Record<BlockType, { w: number; h: number; minW: number; minH: number }> =
+  {
+    stats: { w: 12, h: 3, minW: 4, minH: 2 },
+    posts: { w: 8, h: 14, minW: 4, minH: 5 },
+    recipes: { w: 8, h: 11, minW: 4, minH: 5 },
+    challenges: { w: 4, h: 7, minW: 3, minH: 4 },
+    communities: { w: 4, h: 5, minW: 3, minH: 3 },
+    level: { w: 4, h: 5, minW: 3, minH: 3 },
+    pro: { w: 4, h: 6, minW: 3, minH: 4 },
+    about: { w: 6, h: 6, minW: 3, minH: 3 },
+    text: { w: 6, h: 5, minW: 2, minH: 2 },
+    quote: { w: 6, h: 4, minW: 3, minH: 2 },
+    image: { w: 4, h: 8, minW: 2, minH: 3 },
+    links: { w: 4, h: 6, minW: 3, minH: 3 },
+    favorites: { w: 4, h: 5, minW: 3, minH: 3 },
+    sticker: { w: 2, h: 3, minW: 2, minH: 2 },
+  };
 
 const uid = () => `b${Math.random().toString(36).slice(2, 10)}`;
 
@@ -163,7 +169,8 @@ export function defaultPage(isProfessional: boolean): ProfilePage {
 
 // ── Leitura segura (o servidor já valida; isto só protege a tela de dados estranhos) ─────────────
 
-const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === "object" && !Array.isArray(v);
 const num = (v: unknown, min: number, max: number, fallback: number) => {
   const n = Math.round(Number(v));
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
@@ -210,7 +217,8 @@ export function readPage(raw: unknown, isProfessional = false): ProfilePage {
         bg: hex(style.bg),
         bgOpacity: num(style.bgOpacity, 0, 100, 100),
         border: pick(style.border, ["none", "thin", "accent", "dashed"] as const, "thin"),
-        radius: style.radius === null || style.radius === undefined ? null : num(style.radius, 0, 40, 24),
+        radius:
+          style.radius === null || style.radius === undefined ? null : num(style.radius, 0, 40, 24),
         align: pick(style.align, ["left", "center", "right"] as const, "left"),
         pad: pick(style.pad, ["p", "m", "g"] as const, "m"),
         shadow: style.shadow !== false,
@@ -234,11 +242,42 @@ export function readPage(raw: unknown, isProfessional = false): ProfilePage {
 
 /** Opções da aparência que o perfil pode ter (as mesmas que o servidor aceita; acessibilidade nunca entra). */
 export const THEME_KEYS = [
-  "mode", "accent", "primary", "backgroundLight", "backgroundDark", "oledBlack", "textColor", "cardColor",
-  "colorIntensity", "warmth", "headerStyle", "themePreset", "headingFont", "bodyFont", "textScale",
-  "headingWeight", "headingScale", "headingCase", "headingColor", "bodyWeight", "textAlign", "cornerRadius",
-  "cardRadius", "buttonShape", "inputStyle", "borderWidth", "density", "borders", "shadows", "iconStroke",
-  "pageBackground", "cardStyle", "imageSize", "imageCorners", "avatarShape", "cardAccent",
+  "mode",
+  "accent",
+  "primary",
+  "backgroundLight",
+  "backgroundDark",
+  "oledBlack",
+  "textColor",
+  "cardColor",
+  "colorIntensity",
+  "warmth",
+  "headerStyle",
+  "themePreset",
+  "headingFont",
+  "bodyFont",
+  "textScale",
+  "headingWeight",
+  "headingScale",
+  "headingCase",
+  "headingColor",
+  "bodyWeight",
+  "textAlign",
+  "cornerRadius",
+  "cardRadius",
+  "buttonShape",
+  "inputStyle",
+  "borderWidth",
+  "density",
+  "borders",
+  "shadows",
+  "iconStroke",
+  "pageBackground",
+  "cardStyle",
+  "imageSize",
+  "imageCorners",
+  "avatarShape",
+  "cardAccent",
 ] as const satisfies readonly (keyof Appearance)[];
 
 /** Copia o tema que a pessoa usa no site para o perfil (só as opções visuais). */
@@ -300,7 +339,8 @@ export function compactLayout(layout: Block[]): Block[] {
     const candidates = [0, ...placed.map((p) => p.y + p.h)]
       .filter((y) => y <= block.y)
       .sort((a, b) => a - b);
-    const y = candidates.find((cy) => !placed.some((p) => overlaps({ ...block, y: cy }, p))) ?? block.y;
+    const y =
+      candidates.find((cy) => !placed.some((p) => overlaps({ ...block, y: cy }, p))) ?? block.y;
     placed.push({ ...block, y });
   }
   const byId = new Map(placed.map((b) => [b.id, b]));
@@ -356,8 +396,10 @@ async function invoke(name: string, body: Record<string, unknown>): Promise<Func
     }
     throw new Error(message);
   }
-  if (!data || data.ok === false) throw new Error(data?.message || "Não foi possível concluir agora.");
-  if (data.approved === false) throw new ProfileRejectedError(data.message || "Conteúdo não aprovado.", data.code);
+  if (!data || data.ok === false)
+    throw new Error(data?.message || "Não foi possível concluir agora.");
+  if (data.approved === false)
+    throw new ProfileRejectedError(data.message || "Conteúdo não aprovado.", data.code);
   return data;
 }
 

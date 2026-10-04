@@ -111,9 +111,7 @@ function NotificacoesPage() {
         <span>{t("settings.account.back")}</span>
       </Link>
 
-      <h1 className="sr-only">
-        {t("settings.notifications.title")}
-      </h1>
+      <h1 className="sr-only">{t("settings.notifications.title")}</h1>
 
       <div className="space-y-6">
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
@@ -177,10 +175,41 @@ function NotificacoesPage() {
           <div className="mt-2 divide-y divide-border/60">
             {(
               [
-                ["social", ["Social", "Social", "Social", "Social"], ["Reações, comentários, amizades e novos seguidores.", "Reactions, comments, friendships and new followers.", "Reacciones, comentarios, amistades y nuevos seguidores.", "Réactions, commentaires, amitiés et nouveaux abonnés."]],
-                ["clinical", ["Acompanhamento", "Follow-up", "Seguimiento", "Suivi"], ["Consultas, pagamentos, mensagens e pedidos de vínculo.", "Appointments, payments, messages and link requests.", "Consultas, pagos, mensajes y solicitudes de vínculo.", "Consultations, paiements, messages et demandes de lien."]],
-                ["theme", ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"], ["Quando um novo tema da semana é divulgado.", "When a new weekly theme is announced.", "Cuando se anuncia un nuevo tema de la semana.", "Quand un nouveau thème de la semaine est annoncé."]],
-              ] as [NotificationCategory, [string, string, string, string], [string, string, string, string]][]
+                [
+                  "social",
+                  ["Social", "Social", "Social", "Social"],
+                  [
+                    "Reações, comentários, amizades e novos seguidores.",
+                    "Reactions, comments, friendships and new followers.",
+                    "Reacciones, comentarios, amistades y nuevos seguidores.",
+                    "Réactions, commentaires, amitiés et nouveaux abonnés.",
+                  ],
+                ],
+                [
+                  "clinical",
+                  ["Acompanhamento", "Follow-up", "Seguimiento", "Suivi"],
+                  [
+                    "Consultas, pagamentos, mensagens e pedidos de vínculo.",
+                    "Appointments, payments, messages and link requests.",
+                    "Consultas, pagos, mensajes y solicitudes de vínculo.",
+                    "Consultations, paiements, messages et demandes de lien.",
+                  ],
+                ],
+                [
+                  "theme",
+                  ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"],
+                  [
+                    "Quando um novo tema da semana é divulgado.",
+                    "When a new weekly theme is announced.",
+                    "Cuando se anuncia un nuevo tema de la semana.",
+                    "Quand un nouveau thème de la semaine est annoncé.",
+                  ],
+                ],
+              ] as [
+                NotificationCategory,
+                [string, string, string, string],
+                [string, string, string, string],
+              ][]
             ).map(([cat, title, hint]) => (
               <div key={cat} className="flex items-center justify-between gap-4 py-3">
                 <div>
@@ -217,13 +246,23 @@ function NotificacoesPage() {
 
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
           <h2 className="text-sm font-bold font-display text-foreground">
-            {tr(["Silêncio e privacidade", "Quiet hours and privacy", "Silencio y privacidad", "Silence et confidentialité"])}
+            {tr([
+              "Silêncio e privacidade",
+              "Quiet hours and privacy",
+              "Silencio y privacidad",
+              "Silence et confidentialité",
+            ])}
           </h2>
           <div className="mt-3 space-y-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {tr(["Horário de silêncio", "Quiet hours", "Horario de silencio", "Heures de silence"])}
+                  {tr([
+                    "Horário de silêncio",
+                    "Quiet hours",
+                    "Horario de silencio",
+                    "Heures de silence",
+                  ])}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {tr([
@@ -234,20 +273,38 @@ function NotificacoesPage() {
                   ])}
                 </p>
               </div>
-              <Switch checked={ap.quietOn} onCheckedChange={(quietOn) => updateAppearance({ quietOn })} />
+              <Switch
+                checked={ap.quietOn}
+                onCheckedChange={(quietOn) => updateAppearance({ quietOn })}
+              />
             </div>
             {ap.quietOn && (
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 {tr(["Das", "From", "Desde", "De"])}
-                <Select label="from" value={ap.quietFrom} options={HOURS} onChange={(quietFrom) => updateAppearance({ quietFrom })} />
+                <Select
+                  label="from"
+                  value={ap.quietFrom}
+                  options={HOURS}
+                  onChange={(quietFrom) => updateAppearance({ quietFrom })}
+                />
                 {tr(["às", "to", "hasta", "à"])}
-                <Select label="to" value={ap.quietTo} options={HOURS} onChange={(quietTo) => updateAppearance({ quietTo })} />
+                <Select
+                  label="to"
+                  value={ap.quietTo}
+                  options={HOURS}
+                  onChange={(quietTo) => updateAppearance({ quietTo })}
+                />
               </div>
             )}
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {tr(["Mostrar o texto nos avisos", "Show text in alerts", "Mostrar el texto en los avisos", "Afficher le texte dans les alertes"])}
+                  {tr([
+                    "Mostrar o texto nos avisos",
+                    "Show text in alerts",
+                    "Mostrar el texto en los avisos",
+                    "Afficher le texte dans les alertes",
+                  ])}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {tr([
@@ -258,14 +315,22 @@ function NotificacoesPage() {
                   ])}
                 </p>
               </div>
-              <Switch checked={ap.notifPreview} onCheckedChange={(notifPreview) => updateAppearance({ notifPreview })} />
+              <Switch
+                checked={ap.notifPreview}
+                onCheckedChange={(notifPreview) => updateAppearance({ notifPreview })}
+              />
             </div>
             <Link
               to="/perfil/personalizacao"
               search={{ cartao: "sons" }}
               className="inline-block text-xs font-semibold text-accent underline-offset-2 hover:underline"
             >
-              {tr(["Configurar os sons do site →", "Set up site sounds →", "Configurar los sonidos del sitio →", "Régler les sons du site →"])}
+              {tr([
+                "Configurar os sons do site →",
+                "Set up site sounds →",
+                "Configurar los sonidos del sitio →",
+                "Régler les sons du site →",
+              ])}
             </Link>
           </div>
         </section>

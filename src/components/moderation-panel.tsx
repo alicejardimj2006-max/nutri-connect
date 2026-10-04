@@ -13,7 +13,11 @@ type QueueItem = {
   author_name: string | null;
 };
 
-const TARGETS: Record<string, string> = { post: "Publicação", comment: "Comentário", user: "Perfil" };
+const TARGETS: Record<string, string> = {
+  post: "Publicação",
+  comment: "Comentário",
+  user: "Perfil",
+};
 const REASONS: Record<string, string> = {
   spam: "Spam/golpe",
   desinformacao: "Desinformação",

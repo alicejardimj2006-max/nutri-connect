@@ -29,12 +29,19 @@ function Author({ post, onImage }: { post: Post; onImage: boolean }) {
   return (
     <span
       className={`absolute left-1.5 top-1.5 flex max-w-[72%] items-center gap-1 rounded-full py-0.5 pl-0.5 pr-2 text-[10px] font-semibold shadow-xs sm:left-2.5 sm:top-2.5 sm:gap-1.5 sm:pr-2.5 sm:text-xs ${
-        onImage ? "bg-black/55 text-white backdrop-blur-sm" : "bg-card/90 text-foreground backdrop-blur-sm"
+        onImage
+          ? "bg-black/55 text-white backdrop-blur-sm"
+          : "bg-card/90 text-foreground backdrop-blur-sm"
       }`}
     >
       <span className="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-[8px] font-extrabold text-primary sm:h-6 sm:w-6 sm:text-[9px]">
         {post.authorAvatar ? (
-          <img src={post.authorAvatar} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img
+            src={post.authorAvatar}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
         ) : (
           initials(post.authorName)
         )}
@@ -57,8 +64,12 @@ export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) =>
   const hearts = post.supports.length + post.likes.length;
   const tinted = `color-mix(in srgb, ${color} 18%, var(--card))`;
 
-  const textMain = image ? "text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]" : "text-foreground";
-  const textSoft = image ? "text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.5)]" : "text-muted-foreground";
+  const textMain = image
+    ? "text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]"
+    : "text-foreground";
+  const textSoft = image
+    ? "text-white/85 [text-shadow:0_1px_4px_rgba(0,0,0,0.5)]"
+    : "text-muted-foreground";
 
   return (
     <button
@@ -85,7 +96,10 @@ export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) =>
           <div className="absolute inset-0 bg-black/55" />
           <div
             className="absolute inset-0"
-            style={{ background: `linear-gradient(to top, color-mix(in srgb, ${color} 45%, #000) 0%, transparent 65%)`, opacity: 0.7 }}
+            style={{
+              background: `linear-gradient(to top, color-mix(in srgb, ${color} 45%, #000) 0%, transparent 65%)`,
+              opacity: 0.7,
+            }}
           />
         </>
       )}
@@ -99,7 +113,11 @@ export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) =>
               className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-40 blur-xl sm:h-36 sm:w-36"
               style={{ background: color }}
             />
-            <span aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 top-0 w-1.5" style={{ background: color }} />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-0 left-0 top-0 w-1.5"
+              style={{ background: color }}
+            />
           </>
         )}
         <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -112,11 +130,25 @@ export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) =>
           </span>
           {title ? (
             <>
-              <p className={`line-clamp-3 font-display text-[14px] font-bold leading-tight sm:text-lg ${textMain}`}>{title}</p>
-              {body && <p className={`mt-1 hidden text-xs leading-snug sm:line-clamp-3 sm:block ${textSoft}`}>{body}</p>}
+              <p
+                className={`line-clamp-3 font-display text-[14px] font-bold leading-tight sm:text-lg ${textMain}`}
+              >
+                {title}
+              </p>
+              {body && (
+                <p
+                  className={`mt-1 hidden text-xs leading-snug sm:line-clamp-3 sm:block ${textSoft}`}
+                >
+                  {body}
+                </p>
+              )}
             </>
           ) : (
-            <p className={`line-clamp-5 font-display text-[13px] font-semibold italic leading-snug sm:text-base ${textMain}`}>{body}</p>
+            <p
+              className={`line-clamp-5 font-display text-[13px] font-semibold italic leading-snug sm:text-base ${textMain}`}
+            >
+              {body}
+            </p>
           )}
         </div>
         <span

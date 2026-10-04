@@ -81,7 +81,8 @@ export const draftSoapNote = createServerFn({ method: "POST" })
       messages: [{ role: "user", content: data.text }],
       temperature: 0.2,
     });
-    if (!result.ok && result.limit) return { error: "Limite diário de ferramentas de IA atingido." };
+    if (!result.ok && result.limit)
+      return { error: "Limite diário de ferramentas de IA atingido." };
     if (!result.ok) return { error: aiErrorMessage(result.status) };
     try {
       const j = parseJsonObject(result.text);
@@ -102,9 +103,7 @@ export type ReplySuggestion = { reply: string } | { error: string };
 
 export const suggestReply = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
-    z.object({ patientId: z.string().uuid(), locale }).parse(data),
-  )
+  .inputValidator((data: unknown) => z.object({ patientId: z.string().uuid(), locale }).parse(data))
   .handler(async ({ data, context }): Promise<ReplySuggestion> => {
     const { supabase, userId } = context;
     const { aiChat, aiErrorMessage } = await import("./ai-gateway.server");
@@ -121,7 +120,9 @@ export const suggestReply = createServerFn({ method: "POST" })
     const thread = (rows ?? [])
       .filter((m) => m.body?.trim())
       .reverse()
-      .map((m) => `${m.sender_id === userId ? "Profissional" : "Paciente"}: ${m.body.slice(0, 1200)}`)
+      .map(
+        (m) => `${m.sender_id === userId ? "Profissional" : "Paciente"}: ${m.body.slice(0, 1200)}`,
+      )
       .join("\n");
     if (!thread) return { error: "Ainda não há mensagens para responder." };
 
@@ -136,7 +137,8 @@ export const suggestReply = createServerFn({ method: "POST" })
       ],
       temperature: 0.5,
     });
-    if (!result.ok && result.limit) return { error: "Limite diário de ferramentas de IA atingido." };
+    if (!result.ok && result.limit)
+      return { error: "Limite diário de ferramentas de IA atingido." };
     if (!result.ok) return { error: aiErrorMessage(result.status) };
     return { reply: result.text.replace(/^Profissional:\s*/i, "").trim() };
   });

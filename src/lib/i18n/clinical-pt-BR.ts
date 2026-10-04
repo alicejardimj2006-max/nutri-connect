@@ -162,7 +162,8 @@ const clinicalPtBR = {
 
   // Cartão/diálogos de consulta ---------------------------------------
   "appt.join": "Entrar na sala",
-  "appt.roomInfo": "A consulta acontece na sala de vídeo do NutriConnect, aqui no site. A sala abre 30 min antes.",
+  "appt.roomInfo":
+    "A consulta acontece na sala de vídeo do NutriConnect, aqui no site. A sala abre 30 min antes.",
   "appt.payNow": "Pagar agora",
   "appt.reschedule": "Remarcar",
   "appt.manage": "Gerenciar",
@@ -311,17 +312,21 @@ const clinicalPtBR = {
 
   "record.back": "Todos os pacientes",
   "ai.summary.title": "Resumo com IA",
-  "ai.summary.hint": "Resume o diário alimentar, as metas e as medidas do paciente. Nada é salvo na ficha.",
+  "ai.summary.hint":
+    "Resume o diário alimentar, as metas e as medidas do paciente. Nada é salvo na ficha.",
   "ai.summary.days7": "Últimos 7 dias",
   "ai.summary.days30": "Últimos 30 dias",
   "ai.summary.generate": "Gerar resumo",
   "ai.summary.regenerate": "Gerar novamente",
   "ai.summary.generating": "Gerando…",
-  "ai.summary.disclaimer": "Gerado por IA a partir dos registros do paciente. Pode conter erros: confira na ficha antes de usar.",
+  "ai.summary.disclaimer":
+    "Gerado por IA a partir dos registros do paciente. Pode conter erros: confira na ficha antes de usar.",
   "ai.summary.error": "Não foi possível gerar o resumo.",
   "ai.soap.title": "Rascunho com IA",
-  "ai.soap.hint": "Cole suas anotações soltas e a IA organiza em Subjetivo, Objetivo, Avaliação e Plano. Não inclua nome, CPF ou contato do paciente.",
-  "ai.soap.placeholder": "Ex.: relata menos fome à noite, peso 71,2 kg, boa adesão ao café da manhã, quer manter caminhadas…",
+  "ai.soap.hint":
+    "Cole suas anotações soltas e a IA organiza em Subjetivo, Objetivo, Avaliação e Plano. Não inclua nome, CPF ou contato do paciente.",
+  "ai.soap.placeholder":
+    "Ex.: relata menos fome à noite, peso 71,2 kg, boa adesão ao café da manhã, quer manter caminhadas…",
   "ai.soap.generate": "Organizar com IA",
   "ai.soap.generating": "Organizando…",
   "ai.soap.done": "Rascunho preenchido. Revise antes de salvar.",
@@ -741,7 +746,8 @@ const clinicalPtBR = {
   "payment.returnFailure":
     "O pagamento não foi concluído. Você pode tentar de novo enquanto o horário estiver reservado.",
   "mp.title": "Pagamentos on-line",
-  "mp.stripeText": "Os pacientes pagam por cartão ao agendar. O NutriConnect recebe o valor e faz o repasse a você, descontada a taxa de {fee}% por consulta.",
+  "mp.stripeText":
+    "Os pacientes pagam por cartão ao agendar. O NutriConnect recebe o valor e faz o repasse a você, descontada a taxa de {fee}% por consulta.",
   "mp.noPrice": "Defina um valor de consulta acima de zero para cobrar on-line.",
 
   // Financeiro --------------------------------------------------------

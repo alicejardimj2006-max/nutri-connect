@@ -124,7 +124,9 @@ export function PostCardFrame({
         {clamped && (
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
-            style={{ background: "linear-gradient(to top, var(--post-fade, var(--card)), transparent)" }}
+            style={{
+              background: "linear-gradient(to top, var(--post-fade, var(--card)), transparent)",
+            }}
           />
         )}
       </div>

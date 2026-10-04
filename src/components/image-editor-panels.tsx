@@ -78,16 +78,38 @@ function LayerActions({ ctx, overlay }: { ctx: PanelCtx; overlay: Overlay }) {
 
   return (
     <div className="grid grid-cols-4 gap-2">
-      <button type="button" className={toolBtn} onClick={duplicate} title={tr(["Duplicar", "Duplicate", "Duplicar", "Dupliquer"])}>
+      <button
+        type="button"
+        className={toolBtn}
+        onClick={duplicate}
+        title={tr(["Duplicar", "Duplicate", "Duplicar", "Dupliquer"])}
+      >
         <Copy className="h-3.5 w-3.5" />
       </button>
-      <button type="button" className={toolBtn} onClick={() => move(true)} disabled={index === list.length - 1} title={tr(["Trazer para frente", "Bring to front", "Traer al frente", "Mettre devant"])}>
+      <button
+        type="button"
+        className={toolBtn}
+        onClick={() => move(true)}
+        disabled={index === list.length - 1}
+        title={tr(["Trazer para frente", "Bring to front", "Traer al frente", "Mettre devant"])}
+      >
         <ArrowUpToLine className="h-3.5 w-3.5" />
       </button>
-      <button type="button" className={toolBtn} onClick={() => move(false)} disabled={index === 0} title={tr(["Enviar para trás", "Send to back", "Enviar atrás", "Mettre derrière"])}>
+      <button
+        type="button"
+        className={toolBtn}
+        onClick={() => move(false)}
+        disabled={index === 0}
+        title={tr(["Enviar para trás", "Send to back", "Enviar atrás", "Mettre derrière"])}
+      >
         <ArrowDownToLine className="h-3.5 w-3.5" />
       </button>
-      <button type="button" className={dangerBtn} onClick={remove} title={tr(["Apagar", "Delete", "Borrar", "Supprimer"])}>
+      <button
+        type="button"
+        className={dangerBtn}
+        onClick={remove}
+        title={tr(["Apagar", "Delete", "Borrar", "Supprimer"])}
+      >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
     </div>
@@ -95,7 +117,9 @@ function LayerActions({ ctx, overlay }: { ctx: PanelCtx; overlay: Overlay }) {
 }
 
 function patchOverlay(ctx: PanelCtx, id: string, patch: Partial<Overlay>, continuous: boolean) {
-  const overlays = ctx.edits.overlays.map((o) => (o.id === id ? ({ ...o, ...patch } as Overlay) : o));
+  const overlays = ctx.edits.overlays.map((o) =>
+    o.id === id ? ({ ...o, ...patch } as Overlay) : o,
+  );
   (continuous ? ctx.slide : ctx.change)({ overlays });
 }
 
@@ -140,7 +164,8 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
   return (
     <div className="space-y-4">
       <button type="button" className={`${toolBtn} w-full`} onClick={add}>
-        <Plus className="h-3.5 w-3.5" /> {tr(["Adicionar texto", "Add text", "Añadir texto", "Ajouter du texte"])}
+        <Plus className="h-3.5 w-3.5" />{" "}
+        {tr(["Adicionar texto", "Add text", "Añadir texto", "Ajouter du texte"])}
       </button>
       <p className="text-[11px] text-muted-foreground">
         {tr([
@@ -181,7 +206,9 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
           />
 
           <div>
-            <Heading>{tr(["Estilos prontos", "Ready-made styles", "Estilos listos", "Styles prêts"])}</Heading>
+            <Heading>
+              {tr(["Estilos prontos", "Ready-made styles", "Estilos listos", "Styles prêts"])}
+            </Heading>
             <div className="mt-2 grid grid-cols-4 gap-1.5">
               {TEXT_STYLES.map((s) => (
                 <button
@@ -206,10 +233,15 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
                   aria-pressed={sel.font === f.id}
                   onClick={() => set({ font: f.id })}
                   className={`rounded-lg border px-1 py-1.5 text-center transition cursor-pointer ${
-                    sel.font === f.id ? "border-primary bg-primary-soft" : "border-border hover:bg-secondary"
+                    sel.font === f.id
+                      ? "border-primary bg-primary-soft"
+                      : "border-border hover:bg-secondary"
                   }`}
                 >
-                  <span className="block text-base leading-tight text-foreground" style={{ fontFamily: f.css }}>
+                  <span
+                    className="block text-base leading-tight text-foreground"
+                    style={{ fontFamily: f.css }}
+                  >
                     Aa
                   </span>
                   <span className="block truncate text-[10px] text-muted-foreground">{f.name}</span>
@@ -229,19 +261,39 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
             onChange={(v) => set({ size: v / 100 }, true)}
           />
 
-          <ColorRow label={tr(["Cor", "Color", "Color", "Couleur"])} value={sel.color} onChange={(c) => c && set({ color: c })} />
+          <ColorRow
+            label={tr(["Cor", "Color", "Color", "Couleur"])}
+            value={sel.color}
+            onChange={(c) => c && set({ color: c })}
+          />
 
           <div className="flex flex-wrap gap-2">
-            <button type="button" aria-pressed={sel.bold} className={`${toolBtn} ${sel.bold ? "!border-primary !bg-primary-soft" : ""}`} onClick={() => set({ bold: !sel.bold })}>
+            <button
+              type="button"
+              aria-pressed={sel.bold}
+              className={`${toolBtn} ${sel.bold ? "!border-primary !bg-primary-soft" : ""}`}
+              onClick={() => set({ bold: !sel.bold })}
+            >
               <Bold className="h-3.5 w-3.5" />
             </button>
-            <button type="button" aria-pressed={sel.italic} className={`${toolBtn} ${sel.italic ? "!border-primary !bg-primary-soft" : ""}`} onClick={() => set({ italic: !sel.italic })}>
+            <button
+              type="button"
+              aria-pressed={sel.italic}
+              className={`${toolBtn} ${sel.italic ? "!border-primary !bg-primary-soft" : ""}`}
+              onClick={() => set({ italic: !sel.italic })}
+            >
               <Italic className="h-3.5 w-3.5" />
             </button>
             {(["left", "center", "right"] as const).map((a) => {
               const Icon = a === "left" ? AlignLeft : a === "center" ? AlignCenter : AlignRight;
               return (
-                <button key={a} type="button" aria-pressed={sel.align === a} className={`${toolBtn} ${sel.align === a ? "!border-primary !bg-primary-soft" : ""}`} onClick={() => set({ align: a })}>
+                <button
+                  key={a}
+                  type="button"
+                  aria-pressed={sel.align === a}
+                  className={`${toolBtn} ${sel.align === a ? "!border-primary !bg-primary-soft" : ""}`}
+                  onClick={() => set({ align: a })}
+                >
                   <Icon className="h-3.5 w-3.5" />
                 </button>
               );
@@ -249,7 +301,12 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
           </div>
 
           <Slider
-            label={tr(["Espaço entre letras", "Letter spacing", "Espacio entre letras", "Espacement des lettres"])}
+            label={tr([
+              "Espaço entre letras",
+              "Letter spacing",
+              "Espacio entre letras",
+              "Espacement des lettres",
+            ])}
             value={sel.letterSpacing}
             min={-5}
             max={30}
@@ -273,7 +330,11 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
             onChange={(v) => set({ opacity: v / 100 }, true)}
           />
 
-          <Toggle label={tr(["Sombra", "Shadow", "Sombra", "Ombre"])} checked={sel.shadow} onChange={(shadow) => set({ shadow })} />
+          <Toggle
+            label={tr(["Sombra", "Shadow", "Sombra", "Ombre"])}
+            checked={sel.shadow}
+            onChange={(shadow) => set({ shadow })}
+          />
 
           <ColorRow
             label={tr(["Contorno", "Outline", "Contorno", "Contour"])}
@@ -292,7 +353,12 @@ export function TextPanel({ ctx }: { ctx: PanelCtx }) {
           />
           {sel.bg && (
             <Toggle
-              label={tr(["Fundo translúcido", "Translucent background", "Fondo translúcido", "Fond translucide"])}
+              label={tr([
+                "Fundo translúcido",
+                "Translucent background",
+                "Fondo translúcido",
+                "Fond translucide",
+              ])}
               checked={sel.bg.startsWith("rgba")}
               onChange={(soft) => {
                 const hex = sel.bg?.startsWith("#") ? sel.bg : "#000000";
@@ -412,8 +478,16 @@ export function StickerPanel({ ctx }: { ctx: PanelCtx }) {
             unit="%"
             onChange={(v) => set({ opacity: v / 100 }, true)}
           />
-          <Toggle label={tr(["Espelhar", "Flip", "Reflejar", "Retourner"])} checked={sel.flip} onChange={(flip) => set({ flip })} />
-          <ColorRow label={tr(["Cor", "Color", "Color", "Couleur"])} value={sel.color} onChange={(c) => c && set({ color: c })} />
+          <Toggle
+            label={tr(["Espelhar", "Flip", "Reflejar", "Retourner"])}
+            checked={sel.flip}
+            onChange={(flip) => set({ flip })}
+          />
+          <ColorRow
+            label={tr(["Cor", "Color", "Color", "Couleur"])}
+            value={sel.color}
+            onChange={(c) => c && set({ color: c })}
+          />
           <LayerActions ctx={ctx} overlay={sel} />
         </>
       )}
@@ -480,7 +554,9 @@ export function DrawPanel({
                 aria-pressed={draw.tool === t.id}
                 onClick={() => setDraw({ tool: t.id })}
                 className={`inline-flex items-center justify-center gap-1 rounded-lg border px-1 py-2 text-[11px] font-medium transition cursor-pointer ${
-                  draw.tool === t.id ? "border-primary bg-primary-soft text-primary" : "border-border text-foreground hover:bg-secondary"
+                  draw.tool === t.id
+                    ? "border-primary bg-primary-soft text-primary"
+                    : "border-border text-foreground hover:bg-secondary"
                 }`}
               >
                 {t.id === "erase" && <Eraser className="h-3 w-3" />}
@@ -490,12 +566,26 @@ export function DrawPanel({
           </div>
           <p className="text-[11px] text-muted-foreground">
             {draw.tool === "erase"
-              ? tr(["Toque num traço para apagá-lo.", "Tap a stroke to erase it.", "Toca un trazo para borrarlo.", "Touchez un trait pour l'effacer."])
-              : tr(["Arraste sobre a foto para desenhar.", "Drag over the photo to draw.", "Arrastra sobre la foto para dibujar.", "Faites glisser sur la photo pour dessiner."])}
+              ? tr([
+                  "Toque num traço para apagá-lo.",
+                  "Tap a stroke to erase it.",
+                  "Toca un trazo para borrarlo.",
+                  "Touchez un trait pour l'effacer.",
+                ])
+              : tr([
+                  "Arraste sobre a foto para desenhar.",
+                  "Drag over the photo to draw.",
+                  "Arrastra sobre la foto para dibujar.",
+                  "Faites glisser sur la photo pour dessiner.",
+                ])}
           </p>
           {draw.tool !== "erase" && (
             <>
-              <ColorRow label={tr(["Cor", "Color", "Color", "Couleur"])} value={draw.color} onChange={(c) => c && setDraw({ color: c })} />
+              <ColorRow
+                label={tr(["Cor", "Color", "Color", "Couleur"])}
+                value={draw.color}
+                onChange={(c) => c && setDraw({ color: c })}
+              />
               <Slider
                 label={tr(["Espessura", "Thickness", "Grosor", "Épaisseur"])}
                 value={Math.round(draw.size * 1000)}
@@ -531,7 +621,9 @@ export function DrawPanel({
               type="button"
               className={dangerBtn}
               disabled={strokes.length === 0}
-              onClick={() => ctx.change({ overlays: ctx.edits.overlays.filter((o) => o.type !== "stroke") })}
+              onClick={() =>
+                ctx.change({ overlays: ctx.edits.overlays.filter((o) => o.type !== "stroke") })
+              }
             >
               {tr(["Limpar desenhos", "Clear drawings", "Limpiar dibujos", "Effacer les dessins"])}
             </button>
@@ -554,7 +646,10 @@ export function DrawPanel({
           />
           <Chips
             options={[
-              { id: "rect" as const, label: tr(["Retângulo", "Rectangle", "Rectángulo", "Rectangle"]) },
+              {
+                id: "rect" as const,
+                label: tr(["Retângulo", "Rectangle", "Rectángulo", "Rectangle"]),
+              },
               { id: "ellipse" as const, label: tr(["Elipse", "Ellipse", "Elipse", "Ellipse"]) },
             ]}
             value={draw.censorShape}
@@ -577,8 +672,15 @@ export function DrawPanel({
                   key={c.id}
                   type="button"
                   className={`${toolBtn} text-[11px]`}
-                  onClick={() => ctx.change({ overlays: ctx.edits.overlays.filter((o) => o.id !== c.id) })}
-                  title={tr(["Remover esta censura", "Remove this censor", "Quitar esta censura", "Retirer ce masque"])}
+                  onClick={() =>
+                    ctx.change({ overlays: ctx.edits.overlays.filter((o) => o.id !== c.id) })
+                  }
+                  title={tr([
+                    "Remover esta censura",
+                    "Remove this censor",
+                    "Quitar esta censura",
+                    "Retirer ce masque",
+                  ])}
                 >
                   <Trash2 className="h-3 w-3" /> {i + 1}
                 </button>
@@ -599,7 +701,9 @@ export function FramePanel({ ctx }: { ctx: PanelCtx }) {
   return (
     <div className="space-y-4">
       <div>
-        <Heading>{tr(["Molduras prontas", "Ready-made frames", "Marcos listos", "Cadres prêts"])}</Heading>
+        <Heading>
+          {tr(["Molduras prontas", "Ready-made frames", "Marcos listos", "Cadres prêts"])}
+        </Heading>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
           {FRAME_PRESETS.map((p) => {
             const active =
@@ -614,7 +718,9 @@ export function FramePanel({ ctx }: { ctx: PanelCtx }) {
                 aria-pressed={active}
                 onClick={() => change(p.patch)}
                 className={`rounded-lg border px-1 py-2 text-[11px] font-medium transition cursor-pointer ${
-                  active ? "border-primary bg-primary-soft text-primary" : "border-border text-foreground hover:bg-secondary"
+                  active
+                    ? "border-primary bg-primary-soft text-primary"
+                    : "border-border text-foreground hover:bg-secondary"
                 }`}
               >
                 {tr(p.names)}
@@ -631,7 +737,10 @@ export function FramePanel({ ctx }: { ctx: PanelCtx }) {
             options={FRAME_STYLES.map((s) => ({ id: s.id, label: tr(s.names) }))}
             value={edits.frameStyle}
             onChange={(frameStyle) =>
-              change({ frameStyle, frameWidth: frameStyle !== "none" && edits.frameWidth === 0 ? 5 : edits.frameWidth })
+              change({
+                frameStyle,
+                frameWidth: frameStyle !== "none" && edits.frameWidth === 0 ? 5 : edits.frameWidth,
+              })
             }
           />
         </div>
@@ -658,7 +767,12 @@ export function FramePanel({ ctx }: { ctx: PanelCtx }) {
       )}
 
       <Slider
-        label={tr(["Cantos arredondados", "Rounded corners", "Esquinas redondeadas", "Coins arrondis"])}
+        label={tr([
+          "Cantos arredondados",
+          "Rounded corners",
+          "Esquinas redondeadas",
+          "Coins arrondis",
+        ])}
         value={edits.frameRadius}
         min={0}
         max={50}

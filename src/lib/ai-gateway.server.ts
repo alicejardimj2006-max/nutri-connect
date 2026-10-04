@@ -1,7 +1,8 @@
 import { getRequest } from "@tanstack/react-start/server";
 
 export type AiKind = "nina" | "summary";
-export type AiChatResult = { ok: true; text: string } | { ok: false; status: number; limit?: boolean };
+export type AiChatResult =
+  { ok: true; text: string } | { ok: false; status: number; limit?: boolean };
 
 /**
  * Uma chamada de chat à IA (sem streaming), feita pela Edge Function ai-chat do Supabase com o

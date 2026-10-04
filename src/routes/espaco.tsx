@@ -183,9 +183,13 @@ function EspacoDeHojePage() {
               <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
                 <Sparkles className="h-4 w-4" /> {text.badge ?? t("weekly.badge")}
               </p>
-              <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">{text.title}</h2>
+              <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">
+                {text.title}
+              </h2>
               {text.description && (
-                <p className="mt-2 text-sm leading-relaxed text-foreground/85">{text.description}</p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                  {text.description}
+                </p>
               )}
               {text.question && (
                 <p className="mt-3 text-sm font-semibold text-foreground">{text.question}</p>

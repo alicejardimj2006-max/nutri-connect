@@ -602,7 +602,13 @@ function ConceptView({ activity }: { activity: Extract<Activity, { type: "concep
         )}
         <div className="mb-2 min-w-0 flex-1">
           <p className="text-[11px] font-black uppercase tracking-widest text-primary">
-            {activity.emoji && <EmojiIcon emoji={activity.emoji} className="mr-1 inline h-3.5 w-3.5 align-[-2px]" fallback={null} />}
+            {activity.emoji && (
+              <EmojiIcon
+                emoji={activity.emoji}
+                className="mr-1 inline h-3.5 w-3.5 align-[-2px]"
+                fallback={null}
+              />
+            )}
             {t("lm.beforeStart")}
           </p>
           <h2 className="font-display text-xl font-extrabold leading-snug text-foreground sm:text-3xl">
@@ -1187,7 +1193,11 @@ export function LessonModal({
             <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center py-4">
               <div className="mb-4 flex items-center gap-2">
                 <span className="rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
-                  <EmojiIcon emoji={meta.emoji} className="mr-1 inline h-3 w-3 align-[-1px]" fallback={null} />
+                  <EmojiIcon
+                    emoji={meta.emoji}
+                    className="mr-1 inline h-3 w-3 align-[-1px]"
+                    fallback={null}
+                  />
                   {t("tm.levelN")
                     .replace("{n}", String(level))
                     .replace("{label}", t(`lv.${level}.label` as DictKey))}

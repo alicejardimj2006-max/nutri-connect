@@ -202,12 +202,7 @@ export function ChatThread({
           )}
           {isProfessional && list.length > 0 && (
             <div className="mb-2">
-              <button
-                type="button"
-                className={buttonGhost}
-                disabled={suggesting}
-                onClick={suggest}
-              >
+              <button type="button" className={buttonGhost} disabled={suggesting} onClick={suggest}>
                 {suggesting ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (

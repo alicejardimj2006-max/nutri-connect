@@ -43,13 +43,22 @@ export function useAppSounds() {
       .channel(`sounds-${userId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
         () => playSound("notification"),
       )
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
-        const row = payload.new as { sender_id?: string };
-        if (row.sender_id && row.sender_id !== userId) playSound("message");
-      })
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const row = payload.new as { sender_id?: string };
+          if (row.sender_id && row.sender_id !== userId) playSound("message");
+        },
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);

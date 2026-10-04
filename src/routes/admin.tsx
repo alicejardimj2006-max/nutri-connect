@@ -8,9 +8,22 @@ import { useOverview } from "@/lib/admin-api";
 import { SECTIONS, isSectionId, type SectionId } from "@/components/admin/sections";
 import { OverviewSection } from "@/components/admin/sections-overview";
 import { ContactSection, UsersSection } from "@/components/admin/sections-people";
-import { AnnouncementsSection, PostsSection, ThemesSection } from "@/components/admin/sections-content";
-import { AiSection, AuditSection, FinanceSection, SettingsSection } from "@/components/admin/sections-business";
-import { CommunitiesSection, ModerationSection, VerificationsSection } from "@/components/admin/sections-legacy";
+import {
+  AnnouncementsSection,
+  PostsSection,
+  ThemesSection,
+} from "@/components/admin/sections-content";
+import {
+  AiSection,
+  AuditSection,
+  FinanceSection,
+  SettingsSection,
+} from "@/components/admin/sections-business";
+import {
+  CommunitiesSection,
+  ModerationSection,
+  VerificationsSection,
+} from "@/components/admin/sections-legacy";
 
 export const Route = createFileRoute("/admin")({
   validateSearch: (search: Record<string, unknown>): { secao?: SectionId } => ({
@@ -73,12 +86,18 @@ function AdminPage() {
                 onClick={() => go(s.id)}
                 aria-current={section === s.id ? "page" : undefined}
                 className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
-                  section === s.id ? "border-accent bg-accent-soft text-foreground" : "border-border bg-card text-muted-foreground"
+                  section === s.id
+                    ? "border-accent bg-accent-soft text-foreground"
+                    : "border-border bg-card text-muted-foreground"
                 }`}
               >
                 <s.icon className="h-3.5 w-3.5" />
                 {s.label}
-                {!!badges[s.id] && <span className="rounded-full bg-destructive px-1.5 text-[10px] font-bold text-white">{badges[s.id]}</span>}
+                {!!badges[s.id] && (
+                  <span className="rounded-full bg-destructive px-1.5 text-[10px] font-bold text-white">
+                    {badges[s.id]}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -89,7 +108,9 @@ function AdminPage() {
             </p>
             {Object.entries(groups).map(([group, items]) => (
               <div key={group}>
-                <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">{group}</p>
+                <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  {group}
+                </p>
                 <ul className="space-y-0.5">
                   {items.map((s) => {
                     const active = section === s.id;
@@ -100,12 +121,18 @@ function AdminPage() {
                           onClick={() => go(s.id)}
                           aria-current={active ? "page" : undefined}
                           className={`flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm transition ${
-                            active ? "bg-accent-soft font-bold text-foreground" : "font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            active
+                              ? "bg-accent-soft font-bold text-foreground"
+                              : "font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
                           }`}
                         >
                           <s.icon className={`h-4 w-4 shrink-0 ${active ? "text-accent" : ""}`} />
                           <span className="flex-1">{s.label}</span>
-                          {!!badges[s.id] && <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{badges[s.id]}</span>}
+                          {!!badges[s.id] && (
+                            <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                              {badges[s.id]}
+                            </span>
+                          )}
                         </button>
                       </li>
                     );

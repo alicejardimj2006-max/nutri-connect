@@ -134,10 +134,10 @@ function Contato() {
                 <div className="text-xs leading-relaxed text-muted-foreground">
                   <p className="text-sm font-bold text-foreground">Seus dados e denúncias</p>
                   <p className="mt-1">
-                    Para pedidos da LGPD (acesso, correção, exclusão) escolha o assunto
-                    “Privacidade e dados pessoais”. Você também pode baixar seus dados e excluir a
-                    conta em Configurações. Para denunciar um conteúdo, use o botão de denúncia ou o
-                    assunto “Denúncia de conteúdo”. Veja as{" "}
+                    Para pedidos da LGPD (acesso, correção, exclusão) escolha o assunto “Privacidade
+                    e dados pessoais”. Você também pode baixar seus dados e excluir a conta em
+                    Configurações. Para denunciar um conteúdo, use o botão de denúncia ou o assunto
+                    “Denúncia de conteúdo”. Veja as{" "}
                     <Link to="/diretrizes" className="underline">
                       Diretrizes
                     </Link>{" "}

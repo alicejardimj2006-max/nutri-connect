@@ -66,72 +66,142 @@ export const BLOCK_INFO: Record<BlockType, { icon: LucideIcon; name: Names; hint
   stats: {
     icon: Sparkles,
     name: ["Números", "Numbers", "Números", "Chiffres"],
-    hint: ["Receitas, desafios, publicações e conexões.", "Recipes, challenges, posts and connections.", "Recetas, desafíos, publicaciones y conexiones.", "Recettes, défis, publications et liens."],
+    hint: [
+      "Receitas, desafios, publicações e conexões.",
+      "Recipes, challenges, posts and connections.",
+      "Recetas, desafíos, publicaciones y conexiones.",
+      "Recettes, défis, publications et liens.",
+    ],
   },
   posts: {
     icon: Sparkles,
     name: ["Publicações", "Posts", "Publicaciones", "Publications"],
-    hint: ["Suas últimas publicações no Espaço.", "Your latest posts.", "Tus últimas publicaciones.", "Vos dernières publications."],
+    hint: [
+      "Suas últimas publicações no Espaço.",
+      "Your latest posts.",
+      "Tus últimas publicaciones.",
+      "Vos dernières publications.",
+    ],
   },
   recipes: {
     icon: ChefHat,
     name: ["Receitas preparadas", "Recipes made", "Recetas preparadas", "Recettes préparées"],
-    hint: ["Receitas que você preparou.", "Recipes you made.", "Recetas que preparaste.", "Recettes que vous avez préparées."],
+    hint: [
+      "Receitas que você preparou.",
+      "Recipes you made.",
+      "Recetas que preparaste.",
+      "Recettes que vous avez préparées.",
+    ],
   },
   challenges: {
     icon: Award,
     name: ["Desafios", "Challenges", "Desafíos", "Défis"],
-    hint: ["Desafios em andamento.", "Challenges in progress.", "Desafíos en curso.", "Défis en cours."],
+    hint: [
+      "Desafios em andamento.",
+      "Challenges in progress.",
+      "Desafíos en curso.",
+      "Défis en cours.",
+    ],
   },
   communities: {
     icon: Users,
     name: ["Comunidades", "Communities", "Comunidades", "Communautés"],
-    hint: ["Comunidades de que você participa.", "Communities you are part of.", "Comunidades de las que participas.", "Communautés dont vous faites partie."],
+    hint: [
+      "Comunidades de que você participa.",
+      "Communities you are part of.",
+      "Comunidades de las que participas.",
+      "Communautés dont vous faites partie.",
+    ],
   },
   level: {
     icon: Flame,
     name: ["Nível e sequência", "Level and streak", "Nivel y racha", "Niveau et série"],
-    hint: ["Seu nível, experiência e dias seguidos.", "Your level, XP and streak.", "Tu nivel, experiencia y racha.", "Votre niveau, XP et série."],
+    hint: [
+      "Seu nível, experiência e dias seguidos.",
+      "Your level, XP and streak.",
+      "Tu nivel, experiencia y racha.",
+      "Votre niveau, XP et série.",
+    ],
   },
   pro: {
     icon: Stethoscope,
     name: ["Profissional", "Professional", "Profesional", "Professionnel"],
-    hint: ["Registro, especialidades e agendamento.", "Registration, specialties and booking.", "Registro, especialidades y reservas.", "Inscription, spécialités et réservation."],
+    hint: [
+      "Registro, especialidades e agendamento.",
+      "Registration, specialties and booking.",
+      "Registro, especialidades y reservas.",
+      "Inscription, spécialités et réservation.",
+    ],
   },
   about: {
     icon: User,
     name: ["Sobre mim", "About me", "Sobre mí", "À propos de moi"],
-    hint: ["Conte sua história com suas palavras.", "Tell your story in your own words.", "Cuenta tu historia con tus palabras.", "Racontez votre histoire."],
+    hint: [
+      "Conte sua história com suas palavras.",
+      "Tell your story in your own words.",
+      "Cuenta tu historia con tus palabras.",
+      "Racontez votre histoire.",
+    ],
   },
   text: {
     icon: StickyNote,
     name: ["Texto livre", "Free text", "Texto libre", "Texte libre"],
-    hint: ["Um espaço para escrever o que quiser.", "A space to write anything.", "Un espacio para escribir lo que quieras.", "Un espace pour écrire ce que vous voulez."],
+    hint: [
+      "Um espaço para escrever o que quiser.",
+      "A space to write anything.",
+      "Un espacio para escribir lo que quieras.",
+      "Un espace pour écrire ce que vous voulez.",
+    ],
   },
   quote: {
     icon: Quote,
     name: ["Frase", "Quote", "Frase", "Citation"],
-    hint: ["Uma frase que te representa.", "A quote that represents you.", "Una frase que te representa.", "Une citation qui vous représente."],
+    hint: [
+      "Uma frase que te representa.",
+      "A quote that represents you.",
+      "Una frase que te representa.",
+      "Une citation qui vous représente.",
+    ],
   },
   image: {
     icon: ImageIcon,
     name: ["Foto", "Photo", "Foto", "Photo"],
-    hint: ["Uma foto com legenda.", "A photo with a caption.", "Una foto con leyenda.", "Une photo avec légende."],
+    hint: [
+      "Uma foto com legenda.",
+      "A photo with a caption.",
+      "Una foto con leyenda.",
+      "Une photo avec légende.",
+    ],
   },
   links: {
     icon: Link2,
     name: ["Links", "Links", "Enlaces", "Liens"],
-    hint: ["Seus sites e redes.", "Your sites and networks.", "Tus sitios y redes.", "Vos sites et réseaux."],
+    hint: [
+      "Seus sites e redes.",
+      "Your sites and networks.",
+      "Tus sitios y redes.",
+      "Vos sites et réseaux.",
+    ],
   },
   favorites: {
     icon: Heart,
     name: ["Favoritos", "Favorites", "Favoritos", "Favoris"],
-    hint: ["Alimentos, pratos e coisas que você ama.", "Foods, dishes and things you love.", "Alimentos, platos y cosas que amas.", "Aliments, plats et choses que vous aimez."],
+    hint: [
+      "Alimentos, pratos e coisas que você ama.",
+      "Foods, dishes and things you love.",
+      "Alimentos, platos y cosas que amas.",
+      "Aliments, plats et choses que vous aimez.",
+    ],
   },
   sticker: {
     icon: Smile,
     name: ["Adesivo", "Sticker", "Adhesivo", "Autocollant"],
-    hint: ["Um ícone grande para decorar.", "A big icon to decorate.", "Un icono grande para decorar.", "Une grande icône pour décorer."],
+    hint: [
+      "Um ícone grande para decorar.",
+      "A big icon to decorate.",
+      "Un icono grande para decorar.",
+      "Une grande icône pour décorer.",
+    ],
   },
 };
 
@@ -183,7 +253,9 @@ export function BlockFrame({ block, children }: { block: Block; children: ReactN
           <span className="truncate">{title}</span>
         </h3>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden [scrollbar-width:thin]">{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden [scrollbar-width:thin]">
+        {children}
+      </div>
     </section>
   );
 }
@@ -203,15 +275,25 @@ function StatsBlock() {
     { label: t("profile.stat.challenges"), value: d.challenges.length, icon: Award },
     { label: t("profile.stat.shares"), value: d.posts.length, icon: Sparkles },
     d.isProfessional
-      ? { label: tr(["Seguidores", "Followers", "Seguidores", "Abonnés"]), value: d.remote?.followers_count ?? 0, icon: Users }
-      : { label: tr(["Amigos", "Friends", "Amigos", "Amis"]), value: d.remote?.friends_count ?? 0, icon: Users },
+      ? {
+          label: tr(["Seguidores", "Followers", "Seguidores", "Abonnés"]),
+          value: d.remote?.followers_count ?? 0,
+          icon: Users,
+        }
+      : {
+          label: tr(["Amigos", "Friends", "Amigos", "Amis"]),
+          value: d.remote?.friends_count ?? 0,
+          icon: Users,
+        },
   ];
   return (
     <div className="grid h-full grid-cols-2 items-center gap-3 sm:grid-cols-4">
       {tiles.map((tile) => (
         <div key={tile.label} className="min-w-0 rounded-2xl bg-secondary/50 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="truncate text-[11px] font-medium text-muted-foreground">{tile.label}</span>
+            <span className="truncate text-[11px] font-medium text-muted-foreground">
+              {tile.label}
+            </span>
             <tile.icon className="h-4 w-4 shrink-0 text-accent" />
           </div>
           <p className="mt-1 font-display text-2xl font-bold text-foreground">{tile.value}</p>
@@ -236,7 +318,10 @@ function PostList({ posts, block, empty }: { posts: Post[]; block: Block; empty:
 function ChallengesBlock({ block }: { block: Block }) {
   const d = useData();
   const { t } = useI18n();
-  if (d.challenges.length === 0) return <Empty>{d.isSelf ? t("profile.noChallengesSelf") : t("profile.noChallengesOther")}</Empty>;
+  if (d.challenges.length === 0)
+    return (
+      <Empty>{d.isSelf ? t("profile.noChallengesSelf") : t("profile.noChallengesOther")}</Empty>
+    );
   return (
     <div className="space-y-3">
       {d.challenges.slice(0, block.opts.count).map((c) => {
@@ -251,14 +336,23 @@ function ChallengesBlock({ block }: { block: Block }) {
           >
             <div className="flex items-center justify-between gap-2 font-bold text-foreground">
               <span className="flex min-w-0 items-center gap-1.5">
-                <EmojiIcon emoji={c.badgeIcon} className="h-4 w-4 shrink-0 text-accent" fallback={null} />
+                <EmojiIcon
+                  emoji={c.badgeIcon}
+                  className="h-4 w-4 shrink-0 text-accent"
+                  fallback={null}
+                />
                 <span className="truncate">{c.title}</span>
               </span>
-              {c.completedBy.includes(d.userId) && <Award className="h-3.5 w-3.5 shrink-0 text-primary" />}
+              {c.completedBy.includes(d.userId) && (
+                <Award className="h-3.5 w-3.5 shrink-0 text-primary" />
+              )}
             </div>
             {total > 0 && (
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-card">
-                <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round((done / total) * 100)}%` }} />
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${Math.round((done / total) * 100)}%` }}
+                />
               </div>
             )}
           </Link>
@@ -304,10 +398,17 @@ function LevelBlock() {
   const pct = Math.min(100, Math.round((lvl.xpInLevel / lvl.xpForNext) * 100));
   return (
     <div>
-      <p className="font-display text-2xl font-bold text-foreground">{t("hub.level").replace("{n}", String(lvl.level))}</p>
-      <p className="text-xs text-muted-foreground">{t(LEVEL_LABEL_KEYS[lvl.label] ?? "hub.level.1")}</p>
+      <p className="font-display text-2xl font-bold text-foreground">
+        {t("hub.level").replace("{n}", String(lvl.level))}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {t(LEVEL_LABEL_KEYS[lvl.label] ?? "hub.level.1")}
+      </p>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
-        <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full rounded-full bg-accent transition-all"
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
         <span>
@@ -326,7 +427,16 @@ function ProBlock() {
   const { t } = useI18n();
   const tr = useTr();
   if (!d.isProfessional || !d.professionalInfo) {
-    return <Empty>{tr(["Este bloco aparece para profissionais verificados.", "This block is for verified professionals.", "Este bloque es para profesionales verificados.", "Ce bloc est réservé aux professionnels vérifiés."])}</Empty>;
+    return (
+      <Empty>
+        {tr([
+          "Este bloco aparece para profissionais verificados.",
+          "This block is for verified professionals.",
+          "Este bloque es para profesionales verificados.",
+          "Ce bloc est réservé aux professionnels vérifiés.",
+        ])}
+      </Empty>
+    );
   }
   const info = d.professionalInfo;
   return (
@@ -336,7 +446,10 @@ function ProBlock() {
       </p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {info.specialties.map((sp) => (
-          <li key={sp} className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground">
+          <li
+            key={sp}
+            className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground"
+          >
             {td(sp)}
           </li>
         ))}
@@ -369,7 +482,13 @@ function QuoteBlock({ block }: { block: Block }) {
         className={`h-6 w-6 shrink-0 text-accent ${block.style.align === "center" ? "self-center" : block.style.align === "right" ? "self-end" : "self-start"}`}
       />
       <blockquote className="break-words font-display text-xl font-semibold leading-snug">
-        {block.text || tr(["Escreva uma frase que te represente.", "Write a quote that represents you.", "Escribe una frase que te represente.", "Écrivez une citation qui vous représente."])}
+        {block.text ||
+          tr([
+            "Escreva uma frase que te represente.",
+            "Write a quote that represents you.",
+            "Escribe una frase que te represente.",
+            "Écrivez une citation qui vous représente.",
+          ])}
       </blockquote>
       {block.title && <figcaption className="text-xs opacity-70">— {block.title}</figcaption>}
     </figure>
@@ -390,7 +509,12 @@ function ImageBlock({ block }: { block: Block }) {
   }
   return (
     <figure className="flex h-full flex-col gap-2">
-      <img src={block.image} alt={block.text || ""} className="min-h-0 w-full flex-1 rounded-xl object-cover" loading="lazy" />
+      <img
+        src={block.image}
+        alt={block.text || ""}
+        className="min-h-0 w-full flex-1 rounded-xl object-cover"
+        loading="lazy"
+      />
       {block.text && <figcaption className="shrink-0 text-xs opacity-80">{block.text}</figcaption>}
     </figure>
   );
@@ -407,7 +531,17 @@ function hostOf(url: string) {
 function LinksBlock({ block }: { block: Block }) {
   const tr = useTr();
   const items = block.items.filter((i) => i.url);
-  if (items.length === 0) return <Empty>{tr(["Adicione seus links.", "Add your links.", "Añade tus enlaces.", "Ajoutez vos liens."])}</Empty>;
+  if (items.length === 0)
+    return (
+      <Empty>
+        {tr([
+          "Adicione seus links.",
+          "Add your links.",
+          "Añade tus enlaces.",
+          "Ajoutez vos liens.",
+        ])}
+      </Empty>
+    );
   return (
     <ul className="space-y-2">
       {items.map((it, i) => (
@@ -421,7 +555,9 @@ function LinksBlock({ block }: { block: Block }) {
             <ProfileIcon value={it.emoji} fallback={Link2} className="h-5 w-5 shrink-0" />
             <span className="min-w-0 flex-1">
               <span className="block truncate">{it.label || hostOf(it.url)}</span>
-              <span className="block truncate text-[11px] font-normal opacity-60">{hostOf(it.url)}</span>
+              <span className="block truncate text-[11px] font-normal opacity-60">
+                {hostOf(it.url)}
+              </span>
             </span>
             <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
           </a>
@@ -433,11 +569,34 @@ function LinksBlock({ block }: { block: Block }) {
 
 function FavoritesBlock({ block }: { block: Block }) {
   const tr = useTr();
-  if (block.items.length === 0) return <Empty>{tr(["Adicione o que você ama.", "Add what you love.", "Añade lo que amas.", "Ajoutez ce que vous aimez."])}</Empty>;
+  if (block.items.length === 0)
+    return (
+      <Empty>
+        {tr([
+          "Adicione o que você ama.",
+          "Add what you love.",
+          "Añade lo que amas.",
+          "Ajoutez ce que vous aimez.",
+        ])}
+      </Empty>
+    );
   return (
-    <ul className="flex flex-wrap gap-2" style={{ justifyContent: block.style.align === "center" ? "center" : block.style.align === "right" ? "flex-end" : "flex-start" }}>
+    <ul
+      className="flex flex-wrap gap-2"
+      style={{
+        justifyContent:
+          block.style.align === "center"
+            ? "center"
+            : block.style.align === "right"
+              ? "flex-end"
+              : "flex-start",
+      }}
+    >
       {block.items.map((it, i) => (
-        <li key={i} className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground">
+        <li
+          key={i}
+          className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground"
+        >
           {it.emoji && <ProfileIcon value={it.emoji} className="h-4 w-4" />}
           {it.label}
         </li>
@@ -451,7 +610,10 @@ function StickerBlock({ block }: { block: Block }) {
     <div className="grid h-full place-items-center overflow-hidden text-accent">
       <span
         className="block [&>svg]:h-full [&>svg]:w-full"
-        style={{ width: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)), height: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)) }}
+        style={{
+          width: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)),
+          height: Math.max(28, Math.min(block.h * 40 * 0.62, block.w * 52)),
+        }}
       >
         <ProfileIcon value={block.opts.emoji || "apple"} className="" strokeWidth={1.6} />
       </span>
@@ -470,10 +632,22 @@ export function BlockView({ block }: { block: Block }) {
       body = <StatsBlock />;
       break;
     case "posts":
-      body = <PostList posts={d.posts} block={block} empty={d.isSelf ? t("profile.noPostsSelf") : t("profile.noPostsOther")} />;
+      body = (
+        <PostList
+          posts={d.posts}
+          block={block}
+          empty={d.isSelf ? t("profile.noPostsSelf") : t("profile.noPostsOther")}
+        />
+      );
       break;
     case "recipes":
-      body = <PostList posts={d.recipes} block={block} empty={d.isSelf ? t("profile.noRecipesSelf") : t("profile.noRecipesOther")} />;
+      body = (
+        <PostList
+          posts={d.recipes}
+          block={block}
+          empty={d.isSelf ? t("profile.noRecipesSelf") : t("profile.noRecipesOther")}
+        />
+      );
       break;
     case "challenges":
       body = <ChallengesBlock block={block} />;
@@ -488,10 +662,30 @@ export function BlockView({ block }: { block: Block }) {
       body = <ProBlock />;
       break;
     case "about":
-      body = <TextBody block={block} placeholder={tr(["Conte um pouco sobre você.", "Tell a little about yourself.", "Cuenta un poco sobre ti.", "Parlez un peu de vous."])} />;
+      body = (
+        <TextBody
+          block={block}
+          placeholder={tr([
+            "Conte um pouco sobre você.",
+            "Tell a little about yourself.",
+            "Cuenta un poco sobre ti.",
+            "Parlez un peu de vous.",
+          ])}
+        />
+      );
       break;
     case "text":
-      body = <TextBody block={block} placeholder={tr(["Escreva aqui o que quiser.", "Write whatever you like here.", "Escribe aquí lo que quieras.", "Écrivez ici ce que vous voulez."])} />;
+      body = (
+        <TextBody
+          block={block}
+          placeholder={tr([
+            "Escreva aqui o que quiser.",
+            "Write whatever you like here.",
+            "Escribe aquí lo que quieras.",
+            "Écrivez ici ce que vous voulez.",
+          ])}
+        />
+      );
       break;
     case "quote":
       body = <QuoteBlock block={block} />;
@@ -513,4 +707,7 @@ export function BlockView({ block }: { block: Block }) {
 }
 
 /** Tamanho mínimo de cada tipo (usado ao redimensionar). */
-export const minSize = (type: BlockType) => ({ w: BLOCK_SIZES[type].minW, h: BLOCK_SIZES[type].minH });
+export const minSize = (type: BlockType) => ({
+  w: BLOCK_SIZES[type].minW,
+  h: BLOCK_SIZES[type].minH,
+});

@@ -69,9 +69,11 @@ function Diretrizes() {
         <p>
           Use o botão de denúncia no conteúdo ou no perfil, escolha o motivo e, se quiser, explique.
           Também é possível escrever pelo{" "}
-          <Link to="/contato" className="text-primary underline">Fale conosco</Link> (assunto
-          “Denúncia de conteúdo”), indicando o link do material. Denúncias podem ser feitas por
-          qualquer pessoa logada, e quem denuncia não é identificado(a) ao autor.
+          <Link to="/contato" className="text-primary underline">
+            Fale conosco
+          </Link>{" "}
+          (assunto “Denúncia de conteúdo”), indicando o link do material. Denúncias podem ser feitas
+          por qualquer pessoa logada, e quem denuncia não é identificado(a) ao autor.
         </p>
       </LegalSection>
 
@@ -89,8 +91,15 @@ function Diretrizes() {
 
       <LegalSection id="mais" title="7. Mais informações">
         <p>
-          Veja também os <Link to="/termos" className="text-primary underline">Termos de Uso</Link> e
-          a <Link to="/privacidade" className="text-primary underline">Política de Privacidade</Link>.
+          Veja também os{" "}
+          <Link to="/termos" className="text-primary underline">
+            Termos de Uso
+          </Link>{" "}
+          e a{" "}
+          <Link to="/privacidade" className="text-primary underline">
+            Política de Privacidade
+          </Link>
+          .
         </p>
       </LegalSection>
     </LegalLayout>

@@ -66,9 +66,17 @@ const CARDS: CardDef[] = [
     section: ColorsSection,
     summary: (a, t) => (
       <>
-        <span className="h-5 w-5 rounded-full border border-border" style={{ background: a.accent }} />
-        <span className="h-5 w-5 rounded-full border border-border" style={{ background: a.primary }} />
-        <span className={chip}>{t(`ap.mode.${a.mode === "schedule" ? "system" : a.mode}` as DictKey)}</span>
+        <span
+          className="h-5 w-5 rounded-full border border-border"
+          style={{ background: a.accent }}
+        />
+        <span
+          className="h-5 w-5 rounded-full border border-border"
+          style={{ background: a.primary }}
+        />
+        <span className={chip}>
+          {t(`ap.mode.${a.mode === "schedule" ? "system" : a.mode}` as DictKey)}
+        </span>
       </>
     ),
   },
@@ -152,7 +160,9 @@ const CARDS: CardDef[] = [
         a.lineHeight > 0,
         a.colorFilter !== "none",
       ].filter(Boolean).length;
-      return <span className={chip}>{active > 0 ? `${active} ${t("pz.active")}` : t("pz.default")}</span>;
+      return (
+        <span className={chip}>{active > 0 ? `${active} ${t("pz.active")}` : t("pz.default")}</span>
+      );
     },
   },
   {
@@ -163,8 +173,12 @@ const CARDS: CardDef[] = [
     section: ProfileSection,
     summary: (a, t) => (
       <>
-        <span className={chip}>{t(a.cardStyle === "compact" ? "pz.profile.compact" : "pz.profile.classic")}</span>
-        <span className={chip}>{t(a.avatarShape === "square" ? "pz.profile.square" : "pz.profile.round")}</span>
+        <span className={chip}>
+          {t(a.cardStyle === "compact" ? "pz.profile.compact" : "pz.profile.classic")}
+        </span>
+        <span className={chip}>
+          {t(a.avatarShape === "square" ? "pz.profile.square" : "pz.profile.round")}
+        </span>
       </>
     ),
   },
@@ -178,7 +192,9 @@ function Preview() {
       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {t("ap.preview")}
       </p>
-      <h3 className="mt-1 font-display text-lg font-bold text-foreground">{t("ap.previewTitle")}</h3>
+      <h3 className="mt-1 font-display text-lg font-bold text-foreground">
+        {t("ap.previewTitle")}
+      </h3>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t("ap.previewText")}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
@@ -216,7 +232,14 @@ function ShareStyle() {
       await navigator.clipboard.writeText(JSON.stringify(a));
       toast.success(tr(["Estilo copiado!", "Style copied!", "¡Estilo copiado!", "Style copié !"]));
     } catch {
-      toast.error(tr(["Não foi possível copiar.", "Could not copy.", "No se pudo copiar.", "Copie impossible."]));
+      toast.error(
+        tr([
+          "Não foi possível copiar.",
+          "Could not copy.",
+          "No se pudo copiar.",
+          "Copie impossible.",
+        ]),
+      );
     }
   };
 
@@ -224,16 +247,25 @@ function ShareStyle() {
     try {
       saveAppearance(sanitizeAppearance(JSON.parse(text)));
       setText("");
-      toast.success(tr(["Estilo aplicado!", "Style applied!", "¡Estilo aplicado!", "Style appliqué !"]));
+      toast.success(
+        tr(["Estilo aplicado!", "Style applied!", "¡Estilo aplicado!", "Style appliqué !"]),
+      );
     } catch {
-      toast.error(tr(["Estilo inválido.", "Invalid style.", "Estilo no válido.", "Style invalide."]));
+      toast.error(
+        tr(["Estilo inválido.", "Invalid style.", "Estilo no válido.", "Style invalide."]),
+      );
     }
   };
 
   return (
     <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs">
       <h2 className="font-display text-base font-bold text-foreground">
-        {tr(["Compartilhar meu estilo", "Share my style", "Compartir mi estilo", "Partager mon style"])}
+        {tr([
+          "Compartilhar meu estilo",
+          "Share my style",
+          "Compartir mi estilo",
+          "Partager mon style",
+        ])}
       </h2>
       <p className="text-[11px] text-muted-foreground">
         {tr([
@@ -257,7 +289,12 @@ function ShareStyle() {
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={2}
-        placeholder={tr(["Cole um estilo aqui…", "Paste a style here…", "Pega un estilo aquí…", "Collez un style ici…"])}
+        placeholder={tr([
+          "Cole um estilo aqui…",
+          "Paste a style here…",
+          "Pega un estilo aquí…",
+          "Collez un style ici…",
+        ])}
         className="mt-3 w-full resize-none rounded-xl border border-input bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-accent"
       />
       <button

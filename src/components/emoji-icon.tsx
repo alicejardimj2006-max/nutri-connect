@@ -305,7 +305,9 @@ type IconNode = [string, Record<string, string | number>][];
 /** Contorno do ícone (grade 24×24) como um único caminho SVG, para desenhar em canvas. */
 function iconPathData(Icon: LucideIcon): string {
   // O componente do lucide é um forwardRef que só repassa o `iconNode` para o <Icon> interno.
-  const render = (Icon as unknown as { render?: (p: object, r: null) => { props?: { iconNode?: IconNode } } }).render;
+  const render = (
+    Icon as unknown as { render?: (p: object, r: null) => { props?: { iconNode?: IconNode } } }
+  ).render;
   const node = render?.({}, null)?.props?.iconNode ?? [];
   const n = (v: string | number | undefined) => Number(v ?? 0);
   return node
@@ -335,9 +337,13 @@ function iconPathData(Icon: LucideIcon): string {
         }
         case "polyline":
         case "polygon": {
-          const pts = String(a.points).trim().split(/[\s,]+/).map(Number);
+          const pts = String(a.points)
+            .trim()
+            .split(/[\s,]+/)
+            .map(Number);
           let d = "";
-          for (let i = 0; i + 1 < pts.length; i += 2) d += `${i ? "L" : "M"}${pts[i]} ${pts[i + 1]}`;
+          for (let i = 0; i + 1 < pts.length; i += 2)
+            d += `${i ? "L" : "M"}${pts[i]} ${pts[i + 1]}`;
           return tag === "polygon" ? d + "z" : d;
         }
         default:

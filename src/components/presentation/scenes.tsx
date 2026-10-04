@@ -219,7 +219,9 @@ export function FlipCard({
   if (isStatic) {
     return (
       <article className="rounded-3xl border border-border bg-card p-5 shadow-card">
-        <span className="text-primary"><EmojiIcon emoji={emoji} className="h-10 w-10" /></span>
+        <span className="text-primary">
+          <EmojiIcon emoji={emoji} className="h-10 w-10" />
+        </span>
         <h3 className="mt-3 text-lg font-bold leading-snug">{title}</h3>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
       </article>

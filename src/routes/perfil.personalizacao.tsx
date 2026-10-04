@@ -1,11 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
-import {
-  CARD_IDS,
-  PersonalizationPanel,
-  type CardId,
-} from "@/components/personalization-panel";
+import { CARD_IDS, PersonalizationPanel, type CardId } from "@/components/personalization-panel";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -37,9 +33,7 @@ function PersonalizationPage() {
           <span>{t("custom.back")}</span>
         </Link>
 
-        <h1 className="sr-only">
-          {t("custom.title")}
-        </h1>
+        <h1 className="sr-only">{t("custom.title")}</h1>
 
         <PersonalizationPanel
           card={cartao}

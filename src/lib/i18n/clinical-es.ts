@@ -63,7 +63,8 @@ const clinical: Record<ClinicalKey, string> = {
   "pro.duration": "Duración",
   "pro.minutes": "{n} minutos",
   "pro.addressOnBooking": "Dirección informada después de agendar",
-  "pro.onlineDefault": "Videollamada en la sala de NutriConnect, aquí en el sitio, sin instalar nada.",
+  "pro.onlineDefault":
+    "Videollamada en la sala de NutriConnect, aquí en el sitio, sin instalar nada.",
   "pro.selfNotice": "Esta es tu página pública de reservas. Así te ven los pacientes.",
   "pro.editSettings": "Editar atención",
   "booking.title": "Agenda tu consulta",
@@ -137,7 +138,8 @@ const clinical: Record<ClinicalKey, string> = {
   "patientAppts.emptyUpcomingText": "¿Qué tal agendar con un profesional verificado?",
   "patientAppts.emptyPast": "Nada por aquí todavía",
   "appt.join": "Entrar a la sala",
-  "appt.roomInfo": "La consulta se realiza en la sala de video de NutriConnect, aquí en el sitio. La sala abre 30 min antes.",
+  "appt.roomInfo":
+    "La consulta se realiza en la sala de video de NutriConnect, aquí en el sitio. La sala abre 30 min antes.",
   "appt.payNow": "Pagar ahora",
   "appt.reschedule": "Reprogramar",
   "appt.manage": "Gestionar",
@@ -272,17 +274,21 @@ const clinical: Record<ClinicalKey, string> = {
   "invites.whatsappText": "¡Hola! Te invité al acompañamiento nutricional en NutriConnect: {url}",
   "record.back": "Todos los pacientes",
   "ai.summary.title": "Resumen con IA",
-  "ai.summary.hint": "Resume el diario alimentario, las metas y las medidas del paciente. No se guarda nada en la ficha.",
+  "ai.summary.hint":
+    "Resume el diario alimentario, las metas y las medidas del paciente. No se guarda nada en la ficha.",
   "ai.summary.days7": "Últimos 7 días",
   "ai.summary.days30": "Últimos 30 días",
   "ai.summary.generate": "Generar resumen",
   "ai.summary.regenerate": "Generar de nuevo",
   "ai.summary.generating": "Generando…",
-  "ai.summary.disclaimer": "Generado por IA a partir de los registros del paciente. Puede contener errores: verifica en la ficha antes de usarlo.",
+  "ai.summary.disclaimer":
+    "Generado por IA a partir de los registros del paciente. Puede contener errores: verifica en la ficha antes de usarlo.",
   "ai.summary.error": "No se pudo generar el resumen.",
   "ai.soap.title": "Borrador con IA",
-  "ai.soap.hint": "Pega tus notas sueltas y la IA las organiza en Subjetivo, Objetivo, Evaluación y Plan. No incluyas nombre, documento ni contacto del paciente.",
-  "ai.soap.placeholder": "Ej.: refiere menos hambre por la noche, peso 71,2 kg, buena adherencia al desayuno, quiere mantener las caminatas…",
+  "ai.soap.hint":
+    "Pega tus notas sueltas y la IA las organiza en Subjetivo, Objetivo, Evaluación y Plan. No incluyas nombre, documento ni contacto del paciente.",
+  "ai.soap.placeholder":
+    "Ej.: refiere menos hambre por la noche, peso 71,2 kg, buena adherencia al desayuno, quiere mantener las caminatas…",
   "ai.soap.generate": "Organizar con IA",
   "ai.soap.generating": "Organizando…",
   "ai.soap.done": "Borrador completado. Revísalo antes de guardar.",
@@ -697,7 +703,8 @@ const clinical: Record<ClinicalKey, string> = {
   "payment.returnFailure":
     "El pago no se completó. Puedes intentarlo de nuevo mientras el horario siga reservado.",
   "mp.title": "Pagos en línea",
-  "mp.stripeText": "Los pacientes pagan con tarjeta al agendar. NutriConnect recibe el pago y te lo transfiere, descontada una tarifa del {fee}% por consulta.",
+  "mp.stripeText":
+    "Los pacientes pagan con tarjeta al agendar. NutriConnect recibe el pago y te lo transfiere, descontada una tarifa del {fee}% por consulta.",
   "mp.noPrice": "Define un valor de consulta mayor que cero para cobrar en línea.",
   "panelNav.finance": "Finanzas",
   "finance.title": "Finanzas",

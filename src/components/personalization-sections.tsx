@@ -150,7 +150,12 @@ export function ColorsSection() {
       <Switch
         checked={a.oledBlack}
         onChange={(oledBlack) => edit({ oledBlack })}
-        label={tr(["Preto total no modo escuro", "True black in dark mode", "Negro total en modo oscuro", "Noir total en mode sombre"])}
+        label={tr([
+          "Preto total no modo escuro",
+          "True black in dark mode",
+          "Negro total en modo oscuro",
+          "Noir total en mode sombre",
+        ])}
         hint={tr([
           "Fundo totalmente preto: economiza bateria em telas OLED.",
           "Pure black background: saves battery on OLED screens.",
@@ -250,7 +255,12 @@ export function ColorsSection() {
       </Group>
 
       <Group
-        title={tr(["Intensidade das cores", "Color intensity", "Intensidad de los colores", "Intensité des couleurs"])}
+        title={tr([
+          "Intensidade das cores",
+          "Color intensity",
+          "Intensidad de los colores",
+          "Intensité des couleurs",
+        ])}
         hint={tr([
           "Deixa destaque e cor principal mais apagados ou mais vivos.",
           "Makes the accent and primary colors more muted or more vivid.",
@@ -285,7 +295,9 @@ export function ColorsSection() {
           step={2}
           value={a.warmth}
           onChange={(warmth) => edit({ warmth })}
-          display={a.warmth === 0 ? t("pz.default") : a.warmth > 0 ? `+${a.warmth}` : String(a.warmth)}
+          display={
+            a.warmth === 0 ? t("pz.default") : a.warmth > 0 ? `+${a.warmth}` : String(a.warmth)
+          }
         />
       </Group>
 
@@ -399,7 +411,12 @@ export function TextSection() {
   return (
     <Section title={t("ap.text")} hint={t("ap.textHint")}>
       <Group
-        title={tr(["Combinações prontas", "Ready-made pairings", "Combinaciones listas", "Associations prêtes"])}
+        title={tr([
+          "Combinações prontas",
+          "Ready-made pairings",
+          "Combinaciones listas",
+          "Associations prêtes",
+        ])}
         hint={tr([
           "Fonte dos títulos + fonte do texto, escolhidas para combinar.",
           "Heading font + body font, picked to go together.",
@@ -410,21 +427,27 @@ export function TextSection() {
         <PresetGallery
           presets={FONT_PAIRS}
           columns="grid-cols-2 sm:grid-cols-5"
-          isActive={(p) =>
-            a.headingFont === p.patch.headingFont && a.bodyFont === p.patch.bodyFont
-          }
+          isActive={(p) => a.headingFont === p.patch.headingFont && a.bodyFont === p.patch.bodyFont}
           onPick={(p) => update(p.patch)}
           preview={(p) => (
             <span className="block rounded-lg border border-border/60 bg-card px-2 py-1.5">
               <span
                 className="block text-base font-bold leading-tight text-foreground"
-                style={{ fontFamily: cssOf(HEADING_FONTS, String(p.patch.headingFont), DEFAULT_HEADING_CSS) }}
+                style={{
+                  fontFamily: cssOf(
+                    HEADING_FONTS,
+                    String(p.patch.headingFont),
+                    DEFAULT_HEADING_CSS,
+                  ),
+                }}
               >
                 Aa
               </span>
               <span
                 className="block text-[11px] text-muted-foreground"
-                style={{ fontFamily: cssOf(BODY_FONTS, String(p.patch.bodyFont), DEFAULT_BODY_CSS) }}
+                style={{
+                  fontFamily: cssOf(BODY_FONTS, String(p.patch.bodyFont), DEFAULT_BODY_CSS),
+                }}
               >
                 abc 123
               </span>
@@ -452,7 +475,14 @@ export function TextSection() {
         />
       </Group>
 
-      <Group title={tr(["Peso dos títulos", "Heading weight", "Grosor de los títulos", "Graisse des titres"])}>
+      <Group
+        title={tr([
+          "Peso dos títulos",
+          "Heading weight",
+          "Grosor de los títulos",
+          "Graisse des titres",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3 sm:grid-cols-6"
           options={[0, 500, 600, 700, 800, 900].map((w) => ({ id: w, label: tr(WEIGHT_NAMES[w]) }))}
@@ -461,7 +491,14 @@ export function TextSection() {
         />
       </Group>
 
-      <Group title={tr(["Tamanho dos títulos", "Heading size", "Tamaño de los títulos", "Taille des titres"])}>
+      <Group
+        title={tr([
+          "Tamanho dos títulos",
+          "Heading size",
+          "Tamaño de los títulos",
+          "Taille des titres",
+        ])}
+      >
         <Slider
           label="heading size"
           min={HEADING_SCALE_RANGE.min}
@@ -473,20 +510,40 @@ export function TextSection() {
         />
       </Group>
 
-      <Group title={tr(["Letras dos títulos", "Heading letters", "Letras de los títulos", "Lettres des titres"])}>
+      <Group
+        title={tr([
+          "Letras dos títulos",
+          "Heading letters",
+          "Letras de los títulos",
+          "Lettres des titres",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
             { id: "normal" as const, label: tr(["Normal", "Normal", "Normal", "Normal"]) },
-            { id: "upper" as const, label: tr(["MAIÚSCULAS", "UPPERCASE", "MAYÚSCULAS", "MAJUSCULES"]) },
-            { id: "capitalize" as const, label: tr(["Cada Palavra", "Each Word", "Cada Palabra", "Chaque Mot"]) },
+            {
+              id: "upper" as const,
+              label: tr(["MAIÚSCULAS", "UPPERCASE", "MAYÚSCULAS", "MAJUSCULES"]),
+            },
+            {
+              id: "capitalize" as const,
+              label: tr(["Cada Palavra", "Each Word", "Cada Palabra", "Chaque Mot"]),
+            },
           ]}
           value={a.headingCase}
           onChange={(headingCase) => update({ headingCase })}
         />
       </Group>
 
-      <Group title={tr(["Cor dos títulos", "Heading color", "Color de los títulos", "Couleur des titres"])}>
+      <Group
+        title={tr([
+          "Cor dos títulos",
+          "Heading color",
+          "Color de los títulos",
+          "Couleur des titres",
+        ])}
+      >
         <FreeColor
           label="heading color"
           value={a.headingColor}
@@ -519,7 +576,12 @@ export function TextSection() {
       </Group>
 
       <Group
-        title={tr(["Alinhamento do texto", "Text alignment", "Alineación del texto", "Alignement du texte"])}
+        title={tr([
+          "Alinhamento do texto",
+          "Text alignment",
+          "Alineación del texto",
+          "Alignement du texte",
+        ])}
         hint={tr([
           "Padrão = como cada tela foi desenhada.",
           "Default = as each screen was designed.",
@@ -530,9 +592,15 @@ export function TextSection() {
         <Segmented
           columns="grid-cols-3"
           options={[
-            { id: "default" as const, label: tr(["Padrão", "Default", "Predeterminado", "Par défaut"]) },
+            {
+              id: "default" as const,
+              label: tr(["Padrão", "Default", "Predeterminado", "Par défaut"]),
+            },
             { id: "left" as const, label: tr(["À esquerda", "Left", "Izquierda", "À gauche"]) },
-            { id: "justify" as const, label: tr(["Justificado", "Justified", "Justificado", "Justifié"]) },
+            {
+              id: "justify" as const,
+              label: tr(["Justificado", "Justified", "Justificado", "Justifié"]),
+            },
           ]}
           value={a.textAlign}
           onChange={(textAlign) => update({ textAlign })}
@@ -599,7 +667,12 @@ export function ShapesSection() {
       </Group>
 
       <Group
-        title={tr(["Cantos dos cartões", "Card corners", "Esquinas de las tarjetas", "Coins des cartes"])}
+        title={tr([
+          "Cantos dos cartões",
+          "Card corners",
+          "Esquinas de las tarjetas",
+          "Coins des cartes",
+        ])}
         hint={tr([
           "Por padrão acompanham os cantos gerais.",
           "By default they follow the general corners.",
@@ -610,7 +683,12 @@ export function ShapesSection() {
         <Switch
           checked={a.cardRadius !== null}
           onChange={(on) => update({ cardRadius: on ? a.cornerRadius : null })}
-          label={tr(["Definir separadamente", "Set separately", "Definir por separado", "Définir séparément"])}
+          label={tr([
+            "Definir separadamente",
+            "Set separately",
+            "Definir por separado",
+            "Définir séparément",
+          ])}
           hint=""
         />
         {a.cardRadius !== null && (
@@ -628,12 +706,22 @@ export function ShapesSection() {
         )}
       </Group>
 
-      <Group title={tr(["Formato dos botões", "Button shape", "Forma de los botones", "Forme des boutons"])}>
+      <Group
+        title={tr([
+          "Formato dos botões",
+          "Button shape",
+          "Forma de los botones",
+          "Forme des boutons",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
             { id: "pill" as const, label: tr(["Pílula", "Pill", "Píldora", "Pilule"]) },
-            { id: "rounded" as const, label: tr(["Arredondado", "Rounded", "Redondeado", "Arrondi"]) },
+            {
+              id: "rounded" as const,
+              label: tr(["Arredondado", "Rounded", "Redondeado", "Arrondi"]),
+            },
             { id: "square" as const, label: tr(["Quadrado", "Square", "Cuadrado", "Carré"]) },
           ]}
           value={a.buttonShape}
@@ -641,11 +729,16 @@ export function ShapesSection() {
         />
       </Group>
 
-      <Group title={tr(["Estilo dos campos", "Field style", "Estilo de los campos", "Style des champs"])}>
+      <Group
+        title={tr(["Estilo dos campos", "Field style", "Estilo de los campos", "Style des champs"])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
-            { id: "outlined" as const, label: tr(["Contorno", "Outlined", "Con borde", "Contour"]) },
+            {
+              id: "outlined" as const,
+              label: tr(["Contorno", "Outlined", "Con borde", "Contour"]),
+            },
             { id: "filled" as const, label: tr(["Preenchido", "Filled", "Relleno", "Rempli"]) },
             { id: "underline" as const, label: tr(["Linha", "Underline", "Línea", "Ligne"]) },
           ]}
@@ -663,7 +756,14 @@ export function ShapesSection() {
         />
       </Group>
 
-      <Group title={tr(["Espessura das bordas", "Border thickness", "Grosor de los bordes", "Épaisseur des bordures"])}>
+      <Group
+        title={tr([
+          "Espessura das bordas",
+          "Border thickness",
+          "Grosor de los bordes",
+          "Épaisseur des bordures",
+        ])}
+      >
         <Slider
           label="border width"
           min={BORDER_WIDTH_RANGE.min}
@@ -693,7 +793,14 @@ export function ShapesSection() {
         />
       </Group>
 
-      <Group title={tr(["Espessura dos ícones", "Icon thickness", "Grosor de los iconos", "Épaisseur des icônes"])}>
+      <Group
+        title={tr([
+          "Espessura dos ícones",
+          "Icon thickness",
+          "Grosor de los iconos",
+          "Épaisseur des icônes",
+        ])}
+      >
         <Slider
           label="icon stroke"
           min={ICON_STROKE_RANGE.min}
@@ -705,7 +812,14 @@ export function ShapesSection() {
         />
       </Group>
 
-      <Group title={tr(["Velocidade das animações", "Animation speed", "Velocidad de las animaciones", "Vitesse des animations"])}>
+      <Group
+        title={tr([
+          "Velocidade das animações",
+          "Animation speed",
+          "Velocidad de las animaciones",
+          "Vitesse des animations",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
@@ -718,13 +832,26 @@ export function ShapesSection() {
         />
       </Group>
 
-      <Group title={tr(["Barras de rolagem", "Scrollbars", "Barras de desplazamiento", "Barres de défilement"])}>
+      <Group
+        title={tr([
+          "Barras de rolagem",
+          "Scrollbars",
+          "Barras de desplazamiento",
+          "Barres de défilement",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
-            { id: "default" as const, label: tr(["Padrão", "Default", "Predeterminado", "Par défaut"]) },
+            {
+              id: "default" as const,
+              label: tr(["Padrão", "Default", "Predeterminado", "Par défaut"]),
+            },
             { id: "thin" as const, label: tr(["Finas", "Thin", "Finas", "Fines"]) },
-            { id: "accent" as const, label: tr(["Coloridas", "Colored", "Coloreadas", "Colorées"]) },
+            {
+              id: "accent" as const,
+              label: tr(["Coloridas", "Colored", "Coloreadas", "Colorées"]),
+            },
           ]}
           value={a.scrollbar}
           onChange={(scrollbar) => update({ scrollbar })}
@@ -759,14 +886,74 @@ const SOUND_EVENTS: {
   tone: keyof Appearance;
   names: Names;
 }[] = [
-  { kind: "notification", on: "soundNotification", tone: "toneNotification", names: ["Novas notificações", "New notifications", "Nuevas notificaciones", "Nouvelles notifications"] },
-  { kind: "message", on: "soundMessage", tone: "toneMessage", names: ["Novas mensagens", "New messages", "Nuevos mensajes", "Nouveaux messages"] },
-  { kind: "send", on: "soundSend", tone: "toneSend", names: ["Mensagem enviada", "Message sent", "Mensaje enviado", "Message envoyé"] },
-  { kind: "support", on: "soundSupport", tone: "toneSupport", names: ["Apoiar um post", "Supporting a post", "Apoyar una publicación", "Soutenir une publication"] },
-  { kind: "success", on: "soundSuccess", tone: "toneSuccess", names: ["Avisos de sucesso", "Success notices", "Avisos de éxito", "Avis de succès"] },
-  { kind: "error", on: "soundError", tone: "toneError", names: ["Avisos de erro", "Error notices", "Avisos de error", "Avis d'erreur"] },
-  { kind: "achievement", on: "soundAchievement", tone: "toneAchievement", names: ["Conquistas e níveis", "Achievements and levels", "Logros y niveles", "Succès et niveaux"] },
-  { kind: "click", on: "soundClicks", tone: "toneClick", names: ["Cliques em botões e links", "Clicks on buttons and links", "Clics en botones y enlaces", "Clics sur boutons et liens"] },
+  {
+    kind: "notification",
+    on: "soundNotification",
+    tone: "toneNotification",
+    names: [
+      "Novas notificações",
+      "New notifications",
+      "Nuevas notificaciones",
+      "Nouvelles notifications",
+    ],
+  },
+  {
+    kind: "message",
+    on: "soundMessage",
+    tone: "toneMessage",
+    names: ["Novas mensagens", "New messages", "Nuevos mensajes", "Nouveaux messages"],
+  },
+  {
+    kind: "send",
+    on: "soundSend",
+    tone: "toneSend",
+    names: ["Mensagem enviada", "Message sent", "Mensaje enviado", "Message envoyé"],
+  },
+  {
+    kind: "support",
+    on: "soundSupport",
+    tone: "toneSupport",
+    names: [
+      "Apoiar um post",
+      "Supporting a post",
+      "Apoyar una publicación",
+      "Soutenir une publication",
+    ],
+  },
+  {
+    kind: "success",
+    on: "soundSuccess",
+    tone: "toneSuccess",
+    names: ["Avisos de sucesso", "Success notices", "Avisos de éxito", "Avis de succès"],
+  },
+  {
+    kind: "error",
+    on: "soundError",
+    tone: "toneError",
+    names: ["Avisos de erro", "Error notices", "Avisos de error", "Avis d'erreur"],
+  },
+  {
+    kind: "achievement",
+    on: "soundAchievement",
+    tone: "toneAchievement",
+    names: [
+      "Conquistas e níveis",
+      "Achievements and levels",
+      "Logros y niveles",
+      "Succès et niveaux",
+    ],
+  },
+  {
+    kind: "click",
+    on: "soundClicks",
+    tone: "toneClick",
+    names: [
+      "Cliques em botões e links",
+      "Clicks on buttons and links",
+      "Clics en botones y enlaces",
+      "Clics sur boutons et liens",
+    ],
+  },
 ];
 
 /** Cartão "Sons": pacotes prontos, volume, estilo, melodia de cada evento e silêncio programado. */
@@ -886,7 +1073,12 @@ export function SoundsSection() {
         </Group>
 
         <Group
-          title={tr(["Horário de silêncio", "Quiet hours", "Horario de silencio", "Heures de silence"])}
+          title={tr([
+            "Horário de silêncio",
+            "Quiet hours",
+            "Horario de silencio",
+            "Heures de silence",
+          ])}
           hint={tr([
             "Nenhum som toca nesse intervalo.",
             "No sound plays in this window.",
@@ -897,15 +1089,30 @@ export function SoundsSection() {
           <Switch
             checked={a.quietOn}
             onChange={(quietOn) => update({ quietOn })}
-            label={tr(["Ativar horário de silêncio", "Turn on quiet hours", "Activar horario de silencio", "Activer les heures de silence"])}
+            label={tr([
+              "Ativar horário de silêncio",
+              "Turn on quiet hours",
+              "Activar horario de silencio",
+              "Activer les heures de silence",
+            ])}
             hint=""
           />
           {a.quietOn && (
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               {tr(["Silêncio das", "Quiet from", "Silencio desde", "Silence de"])}
-              <Select label="from" value={a.quietFrom} options={HOURS} onChange={(quietFrom) => update({ quietFrom })} />
+              <Select
+                label="from"
+                value={a.quietFrom}
+                options={HOURS}
+                onChange={(quietFrom) => update({ quietFrom })}
+              />
               {tr(["às", "to", "hasta", "à"])}
-              <Select label="to" value={a.quietTo} options={HOURS} onChange={(quietTo) => update({ quietTo })} />
+              <Select
+                label="to"
+                value={a.quietTo}
+                options={HOURS}
+                onChange={(quietTo) => update({ quietTo })}
+              />
             </div>
           )}
         </Group>
@@ -913,7 +1120,12 @@ export function SoundsSection() {
         <Switch
           checked={a.vibration}
           onChange={(vibration) => update({ vibration })}
-          label={tr(["Vibração no celular", "Vibration on phones", "Vibración en el móvil", "Vibration sur mobile"])}
+          label={tr([
+            "Vibração no celular",
+            "Vibration on phones",
+            "Vibración en el móvil",
+            "Vibration sur mobile",
+          ])}
           hint={tr([
             "Vibração curta com notificações e mensagens, nos aparelhos que permitem.",
             "Short vibration with notifications and messages, on devices that allow it.",
@@ -934,17 +1146,39 @@ const HOME_PAGES: { id: HomePageId; names: Names }[] = [
   { id: "desafios", names: ["Desafios", "Challenges", "Desafíos", "Défis"] },
   { id: "explorar", names: ["Explorar", "Explore", "Explorar", "Explorer"] },
   { id: "receitas", names: ["Receitas", "Recipes", "Recetas", "Recettes"] },
-  { id: "tema", names: ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"] },
+  {
+    id: "tema",
+    names: ["Tema da semana", "Weekly theme", "Tema de la semana", "Thème de la semaine"],
+  },
   { id: "nina", names: ["Nina", "Nina", "Nina", "Nina"] },
-  { id: "notificacoes", names: ["Notificações", "Notifications", "Notificaciones", "Notifications"] },
+  {
+    id: "notificacoes",
+    names: ["Notificações", "Notifications", "Notificaciones", "Notifications"],
+  },
 ];
 
 const PAGE_BACKGROUNDS: { id: PageBackground; names: Names; css: string }[] = [
   { id: "plain", names: ["Liso", "Plain", "Liso", "Uni"], css: "none" },
-  { id: "dots", names: ["Pontos", "Dots", "Puntos", "Points"], css: "radial-gradient(color-mix(in oklab, var(--foreground) 22%, transparent) 1.2px, transparent 1.2px) 0 0 / 10px 10px" },
-  { id: "grid", names: ["Grade", "Grid", "Cuadrícula", "Grille"], css: "linear-gradient(color-mix(in oklab, var(--foreground) 14%, transparent) 1px, transparent 1px) 0 0 / 12px 12px, linear-gradient(90deg, color-mix(in oklab, var(--foreground) 14%, transparent) 1px, transparent 1px) 0 0 / 12px 12px" },
-  { id: "paper", names: ["Papel", "Paper", "Papel", "Papier"], css: "radial-gradient(color-mix(in oklab, var(--foreground) 12%, transparent) 1px, transparent 1px) 0 0 / 4px 4px" },
-  { id: "aurora", names: ["Aurora", "Aurora", "Aurora", "Aurore"], css: "radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%), radial-gradient(circle at 90% 10%, color-mix(in oklab, var(--primary) 36%, transparent), transparent 60%)" },
+  {
+    id: "dots",
+    names: ["Pontos", "Dots", "Puntos", "Points"],
+    css: "radial-gradient(color-mix(in oklab, var(--foreground) 22%, transparent) 1.2px, transparent 1.2px) 0 0 / 10px 10px",
+  },
+  {
+    id: "grid",
+    names: ["Grade", "Grid", "Cuadrícula", "Grille"],
+    css: "linear-gradient(color-mix(in oklab, var(--foreground) 14%, transparent) 1px, transparent 1px) 0 0 / 12px 12px, linear-gradient(90deg, color-mix(in oklab, var(--foreground) 14%, transparent) 1px, transparent 1px) 0 0 / 12px 12px",
+  },
+  {
+    id: "paper",
+    names: ["Papel", "Paper", "Papel", "Papier"],
+    css: "radial-gradient(color-mix(in oklab, var(--foreground) 12%, transparent) 1px, transparent 1px) 0 0 / 4px 4px",
+  },
+  {
+    id: "aurora",
+    names: ["Aurora", "Aurora", "Aurora", "Aurore"],
+    css: "radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--accent) 40%, transparent), transparent 60%), radial-gradient(circle at 90% 10%, color-mix(in oklab, var(--primary) 36%, transparent), transparent 60%)",
+  },
 ];
 
 /** Cartão "Layout e início". */
@@ -956,7 +1190,14 @@ export function LayoutSection() {
 
   return (
     <Section title={t("pz.layout.title")} hint={t("pz.layout.hint")}>
-      <Group title={tr(["Layouts prontos", "Ready-made layouts", "Diseños listos", "Mises en page prêtes"])}>
+      <Group
+        title={tr([
+          "Layouts prontos",
+          "Ready-made layouts",
+          "Diseños listos",
+          "Mises en page prêtes",
+        ])}
+      >
         <PresetGallery
           presets={LAYOUT_PRESETS}
           columns="grid-cols-2 sm:grid-cols-5"
@@ -1019,7 +1260,9 @@ export function LayoutSection() {
         hint={t("pz.layout.panelsHint")}
       />
 
-      <Group title={tr(["Fundo da página", "Page background", "Fondo de la página", "Fond de la page"])}>
+      <Group
+        title={tr(["Fundo da página", "Page background", "Fondo de la página", "Fond de la page"])}
+      >
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {PAGE_BACKGROUNDS.map((b) => (
             <button
@@ -1053,18 +1296,33 @@ export function LayoutSection() {
       <Switch
         checked={a.smoothScroll}
         onChange={(smoothScroll) => update({ smoothScroll })}
-        label={tr(["Rolagem suave", "Smooth scrolling", "Desplazamiento suave", "Défilement fluide"])}
+        label={tr([
+          "Rolagem suave",
+          "Smooth scrolling",
+          "Desplazamiento suave",
+          "Défilement fluide",
+        ])}
         hint=""
       />
       <Switch
         checked={a.backToTop}
         onChange={(backToTop) => update({ backToTop })}
-        label={tr(["Botão “voltar ao topo”", "“Back to top” button", "Botón “volver arriba”", "Bouton « haut de page »"])}
+        label={tr([
+          "Botão “voltar ao topo”",
+          "“Back to top” button",
+          "Botón “volver arriba”",
+          "Bouton « haut de page »",
+        ])}
         hint=""
       />
 
       <Group
-        title={tr(["Publicações por carregamento", "Posts per load", "Publicaciones por carga", "Publications par chargement"])}
+        title={tr([
+          "Publicações por carregamento",
+          "Posts per load",
+          "Publicaciones por carga",
+          "Publications par chargement",
+        ])}
         hint={tr([
           "Quantos posts o Espaço traz de uma vez.",
           "How many posts Space brings at once.",
@@ -1087,7 +1345,10 @@ export function LayoutSection() {
 
 const COLOR_FILTERS: { id: ColorFilter; names: Names }[] = [
   { id: "none", names: ["Nenhum", "None", "Ninguno", "Aucun"] },
-  { id: "grayscale", names: ["Escala de cinza", "Grayscale", "Escala de grises", "Niveaux de gris"] },
+  {
+    id: "grayscale",
+    names: ["Escala de cinza", "Grayscale", "Escala de grises", "Niveaux de gris"],
+  },
   { id: "sepia", names: ["Sépia", "Sepia", "Sepia", "Sépia"] },
   { id: "lowsat", names: ["Menos cor", "Less color", "Menos color", "Moins de couleur"] },
   { id: "highsat", names: ["Mais cor", "More color", "Más color", "Plus de couleur"] },
@@ -1163,7 +1424,12 @@ export function AccessSection() {
       <Switch
         checked={a.largeTargets}
         onChange={(largeTargets) => update({ largeTargets })}
-        label={tr(["Áreas de toque maiores", "Larger touch targets", "Áreas táctiles más grandes", "Zones tactiles plus grandes"])}
+        label={tr([
+          "Áreas de toque maiores",
+          "Larger touch targets",
+          "Áreas táctiles más grandes",
+          "Zones tactiles plus grandes",
+        ])}
         hint={tr([
           "Botões e campos mais altos, mais fáceis de acertar.",
           "Taller buttons and fields, easier to hit.",
@@ -1185,7 +1451,12 @@ export function AccessSection() {
       <Switch
         checked={a.speakSelection}
         onChange={(speakSelection) => update({ speakSelection })}
-        label={tr(["Ouvir texto selecionado", "Read selected text aloud", "Escuchar texto seleccionado", "Écouter le texte sélectionné"])}
+        label={tr([
+          "Ouvir texto selecionado",
+          "Read selected text aloud",
+          "Escuchar texto seleccionado",
+          "Écouter le texte sélectionné",
+        ])}
         hint={tr([
           "Ao selecionar um texto aparece um botão “Ouvir” (voz do navegador).",
           "Selecting text shows a “Listen” button (browser voice).",
@@ -1218,7 +1489,14 @@ export function AccessSection() {
         />
       </Group>
 
-      <Group title={tr(["Espaço entre palavras", "Word spacing", "Espacio entre palabras", "Espacement des mots"])}>
+      <Group
+        title={tr([
+          "Espaço entre palavras",
+          "Word spacing",
+          "Espacio entre palabras",
+          "Espacement des mots",
+        ])}
+      >
         <Slider
           label="word spacing"
           min={WORD_SPACING_RANGE.min}
@@ -1242,7 +1520,14 @@ export function AccessSection() {
         />
       </Group>
 
-      <Group title={tr(["Filtro de cor da tela", "Screen color filter", "Filtro de color de la pantalla", "Filtre de couleur de l'écran"])}>
+      <Group
+        title={tr([
+          "Filtro de cor da tela",
+          "Screen color filter",
+          "Filtro de color de la pantalla",
+          "Filtre de couleur de l'écran",
+        ])}
+      >
         <Segmented
           columns="grid-cols-2 sm:grid-cols-3"
           options={COLOR_FILTERS.map((f) => ({ id: f.id, label: tr(f.names) }))}
@@ -1288,7 +1573,12 @@ export function ProfileSection() {
       <Switch
         checked={a.cardAccent}
         onChange={(cardAccent) => update({ cardAccent })}
-        label={tr(["Faixa de destaque nos posts", "Accent stripe on posts", "Franja de acento en publicaciones", "Bande d'accent sur les publications"])}
+        label={tr([
+          "Faixa de destaque nos posts",
+          "Accent stripe on posts",
+          "Franja de acento en publicaciones",
+          "Bande d'accent sur les publications",
+        ])}
         hint={tr([
           "Uma barra na cor de destaque na lateral de cada post.",
           "A bar in the accent color along the side of each post.",
@@ -1309,11 +1599,21 @@ export function ProfileSection() {
         />
       </Group>
 
-      <Group title={tr(["Cantos das imagens", "Image corners", "Esquinas de las imágenes", "Coins des images"])}>
+      <Group
+        title={tr([
+          "Cantos das imagens",
+          "Image corners",
+          "Esquinas de las imágenes",
+          "Coins des images",
+        ])}
+      >
         <Segmented
           columns="grid-cols-3"
           options={[
-            { id: "rounded" as const, label: tr(["Arredondados", "Rounded", "Redondeadas", "Arrondis"]) },
+            {
+              id: "rounded" as const,
+              label: tr(["Arredondados", "Rounded", "Redondeadas", "Arrondis"]),
+            },
             { id: "soft" as const, label: tr(["Suaves", "Soft", "Suaves", "Doux"]) },
             { id: "square" as const, label: tr(["Retos", "Square", "Rectas", "Droits"]) },
           ]}
@@ -1343,7 +1643,12 @@ export function ProfileSection() {
       <Switch
         checked={a.expandPosts}
         onChange={(expandPosts) => update({ expandPosts })}
-        label={tr(["Posts abertos por inteiro", "Posts fully expanded", "Publicaciones abiertas por completo", "Publications entièrement ouvertes"])}
+        label={tr([
+          "Posts abertos por inteiro",
+          "Posts fully expanded",
+          "Publicaciones abiertas por completo",
+          "Publications entièrement ouvertes",
+        ])}
         hint={tr([
           "Sem o corte com “Ver mais”: o post longo aparece inteiro.",
           "No “See more” cut: long posts show in full.",
@@ -1354,12 +1659,22 @@ export function ProfileSection() {
       <Switch
         checked={a.showTags}
         onChange={(showTags) => update({ showTags })}
-        label={tr(["Mostrar etiquetas (#)", "Show tags (#)", "Mostrar etiquetas (#)", "Afficher les étiquettes (#)"])}
+        label={tr([
+          "Mostrar etiquetas (#)",
+          "Show tags (#)",
+          "Mostrar etiquetas (#)",
+          "Afficher les étiquettes (#)",
+        ])}
         hint=""
       />
 
       <Group
-        title={tr(["Quem vê um post novo", "Who sees a new post", "Quién ve una publicación nueva", "Qui voit une nouvelle publication"])}
+        title={tr([
+          "Quem vê um post novo",
+          "Who sees a new post",
+          "Quién ve una publicación nueva",
+          "Qui voit une nouvelle publication",
+        ])}
         hint={tr([
           "Escolha inicial ao publicar (você pode mudar em cada post).",
           "Starting choice when posting (you can change it for each post).",
@@ -1371,7 +1686,10 @@ export function ProfileSection() {
           columns="grid-cols-2"
           options={[
             { id: "publico" as const, label: tr(["Público", "Public", "Público", "Public"]) },
-            { id: "amigos" as const, label: tr(["Só amigos", "Friends only", "Solo amigos", "Amis seulement"]) },
+            {
+              id: "amigos" as const,
+              label: tr(["Só amigos", "Friends only", "Solo amigos", "Amis seulement"]),
+            },
           ]}
           value={a.defaultAudience}
           onChange={(defaultAudience) => update({ defaultAudience })}
@@ -1380,4 +1698,3 @@ export function ProfileSection() {
     </Section>
   );
 }
-
