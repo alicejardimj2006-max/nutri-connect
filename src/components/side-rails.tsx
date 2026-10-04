@@ -1,10 +1,25 @@
 import { useRouterState } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Children,
+  Fragment,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { railsFor } from "@/components/rails-pages";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/hooks/use-i18n";
+import { planRails, type RailPlan } from "@/lib/rail-plan";
 
 const MIN_VIEWPORT = 1280;
+const GAP = 20;
 
 interface Metrics {
   /** Largura de cada coluna. */
@@ -24,21 +39,31 @@ function metricsFor(vw: number): Metrics | null {
   return { width: 264, edge: 24, gap: 24 };
 }
 
-const railScroll =
-  "max-h-[var(--rail-h)] space-y-5 overflow-y-auto overscroll-contain pb-2 [scrollbar-width:thin]";
+/** Os cards de um lado (cada filho do fragmento declarado em rails-pages). */
+function cardsOf(node: ReactNode): ReactNode[] {
+  if (isValidElement(node) && node.type === Fragment) {
+    return Children.toArray((node as ReactElement<{ children?: ReactNode }>).props.children);
+  }
+  return Children.toArray(node);
+}
 
 /**
  * Colunas laterais com cards próprios de cada página, em telas largas. O conteúdo da página recebe
  * margens do tamanho das colunas (ver `data-rails` em styles.css), então a tela inteira é usada e
- * os cards nunca encostam na borda: ficam afastados por uma margem. Cada coluna rola sozinha.
+ * os cards nunca encostam na borda.
+ *
+ * As colunas NÃO rolam: os cards são medidos e redistribuídos. O que não cabe na coluna de origem vai
+ * para a outra coluna se houver espaço; o que não coube em nenhuma delas aparece numa seção "Mais",
+ * logo abaixo do conteúdo da página. Nada some.
  */
 export function SideRails() {
   const { user } = useAuth();
   const { appearance } = useAppearance();
+  const { locale } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const rails = useMemo(() => railsFor(pathname), [pathname]);
   const enabled = !!user && appearance.sidePanels && !!rails;
-  const [layout, setLayout] = useState<(Metrics & { top: number }) | null>(null);
+  const [layout, setLayout] = useState<(Metrics & { top: number; height: number }) | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -60,10 +85,16 @@ export function SideRails() {
       root.setAttribute("data-rails", "on");
       const header = document.querySelector<HTMLElement>("[data-site-header]");
       const top = (header?.offsetHeight ?? 64) + 20;
+      const height = Math.max(240, window.innerHeight - top - 20);
       setLayout((prev) =>
-        prev && prev.width === m.width && prev.edge === m.edge && prev.gap === m.gap && prev.top === top
+        prev &&
+        prev.width === m.width &&
+        prev.edge === m.edge &&
+        prev.gap === m.gap &&
+        prev.top === top &&
+        prev.height === height
           ? prev
-          : { ...m, top },
+          : { ...m, top, height },
       );
     };
 
@@ -78,30 +109,94 @@ export function SideRails() {
     };
   }, [enabled, pathname]);
 
+  const left = useMemo(() => (rails ? cardsOf(rails.left) : []), [rails]);
+  const right = useMemo(() => (rails ? cardsOf(rails.right) : []), [rails]);
+  const all = useMemo(() => [...left, ...right], [left, right]);
+
+  const probeRef = useRef<HTMLDivElement>(null);
+  const [plan, setPlan] = useState<RailPlan | null>(null);
+  const height = layout?.height ?? 0;
+  const width = layout?.width ?? 0;
+
+  /** Mede cada card na largura da coluna e distribui sem passar da altura disponível. */
+  const compute = useCallback(() => {
+    const probe = probeRef.current;
+    if (!probe || height === 0) return;
+    const heights = Array.from(probe.children, (el) => (el as HTMLElement).offsetHeight);
+    if (heights.length !== all.length) return;
+
+    const next = planRails(heights, left.length, height, GAP);
+    setPlan((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+  }, [all.length, height, left]);
+
+  useLayoutEffect(() => {
+    compute();
+    const probe = probeRef.current;
+    if (!probe) return;
+    const observer = new ResizeObserver(compute);
+    observer.observe(probe);
+    return () => observer.disconnect();
+  }, [compute, width, locale]);
+
+  // Troca de página: recomeça sem plano antigo.
+  useEffect(() => setPlan(null), [pathname]);
+
   if (!enabled || !rails || !layout) return null;
 
-  const common = {
-    top: layout.top,
-    width: layout.width,
-    "--rail-h": `calc(100dvh - ${layout.top + 20}px)`,
-  } as React.CSSProperties;
+  const fallback: RailPlan = {
+    left: left.map((_, i) => i),
+    right: right.map((_, k) => left.length + k),
+    rest: [],
+  };
+  const active = plan ?? fallback;
+  const common = { top: layout.top, width: layout.width, height: layout.height } as const;
+  const column = (indexes: number[]) => (
+    <div className="flex flex-col" style={{ gap: GAP }}>
+      {indexes.map((i) => (
+        <div key={i}>{all[i]}</div>
+      ))}
+    </div>
+  );
 
   return (
     <>
+      {/* Cópia invisível só para medir a altura de cada card. */}
+      <div
+        ref={probeRef}
+        aria-hidden="true"
+        inert
+        className="pointer-events-none invisible fixed -left-[9999px] top-0 -z-50 flex flex-col"
+        style={{ width: layout.width, gap: GAP }}
+      >
+        {all.map((card, i) => (
+          <div key={i}>{card}</div>
+        ))}
+      </div>
+
       <aside
         aria-label="Atalhos e perfil"
-        className="fixed z-30 text-left"
+        className="fixed z-30 overflow-hidden text-left"
         style={{ ...common, left: layout.edge }}
       >
-        <div className={railScroll}>{rails.left}</div>
+        {column(active.left)}
       </aside>
       <aside
         aria-label="Sugestões"
-        className="fixed z-30 text-left"
+        className="fixed z-30 overflow-hidden text-left"
         style={{ ...common, right: layout.edge }}
       >
-        <div className={railScroll}>{rails.right}</div>
+        {column(active.right)}
       </aside>
+
+      {active.rest.length > 0 && (
+        <section aria-label="Mais" className="mx-auto w-full max-w-[96rem] px-6 pb-12 pt-2 text-left lg:px-10">
+          <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {active.rest.map((i) => (
+              <div key={i}>{all[i]}</div>
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }
