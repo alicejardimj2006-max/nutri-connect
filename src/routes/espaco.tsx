@@ -177,6 +177,21 @@ function EspacoDeHojePage() {
   const geralRef = useRef<HTMLDivElement>(null);
   const temaRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
+  // Espaço igual (12px) entre a barra superior, o seletor de páginas, os filtros e o primeiro post:
+  // a reserva no alto de cada página usa a altura real do seletor.
+  const [navHeight, setNavHeight] = useState(38);
+  useLayoutEffect(() => {
+    const pill = navRef.current?.firstElementChild;
+    if (!pill) return;
+    const measure = () => setNavHeight(Math.round(pill.getBoundingClientRect().height));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(pill);
+    return () => observer.disconnect();
+    // O seletor só existe depois que o login é conferido.
+  }, [authHydrated, user]);
+  const topGap = 12;
+  const topPad = topGap + navHeight + topGap;
   const moveNav = useCallback((top: number) => {
     const el = navRef.current;
     if (!el) return;
@@ -277,11 +292,11 @@ function EspacoDeHojePage() {
                   <div
                     ref={geralRef}
                     onScroll={handleGeralScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-[3.75rem] lg:pb-8"
-                    style={{ height: pageHeight }}
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 lg:pb-8"
+                    style={{ height: pageHeight, paddingTop: topPad }}
                   >
                     {/* Filtros flutuantes: ficam no alto desta página, somem ao rolar para baixo. */}
-                    <div className="pointer-events-none sticky top-3 z-20 mb-4 flex justify-center">
+                    <div className="pointer-events-none sticky top-3 z-20 mb-3 flex justify-center">
                       <div
                         className={cn(
                           "pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur transition duration-200",
@@ -320,8 +335,8 @@ function EspacoDeHojePage() {
                   <div
                     ref={temaRef}
                     onScroll={handleTemaScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-28 pt-[3.75rem] lg:pb-8"
-                    style={{ height: pageHeight }}
+                    className="overflow-y-auto overscroll-contain px-2 pb-28 lg:pb-8"
+                    style={{ height: pageHeight, paddingTop: topPad }}
                   >
                     {text ? (
                       <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
