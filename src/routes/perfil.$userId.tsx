@@ -132,7 +132,12 @@ function PublicProfilePage() {
   const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
 
   const record = pageQuery.data ?? null;
-  const savedPage = useMemo(() => readPage(record?.page, isProfessional), [record, isProfessional]);
+  // A posição que quem visita vê (blocos colados uns nos outros) é a posição de verdade: a edição
+  // começa dela, não das coordenadas antigas com vãos.
+  const savedPage = useMemo(() => {
+    const read = readPage(record?.page, isProfessional);
+    return { ...read, layout: compactLayout(read.layout) };
+  }, [record, isProfessional]);
   const page = draft ?? savedPage;
   const bannerUrl = record?.banner_url ?? null;
   const editing = draft !== null;
