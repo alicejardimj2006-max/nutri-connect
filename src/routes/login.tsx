@@ -126,12 +126,15 @@ export function AuthLayout({
         <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
         <div className="absolute bottom-0 -left-10 h-56 w-56 rounded-full bg-chart-4/20 blur-3xl" />
 
-        <div className="relative z-10 flex items-center gap-2 text-lg font-bold font-logo-sans">
+        <Link
+          to="/"
+          className="relative z-10 flex items-center gap-2 text-lg font-bold font-logo-sans"
+        >
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Leaf className="h-5 w-5" />
           </span>
           NutriConnect
-        </div>
+        </Link>
 
         <div className="relative z-10 space-y-7">
           <div>
