@@ -4031,6 +4031,38 @@ export type Database = {
           phone: string
         }[]
       }
+      admin_adjust_pro_score: {
+        Args: { p_note: string; p_points: number; p_pro: string }
+        Returns: undefined
+      }
+      get_my_pro_events: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          id: string
+          kind: string
+          note: string
+          points: number
+        }[]
+      }
+      get_pro_rules: { Args: never; Returns: Json }
+      get_pro_status: {
+        Args: { p_pro?: string }
+        Returns: {
+          excellence: boolean
+          features: string[]
+          fee_percent: number
+          level: number
+          level_code: string
+          next_level: number
+          next_level_code: string
+          next_level_score: number
+          professional_id: string
+          score: number
+        }[]
+      }
+      pro_has_feature: { Args: { p_feature: string; p_pro: string }; Returns: boolean }
+      pro_membership_fee_percent: { Args: { p_pro: string }; Returns: number }
       get_notifications: {
         Args: { p_before?: string; p_limit?: number }
         Returns: {

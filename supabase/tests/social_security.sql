@@ -670,6 +670,111 @@ begin
                                                          and greatest(requester_id, addressee_id) = greatest(a, b)),
     'obtido', 'verificado como superusuário');
 
+  -- ------------------------------------------------- PONTUAÇÃO DOS PROFISSIONAIS
+  declare
+    s0 integer; s1 integer; ask uuid; rep uuid;
+  begin
+    -- Verificação já deu os pontos iniciais.
+    res := res || jsonb_build_object('teste', 'profissional verificado já tem pontuação inicial',
+      'ok', coalesce((select score from public.pro_scores where professional_id = p), 0) >= 20,
+      'obtido', (select score::text from public.pro_scores where professional_id = p));
+    res := res || jsonb_build_object('teste', 'usuário comum NÃO tem pontuação', 'ok',
+      not exists (select 1 from public.pro_scores where professional_id = a), 'obtido', 'verificado como superusuário');
+
+    -- Publicar soma, com teto de 3 por dia.
+    s0 := (select score from public.pro_scores where professional_id = p);
+    insert into public.posts (author_id, body) values (p, 'pro 1'), (p, 'pro 2'), (p, 'pro 3'), (p, 'pro 4'), (p, 'pro 5');
+    s1 := (select score from public.pro_scores where professional_id = p);
+    res := res || jsonb_build_object('teste', 'publicações do profissional pontuam, com teto diário',
+      'ok', (s1 - s0) between 5 and 15, 'obtido', (s1 - s0)::text);
+
+    -- Responder pergunta de outra pessoa vale 4; comentar na própria publicação não vale nada.
+    insert into public.posts (author_id, body, type) values (a, 'como assar pão?', 'pergunta') returning id into ask;
+    s0 := (select score from public.pro_scores where professional_id = p);
+    insert into public.comments (post_id, author_id, body) values (ask, p, 'use forno bem quente');
+    s1 := (select score from public.pro_scores where professional_id = p);
+    res := res || jsonb_build_object('teste', 'responder pergunta soma 4', 'ok', (s1 - s0 = 4), 'obtido', (s1 - s0)::text);
+    insert into public.posts (author_id, body, type) values (p, 'minha pergunta', 'pergunta') returning id into ask;
+    s0 := (select score from public.pro_scores where professional_id = p);
+    insert into public.comments (post_id, author_id, body) values (ask, p, 'resposta a mim mesmo');
+    s1 := (select score from public.pro_scores where professional_id = p);
+    res := res || jsonb_build_object('teste', 'comentar na própria publicação NÃO pontua', 'ok', (s1 = s0), 'obtido', (s1 - s0)::text);
+
+    -- Apoio recebido soma.
+    s0 := (select score from public.pro_scores where professional_id = p);
+    insert into public.post_reactions (post_id, user_id, kind) values (ask, a, 'apoiar');
+    s1 := (select score from public.pro_scores where professional_id = p);
+    res := res || jsonb_build_object('teste', 'apoio recebido soma 1', 'ok', (s1 - s0 = 1), 'obtido', (s1 - s0)::text);
+
+    -- Denúncia procedente tira 30 (e só uma vez).
+    s0 := (select score from public.pro_scores where professional_id = p);
+    insert into public.reports (reporter_id, target_type, target_id, reason) values (a, 'post', ask, 'ofensivo') returning id into rep;
+    update public.reports set status = 'procedente' where id = rep;
+    s1 := (select score from public.pro_scores where professional_id = p);
+    res := res || jsonb_build_object('teste', 'denúncia procedente tira 30 pontos', 'ok', (s0 - s1 = 30), 'obtido', (s0 - s1)::text);
+    update public.reports set status = 'improcedente' where id = rep;
+    update public.reports set status = 'procedente' where id = rep;
+    res := res || jsonb_build_object('teste', 'a mesma denúncia NÃO desconta duas vezes',
+      'ok', ((select score from public.pro_scores where professional_id = p) = s1), 'obtido', 'idempotente');
+
+    -- Piso em zero e níveis.
+    perform public._pro_award(p, 'ajuste_admin', 'admin', gen_random_uuid(), 'teste', -5000);
+    res := res || jsonb_build_object('teste', 'pontuação nunca fica negativa',
+      'ok', ((select score from public.pro_scores where professional_id = p) = 0 and (select level from public.pro_scores where professional_id = p) = 1),
+      'obtido', (select score::text from public.pro_scores where professional_id = p));
+    res := res || jsonb_build_object('teste', 'nível 1 não libera o perfil de membros', 'ok', not public.pro_has_feature(p, 'perfil_membros'), 'obtido', 'nível 1');
+    res := res || jsonb_build_object('teste', 'nível 1 cobra 20% das assinaturas', 'ok', (public.pro_membership_fee_percent(p) = 20), 'obtido', public.pro_membership_fee_percent(p)::text);
+    perform public._pro_award(p, 'ajuste_admin', 'admin', gen_random_uuid(), 'teste', 350);
+    res := res || jsonb_build_object('teste', '350 pontos levam ao nível 3 (destaque)',
+      'ok', ((select level from public.pro_scores where professional_id = p) = 3), 'obtido', (select level::text from public.pro_scores where professional_id = p));
+    res := res || jsonb_build_object('teste', 'nível 3 libera o perfil de membros', 'ok', public.pro_has_feature(p, 'perfil_membros'), 'obtido', 'nível 3');
+    res := res || jsonb_build_object('teste', 'nível 3 cobra 15% das assinaturas', 'ok', (public.pro_membership_fee_percent(p) = 15), 'obtido', public.pro_membership_fee_percent(p)::text);
+    res := res || jsonb_build_object('teste', 'nível 3 ainda não tem selo de excelência', 'ok', not public.pro_has_feature(p, 'selo_excelencia'), 'obtido', 'nível 3');
+
+    -- Excelência exige 90 dias sem denúncia procedente (a de agora conta).
+    perform public._pro_award(p, 'ajuste_admin', 'admin', gen_random_uuid(), 'teste', 2500);
+    res := res || jsonb_build_object('teste', 'denúncia procedente recente segura o nível abaixo da excelência',
+      'ok', ((select level from public.pro_scores where professional_id = p) = 4), 'obtido', (select level::text from public.pro_scores where professional_id = p));
+    update public.pro_score_events set created_at = now() - interval '120 days' where professional_id = p and kind = 'denuncia_procedente';
+    perform public.apply_pro_inactivity();
+    res := res || jsonb_build_object('teste', 'passados 90 dias a excelência é liberada na reavaliação semanal',
+      'ok', ((select level from public.pro_scores where professional_id = p) = 5), 'obtido', (select level::text from public.pro_scores where professional_id = p));
+
+    -- Visibilidade e permissões.
+    r := pg_temp.as_user(p, 'authenticated', format('select score from public.get_pro_status(%L)', p));
+    res := res || jsonb_build_object('teste', 'o profissional vê a própria pontuação', 'ok', (r ~ '^[0-9]+$'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select coalesce(score::text, ''oculta'') from public.get_pro_status(%L)', p));
+    res := res || jsonb_build_object('teste', 'outras pessoas NÃO veem a pontuação exata', 'ok', (r = 'oculta'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select level_code from public.get_pro_status(%L)', p));
+    res := res || jsonb_build_object('teste', 'o nível (selo) é público', 'ok', (r = 'excelencia'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.pro_score_events where professional_id = %L', p));
+    res := res || jsonb_build_object('teste', 'outras pessoas NÃO leem o histórico de pontos', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(p, 'authenticated', 'select count(*) from public.get_my_pro_events()');
+    res := res || jsonb_build_object('teste', 'o profissional lê o próprio histórico', 'ok', (r::integer > 0), 'obtido', r);
+    r := pg_temp.as_user(p, 'authenticated', format('insert into public.pro_score_events (professional_id, kind, points, ref_type, ref_id) values (%L, ''ajuste_admin'', 999, ''x'', gen_random_uuid())', p));
+    res := res || jsonb_build_object('teste', 'NÃO dá pontos a si mesmo direto na tabela', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(p, 'authenticated', format('select public.admin_adjust_pro_score(%L, 500, ''quero mais'')', p));
+    res := res || jsonb_build_object('teste', 'profissional NÃO ajusta a própria pontuação', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(g, 'authenticated', format('select public.admin_adjust_pro_score(%L, -10, ''teste de ajuste'')', p));
+    res := res || jsonb_build_object('teste', 'administração ajusta a pontuação com motivo', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(g, 'authenticated', format('select public.admin_adjust_pro_score(%L, -10, '''')', p));
+    res := res || jsonb_build_object('teste', 'ajuste sem motivo é recusado', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(null, 'anon', 'select public.get_pro_rules()');
+    res := res || jsonb_build_object('teste', 'anon NÃO lê as regras', 'ok', (r like 'ERRO%'), 'obtido', left(r, 80));
+
+    -- Ausência: quem some por 14 dias perde 5 por semana; não duplica na mesma semana.
+    update public.professionals set verified_at = now() - interval '60 days' where user_id = q;
+    delete from public.pro_score_events where professional_id = q;
+    delete from public.pro_scores where professional_id = q;
+    perform public._pro_award(q, 'ajuste_admin', 'admin', gen_random_uuid(), 'base', 50);
+    update public.pro_score_events set created_at = now() - interval '30 days' where professional_id = q;
+    s0 := (select score from public.pro_scores where professional_id = q);
+    perform public.apply_pro_inactivity();
+    perform public.apply_pro_inactivity();
+    s1 := (select score from public.pro_scores where professional_id = q);
+    res := res || jsonb_build_object('teste', 'ausência tira 5 pontos uma vez por semana', 'ok', (s0 - s1 = 5), 'obtido', (s0 - s1)::text);
+  end;
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

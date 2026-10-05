@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PostModal } from "@/components/post-modal";
+import { ProLevelBadge } from "@/components/pro-score-card";
 import { PostTile } from "@/components/post-tile";
 import { ProfileIcon } from "@/components/profile-icons";
 import { useTr } from "@/components/appearance-editor";
@@ -495,6 +496,9 @@ function ProBlock() {
   const info = d.professionalInfo;
   return (
     <div>
+      <div className="mb-2">
+        <ProLevelBadge professionalId={d.userId} />
+      </div>
       <p className="text-xs font-semibold text-accent">
         {td(info.profession)} · {info.council} {info.registration}/{info.uf}
       </p>
