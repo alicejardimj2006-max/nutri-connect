@@ -353,8 +353,8 @@ export function ProfileCanvas({
               key={block.id}
               className={`relative ${editing && selectedId === block.id ? "rounded-3xl ring-2 ring-accent" : ""}`}
               style={{
+                // No celular o bloco cresce com o conteúdo (sem rolagem interna); px é só o mínimo.
                 minHeight: px,
-                height: px,
               }}
               onClick={() => editing && onSelect?.(block.id)}
             >

@@ -83,7 +83,7 @@ function ComunidadesPage() {
 
       <div className={showFeatured ? "mt-12 border-t border-border pt-12" : ""}>
         {!railsOn && (
-          <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <div className="mb-6 grid items-start gap-4 md:grid-cols-2">
             <CommunitySearchCard />
             <CommunityCategoriesCard />
           </div>
