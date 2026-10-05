@@ -1,22 +1,11 @@
+// Peças reutilizáveis do painel de personalização (seções, grupos, cores, seletores e galerias).
 import { useEffect, useState } from "react";
-import { Monitor, Moon, RotateCcw, Sun } from "lucide-react";
+import { Monitor, Moon, Sun, Sunset } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
+import { pickName, type ColorPreset, type Names, type Preset } from "@/lib/appearance-data";
 import {
-  ACCENT_PRESETS,
-  APPEARANCE_EVENT,
-  BODY_FONTS,
-  CORNER_RANGE,
-  DEFAULT_APPEARANCE,
-  HEADING_FONTS,
-  PRIMARY_PRESETS,
-  TEXT_SCALE_RANGE,
-  THEME_COLORS,
-  contrastRatio,
   isHex,
-  loadAppearance,
-  resetAppearance,
-  saveAppearance,
   type Appearance,
   type BorderStyle,
   type Density,
@@ -24,34 +13,23 @@ import {
   type ThemeMode,
 } from "@/lib/appearance";
 
-const DEFAULT_HEADING_CSS = '"Libre Baskerville", ui-serif, Georgia, serif';
-const DEFAULT_BODY_CSS = '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
+export const DEFAULT_HEADING_CSS = '"Libre Baskerville", ui-serif, Georgia, serif';
+export const DEFAULT_BODY_CSS = '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
-export function useAppearance() {
-  const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
-
-  useEffect(() => {
-    const sync = () => setAppearance(loadAppearance());
-    sync();
-    window.addEventListener(APPEARANCE_EVENT, sync);
-    return () => window.removeEventListener(APPEARANCE_EVENT, sync);
-  }, []);
-
-  return {
-    appearance,
-    update: (patch: Partial<Appearance>) => saveAppearance({ ...appearance, ...patch }),
-    reset: resetAppearance,
-  };
+/** Texto escolhido pelo idioma atual, a partir de [pt-BR, en, es, fr]. */
+export function useTr() {
+  const { locale } = useI18n();
+  return (names: Names) => pickName(names, locale);
 }
 
-const optionClass = (active: boolean) =>
+export const optionClass = (active: boolean) =>
   `min-w-0 rounded-xl border px-2 py-2 text-xs font-medium transition cursor-pointer sm:px-3 ${
     active
       ? "border-accent bg-accent-soft text-foreground ring-2 ring-accent/40"
       : "border-border bg-background text-muted-foreground hover:bg-secondary hover:text-foreground"
   }`;
 
-function Section({
+export function Section({
   title,
   hint,
   children,
@@ -64,12 +42,12 @@ function Section({
     <section className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
       <h2 className="font-display text-base font-bold text-foreground">{title}</h2>
       <p className="text-[11px] text-muted-foreground">{hint}</p>
-      <div className="mt-5 space-y-6">{children}</div>
+      <div className="mt-5 space-y-7">{children}</div>
     </section>
   );
 }
 
-function Group({
+export function Group({
   title,
   hint,
   children,
@@ -119,56 +97,115 @@ function HexInput({
   );
 }
 
+/** Bolinhas de cor prontas. `value` marca a escolhida; `onPick(null)` volta ao automático. */
+export function ColorSwatches({
+  label,
+  presets,
+  value,
+  onPick,
+  autoLabel,
+}: {
+  label: string;
+  presets: readonly ColorPreset[];
+  value: string | null;
+  onPick: (value: string | null) => void;
+  /** Quando informado, mostra um botão "automático" que devolve null. */
+  autoLabel?: string;
+}) {
+  const tr = useTr();
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {autoLabel && (
+        <button
+          type="button"
+          onClick={() => onPick(null)}
+          aria-pressed={value === null}
+          className={`rounded-full border px-3 py-1 text-[11px] font-medium transition cursor-pointer ${
+            value === null
+              ? "border-foreground bg-secondary text-foreground"
+              : "border-border text-muted-foreground hover:bg-secondary"
+          }`}
+        >
+          {autoLabel}
+        </button>
+      )}
+      {presets.map((p) => {
+        const active = !!value && p.value.toLowerCase() === value.toLowerCase();
+        const name = tr(p.names);
+        return (
+          <button
+            key={p.value}
+            type="button"
+            title={name}
+            aria-label={`${label}: ${name}`}
+            aria-pressed={active}
+            onClick={() => onPick(p.value)}
+            style={{ backgroundColor: p.value }}
+            className={`h-8 w-8 cursor-pointer rounded-full border-2 shadow-xs transition ${
+              active ? "scale-110 border-foreground" : "border-card hover:scale-105"
+            }`}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 /**
- * Cor totalmente livre: seletor + código hexadecimal, sem modelos prontos.
+ * Cor totalmente livre: seletor + código hexadecimal, com cores prontas opcionais.
  * `value` nulo significa "usar a cor do tema principal" (mostrada por `fallback`).
  */
-function FreeColor({
+export function FreeColor({
   label,
   value,
   fallback,
   onChange,
   resetLabel,
+  presets,
 }: {
   label: string;
   value: string | null;
   fallback: string;
   onChange: (value: string | null) => void;
   resetLabel: string;
+  presets?: readonly ColorPreset[];
 }) {
   const { t } = useI18n();
   const shown = value ?? fallback;
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <label
-        className="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border-2 border-foreground/30 shadow-xs"
-        style={{ backgroundColor: shown }}
-        title={t("ap.pickColor")}
-      >
-        <input
-          type="color"
-          aria-label={`${label}: ${t("ap.colorPicker")}`}
-          value={shown}
-          onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-        />
-      </label>
-      <HexInput value={shown} label={label} onCommit={onChange} />
-      {value !== null && (
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          className="cursor-pointer text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+    <div className="space-y-3">
+      {presets && <ColorSwatches label={label} presets={presets} value={value} onPick={onChange} />}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <label
+          className="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border-2 border-foreground/30 shadow-xs"
+          style={{ backgroundColor: shown }}
+          title={t("ap.pickColor")}
         >
-          {resetLabel}
-        </button>
-      )}
+          <input
+            type="color"
+            aria-label={`${label}: ${t("ap.colorPicker")}`}
+            value={shown}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </label>
+        <HexInput value={shown} label={label} onCommit={onChange} />
+        {value !== null && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="cursor-pointer text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          >
+            {resetLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
-/** Cores de marca: algumas sugestões rápidas e qualquer outra cor à escolha. */
-function BrandColor({
+/** Cores de marca: sugestões rápidas e qualquer outra cor à escolha. */
+export function BrandColor({
   label,
   presets,
   value,
@@ -176,7 +213,7 @@ function BrandColor({
   onChange,
 }: {
   label: string;
-  presets: readonly { name: string; value: string }[];
+  presets: readonly ColorPreset[];
   value: string;
   fallback: string;
   onChange: (value: string) => void;
@@ -184,25 +221,12 @@ function BrandColor({
   const { t } = useI18n();
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        {presets.map((p) => {
-          const active = p.value.toLowerCase() === value.toLowerCase();
-          return (
-            <button
-              key={p.value}
-              type="button"
-              title={t(`ap.color.${p.name}` as DictKey)}
-              aria-label={`${label}: ${t(`ap.color.${p.name}` as DictKey)}`}
-              aria-pressed={active}
-              onClick={() => onChange(p.value)}
-              style={{ backgroundColor: p.value }}
-              className={`h-8 w-8 cursor-pointer rounded-full border-2 shadow-xs transition ${
-                active ? "scale-110 border-foreground" : "border-card hover:scale-105"
-              }`}
-            />
-          );
-        })}
-      </div>
+      <ColorSwatches
+        label={label}
+        presets={presets}
+        value={value}
+        onPick={(v) => onChange(v ?? fallback)}
+      />
       <FreeColor
         label={label}
         value={value}
@@ -214,13 +238,18 @@ function BrandColor({
   );
 }
 
-function Segmented<T extends string>({
+export function Segmented<T extends string | number>({
   options,
   value,
   onChange,
   columns,
 }: {
-  options: { id: T; label: DictKey; icon?: React.ComponentType<{ className?: string }> }[];
+  options: {
+    id: T;
+    /** Chave do dicionário ou texto já traduzido. */
+    label: DictKey | string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
   value: T;
   onChange: (id: T) => void;
   columns: string;
@@ -230,21 +259,21 @@ function Segmented<T extends string>({
     <div className={`grid gap-2 ${columns}`}>
       {options.map(({ id, label, icon: Icon }) => (
         <button
-          key={id}
+          key={String(id)}
           type="button"
           aria-pressed={value === id}
           onClick={() => onChange(id)}
           className={`${optionClass(value === id)} flex items-center justify-center gap-1.5`}
         >
           {Icon && <Icon className="h-3.5 w-3.5" />}
-          {t(label)}
+          {label.includes(".") && !label.includes(" ") ? t(label as DictKey) : label}
         </button>
       ))}
     </div>
   );
 }
 
-function Slider({
+export function Slider({
   label,
   value,
   min,
@@ -273,12 +302,12 @@ function Slider({
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-2 flex-1 cursor-pointer accent-[var(--color-accent)]"
       />
-      <span className="w-14 shrink-0 text-right font-mono text-xs text-foreground">{display}</span>
+      <span className="w-16 shrink-0 text-right font-mono text-xs text-foreground">{display}</span>
     </div>
   );
 }
 
-function Switch({
+export function Switch({
   checked,
   onChange,
   label,
@@ -293,7 +322,7 @@ function Switch({
     <div className="flex items-center justify-between gap-4">
       <div>
         <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-[11px] text-muted-foreground">{hint}</p>
+        {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
       </div>
       <button
         type="button"
@@ -315,273 +344,141 @@ function Switch({
   );
 }
 
-const MODES: {
+/** Lista suspensa simples (nativa, acessível). */
+export function Select<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+  className = "",
+}: {
+  label: string;
+  value: T;
+  options: { id: T; label: string }[];
+  onChange: (id: T) => void;
+  className?: string;
+}) {
+  return (
+    <select
+      aria-label={label}
+      value={String(value)}
+      onChange={(e) => {
+        const picked = options.find((o) => String(o.id) === e.target.value);
+        if (picked) onChange(picked.id);
+      }}
+      className={`rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent ${className}`}
+    >
+      {options.map((o) => (
+        <option key={String(o.id)} value={String(o.id)}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+/** Opções de hora cheia (0h a 23h). */
+export const HOURS = Array.from({ length: 24 }, (_, h) => ({
+  id: h,
+  label: `${String(h).padStart(2, "0")}:00`,
+}));
+
+/**
+ * Galeria de modelos prontos. Clicar aplica o modelo; `isActive` marca o que já está valendo.
+ * `preview` desenha a miniatura de cada modelo.
+ */
+export function PresetGallery({
+  presets,
+  onPick,
+  isActive,
+  preview,
+  columns = "grid-cols-2 sm:grid-cols-3",
+}: {
+  presets: readonly Preset[];
+  onPick: (preset: Preset) => void;
+  isActive?: (preset: Preset) => boolean;
+  preview?: (preset: Preset) => React.ReactNode;
+  columns?: string;
+}) {
+  const tr = useTr();
+  return (
+    <div className={`grid gap-2.5 ${columns}`}>
+      {presets.map((p) => {
+        const active = isActive?.(p) ?? false;
+        return (
+          <button
+            key={p.id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onPick(p)}
+            className={`flex cursor-pointer flex-col gap-2 rounded-xl border p-2.5 text-left transition ${
+              active
+                ? "border-accent bg-accent-soft ring-2 ring-accent/40"
+                : "border-border bg-background hover:bg-secondary"
+            }`}
+          >
+            {preview?.(p) ??
+              (p.swatch && (
+                <span className="flex h-9 overflow-hidden rounded-lg border border-border/60">
+                  {p.swatch.map((c) => (
+                    <span key={c} className="flex-1" style={{ background: c }} />
+                  ))}
+                </span>
+              ))}
+            <span className="text-xs font-semibold text-foreground">{tr(p.names)}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Aviso curto dentro de um cartão. */
+export function Note({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="rounded-xl bg-secondary/60 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+export const MODES: {
   id: ThemeMode;
-  label: DictKey;
+  label: DictKey | string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
   { id: "light", label: "ap.mode.light", icon: Sun },
   { id: "dark", label: "ap.mode.dark", icon: Moon },
   { id: "system", label: "ap.mode.system", icon: Monitor },
+  { id: "schedule", label: "Agendado", icon: Sunset },
 ];
 
-const DENSITIES: { id: Density; label: DictKey }[] = [
+export const DENSITIES: { id: Density; label: DictKey }[] = [
   { id: "compact", label: "ap.density.compact" },
   { id: "normal", label: "ap.density.normal" },
   { id: "spacious", label: "ap.density.spacious" },
 ];
 
-const BORDERS: { id: BorderStyle; label: DictKey }[] = [
+export const BORDERS: { id: BorderStyle; label: DictKey }[] = [
   { id: "none", label: "ap.border.none" },
   { id: "subtle", label: "ap.border.subtle" },
   { id: "strong", label: "ap.border.strong" },
 ];
 
-const SHADOWS: { id: ShadowStyle; label: DictKey }[] = [
+export const SHADOWS: { id: ShadowStyle; label: DictKey }[] = [
   { id: "none", label: "ap.shadow.none" },
   { id: "soft", label: "ap.shadow.soft" },
   { id: "strong", label: "ap.shadow.strong" },
 ];
 
-function contrastLabel(ratio: number) {
+export function contrastLabel(ratio: number) {
   if (ratio >= 7) return { text: "ap.contrast.excellent" as DictKey, ok: true };
   if (ratio >= 4.5) return { text: "ap.contrast.good" as DictKey, ok: true };
   if (ratio >= 3) return { text: "ap.contrast.low" as DictKey, ok: false };
   return { text: "ap.contrast.veryLow" as DictKey, ok: false };
 }
 
-/** Todas as opções de personalização. Tudo vale na hora e fica salvo neste aparelho. */
-export function AppearanceEditor() {
-  const { appearance: a, update, reset } = useAppearance();
-  const { t } = useI18n();
-  const isDefault = JSON.stringify(a) === JSON.stringify(DEFAULT_APPEARANCE);
-
-  // Contraste do texto personalizado contra o fundo que está valendo agora.
-  const darkNow =
-    typeof document !== "undefined" && document.documentElement.classList.contains("dark");
-  const effectiveBg =
-    (darkNow ? a.backgroundDark : a.backgroundLight) ??
-    (darkNow ? THEME_COLORS.dark.background : THEME_COLORS.light.background);
-  const textContrast = isHex(a.textColor)
-    ? contrastLabel(contrastRatio(a.textColor, effectiveBg))
-    : null;
-
-  return (
-    <div className="space-y-5">
-      {/* Prévia */}
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {t("ap.preview")}
-          </p>
-          <button
-            type="button"
-            onClick={reset}
-            disabled={isDefault}
-            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground disabled:cursor-default disabled:opacity-40"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            {t("ap.restore")}
-          </button>
-        </div>
-        <h3 className="mt-1 font-display text-lg font-bold text-foreground">
-          {t("ap.previewTitle")}
-        </h3>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t("ap.previewText")}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
-            {t("ap.accentButton")}
-          </span>
-          <span className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">
-            {t("ap.primaryColorSample")}
-          </span>
-          <span className="rounded-full bg-accent-soft px-4 py-1.5 text-xs font-semibold text-accent">
-            {t("ap.softDetail")}
-          </span>
-        </div>
-      </div>
-
-      <Section title={t("ap.colors")} hint={t("ap.colorsHint")}>
-        <Group title={t("ap.mode")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={MODES}
-            value={a.mode}
-            onChange={(mode) => update({ mode })}
-          />
-        </Group>
-
-        <Group title={t("ap.accent")} hint={t("ap.accentHint")}>
-          <BrandColor
-            label={t("ap.accent")}
-            presets={ACCENT_PRESETS}
-            value={a.accent}
-            fallback={DEFAULT_APPEARANCE.accent}
-            onChange={(accent) => update({ accent })}
-          />
-        </Group>
-
-        <Group title={t("ap.primary")} hint={t("ap.primaryHint")}>
-          <BrandColor
-            label={t("ap.primary")}
-            presets={PRIMARY_PRESETS}
-            value={a.primary}
-            fallback={DEFAULT_APPEARANCE.primary}
-            onChange={(primary) => update({ primary })}
-          />
-        </Group>
-
-        <Group title={t("ap.bgLight")} hint={t("ap.bgLightHint")}>
-          <FreeColor
-            label={t("ap.bgLight")}
-            value={a.backgroundLight}
-            fallback={THEME_COLORS.light.background}
-            onChange={(backgroundLight) => update({ backgroundLight })}
-            resetLabel={t("ap.useThemeBg")}
-          />
-        </Group>
-
-        <Group title={t("ap.bgDark")}>
-          <FreeColor
-            label={t("ap.bgDark")}
-            value={a.backgroundDark}
-            fallback={THEME_COLORS.dark.background}
-            onChange={(backgroundDark) => update({ backgroundDark })}
-            resetLabel={t("ap.useThemeBg")}
-          />
-        </Group>
-
-        <Group title={t("ap.textColor")} hint={t("ap.textColorHint")}>
-          <FreeColor
-            label={t("ap.textColor")}
-            value={a.textColor}
-            fallback={darkNow ? THEME_COLORS.dark.text : THEME_COLORS.light.text}
-            onChange={(textColor) => update({ textColor })}
-            resetLabel={t("ap.automatic")}
-          />
-          {textContrast && (
-            <p
-              className={`mt-2 text-[11px] font-medium ${
-                textContrast.ok ? "text-muted-foreground" : "text-destructive"
-              }`}
-            >
-              {t("ap.contrastWithBg")} {t(textContrast.text)}.
-            </p>
-          )}
-        </Group>
-      </Section>
-
-      <Section title={t("ap.text")} hint={t("ap.textHint")}>
-        <Group title={t("ap.headingFont")}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {HEADING_FONTS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={a.headingFont === f.id}
-                onClick={() => update({ headingFont: f.id })}
-                className={optionClass(a.headingFont === f.id)}
-              >
-                <span
-                  className="block text-lg font-bold leading-tight text-foreground"
-                  style={{ fontFamily: f.css ?? DEFAULT_HEADING_CSS }}
-                >
-                  Aa
-                </span>
-                {t(`ap.hfont.${f.id}` as DictKey)}
-              </button>
-            ))}
-          </div>
-        </Group>
-
-        <Group title={t("ap.bodyFont")}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {BODY_FONTS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={a.bodyFont === f.id}
-                onClick={() => update({ bodyFont: f.id })}
-                className={optionClass(a.bodyFont === f.id)}
-              >
-                <span
-                  className="block text-lg leading-tight text-foreground"
-                  style={{ fontFamily: f.css ?? DEFAULT_BODY_CSS }}
-                >
-                  Aa
-                </span>
-                {f.id === "sistema" || f.id === "mono" ? t(`ap.bfont.${f.id}` as DictKey) : f.name}
-              </button>
-            ))}
-          </div>
-        </Group>
-
-        <Group title={t("ap.textSize")} hint={t("ap.textSizeHint")}>
-          <Slider
-            label={t("ap.textSize")}
-            min={TEXT_SCALE_RANGE.min}
-            max={TEXT_SCALE_RANGE.max}
-            step={5}
-            value={a.textScale}
-            onChange={(textScale) => update({ textScale })}
-            display={`${a.textScale}%`}
-          />
-        </Group>
-      </Section>
-
-      <Section title={t("ap.shapes")} hint={t("ap.shapesHint")}>
-        <Group title={t("ap.corners")}>
-          <Slider
-            label={t("ap.corners")}
-            min={CORNER_RANGE.min}
-            max={CORNER_RANGE.max}
-            step={2}
-            value={a.cornerRadius}
-            onChange={(cornerRadius) => update({ cornerRadius })}
-            display={`${a.cornerRadius}px`}
-          />
-          <div
-            className="mt-3 h-10 w-full border-2 border-foreground/30 bg-secondary"
-            style={{ borderRadius: `${a.cornerRadius * 1.5}px` }}
-          />
-        </Group>
-
-        <Group title={t("ap.density")} hint={t("ap.densityHint")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={DENSITIES}
-            value={a.density}
-            onChange={(density) => update({ density })}
-          />
-        </Group>
-
-        <Group title={t("ap.borders")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={BORDERS}
-            value={a.borders}
-            onChange={(borders) => update({ borders })}
-          />
-        </Group>
-
-        <Group title={t("ap.shadows")}>
-          <Segmented
-            columns="grid-cols-3"
-            options={SHADOWS}
-            value={a.shadows}
-            onChange={(shadows) => update({ shadows })}
-          />
-        </Group>
-      </Section>
-
-      <Section title={t("ap.accessibility")} hint={t("ap.accessibilityHint")}>
-        <Switch
-          checked={a.reduceMotion}
-          onChange={(reduceMotion) => update({ reduceMotion })}
-          label={t("ap.reduceMotion")}
-          hint={t("ap.reduceMotionHint")}
-        />
-      </Section>
-    </div>
-  );
+/** Compara só os campos do modelo com a aparência atual (para marcar o modelo ativo). */
+export function matchesPatch(a: Appearance, patch: Partial<Appearance>): boolean {
+  return (Object.keys(patch) as (keyof Appearance)[]).every((k) => a[k] === patch[k]);
 }

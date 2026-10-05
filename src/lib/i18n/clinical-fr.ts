@@ -63,7 +63,8 @@ const clinical: Record<ClinicalKey, string> = {
   "pro.duration": "Durée",
   "pro.minutes": "{n} minutes",
   "pro.addressOnBooking": "Adresse communiquée après la réservation",
-  "pro.onlineDefault": "Appel vidéo ; le lien arrive avant la consultation.",
+  "pro.onlineDefault":
+    "Appel vidéo dans la salle NutriConnect, directement sur le site, sans rien installer.",
   "pro.selfNotice":
     "Voici votre page publique de réservation. C'est ainsi que les patients vous voient.",
   "pro.editSettings": "Modifier la pratique",
@@ -137,7 +138,9 @@ const clinical: Record<ClinicalKey, string> = {
   "patientAppts.emptyUpcoming": "Aucune consultation prévue",
   "patientAppts.emptyUpcomingText": "Pourquoi ne pas réserver avec un professionnel vérifié ?",
   "patientAppts.emptyPast": "Rien ici pour l'instant",
-  "appt.join": "Rejoindre l'appel",
+  "appt.join": "Rejoindre la salle",
+  "appt.roomInfo":
+    "La consultation a lieu dans la salle vidéo de NutriConnect, ici sur le site. La salle ouvre 30 min avant.",
   "appt.payNow": "Payer maintenant",
   "appt.reschedule": "Déplacer",
   "appt.manage": "Gérer",
@@ -274,6 +277,31 @@ const clinical: Record<ClinicalKey, string> = {
   "invites.whatsappText":
     "Bonjour ! Je vous ai invité·e à mon suivi nutritionnel sur NutriConnect : {url}",
   "record.back": "Tous les patients",
+  "ai.summary.title": "Résumé par IA",
+  "ai.summary.hint":
+    "Résume le journal alimentaire, les objectifs et les mesures du patient. Rien n'est enregistré dans le dossier.",
+  "ai.summary.days7": "7 derniers jours",
+  "ai.summary.days30": "30 derniers jours",
+  "ai.summary.generate": "Générer le résumé",
+  "ai.summary.regenerate": "Générer à nouveau",
+  "ai.summary.generating": "Génération…",
+  "ai.summary.disclaimer":
+    "Généré par IA à partir des saisies du patient. Il peut contenir des erreurs : vérifiez le dossier avant de l'utiliser.",
+  "ai.summary.error": "Impossible de générer le résumé.",
+  "ai.soap.title": "Brouillon par IA",
+  "ai.soap.hint":
+    "Collez vos notes en vrac et l'IA les organise en Subjectif, Objectif, Évaluation et Plan. N'incluez pas le nom, le numéro d'identité ni le contact du patient.",
+  "ai.soap.placeholder":
+    "Ex. : signale moins de faim le soir, poids 71,2 kg, bonne adhésion au petit-déjeuner, veut continuer les marches…",
+  "ai.soap.generate": "Organiser avec l'IA",
+  "ai.soap.generating": "Organisation…",
+  "ai.soap.done": "Brouillon rempli. Relisez-le avant d'enregistrer.",
+  "ai.soap.overwrite": "Cela remplacera le texte des champs ci-dessous. Continuer ?",
+  "ai.soap.error": "Impossible de générer le brouillon.",
+  "ai.reply.suggest": "Suggérer une réponse",
+  "ai.reply.suggesting": "Réflexion…",
+  "ai.reply.done": "Brouillon placé dans la zone de message. Relisez-le avant d'envoyer.",
+  "ai.reply.error": "Impossible de suggérer une réponse.",
   "record.notFound": "Patient introuvable dans votre suivi",
   "record.age": "{n} ans",
   "record.sex.feminino": "Féminin",
@@ -305,6 +333,8 @@ const clinical: Record<ClinicalKey, string> = {
   "record.tab.antropometria": "Anthropométrie",
   "record.tab.plano": "Plan alimentaire",
   "record.tab.metas": "Objectifs",
+  "record.tab.avaliacoes": "Évaluations",
+  "record.tab.cuidados": "Plans de soins",
   "record.tab.consultas": "Consultations",
   "summary.weight": "Poids actuel",
   "summary.sinceStart": "{delta} depuis le début",
@@ -668,8 +698,8 @@ const clinical: Record<ClinicalKey, string> = {
   "docs.emptyText": "Envoyez des analyses, comptes rendus ou autres documents.",
   "docs.open": "Ouvrir",
   "docs.byYou": "envoyé par vous",
-  "errors.payment": "Impossible de joindre Mercado Pago. Réessayez dans un instant.",
-  "appt.cancelledRefunded": "Consultation annulée. Le remboursement a été demandé à Mercado Pago.",
+  "errors.payment": "Impossible de joindre Stripe. Réessayez dans un instant.",
+  "appt.cancelledRefunded": "Consultation annulée. Le remboursement a été demandé à Stripe.",
   "appt.cancelledNoRefund":
     "Consultation annulée. Comme il restait moins de {h} heures, le montant n'est pas remboursé automatiquement — parlez-en au professionnel.",
   "appt.cancelledRefundFailed":
@@ -684,21 +714,9 @@ const clinical: Record<ClinicalKey, string> = {
   "payment.returnFailure":
     "Le paiement n'a pas abouti. Vous pouvez réessayer tant que le créneau est réservé.",
   "mp.title": "Paiements en ligne",
-  "mp.connected": "Mercado Pago connecté",
-  "mp.notConnected": "Encaissez avec Mercado Pago",
-  "mp.connectedText":
-    "Les patients paient par Pix ou carte lors de la réservation et l'argent arrive directement sur votre compte. La plateforme retient {fee} % par consultation.",
-  "mp.notConnectedText":
-    "Connectez votre compte pour encaisser par Pix ou carte à la réservation. L'argent vous revient directement ; la plateforme retient {fee} % par consultation.",
+  "mp.stripeText":
+    "Les patients paient par carte lors de la réservation. NutriConnect reçoit le paiement et vous le reverse, moins des frais de {fee}% par consultation.",
   "mp.noPrice": "Définissez un tarif supérieur à zéro pour encaisser en ligne.",
-  "mp.connect": "Connecter Mercado Pago",
-  "mp.disconnect": "Déconnecter",
-  "mp.disconnectConfirm":
-    "Déconnecter Mercado Pago ? Les nouvelles réservations n'exigeront plus de paiement en ligne.",
-  "mp.disconnected": "Mercado Pago déconnecté.",
-  "mp.connectedToast":
-    "Mercado Pago connecté ! Les prochaines réservations peuvent être payées en ligne.",
-  "mp.errorToast": "Impossible de connecter Mercado Pago. Réessayez.",
   "panelNav.finance": "Finances",
   "finance.title": "Finances",
   "finance.subtitle": "Ce que vous avez reçu, les frais et ce qu'il reste à encaisser.",

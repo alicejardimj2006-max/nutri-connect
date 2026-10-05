@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 // Efeitos visuais reutilizados pelos slides. Tudo que depende de tempo (contadores, cartas que viram)
 // respeita o modo estático, usado na versão em PDF, e a preferência de reduzir movimento.
@@ -138,9 +139,9 @@ export function FoodField({
         >
           <span
             className="nc-floaty block drop-shadow-sm"
-            style={{ fontSize: s.size, animationDelay: `${s.delay}s` }}
+            style={{ animationDelay: `${s.delay}s` }}
           >
-            {items[i % items.length]}
+            <EmojiIcon emoji={items[i % items.length]} size={s.size} tinted strokeWidth={1.6} />
           </span>
         </span>
       ))}
@@ -159,10 +160,10 @@ export function RisingEmojis({ items, className = "" }: { items: string[]; class
       {lanes.map((left, i) => (
         <span
           key={left}
-          className="nc-rise-fade absolute bottom-0 text-2xl"
+          className="nc-rise-fade absolute bottom-0"
           style={{ left: `${left}%`, animationDelay: `${i * 0.75}s` }}
         >
-          {items[i % items.length]}
+          <EmojiIcon emoji={items[i % items.length]} size={26} tinted />
         </span>
       ))}
     </div>

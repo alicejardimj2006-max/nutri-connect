@@ -1,6 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MapPin, Search, Stethoscope, Video } from "lucide-react";
+import {
+  Activity,
+  Apple,
+  Brain,
+  Dumbbell,
+  HeartPulse,
+  MapPin,
+  Search,
+  Stethoscope,
+  Video,
+  type LucideIcon,
+} from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { VerifiedBadge } from "@/components/person-chip";
@@ -8,7 +19,9 @@ import { Avatar, EmptyState, Loading, inputClass, plainText } from "@/components
 import { useDirectory } from "@/lib/clinical/queries";
 import { formatMoney } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
-import { CATEGORIES } from "@/lib/community";
+import { professionKey, type ProfessionKey } from "@/lib/clinical/professions";
+import { useTr } from "@/components/settings-ui";
+import type { Names } from "@/lib/appearance-data";
 import { td } from "@/lib/i18n/data";
 import { cn } from "@/lib/utils";
 
@@ -19,14 +32,70 @@ export const Route = createFileRoute("/profissionais/")({
 
 type ModalityFilter = "todos" | "online" | "presencial";
 
+/** As profissões da plataforma, na ordem em que aparecem nos filtros. */
+const PROFESSION_FILTERS: { key: ProfessionKey; label: Names; icon: LucideIcon }[] = [
+  { key: "nutricao", label: ["Nutrição", "Nutrition", "Nutrición", "Nutrition"], icon: Apple },
+  { key: "medicina", label: ["Medicina", "Medicine", "Medicina", "Médecine"], icon: Stethoscope },
+  {
+    key: "psicologia",
+    label: ["Psicologia", "Psychology", "Psicología", "Psychologie"],
+    icon: Brain,
+  },
+  {
+    key: "educacao_fisica",
+    label: ["Educação física", "Fitness", "Educación física", "Sport"],
+    icon: Dumbbell,
+  },
+  {
+    key: "fisioterapia",
+    label: ["Fisioterapia", "Physiotherapy", "Fisioterapia", "Kinésithérapie"],
+    icon: Activity,
+  },
+  {
+    key: "enfermagem",
+    label: ["Enfermagem", "Nursing", "Enfermería", "Soins infirmiers"],
+    icon: HeartPulse,
+  },
+];
+
 function DirectoryPage() {
   const { t, locale } = useClinicalI18n();
+  const tr = useTr();
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { data, isLoading } = useDirectory();
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState<string | null>(null);
+  const [profession, setProfession] = useState<ProfessionKey | null>(null);
   const [modality, setModality] = useState<ModalityFilter>("todos");
   const [onlyAccepting, setOnlyAccepting] = useState(true);
+  // O card "Qual profissional combina com você?" filtra a lista.
+  useEffect(() => {
+    const onQuery = (e: Event) => setQuery(String((e as CustomEvent<string>).detail ?? ""));
+    const onProfession = (e: Event) => {
+      const key = String((e as CustomEvent<string>).detail ?? "");
+      setProfession(key ? (key as ProfessionKey) : null);
+      setSpecialty(null);
+    };
+    window.addEventListener("pros:query", onQuery);
+    window.addEventListener("pros:profession", onProfession);
+    return () => {
+      window.removeEventListener("pros:query", onQuery);
+      window.removeEventListener("pros:profession", onProfession);
+    };
+  }, []);
+
+  // Especialidades vêm dos próprios cadastros (as mais comuns entre os profissionais da profissão escolhida).
+  const specialties = useMemo(() => {
+    const count = new Map<string, number>();
+    for (const p of data ?? []) {
+      if (profession && professionKey(p.profession) !== profession) continue;
+      for (const sp of p.specialties ?? []) count.set(sp, (count.get(sp) ?? 0) + 1);
+    }
+    return [...count.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([k]) => k);
+  }, [data, profession]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -34,13 +103,14 @@ function DirectoryPage() {
       if (onlyAccepting && !p.accepting_patients) return false;
       if (modality === "online" && !p.offers_online) return false;
       if (modality === "presencial" && !p.offers_presential) return false;
+      if (profession && professionKey(p.profession) !== profession) return false;
       if (specialty && !p.specialties?.includes(specialty)) return false;
       if (!q) return true;
       return [p.name, p.profession, p.headline, p.uf, ...(p.specialties ?? [])]
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q));
     });
-  }, [data, query, specialty, modality, onlyAccepting]);
+  }, [data, query, specialty, profession, modality, onlyAccepting]);
 
   // Só quem está logado vê a vitrine (os perfis não são públicos).
   if (!authHydrated || !user) return <AuthGateLoading />;
@@ -49,8 +119,7 @@ function DirectoryPage() {
     <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-12">
-        <h1 className="font-display text-3xl font-extrabold">{t("directory.title")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("directory.subtitle")}</p>
+        <h1 className="sr-only">{t("directory.title")}</h1>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
           <div className="relative">
@@ -83,8 +152,52 @@ function DirectoryPage() {
           </div>
         </div>
 
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            aria-pressed={profession === null}
+            onClick={() => {
+              setProfession(null);
+              setSpecialty(null);
+            }}
+            className={cn(
+              "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition",
+              profession === null
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-foreground hover:bg-secondary",
+            )}
+          >
+            {tr([
+              "Todas as profissões",
+              "All professions",
+              "Todas las profesiones",
+              "Toutes les professions",
+            ])}
+          </button>
+          {PROFESSION_FILTERS.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={profession === key}
+              onClick={() => {
+                setProfession(profession === key ? null : key);
+                setSpecialty(null);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition",
+                profession === key
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-foreground hover:bg-secondary",
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {tr(label)}
+            </button>
+          ))}
+        </div>
+
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {CATEGORIES.map((c) => (
+          {specialties.map((c) => (
             <button
               key={c}
               type="button"

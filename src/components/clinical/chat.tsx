@@ -7,11 +7,14 @@ import {
   MessageCircle,
   Paperclip,
   Send,
+  Sparkles,
   X,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { playSound } from "@/lib/sounds";
 import * as care from "@/lib/clinical/care";
+import { suggestReply } from "@/lib/pro-ai.functions";
 import { qk, useClinicalMutation, useMessages, useSignedUrls } from "@/lib/clinical/queries";
 import { formatDate, formatTime, isSameDay } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
@@ -45,12 +48,33 @@ export function ChatThread({
   const [body, setBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [suggesting, setSuggesting] = useState(false);
+  const isProfessional = meId === professionalId;
+
+  /** Rascunho de resposta da IA: vai para a caixa de texto, e o profissional revisa e envia. */
+  const suggest = async () => {
+    setSuggesting(true);
+    try {
+      const res = await suggestReply({ data: { patientId, locale } });
+      if ("reply" in res) {
+        setBody(res.reply);
+        toast.success(t("ai.reply.done"));
+      } else {
+        toast.error(res.error);
+      }
+    } catch {
+      toast.error(t("ai.reply.error"));
+    } finally {
+      setSuggesting(false);
+    }
+  };
 
   const send = useClinicalMutation(
     () => care.sendMessage({ patientId, professionalId, body, file }),
     {
       invalidate: [qk.messages(patientId, professionalId), qk.conversations()],
       onSuccess: () => {
+        playSound("send");
         setBody("");
         setFile(null);
       },
@@ -173,6 +197,18 @@ export function ChatThread({
               <span className="flex-1 truncate">{file.name}</span>
               <button type="button" aria-label={t("common.remove")} onClick={() => setFile(null)}>
                 <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          {isProfessional && list.length > 0 && (
+            <div className="mb-2">
+              <button type="button" className={buttonGhost} disabled={suggesting} onClick={suggest}>
+                {suggesting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5 text-accent" />
+                )}
+                {suggesting ? t("ai.reply.suggesting") : t("ai.reply.suggest")}
               </button>
             </div>
           )}

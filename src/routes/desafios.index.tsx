@@ -43,6 +43,7 @@ import {
 import { useTrailProfiles } from "@/lib/trail-profiles";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export const Route = createFileRoute("/desafios/")({
   head: () => ({
@@ -188,17 +189,7 @@ function DesafiosIndexPage() {
   return (
     <>
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8">
-        {/* Cabeçalho */}
-        <div className="border-b border-border/70 pb-6 mb-8">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent mb-2">
-            <Award className="h-3.5 w-3.5" />
-            <span>{t("dz.badge")}</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-foreground">
-            {t("dz.title")}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{t("dz.intro")}</p>
-        </div>
+        <h1 className="sr-only">{t("dz.title")}</h1>
 
         {/* Barra de XP, nível, ofensiva e meta do dia (com o seletor de perfil embutido) */}
         <TrailHeader
@@ -252,7 +243,10 @@ function DesafiosIndexPage() {
                       : "border-border bg-secondary/30 opacity-60"
                   }`}
                 >
-                  <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
+                  <EmojiIcon
+                    emoji={badge.achieved ? badge.icon : "🔒"}
+                    className={`h-4 w-4 ${badge.achieved ? "text-accent" : "text-muted-foreground"}`}
+                  />
                   <span className="text-[11px] font-bold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}
@@ -383,7 +377,9 @@ function DesafiosIndexPage() {
 
                 {userCommunityChallenges.length === 0 ? (
                   <div className="py-16 text-center rounded-3xl border bg-card p-8">
-                    <div className="text-4xl mb-3">👥</div>
+                    <div className="mb-3 flex justify-center text-muted-foreground">
+                      <EmojiIcon emoji="👥" className="h-10 w-10" strokeWidth={1.5} />
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">{t("dz.noCommChallenges")}</p>
                     <Link
                       to="/comunidades"

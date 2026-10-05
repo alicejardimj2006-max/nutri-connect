@@ -18,16 +18,18 @@ import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ConvitesRouteImport } from './routes/convites'
 import { Route as DesafiosRouteImport } from './routes/desafios'
+import { Route as DiretrizesRouteImport } from './routes/diretrizes'
 import { Route as EspacoRouteImport } from './routes/espaco'
-import { Route as ExperienciasRouteImport } from './routes/experiencias'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as PainelRouteImport } from './routes/painel'
-import { Route as ReceitasRouteImport } from './routes/receitas'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TemaDaSemanaRouteImport } from './routes/tema-da-semana'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as VerificacaoRouteImport } from './routes/verificacao'
 import { Route as AcompanhamentoIndexRouteImport } from './routes/acompanhamento.index'
 import { Route as AcompanhamentoConsultasRouteImport } from './routes/acompanhamento.consultas'
@@ -39,9 +41,11 @@ import { Route as AcompanhamentoMetasRouteImport } from './routes/acompanhamento
 import { Route as AcompanhamentoPlanoRouteImport } from './routes/acompanhamento.plano'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
+import { Route as ConsultaAppointmentIdRouteImport } from './routes/consulta.$appointmentId'
 import { Route as ConviteCodeRouteImport } from './routes/convite.$code'
 import { Route as DesafiosIndexRouteImport } from './routes/desafios.index'
 import { Route as DesafiosChallengeIdRouteImport } from './routes/desafios.$challengeId'
+import { Route as PagamentoAppointmentIdRouteImport } from './routes/pagamento.$appointmentId'
 import { Route as PainelIndexRouteImport } from './routes/painel.index'
 import { Route as PainelAgendaRouteImport } from './routes/painel.agenda'
 import { Route as PainelConfiguracoesRouteImport } from './routes/painel.configuracoes'
@@ -53,12 +57,14 @@ import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
 import { Route as PerfilPersonalizacaoRouteImport } from './routes/perfil.personalizacao'
 import { Route as ProfissionaisIndexRouteImport } from './routes/profissionais.index'
 import { Route as ProfissionaisProfessionalIdRouteImport } from './routes/profissionais.$professionalId'
+import { Route as ReceitasIndexRouteImport } from './routes/receitas.index'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
 import { Route as PainelPacientesIndexRouteImport } from './routes/painel.pacientes.index'
 import { Route as PainelPacientesPatientIdRouteImport } from './routes/painel.pacientes.$patientId'
 import { Route as PainelPlanosPlanIdRouteImport } from './routes/painel.planos.$planId'
 import { Route as PerfilConfiguracoesIndexRouteImport } from './routes/perfil.configuracoes.index'
 import { Route as PerfilConfiguracoesContaRouteImport } from './routes/perfil.configuracoes.conta'
+import { Route as PerfilConfiguracoesDadosRouteImport } from './routes/perfil.configuracoes.dados'
 import { Route as PerfilConfiguracoesIdiomaRouteImport } from './routes/perfil.configuracoes.idioma'
 import { Route as PerfilConfiguracoesNotificacoesRouteImport } from './routes/perfil.configuracoes.notificacoes'
 import { Route as PerfilConfiguracoesPrivacidadeRouteImport } from './routes/perfil.configuracoes.privacidade'
@@ -108,14 +114,14 @@ const DesafiosRoute = DesafiosRouteImport.update({
   path: '/desafios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiretrizesRoute = DiretrizesRouteImport.update({
+  id: '/diretrizes',
+  path: '/diretrizes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EspacoRoute = EspacoRouteImport.update({
   id: '/espaco',
   path: '/espaco',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperienciasRoute = ExperienciasRouteImport.update({
-  id: '/experiencias',
-  path: '/experiencias',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorarRoute = ExplorarRouteImport.update({
@@ -128,6 +134,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NinaRoute = NinaRouteImport.update({
+  id: '/nina',
+  path: '/nina',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotificacoesRoute = NotificacoesRouteImport.update({
   id: '/notificacoes',
   path: '/notificacoes',
@@ -138,9 +149,9 @@ const PainelRoute = PainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReceitasRoute = ReceitasRouteImport.update({
-  id: '/receitas',
-  path: '/receitas',
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
@@ -156,6 +167,11 @@ const SobreRoute = SobreRouteImport.update({
 const TemaDaSemanaRoute = TemaDaSemanaRouteImport.update({
   id: '/tema-da-semana',
   path: '/tema-da-semana',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerificacaoRoute = VerificacaoRouteImport.update({
@@ -213,6 +229,11 @@ const ComunidadesSlugRoute = ComunidadesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ComunidadesRoute,
 } as any)
+const ConsultaAppointmentIdRoute = ConsultaAppointmentIdRouteImport.update({
+  id: '/consulta/$appointmentId',
+  path: '/consulta/$appointmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConviteCodeRoute = ConviteCodeRouteImport.update({
   id: '/convite/$code',
   path: '/convite/$code',
@@ -227,6 +248,11 @@ const DesafiosChallengeIdRoute = DesafiosChallengeIdRouteImport.update({
   id: '/$challengeId',
   path: '/$challengeId',
   getParentRoute: () => DesafiosRoute,
+} as any)
+const PagamentoAppointmentIdRoute = PagamentoAppointmentIdRouteImport.update({
+  id: '/pagamento/$appointmentId',
+  path: '/pagamento/$appointmentId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PainelIndexRoute = PainelIndexRouteImport.update({
   id: '/',
@@ -284,10 +310,15 @@ const ProfissionaisProfessionalIdRoute =
     path: '/profissionais/$professionalId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ReceitasIndexRoute = ReceitasIndexRouteImport.update({
+  id: '/receitas/',
+  path: '/receitas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceitasIdRoute = ReceitasIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ReceitasRoute,
+  id: '/receitas/$id',
+  path: '/receitas/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PainelPacientesIndexRoute = PainelPacientesIndexRouteImport.update({
   id: '/pacientes/',
@@ -315,6 +346,12 @@ const PerfilConfiguracoesContaRoute =
   PerfilConfiguracoesContaRouteImport.update({
     id: '/conta',
     path: '/conta',
+    getParentRoute: () => PerfilConfiguracoesRoute,
+  } as any)
+const PerfilConfiguracoesDadosRoute =
+  PerfilConfiguracoesDadosRouteImport.update({
+    id: '/dados',
+    path: '/dados',
     getParentRoute: () => PerfilConfiguracoesRoute,
   } as any)
 const PerfilConfiguracoesIdiomaRoute =
@@ -346,16 +383,18 @@ export interface FileRoutesByFullPath {
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
   '/desafios': typeof DesafiosRouteWithChildren
+  '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
-  '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
-  '/receitas': typeof ReceitasRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/termos': typeof TermosRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
   '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
@@ -365,8 +404,10 @@ export interface FileRoutesByFullPath {
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
+  '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
@@ -382,9 +423,11 @@ export interface FileRoutesByFullPath {
   '/desafios/': typeof DesafiosIndexRoute
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
+  '/receitas/': typeof ReceitasIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/dados': typeof PerfilConfiguracoesDadosRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
@@ -398,15 +441,17 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
+  '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
-  '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
-  '/receitas': typeof ReceitasRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/termos': typeof TermosRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
   '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
@@ -416,8 +461,10 @@ export interface FileRoutesByTo {
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
+  '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
@@ -432,9 +479,11 @@ export interface FileRoutesByTo {
   '/desafios': typeof DesafiosIndexRoute
   '/painel': typeof PainelIndexRoute
   '/profissionais': typeof ProfissionaisIndexRoute
+  '/receitas': typeof ReceitasIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/dados': typeof PerfilConfiguracoesDadosRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
@@ -452,16 +501,18 @@ export interface FileRoutesById {
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
   '/desafios': typeof DesafiosRouteWithChildren
+  '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
-  '/experiencias': typeof ExperienciasRoute
   '/explorar': typeof ExplorarRoute
   '/login': typeof LoginRoute
+  '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
-  '/receitas': typeof ReceitasRouteWithChildren
+  '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
   '/tema-da-semana': typeof TemaDaSemanaRoute
+  '/termos': typeof TermosRoute
   '/verificacao': typeof VerificacaoRoute
   '/acompanhamento/consultas': typeof AcompanhamentoConsultasRoute
   '/acompanhamento/diario': typeof AcompanhamentoDiarioRoute
@@ -471,8 +522,10 @@ export interface FileRoutesById {
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
+  '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
   '/desafios/$challengeId': typeof DesafiosChallengeIdRoute
+  '/pagamento/$appointmentId': typeof PagamentoAppointmentIdRoute
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
@@ -488,9 +541,11 @@ export interface FileRoutesById {
   '/desafios/': typeof DesafiosIndexRoute
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
+  '/receitas/': typeof ReceitasIndexRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
+  '/perfil/configuracoes/dados': typeof PerfilConfiguracoesDadosRoute
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
@@ -509,16 +564,18 @@ export interface FileRouteTypes {
     | '/contato'
     | '/convites'
     | '/desafios'
+    | '/diretrizes'
     | '/espaco'
-    | '/experiencias'
     | '/explorar'
     | '/login'
+    | '/nina'
     | '/notificacoes'
     | '/painel'
-    | '/receitas'
+    | '/privacidade'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/termos'
     | '/verificacao'
     | '/acompanhamento/consultas'
     | '/acompanhamento/diario'
@@ -528,8 +585,10 @@ export interface FileRouteTypes {
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
     | '/comunidades/$slug'
+    | '/consulta/$appointmentId'
     | '/convite/$code'
     | '/desafios/$challengeId'
+    | '/pagamento/$appointmentId'
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
@@ -545,9 +604,11 @@ export interface FileRouteTypes {
     | '/desafios/'
     | '/painel/'
     | '/profissionais/'
+    | '/receitas/'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/dados'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
@@ -561,15 +622,17 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/contato'
     | '/convites'
+    | '/diretrizes'
     | '/espaco'
-    | '/experiencias'
     | '/explorar'
     | '/login'
+    | '/nina'
     | '/notificacoes'
-    | '/receitas'
+    | '/privacidade'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/termos'
     | '/verificacao'
     | '/acompanhamento/consultas'
     | '/acompanhamento/diario'
@@ -579,8 +642,10 @@ export interface FileRouteTypes {
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
     | '/comunidades/$slug'
+    | '/consulta/$appointmentId'
     | '/convite/$code'
     | '/desafios/$challengeId'
+    | '/pagamento/$appointmentId'
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
@@ -595,9 +660,11 @@ export interface FileRouteTypes {
     | '/desafios'
     | '/painel'
     | '/profissionais'
+    | '/receitas'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/dados'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
@@ -614,16 +681,18 @@ export interface FileRouteTypes {
     | '/contato'
     | '/convites'
     | '/desafios'
+    | '/diretrizes'
     | '/espaco'
-    | '/experiencias'
     | '/explorar'
     | '/login'
+    | '/nina'
     | '/notificacoes'
     | '/painel'
-    | '/receitas'
+    | '/privacidade'
     | '/recuperar-senha'
     | '/sobre'
     | '/tema-da-semana'
+    | '/termos'
     | '/verificacao'
     | '/acompanhamento/consultas'
     | '/acompanhamento/diario'
@@ -633,8 +702,10 @@ export interface FileRouteTypes {
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
     | '/comunidades/$slug'
+    | '/consulta/$appointmentId'
     | '/convite/$code'
     | '/desafios/$challengeId'
+    | '/pagamento/$appointmentId'
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
@@ -650,9 +721,11 @@ export interface FileRouteTypes {
     | '/desafios/'
     | '/painel/'
     | '/profissionais/'
+    | '/receitas/'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
+    | '/perfil/configuracoes/dados'
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
@@ -670,24 +743,30 @@ export interface RootRouteChildren {
   ContatoRoute: typeof ContatoRoute
   ConvitesRoute: typeof ConvitesRoute
   DesafiosRoute: typeof DesafiosRouteWithChildren
+  DiretrizesRoute: typeof DiretrizesRoute
   EspacoRoute: typeof EspacoRoute
-  ExperienciasRoute: typeof ExperienciasRoute
   ExplorarRoute: typeof ExplorarRoute
   LoginRoute: typeof LoginRoute
+  NinaRoute: typeof NinaRoute
   NotificacoesRoute: typeof NotificacoesRoute
   PainelRoute: typeof PainelRouteWithChildren
-  ReceitasRoute: typeof ReceitasRouteWithChildren
+  PrivacidadeRoute: typeof PrivacidadeRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SobreRoute: typeof SobreRoute
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
+  TermosRoute: typeof TermosRoute
   VerificacaoRoute: typeof VerificacaoRoute
+  ConsultaAppointmentIdRoute: typeof ConsultaAppointmentIdRoute
   ConviteCodeRoute: typeof ConviteCodeRoute
+  PagamentoAppointmentIdRoute: typeof PagamentoAppointmentIdRoute
   PerfilUserIdRoute: typeof PerfilUserIdRoute
   PerfilConfiguracoesRoute: typeof PerfilConfiguracoesRouteWithChildren
   PerfilEditarRoute: typeof PerfilEditarRoute
   PerfilPersonalizacaoRoute: typeof PerfilPersonalizacaoRoute
   ProfissionaisProfessionalIdRoute: typeof ProfissionaisProfessionalIdRoute
+  ReceitasIdRoute: typeof ReceitasIdRoute
   ProfissionaisIndexRoute: typeof ProfissionaisIndexRoute
+  ReceitasIndexRoute: typeof ReceitasIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -755,18 +834,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DesafiosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diretrizes': {
+      id: '/diretrizes'
+      path: '/diretrizes'
+      fullPath: '/diretrizes'
+      preLoaderRoute: typeof DiretrizesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/espaco': {
       id: '/espaco'
       path: '/espaco'
       fullPath: '/espaco'
       preLoaderRoute: typeof EspacoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiencias': {
-      id: '/experiencias'
-      path: '/experiencias'
-      fullPath: '/experiencias'
-      preLoaderRoute: typeof ExperienciasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorar': {
@@ -783,6 +862,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nina': {
+      id: '/nina'
+      path: '/nina'
+      fullPath: '/nina'
+      preLoaderRoute: typeof NinaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notificacoes': {
       id: '/notificacoes'
       path: '/notificacoes'
@@ -797,11 +883,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/receitas': {
-      id: '/receitas'
-      path: '/receitas'
-      fullPath: '/receitas'
-      preLoaderRoute: typeof ReceitasRouteImport
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recuperar-senha': {
@@ -823,6 +909,13 @@ declare module '@tanstack/react-router' {
       path: '/tema-da-semana'
       fullPath: '/tema-da-semana'
       preLoaderRoute: typeof TemaDaSemanaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verificacao': {
@@ -902,6 +995,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesSlugRouteImport
       parentRoute: typeof ComunidadesRoute
     }
+    '/consulta/$appointmentId': {
+      id: '/consulta/$appointmentId'
+      path: '/consulta/$appointmentId'
+      fullPath: '/consulta/$appointmentId'
+      preLoaderRoute: typeof ConsultaAppointmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/convite/$code': {
       id: '/convite/$code'
       path: '/convite/$code'
@@ -922,6 +1022,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/desafios/$challengeId'
       preLoaderRoute: typeof DesafiosChallengeIdRouteImport
       parentRoute: typeof DesafiosRoute
+    }
+    '/pagamento/$appointmentId': {
+      id: '/pagamento/$appointmentId'
+      path: '/pagamento/$appointmentId'
+      fullPath: '/pagamento/$appointmentId'
+      preLoaderRoute: typeof PagamentoAppointmentIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/painel/': {
       id: '/painel/'
@@ -1000,12 +1107,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfissionaisProfessionalIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/receitas/': {
+      id: '/receitas/'
+      path: '/receitas'
+      fullPath: '/receitas/'
+      preLoaderRoute: typeof ReceitasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receitas/$id': {
       id: '/receitas/$id'
-      path: '/$id'
+      path: '/receitas/$id'
       fullPath: '/receitas/$id'
       preLoaderRoute: typeof ReceitasIdRouteImport
-      parentRoute: typeof ReceitasRoute
+      parentRoute: typeof rootRouteImport
     }
     '/painel/pacientes/': {
       id: '/painel/pacientes/'
@@ -1040,6 +1154,13 @@ declare module '@tanstack/react-router' {
       path: '/conta'
       fullPath: '/perfil/configuracoes/conta'
       preLoaderRoute: typeof PerfilConfiguracoesContaRouteImport
+      parentRoute: typeof PerfilConfiguracoesRoute
+    }
+    '/perfil/configuracoes/dados': {
+      id: '/perfil/configuracoes/dados'
+      path: '/dados'
+      fullPath: '/perfil/configuracoes/dados'
+      preLoaderRoute: typeof PerfilConfiguracoesDadosRouteImport
       parentRoute: typeof PerfilConfiguracoesRoute
     }
     '/perfil/configuracoes/idioma': {
@@ -1145,20 +1266,9 @@ const PainelRouteChildren: PainelRouteChildren = {
 const PainelRouteWithChildren =
   PainelRoute._addFileChildren(PainelRouteChildren)
 
-interface ReceitasRouteChildren {
-  ReceitasIdRoute: typeof ReceitasIdRoute
-}
-
-const ReceitasRouteChildren: ReceitasRouteChildren = {
-  ReceitasIdRoute: ReceitasIdRoute,
-}
-
-const ReceitasRouteWithChildren = ReceitasRoute._addFileChildren(
-  ReceitasRouteChildren,
-)
-
 interface PerfilConfiguracoesRouteChildren {
   PerfilConfiguracoesContaRoute: typeof PerfilConfiguracoesContaRoute
+  PerfilConfiguracoesDadosRoute: typeof PerfilConfiguracoesDadosRoute
   PerfilConfiguracoesIdiomaRoute: typeof PerfilConfiguracoesIdiomaRoute
   PerfilConfiguracoesNotificacoesRoute: typeof PerfilConfiguracoesNotificacoesRoute
   PerfilConfiguracoesPrivacidadeRoute: typeof PerfilConfiguracoesPrivacidadeRoute
@@ -1167,6 +1277,7 @@ interface PerfilConfiguracoesRouteChildren {
 
 const PerfilConfiguracoesRouteChildren: PerfilConfiguracoesRouteChildren = {
   PerfilConfiguracoesContaRoute: PerfilConfiguracoesContaRoute,
+  PerfilConfiguracoesDadosRoute: PerfilConfiguracoesDadosRoute,
   PerfilConfiguracoesIdiomaRoute: PerfilConfiguracoesIdiomaRoute,
   PerfilConfiguracoesNotificacoesRoute: PerfilConfiguracoesNotificacoesRoute,
   PerfilConfiguracoesPrivacidadeRoute: PerfilConfiguracoesPrivacidadeRoute,
@@ -1186,24 +1297,30 @@ const rootRouteChildren: RootRouteChildren = {
   ContatoRoute: ContatoRoute,
   ConvitesRoute: ConvitesRoute,
   DesafiosRoute: DesafiosRouteWithChildren,
+  DiretrizesRoute: DiretrizesRoute,
   EspacoRoute: EspacoRoute,
-  ExperienciasRoute: ExperienciasRoute,
   ExplorarRoute: ExplorarRoute,
   LoginRoute: LoginRoute,
+  NinaRoute: NinaRoute,
   NotificacoesRoute: NotificacoesRoute,
   PainelRoute: PainelRouteWithChildren,
-  ReceitasRoute: ReceitasRouteWithChildren,
+  PrivacidadeRoute: PrivacidadeRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   SobreRoute: SobreRoute,
   TemaDaSemanaRoute: TemaDaSemanaRoute,
+  TermosRoute: TermosRoute,
   VerificacaoRoute: VerificacaoRoute,
+  ConsultaAppointmentIdRoute: ConsultaAppointmentIdRoute,
   ConviteCodeRoute: ConviteCodeRoute,
+  PagamentoAppointmentIdRoute: PagamentoAppointmentIdRoute,
   PerfilUserIdRoute: PerfilUserIdRoute,
   PerfilConfiguracoesRoute: PerfilConfiguracoesRouteWithChildren,
   PerfilEditarRoute: PerfilEditarRoute,
   PerfilPersonalizacaoRoute: PerfilPersonalizacaoRoute,
   ProfissionaisProfessionalIdRoute: ProfissionaisProfessionalIdRoute,
+  ReceitasIdRoute: ReceitasIdRoute,
   ProfissionaisIndexRoute: ProfissionaisIndexRoute,
+  ReceitasIndexRoute: ReceitasIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

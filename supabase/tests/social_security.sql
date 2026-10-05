@@ -61,26 +61,29 @@ begin
       outv := 'ERRO: ' || sqlerrm;
     end;
     reset role;
+    -- Sem sessão depois da chamada: as inserções diretas do teste valem como a plataforma (sem a trava de IA).
+    perform set_config('request.jwt.claims', '', true);
+    perform set_config('request.jwt.claim.sub', '', true);
     return outv;
   end $f$;
 
   -- ---------------------------------------------------------------- dados
   insert into auth.users (id, aud, role, email, raw_user_meta_data) values
-    (a, 'authenticated', 'authenticated', 'zzqx.a@teste.invalid', '{"name":"Zzqx Alice","goal":"Objetivo secreto A"}'),
-    (b, 'authenticated', 'authenticated', 'zzqx.b@teste.invalid', '{"name":"Zzqx Bruno"}'),
-    (c, 'authenticated', 'authenticated', 'zzqx.c@teste.invalid', '{"name":"Zzqx Carla","goal":"Objetivo privado da Carla"}'),
-    (d, 'authenticated', 'authenticated', 'zzqx.d@teste.invalid', '{"name":"Zzqx Daniel"}'),
-    (e, 'authenticated', 'authenticated', 'zzqx.e@teste.invalid', '{"name":"Zzqx Eva"}'),
-    (f, 'authenticated', 'authenticated', 'zzqx.f@teste.invalid', '{"name":"Zzqx Fabio"}'),
-    (p, 'authenticated', 'authenticated', 'zzqx.p@teste.invalid', '{"name":"Zzqxprof Hélena"}');
+    (a, 'authenticated', 'authenticated', 'zzqx.a@teste.invalid', '{"name":"Zzqx Alice","birth_date":"1990-01-01","goal":"Objetivo secreto A"}'),
+    (b, 'authenticated', 'authenticated', 'zzqx.b@teste.invalid', '{"name":"Zzqx Bruno","birth_date":"1990-01-01"}'),
+    (c, 'authenticated', 'authenticated', 'zzqx.c@teste.invalid', '{"name":"Zzqx Carla","birth_date":"1990-01-01","goal":"Objetivo privado da Carla"}'),
+    (d, 'authenticated', 'authenticated', 'zzqx.d@teste.invalid', '{"name":"Zzqx Daniel","birth_date":"1990-01-01"}'),
+    (e, 'authenticated', 'authenticated', 'zzqx.e@teste.invalid', '{"name":"Zzqx Eva","birth_date":"1990-01-01"}'),
+    (f, 'authenticated', 'authenticated', 'zzqx.f@teste.invalid', '{"name":"Zzqx Fabio","birth_date":"1990-01-01"}'),
+    (p, 'authenticated', 'authenticated', 'zzqx.p@teste.invalid', '{"name":"Zzqxprof Hélena","birth_date":"1990-01-01"}');
   insert into public.professionals (user_id, profession, council, registration, uf)
     values (p, 'Nutricionista', 'CRN-3', 'TESTE', 'SP');
   insert into auth.users (id, aud, role, email, raw_user_meta_data)
-    values (q, 'authenticated', 'authenticated', 'zzqx.q@teste.invalid', '{"name":"Zzqxprof Quirino"}');
+    values (q, 'authenticated', 'authenticated', 'zzqx.q@teste.invalid', '{"name":"Zzqxprof Quirino","birth_date":"1990-01-01"}');
   insert into public.professionals (user_id, profession, council, registration, uf, specialties)
     values (q, 'Nutricionista', 'CRN-3', 'TESTE2', 'SP', array['Zzqx Tema']);
   insert into auth.users (id, aud, role, email, raw_user_meta_data)
-    values (g, 'authenticated', 'authenticated', 'zzqx.g@teste.invalid', '{"name":"Zzqx Gestora"}');
+    values (g, 'authenticated', 'authenticated', 'zzqx.g@teste.invalid', '{"name":"Zzqx Gestora","birth_date":"1990-01-01"}');
   insert into public.platform_admins (user_id) values (g);
   update public.profiles set is_private = true, bio = 'Bio privada da Carla' where id = c;
   insert into public.friendships (requester_id, addressee_id, status) values
@@ -222,6 +225,8 @@ begin
     'insert into public.posts (author_id, body, publish_at) values (''' || a || ''', ''agendado'', now() + interval ''2 days'')');
   res := res || jsonb_build_object('teste', 'usuário comum NÃO agenda post', 'ok', (r like 'ERRO%'), 'obtido', left(r, 100));
 
+  -- A trava de IA exige uma aprovação do mesmo conteúdo antes de cada publicação.
+  insert into public.content_approvals (user_id, kind, body) values (p, 'post', 'agendado');
   r := pg_temp.as_user(p, 'authenticated',
     'insert into public.posts (author_id, body, publish_at) values (''' || p || ''', ''agendado'', now() + interval ''2 days'')');
   res := res || jsonb_build_object('teste', 'profissional agenda post', 'ok', (r = 'OK:1'), 'obtido', r);
@@ -407,6 +412,8 @@ begin
   res := res || jsonb_build_object('teste', 'busca no feed ignora acento e caixa', 'ok', (r = '1'), 'obtido', r);
 
   -- ------------------------------------------------------------------ publicar
+  insert into public.content_approvals (user_id, kind, title, body, tags, recipe)
+    values (f, 'post', 'Bolo', 'modo de fazer', array['bolo'], '{"prepTime":"30 min","servings":"4","difficulty":"Fácil","ingredients":["ovo"],"steps":["misturar"],"category":"Doces"}'::jsonb);
   r := pg_temp.as_user(f, 'authenticated', format(
     'insert into public.posts (author_id, type, title, body, tags, audience, recipe, block_order) values (%L, ''receita'', ''Bolo'', ''modo de fazer'', array[''bolo''], ''amigos'', ''{"prepTime":"30 min","servings":"4","difficulty":"Fácil","ingredients":["ovo"],"steps":["misturar"],"category":"Doces"}''::jsonb, array[''title'',''image'',''text'',''recipe''])', f));
   res := res || jsonb_build_object('teste', 'pessoa publica receita só para amigos (recipe + block_order)', 'ok', (r = 'OK:1'), 'obtido', r);
@@ -414,6 +421,7 @@ begin
   r := pg_temp.as_user(a, 'authenticated', format('insert into public.posts (author_id, body) values (%L, ''fingindo ser B'')', b));
   res := res || jsonb_build_object('teste', 'NÃO publica como outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
 
+  insert into public.content_approvals (user_id, kind, body) values (a, 'post', 'tentando forçar');
   r := pg_temp.as_user(a, 'authenticated', format('insert into public.posts (author_id, body, hidden, pinned) values (%L, ''tentando forçar'', true, true)', a));
   res := res || jsonb_build_object('teste', 'publicação nasce sem hidden/pinned mesmo se a pessoa tentar forçar', 'ok', (r = 'OK:1'
     and not exists (select 1 from public.posts where body = 'tentando forçar' and (hidden or pinned))), 'obtido', r);
@@ -478,6 +486,7 @@ begin
   res := res || jsonb_build_object('teste', 'profissional que já administra NÃO aceita outra', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
   r := pg_temp.as_user(d, 'authenticated', format('select id from public.leave_community_admin(%L)', cid2));
   res := res || jsonb_build_object('teste', 'admin que sai de comunidade PENDENTE cancela a comunidade', 'ok', (r <> '<vazio>' and not exists (select 1 from public.communities where id = cid2)), 'obtido', r);
+  insert into public.content_approvals (user_id, kind, body) values (e, 'post', 'post na comunidade');
   r := pg_temp.as_user(e, 'authenticated', format('insert into public.posts (author_id, body, community_id) values (%L, ''post na comunidade'', %L)', e, cid));
   res := res || jsonb_build_object('teste', 'membro publica em comunidade ativa', 'ok', (r = 'OK:1'), 'obtido', r);
   r := pg_temp.as_user(f, 'authenticated', format('insert into public.posts (author_id, body, community_id) values (%L, ''sem ser membro'', %L)', f, cid));

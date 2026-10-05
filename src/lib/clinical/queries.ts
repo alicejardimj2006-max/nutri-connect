@@ -185,8 +185,23 @@ export function useClinicalRealtime(userId: string | undefined) {
       });
     }
     channel.subscribe();
+    // Ferramentas da consulta (avaliações e planos de cuidado) num canal à parte.
+    const tools = supabase
+      .channel(`clinical-tools-${userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "care_plans" }, () => {
+        void qc.invalidateQueries({ queryKey: ["clinical", "care-plans"] });
+      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "clinical_assessments" },
+        () => {
+          void qc.invalidateQueries({ queryKey: ["clinical", "assessments"] });
+        },
+      )
+      .subscribe();
     return () => {
       void supabase.removeChannel(channel);
+      void supabase.removeChannel(tools);
     };
   }, [userId, qc]);
 }

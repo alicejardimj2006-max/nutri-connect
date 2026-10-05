@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useI18n } from "@/hooks/use-i18n";
 
 /** Altura máxima da foto no post (deixa espaço para parte do texto no card não expandido). */
-const MAX_HEIGHT = "clamp(10rem, calc(100dvh - 32rem), 26rem)";
+const MAX_HEIGHT = "var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem))";
 
 interface PostImageProps {
   src: string;
@@ -47,7 +47,7 @@ export function PostImage({ src, alt, className = "" }: PostImageProps) {
         // Foto limitada pela altura: o próprio botão encolhe até a largura da foto, então
         // cantos arredondados e sombra acompanham a foto (sem faixas ao redor).
         style={ratio ? { maxWidth: `calc(${MAX_HEIGHT} * ${ratio})` } : undefined}
-        className={`mx-auto block cursor-zoom-in overflow-hidden p-0 ${className}`}
+        className={`post-image mx-auto block cursor-zoom-in overflow-hidden p-0 ${className}`}
       >
         <img
           src={src}

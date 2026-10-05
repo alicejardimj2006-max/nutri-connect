@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { FileText, Lock, Pencil, Plus, Trash2 } from "lucide-react";
+import { FileText, Loader2, Lock, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { draftSoapNote } from "@/lib/pro-ai.functions";
 import * as records from "@/lib/clinical/records";
 import type { ClinicalNote } from "@/lib/clinical/records";
 import { qk, useAppointments, useClinicalMutation, useNotes } from "@/lib/clinical/queries";
@@ -131,6 +133,27 @@ function NoteForm({
     plan: note.plan ?? "",
   });
   const [appointmentId, setAppointmentId] = useState(note.appointment_id ?? "");
+  const [rough, setRough] = useState("");
+  const [drafting, setDrafting] = useState(false);
+
+  /** Organiza anotações soltas em SOAP com a IA. Só preenche os campos: quem salva é o profissional. */
+  const draft = async () => {
+    if (SOAP.some((k) => values[k].trim()) && !window.confirm(t("ai.soap.overwrite"))) return;
+    setDrafting(true);
+    try {
+      const res = await draftSoapNote({ data: { patientId, text: rough, locale } });
+      if ("note" in res) {
+        setValues(res.note);
+        toast.success(t("ai.soap.done"));
+      } else {
+        toast.error(res.error);
+      }
+    } catch {
+      toast.error(t("ai.soap.error"));
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   const save = useClinicalMutation(
     () =>
@@ -148,6 +171,35 @@ function NoteForm({
   return (
     <Card title={note.id ? t("notes.edit") : t("notes.new")}>
       <div className="space-y-3">
+        <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-3">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <Sparkles className="h-4 w-4 text-accent" /> {t("ai.soap.title")}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("ai.soap.hint")}</p>
+          <textarea
+            rows={3}
+            maxLength={4000}
+            className={cn(inputClass, "mt-2 resize-y")}
+            value={rough}
+            onChange={(e) => setRough(e.target.value)}
+            placeholder={t("ai.soap.placeholder")}
+          />
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              className={buttonSecondary}
+              disabled={rough.trim().length < 10 || drafting}
+              onClick={draft}
+            >
+              {drafting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {drafting ? t("ai.soap.generating") : t("ai.soap.generate")}
+            </button>
+          </div>
+        </div>
         <Field label={t("notes.appointment")} hint={t("common.optional")}>
           <select
             className={inputClass}

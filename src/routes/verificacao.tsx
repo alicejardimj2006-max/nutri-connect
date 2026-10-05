@@ -55,10 +55,7 @@ function VerificationPage() {
           <span>{t("edit.back")}</span>
         </Link>
 
-        <h1 className="font-display text-3xl font-extrabold text-foreground">
-          {t("verify.title")}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("verify.intro")}</p>
+        <h1 className="sr-only">{t("verify.title")}</h1>
 
         {!dataHydrated ? (
           <p className="mt-8 text-sm text-muted-foreground">{t("common.loading")}</p>

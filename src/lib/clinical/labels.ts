@@ -15,7 +15,7 @@ const KNOWN_METHODS = [
   "elo",
 ];
 
-/** Nome legível do meio de pagamento (manual ou vindo do Mercado Pago). */
+/** Nome legível do meio de pagamento (manual ou vindo do Stripe). */
 export function methodLabel(method: string, t: (k: ClinicalKey) => string): string {
   return KNOWN_METHODS.includes(method) ? t(`payment.method.${method}` as ClinicalKey) : method;
 }

@@ -18,12 +18,18 @@ import {
   Star,
   Sun,
   Users,
+  Lock as LockIcon,
+  Mic,
+  PhoneOff,
+  Video,
+  CalendarClock,
 } from "lucide-react";
 import { Mascot } from "@/components/mascots";
 import { useI18n } from "@/hooks/use-i18n";
-import { ACCENT_PRESETS, HEADING_FONTS } from "@/lib/appearance";
+import { ACCENT_PRESETS, HEADING_FONTS } from "@/lib/appearance-data";
 import type { DictKey } from "@/lib/i18n";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 // Mini-versões das telas do NutriConnect usadas no tour da apresentação. São estáticas (sem dados
 // do usuário) para funcionar antes do login, mas usam as mesmas cores, fontes e textos do site.
@@ -210,7 +216,12 @@ export function ProfileMock({ mock }: { mock: Mock }) {
               {t("hub.level").replace("{n}", String(current))}
             </p>
             <p className="font-display text-sm font-bold">
-              {LEVEL_ICONS[current - 1]} {t("hub.level.3")}
+              <EmojiIcon
+                emoji={LEVEL_ICONS[current - 1]}
+                className="mr-1 inline h-4 w-4 align-[-2px]"
+                tinted
+              />
+              {t("hub.level.3")}
             </p>
           </div>
           <div className="rounded-xl border border-border bg-card p-3">
@@ -244,7 +255,7 @@ export function ProfileMock({ mock }: { mock: Mock }) {
                   i < current ? "bg-primary-soft" : "bg-secondary opacity-50 grayscale"
                 } ${i === current - 1 ? "ring-2 ring-accent" : ""}`}
               >
-                {icon}
+                <EmojiIcon emoji={icon} className="h-4 w-4" tinted />
               </span>
             ))}
           </div>
@@ -292,14 +303,14 @@ export function AppearanceMock({
         <div>
           <p className="mb-2 text-xs font-semibold">{mock.accentLabel}</p>
           <div className="flex flex-wrap gap-2">
-            {ACCENT_PRESETS.map((p) => (
+            {ACCENT_PRESETS.slice(0, 8).map((p) => (
               <button
                 key={p.value}
                 type="button"
                 onClick={() => setAccent(p.value)}
-                aria-label={p.name}
+                aria-label={p.names[0]}
                 aria-pressed={accent === p.value}
-                title={p.name}
+                title={p.names[0]}
                 className={`h-7 w-7 rounded-full transition hover:scale-110 ${
                   accent === p.value ? "ring-2 ring-foreground ring-offset-2 ring-offset-card" : ""
                 }`}
@@ -582,7 +593,11 @@ export function ChallengesMock({ mock }: { mock: Mock }) {
                           : "bg-secondary text-muted-foreground"
                     } ${checked && i === 3 ? "nc-pop" : ""}`}
                   >
-                    {i < doneDays ? <Check className="h-3.5 w-3.5" /> : "💧"}
+                    {i < doneDays ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <EmojiIcon emoji={"💧"} className="h-3.5 w-3.5" />
+                    )}
                   </span>
                   <span className="text-[8px] text-muted-foreground">{d}</span>
                 </span>
@@ -599,7 +614,7 @@ export function ChallengesMock({ mock }: { mock: Mock }) {
                   : "bg-accent text-accent-foreground hover:bg-accent/90"
               }`}
             >
-              {checked ? `🎉 ${mock.checkedIn}` : mock.checkIn}
+              {checked ? mock.checkedIn : mock.checkIn}
             </button>
           </div>
         </div>
@@ -700,6 +715,103 @@ export function DiscoverMock({ mock }: { mock: Mock }) {
             <p className="mt-2 text-[9px] text-muted-foreground">
               {total} {t("theme.votes")}
             </p>
+          </div>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+/** Cuidado com profissionais: consulta marcada, sala de vídeo e ferramentas da consulta. */
+export function CareMock({ mock }: { mock: Mock }) {
+  const [tool, setTool] = useState(1);
+  const [joined, setJoined] = useState(false);
+  return (
+    <BrowserFrame url="consulta">
+      <div className="grid gap-3 p-4 sm:grid-cols-[1.25fr_1fr]">
+        <div className="relative overflow-hidden rounded-xl bg-[#0d0f12] text-white shadow-card">
+          <img
+            src="/images/presentation/meeting.jpg"
+            alt=""
+            className={`h-44 w-full object-cover transition duration-500 ${joined ? "opacity-90" : "opacity-30 blur-[2px]"}`}
+          />
+          <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-1 text-[9px] font-semibold">
+            <LockIcon className="h-2.5 w-2.5" /> {mock.careProName}
+          </div>
+          {!joined ? (
+            <button
+              type="button"
+              onClick={() => setJoined(true)}
+              className="absolute inset-x-6 bottom-4 flex items-center justify-center gap-1.5 rounded-full bg-emerald-500 py-2 text-[11px] font-bold transition hover:bg-emerald-400"
+            >
+              <Video className="h-3.5 w-3.5" /> {mock.careJoin}
+            </button>
+          ) : (
+            <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+              {[Mic, Video].map((Icon, i) => (
+                <span key={i} className="grid h-7 w-7 place-items-center rounded-full bg-white/15">
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
+              ))}
+              <button
+                type="button"
+                onClick={() => setJoined(false)}
+                className="grid h-7 w-9 place-items-center rounded-full bg-red-600"
+                aria-label="×"
+              >
+                <PhoneOff className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-card">
+            <CalendarClock className="h-4 w-4 shrink-0 text-accent" />
+            <div className="min-w-0">
+              <p className="truncate text-[11px] font-bold">{mock.careProName}</p>
+              <p className="text-[9px] text-muted-foreground">
+                {mock.careRole} · {mock.careWhen}
+              </p>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-2.5 shadow-card">
+            <div className="flex flex-wrap gap-1">
+              {mock.careTools.map((name, i) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setTool(i)}
+                  aria-pressed={tool === i}
+                  className={`rounded-full px-2 py-0.5 text-[9px] font-semibold transition ${
+                    tool === i
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 rounded-lg bg-secondary/60 p-2 text-[10px]">
+              {tool === 1 ? (
+                <p className="flex items-center justify-between gap-2">
+                  <span className="font-semibold">{mock.careAssessment}</span>
+                  <span className="rounded-full bg-sky-500/15 px-2 py-0.5 font-bold text-sky-700">
+                    {mock.careScore}
+                  </span>
+                </p>
+              ) : tool === 3 ? (
+                <p className="flex items-center gap-1.5 font-semibold">
+                  <Check className="h-3 w-3 text-emerald-600" /> {mock.carePlan}
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  <span className="block h-1.5 w-11/12 rounded-full bg-border" />
+                  <span className="block h-1.5 w-3/4 rounded-full bg-border" />
+                  <span className="block h-1.5 w-2/3 rounded-full bg-border" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

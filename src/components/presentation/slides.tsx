@@ -8,6 +8,7 @@ import {
   BookOpen,
   Check,
   Compass,
+  Stethoscope,
   GitBranch,
   HeartHandshake,
   Home,
@@ -27,7 +28,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Mascot } from "@/components/mascots";
 import type { NinaAction } from "@/components/nina-live";
-import { ACCENT_PRESETS } from "@/lib/appearance";
+import { ACCENT_PRESETS } from "@/lib/appearance-data";
 import { fireConfetti } from "@/lib/confetti";
 import type { Persona, PresentationCopy, TourSlide } from "@/lib/i18n/presentation";
 import {
@@ -44,6 +45,7 @@ import {
   ChallengesMock,
   CommunitiesMock,
   DiscoverMock,
+  CareMock,
   FeedMock,
   ProfileMock,
   TrailMock,
@@ -73,6 +75,7 @@ import {
   Words,
 } from "./layout";
 import { NinaIntroSlide, PartDivider, PRESENTERS, TeamRoster } from "./parts";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 export interface SlideApi {
   next: () => void;
@@ -343,7 +346,7 @@ function ListCard({
               className="nc-pop shrink-0"
               style={{ animationDelay: `${delay + 200 + i * 120}ms` }}
             >
-              {bullets[i % bullets.length]}
+              <EmojiIcon emoji={bullets[i % bullets.length]} className="h-5 w-5 text-accent" />
             </span>
             {it}
           </li>
@@ -567,7 +570,14 @@ function Comparison(c: PresentationCopy) {
                         : "text-muted-foreground"
                     }`}
                   >
-                    {i === 0 ? `🏆 ${name}` : name}
+                    {i === 0 ? (
+                      <>
+                        <EmojiIcon emoji={"🏆"} className="mr-1 inline h-4 w-4 align-[-2px]" />
+                        {name}
+                      </>
+                    ) : (
+                      name
+                    )}
                   </th>
                 ))}
               </tr>
@@ -744,6 +754,7 @@ const TOUR_ORDER: { key: TourKey; icon: LucideIcon }[] = [
   { key: "communities", icon: Users },
   { key: "challenges", icon: Award },
   { key: "discover", icon: Compass },
+  { key: "care", icon: Stethoscope },
 ];
 
 function TourIntro(c: PresentationCopy, goToStop: (i: number) => void) {
@@ -803,7 +814,7 @@ function DropRain() {
             } as React.CSSProperties
           }
         >
-          💧
+          <EmojiIcon emoji={"💧"} className="h-[1em] w-[1em]" tinted />
         </span>
       ))}
     </div>
@@ -946,6 +957,17 @@ function tourSlide(key: TourKey, c: PresentationCopy, flip: boolean) {
           ambient={<FoodField items={["🔍", "🥕", "🍋", "🍅", "🥦", "🍓", "📖"]} count={7} />}
         >
           <DiscoverMock mock={c.mock} />
+        </TourLayout>
+      );
+    case "care":
+      return (
+        <TourLayout
+          slide={slide}
+          flip={flip}
+          glow="bg-emerald-500/20"
+          ambient={<FoodField items={["🩺", "💬", "📋", "💚", "📅"]} count={5} opacity={0.6} />}
+        >
+          <CareMock mock={c.mock} />
         </TourLayout>
       );
   }
@@ -1178,6 +1200,7 @@ const PART_SLIDES: Draft[][] = [
     tour("communities", false, "wave"),
     tour("challenges", true),
     tour("discover", false, "think"),
+    tour("care", true, "present"),
     {
       id: "curso",
       nina: (c) => c.course.nina,

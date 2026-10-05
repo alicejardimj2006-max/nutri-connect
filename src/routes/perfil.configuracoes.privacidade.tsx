@@ -4,6 +4,7 @@ import { ArrowLeft, Ban } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { Switch } from "@/components/ui/switch";
+import { HealthConsentCard } from "@/components/health-consent-card";
 import { DEFAULT_PRIVACY, type PrivacySettings } from "@/lib/social/api";
 import { useBlocked, useMyPrivacy, useUnblockUser, useUpdatePrivacy } from "@/lib/social/queries";
 
@@ -67,9 +68,7 @@ function PrivacidadePage() {
         <span>{t("settings.account.back")}</span>
       </Link>
 
-      <h1 className="text-3xl font-extrabold font-display text-foreground mb-8">
-        {t("settings.privacy.title")}
-      </h1>
+      <h1 className="sr-only">{t("settings.privacy.title")}</h1>
 
       <div className="space-y-6">
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
@@ -144,6 +143,8 @@ function PrivacidadePage() {
             </ul>
           )}
         </section>
+
+        <HealthConsentCard />
       </div>
     </div>
   );

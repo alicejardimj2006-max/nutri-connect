@@ -38,7 +38,6 @@ begin
   return c;
 end;
 $$;
-
 -- ---------------------------------------------------------------------------
 -- Candidatos a admin profissional (o "convite")
 -- ---------------------------------------------------------------------------
@@ -80,7 +79,6 @@ language sql stable security definer set search_path = public as $$
    order by e.score desc, e.user_id
    limit 5;
 $$;
-
 -- Comunidades que estão convidando a pessoa logada para ser admin profissional.
 create or replace function public.my_community_invites()
 returns setof public.communities
@@ -92,7 +90,6 @@ language sql stable set search_path = public as $$
      and exists (select 1 from public.community_candidates(c.id) k where k.user_id = auth.uid())
    order by c.created_at;
 $$;
-
 -- Profissional aceita: precisa estar entre os candidatos (isso já garante verificado, sem outra
 -- comunidade e sem ter saído desta).
 create or replace function public.accept_community_professional(p_community uuid)
@@ -121,7 +118,6 @@ begin
   return c;
 end;
 $$;
-
 -- ---------------------------------------------------------------------------
 -- Deixar a administração
 -- ---------------------------------------------------------------------------
@@ -151,7 +147,6 @@ begin
   return c;
 end;
 $$;
-
 -- ---------------------------------------------------------------------------
 -- Publicar: só em comunidade ativa
 -- ---------------------------------------------------------------------------
@@ -176,7 +171,6 @@ begin
   return new;
 end;
 $$;
-
 -- ---------------------------------------------------------------------------
 -- Consultas para o app
 -- ---------------------------------------------------------------------------
@@ -207,7 +201,6 @@ language sql stable set search_path = public as $$
            select 1 from public.community_members m where m.community_id = c.id and m.user_id = auth.uid()))
    order by c.created_at desc;
 $$;
-
 -- Membros de uma comunidade (cartão mínimo, inclusive de perfil privado).
 create or replace function public.get_community_members(p_community uuid)
 returns table (id uuid, name text, username text, avatar_url text, role public.app_role, joined_at timestamptz)
@@ -218,7 +211,6 @@ language sql stable set search_path = public as $$
    where m.community_id = p_community
    order by m.joined_at;
 $$;
-
 revoke execute on function public.community_candidates(uuid) from public, anon;
 revoke execute on function public.my_community_invites() from public, anon;
 revoke execute on function public.get_communities(text, boolean) from public, anon;
@@ -227,7 +219,6 @@ grant execute on function public.community_candidates(uuid) to authenticated, se
 grant execute on function public.my_community_invites() to authenticated, service_role;
 grant execute on function public.get_communities(text, boolean) to authenticated, service_role;
 grant execute on function public.get_community_members(uuid) to authenticated, service_role;
-
 -- ---------------------------------------------------------------------------
 -- Comunidades de demonstração: os admins (contas desativadas) saem; ficam suspensas e
 -- vagas, com membros e posts preservados, para a plataforma indicar admins reais.

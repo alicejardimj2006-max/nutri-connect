@@ -2,6 +2,8 @@
 // navegador). Privacidade, bloqueios e categorias de notificação ficam no Supabase
 // (ver src/lib/social). Mesmo padrão de src/lib/appearance.ts, guardado por pessoa.
 
+import { inHourWindow, loadAppearance } from "./appearance";
+
 export interface NotificationSettings {
   /** Notificação do navegador ligada neste aparelho (depende da permissão do navegador). */
   pushEnabled: boolean;
@@ -58,8 +60,13 @@ export function sendBrowserNotification(
   if (Notification.permission !== "granted") return;
   const settings = loadNotificationSettings(userId);
   if (!settings.pushEnabled || !settings[category]) return;
+  const prefs = loadAppearance();
+  if (prefs.quietOn && inHourWindow(prefs.quietFrom, prefs.quietTo)) return;
   try {
-    new Notification(title, { body, icon: "/favicon.ico" });
+    new Notification(prefs.notifPreview ? title : "NutriConnect", {
+      body: prefs.notifPreview ? body : "",
+      icon: "/favicon.ico",
+    });
   } catch {
     // ambiente sem suporte real (ex.: alguns navegadores mobile) — ignora
   }

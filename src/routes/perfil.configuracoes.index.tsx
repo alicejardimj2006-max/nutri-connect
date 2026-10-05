@@ -9,10 +9,14 @@ import {
   Info,
   LogOut,
   MessageCircle,
+  FileText,
   Palette,
   ShieldCheck,
   UserCog,
 } from "lucide-react";
+import { useState } from "react";
+import { Database, Search } from "lucide-react";
+import { useTr } from "@/components/settings-ui";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { signOut } from "@/lib/auth";
@@ -74,8 +78,77 @@ function ConfiguracoesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const tr = useTr();
+  const [query, setQuery] = useState("");
 
   if (!user) return null;
+
+  const cards = [
+    {
+      to: "/perfil/configuracoes/conta",
+      icon: UserCog,
+      tone: "bg-primary-soft text-primary",
+      title: t("settings.section.account.title"),
+      hint: t("settings.section.account.hint"),
+      keywords:
+        "senha e-mail email telefone cpf sessão aparelhos segurança excluir conta password security",
+    },
+    {
+      to: "/perfil/configuracoes/privacidade",
+      icon: ShieldCheck,
+      tone: "bg-chart-2/15 text-chart-2",
+      title: t("settings.section.privacy.title"),
+      hint: t("settings.section.privacy.hint"),
+      keywords: "perfil privado bloqueio bloqueados consentimento saúde lgpd contato visível",
+    },
+    {
+      to: "/perfil/configuracoes/notificacoes",
+      icon: Bell,
+      tone: "bg-chart-3/15 text-chart-3",
+      title: t("settings.section.notifications.title"),
+      hint: t("settings.section.notifications.hint"),
+      keywords: "avisos silêncio horário navegador push alertas notifications quiet",
+    },
+    {
+      to: "/perfil/personalizacao",
+      icon: Palette,
+      tone: "bg-chart-4/15 text-chart-4",
+      title: t("settings.section.appearance.title"),
+      hint: t("settings.section.appearance.hint"),
+      keywords: "tema cores fontes sons escuro modo layout acessibilidade contraste personalizar",
+    },
+    {
+      to: "/perfil/configuracoes/idioma",
+      icon: Globe,
+      tone: "bg-accent-soft text-accent",
+      title: tr(["Idioma e região", "Language and region", "Idioma y región", "Langue et région"]),
+      hint: tr([
+        "Idioma, formato de data e hora e fuso horário",
+        "Language, date and time format and time zone",
+        "Idioma, formato de fecha y hora y zona horaria",
+        "Langue, format de date et d'heure et fuseau horaire",
+      ]),
+      keywords: "idioma língua data hora fuso horário region language time zone",
+    },
+    {
+      to: "/perfil/configuracoes/dados",
+      icon: Database,
+      tone: "bg-chart-5/15 text-chart-5",
+      title: tr([
+        "Dados e histórico",
+        "Data and history",
+        "Datos e historial",
+        "Données et historique",
+      ]),
+      hint: tr([
+        "Baixar seus dados, apagar conversas e ver consentimentos",
+        "Download your data, delete conversations and view consents",
+        "Descargar tus datos, borrar conversaciones y ver consentimientos",
+        "Télécharger vos données, supprimer des conversations et voir les consentements",
+      ]),
+      keywords: "baixar exportar dados lgpd apagar nina conversas histórico consentimentos trilha",
+    },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -94,56 +167,41 @@ function ConfiguracoesPage() {
         <span>Voltar para o perfil</span>
       </Link>
 
-      <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">
-        {t("settings.title")}
-      </h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        {t("settings.subtitle")} Para mudar seu nome, bio ou jornada, use{" "}
-        <Link
-          to="/perfil/editar"
-          className="font-semibold text-accent hover:underline underline-offset-2"
-        >
-          Editar perfil
-        </Link>
-        .
-      </p>
+      <h1 className="sr-only">{t("settings.title")}</h1>
+      <div className="mb-6" />
 
       <div className="space-y-5">
-        <LinkCard
-          to="/perfil/configuracoes/conta"
-          icon={UserCog}
-          tone="bg-primary-soft text-primary"
-          title={t("settings.section.account.title")}
-          hint={t("settings.section.account.hint")}
-        />
-        <LinkCard
-          to="/perfil/configuracoes/privacidade"
-          icon={ShieldCheck}
-          tone="bg-chart-2/15 text-chart-2"
-          title={t("settings.section.privacy.title")}
-          hint={t("settings.section.privacy.hint")}
-        />
-        <LinkCard
-          to="/perfil/configuracoes/notificacoes"
-          icon={Bell}
-          tone="bg-chart-3/15 text-chart-3"
-          title={t("settings.section.notifications.title")}
-          hint={t("settings.section.notifications.hint")}
-        />
-        <LinkCard
-          to="/perfil/personalizacao"
-          icon={Palette}
-          tone="bg-chart-4/15 text-chart-4"
-          title={t("settings.section.appearance.title")}
-          hint={t("settings.section.appearance.hint")}
-        />
-        <LinkCard
-          to="/perfil/configuracoes/idioma"
-          icon={Globe}
-          tone="bg-accent-soft text-accent"
-          title={t("settings.section.language.title")}
-          hint={t("settings.section.language.hint")}
-        />
+        <label className="relative block">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={tr([
+              "Buscar nas configurações (senha, sons, fuso, dados…)",
+              "Search settings (password, sounds, time zone, data…)",
+              "Buscar en ajustes (contraseña, sonidos, zona horaria, datos…)",
+              "Rechercher dans les réglages (mot de passe, sons, fuseau, données…)",
+            ])}
+            className="w-full rounded-2xl border border-border/70 bg-card py-3 pl-10 pr-4 text-sm text-foreground shadow-xs outline-none focus:border-accent"
+          />
+        </label>
+
+        {cards
+          .filter((c) => {
+            const q = query.trim().toLowerCase();
+            return !q || `${c.title} ${c.hint} ${c.keywords}`.toLowerCase().includes(q);
+          })
+          .map((c) => (
+            <LinkCard
+              key={c.to}
+              to={c.to}
+              icon={c.icon}
+              tone={c.tone}
+              title={c.title}
+              hint={c.hint}
+            />
+          ))}
 
         <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -191,6 +249,27 @@ function ConfiguracoesPage() {
             >
               <MessageCircle className="h-4 w-4 text-accent" />
               {t("settings.section.about.link.contact")}
+            </Link>
+            <Link
+              to="/termos"
+              className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+            >
+              <FileText className="h-4 w-4 text-accent" />
+              Termos de Uso
+            </Link>
+            <Link
+              to="/privacidade"
+              className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+            >
+              <ShieldCheck className="h-4 w-4 text-accent" />
+              Política de Privacidade
+            </Link>
+            <Link
+              to="/diretrizes"
+              className="flex items-center gap-2.5 rounded-xl border border-border/70 px-4 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
+            >
+              <Heart className="h-4 w-4 text-accent" />
+              Diretrizes da Comunidade
             </Link>
           </div>
           <p className="mt-4 text-[11px] text-muted-foreground">

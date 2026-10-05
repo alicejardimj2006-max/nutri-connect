@@ -5,7 +5,7 @@ import {
   Users,
   ChefHat,
   Award,
-  Compass,
+  Stethoscope,
   Presentation,
   ArrowRight,
 } from "lucide-react";
@@ -49,7 +49,7 @@ function Login() {
     try {
       await loginUser(cleanEmail, password);
       toast.success(t("auth.loginWelcome"));
-      navigate({ to: (redirect ?? "/espaco") as "/espaco" });
+      navigate({ to: (redirect ?? "/") as "/espaco" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("auth.loginError"));
     } finally {
@@ -100,7 +100,7 @@ const FEATURES: { icon: typeof Users; key: DictKey }[] = [
   { icon: Users, key: "auth.feature1" },
   { icon: ChefHat, key: "auth.feature2" },
   { icon: Award, key: "auth.feature3" },
-  { icon: Compass, key: "auth.feature4" },
+  { icon: Stethoscope, key: "auth.feature4" },
 ];
 
 export function AuthLayout({
@@ -126,19 +126,22 @@ export function AuthLayout({
         <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
         <div className="absolute bottom-0 -left-10 h-56 w-56 rounded-full bg-chart-4/20 blur-3xl" />
 
-        <div className="relative z-10 flex items-center gap-2 text-lg font-bold font-logo-sans">
+        <Link
+          to="/"
+          className="relative z-10 flex items-center gap-2 text-lg font-bold font-logo-sans"
+        >
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 backdrop-blur">
             <Leaf className="h-5 w-5" />
           </span>
           NutriConnect
-        </div>
+        </Link>
 
         <div className="relative z-10 space-y-7">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> {t("auth.tagline")}
             </span>
-            <h2 className="mt-4 text-4xl font-extrabold leading-tight font-display">
+            <h2 className="mt-4 text-4xl font-extrabold leading-tight font-display text-primary-foreground">
               {t("auth.hero1")}
               <br />
               {t("auth.hero2")}
@@ -191,6 +194,20 @@ export function AuthLayout({
             </span>
             <ArrowRight className="h-4 w-4 text-accent transition group-hover:translate-x-0.5" />
           </Link>
+          <nav className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+            <Link to="/termos" className="hover:text-foreground hover:underline">
+              Termos de Uso
+            </Link>
+            <Link to="/privacidade" className="hover:text-foreground hover:underline">
+              Privacidade
+            </Link>
+            <Link to="/diretrizes" className="hover:text-foreground hover:underline">
+              Diretrizes
+            </Link>
+            <Link to="/contato" className="hover:text-foreground hover:underline">
+              Fale conosco
+            </Link>
+          </nav>
         </div>
       </div>
       <style>{`.input{width:100%;border:1px solid var(--border);background:var(--background);border-radius:0.75rem;padding:0.65rem 0.9rem;font-size:0.875rem;outline:none;transition:all .15s} .input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent)}`}</style>

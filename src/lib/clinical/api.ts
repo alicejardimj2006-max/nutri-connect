@@ -351,7 +351,7 @@ export async function acceptInvite(code: string): Promise<CareLink> {
 }
 
 // ---------------------------------------------------------------------------
-// Pagamentos (registro manual; o checkout do Mercado Pago vem das Edge Functions)
+// Pagamentos (registro manual; o checkout do Stripe vem das Edge Functions)
 // ---------------------------------------------------------------------------
 
 export async function listPaymentsForAppointments(ids: string[]): Promise<Payment[]> {

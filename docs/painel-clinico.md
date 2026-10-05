@@ -1,7 +1,7 @@
 # Painel clínico e acompanhamento nutricional
 
 Módulo que liga pacientes e profissionais verificados: agenda, consultas, prontuário,
-plano alimentar, diário, metas, mensagens, exames e pagamentos pelo Mercado Pago.
+plano alimentar, diário, metas, mensagens, exames e pagamentos pelo Stripe.
 
 ## O que existe
 
@@ -21,7 +21,7 @@ cadastrou antes precisa criar a conta de novo. Comunidades, feed, trilhas e desa
 - `supabase/migrations/`: schema, RLS, RPCs (agendar, remarcar, cancelar, convites, publicar
   plano…), Storage, Realtime, base TACO (597 alimentos) e job `pg_cron`.
 - `supabase/seed.sql`: contas de demonstração e histórico clínico de exemplo.
-- `supabase/functions/`: Edge Functions do Mercado Pago (`mp-*`).
+- `supabase/functions/`: Edge Functions de pagamento do Stripe (`stripe-*`).
 - `src/lib/clinical/`: acesso a dados (`api`, `records`, `care`, `finance`), React Query
   (`queries`), cálculos (`calc`), PDF (`plan-pdf`) e textos (`i18n`).
 - `src/components/clinical/`: componentes. `src/lib/i18n/clinical-*.ts`: textos em pt-BR, en, es
@@ -96,12 +96,12 @@ Outros comandos úteis:
 
    ```bash
    npx supabase secrets set \
-     MP_CLIENT_ID=... MP_CLIENT_SECRET=... MP_WEBHOOK_SECRET=... \
+     STRIPE_SECRET_KEY=sk_... STRIPE_WEBHOOK_SECRET=whsec_... \
      APP_URL=https://<domínio-do-site>
    npx supabase functions deploy
    ```
 
-   `mp-webhook` e `mp-oauth-callback` são públicas (`verify_jwt = false` em `supabase/config.toml`).
+   `stripe-webhook` é pública (a assinatura do Stripe garante a origem); `stripe-checkout` e `stripe-refund` validam o login dentro da função. As três usam `verify_jwt = false` em `supabase/config.toml`.
 
 4. **Auth (no painel do Supabase):**
    - *Authentication → URL Configuration*: coloque o domínio do site em **Site URL** e adicione
@@ -118,26 +118,23 @@ Outros comandos úteis:
    npx supabase gen types typescript --linked --schema public > src/integrations/supabase/types.ts
    ```
 
-## Mercado Pago (split de pagamentos)
+## Stripe (pagamento das consultas)
 
-Cada profissional conecta a própria conta Mercado Pago e recebe direto. A plataforma retém uma
-taxa, definida em `platform_settings.platform_fee_percent` (padrão 10%).
+O pagamento cai na conta Stripe da plataforma, que repassa o valor ao profissional fora do app. A
+taxa da plataforma é registrada em `payments.platform_fee_cents` e definida em
+`platform_settings.platform_fee_percent` (padrão 10%).
 
-1. Em https://www.mercadopago.com.br/developers/panel, crie uma aplicação do tipo
-   **Pagamentos on-line → Checkout Pro**, com o modelo **marketplace / split de pagamentos**.
-2. Em *Redirect URL* (OAuth), cadastre
-   `https://pdotnqmmtskjxysvsgxj.supabase.co/functions/v1/mp-oauth-callback`.
-3. Em *Webhooks*, cadastre a URL
-   `https://pdotnqmmtskjxysvsgxj.supabase.co/functions/v1/mp-webhook`, evento **Pagamentos**. Copie
-   a *assinatura secreta* para `MP_WEBHOOK_SECRET`.
-4. Copie *Client ID* e *Client Secret* para `MP_CLIENT_ID` e `MP_CLIENT_SECRET`.
-5. Para testar, use as **contas de teste** do painel: uma vendedora (para o profissional
-   conectar) e uma compradora (para o paciente pagar). Enquanto a conta conectada for de teste, o
-   checkout abre em modo sandbox.
+1. No painel do Stripe (Developers → Webhooks), crie um endpoint apontando para
+   `https://pdotnqmmtskjxysvsgxj.supabase.co/functions/v1/stripe-webhook` com os eventos
+   `checkout.session.completed` e `charge.refunded`.
+2. Copie o *Signing secret* (`whsec_...`) e salve:
+   `npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...`.
+3. A `STRIPE_SECRET_KEY` também fica nos secrets do Supabase. Use chaves de teste (`sk_test_`)
+   até validar o fluxo com o cartão `4242 4242 4242 4242`.
 
 Regras implementadas:
 
-- Ao agendar com um profissional que tem Mercado Pago e cobra acima de R$ 0, o horário fica
+- Ao agendar com um profissional que cobra acima de R$ 0, o horário fica
   reservado por 30 minutos (`payment_hold_minutes`) aguardando o pagamento. Um job `pg_cron`
   libera as reservas vencidas a cada 5 minutos.
 - O webhook confirma a consulta quando o pagamento é aprovado. Se o pagamento chegar depois de o
@@ -145,7 +142,7 @@ Regras implementadas:
 - Estorno ao cancelar: quando o profissional cancela, o estorno é integral. Quando o paciente
   cancela, o estorno só acontece com pelo menos 24 horas de antecedência
   (`refund_min_notice_hours`).
-- Profissionais sem Mercado Pago continuam atendendo e registram o pagamento manualmente na
+- Pagamentos feitos fora do app (dinheiro, Pix direto) são registrados manualmente na
   consulta (Pix, dinheiro, cartão ou transferência).
 
 ## Segurança e privacidade
@@ -156,5 +153,5 @@ Regras implementadas:
 - As notas de evolução (SOAP) são visíveis só para o profissional que as escreveu.
 - Fotos do diário, exames, anexos do chat e documentos de verificação de CRN ficam em buckets
   privados e são abertos por links assinados que valem 1 hora.
-- Os tokens do Mercado Pago ficam em `professional_mp_accounts`, que não tem nenhuma policy.
-  Só o `service_role` das Edge Functions acessa essa tabela.
+- A tabela `professional_mp_accounts` (tokens do Mercado Pago, antigo provedor) não é mais usada;
+  não tem nenhuma policy e pode ser removida.

@@ -36,7 +36,6 @@ export function NewAppointmentDialog({
   const [modality, setModality] = useState<AppointmentModality>("online");
   const [duration, setDuration] = useState<number | null>(null);
   const [price, setPrice] = useState<string | null>(null);
-  const [meetingUrl, setMeetingUrl] = useState("");
 
   const dur = duration ?? pro.data?.consultation_duration_min ?? 60;
   const priceValue = price ?? String((pro.data?.consultation_price_cents ?? 0) / 100);
@@ -54,7 +53,6 @@ export function NewAppointmentDialog({
         modality,
         status,
         price_cents: Math.round(Number(priceValue.replace(",", ".")) * 100) || 0,
-        meeting_url: modality === "online" ? meetingUrl.trim() || null : null,
         location: modality === "presencial" ? (pro.data?.address ?? null) : null,
       });
     },
@@ -129,15 +127,9 @@ export function NewAppointmentDialog({
             />
           </Field>
           {modality === "online" && (
-            <Field label={t("appt.meetingUrl")} hint={t("common.optional")}>
-              <input
-                type="url"
-                className={inputClass}
-                value={meetingUrl}
-                onChange={(e) => setMeetingUrl(e.target.value)}
-                placeholder="https://"
-              />
-            </Field>
+            <p className="self-end rounded-xl bg-secondary/70 px-3 py-2.5 text-xs text-foreground sm:col-span-2">
+              {t("appt.roomInfo")}
+            </p>
           )}
         </div>
         {inPast && <p className="text-xs text-muted-foreground">{t("newAppt.pastHint")}</p>}

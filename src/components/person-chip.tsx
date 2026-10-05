@@ -72,7 +72,7 @@ export function AdminPerson({
       params={{ userId }}
       className={`group/person flex min-w-0 items-center gap-2.5 ${raised ? "relative z-10" : ""}`}
     >
-      <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-[11px] font-bold text-primary">
+      <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full avatar-shape bg-primary-soft text-[11px] font-bold text-primary">
         {avatar ? (
           <img src={avatar} alt="" className="h-full w-full object-cover" />
         ) : (

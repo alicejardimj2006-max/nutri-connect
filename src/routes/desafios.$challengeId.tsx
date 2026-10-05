@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { formatDate, initials } from "@/lib/community";
 import { sendBrowserNotification } from "@/lib/settings";
+import { EmojiIcon } from "@/components/emoji-icon";
 import { earnedBadges as computeBadges } from "@/lib/social/challenge-stats";
 import {
   useAddTip,
@@ -106,12 +107,12 @@ function ChallengeDetailPage() {
       {
         onSuccess: () => {
           if (!willComplete) return;
-          toast.success(`${t("cd.doneToast")} ${challenge.badgeIcon} ${challenge.badgeLabel}.`);
+          toast.success(`${t("cd.doneToast")} ${challenge.badgeLabel}.`);
           sendBrowserNotification(
             user.id,
             "achievements",
             t("cd.doneNotifTitle"),
-            `${t("cd.notifBody")} ${challenge.badgeIcon} ${challenge.badgeLabel}.`,
+            `${t("cd.notifBody")} ${challenge.badgeLabel}.`,
           );
         },
       },
@@ -155,8 +156,8 @@ function ChallengeDetailPage() {
       <div className="rounded-3xl border border-border bg-card shadow-card p-6 sm:p-8 mb-8">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-primary-soft text-3xl shadow-xs">
-              {challenge.badgeIcon}
+            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary shadow-xs">
+              <EmojiIcon emoji={challenge.badgeIcon} className="h-8 w-8" />
             </span>
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -345,7 +346,7 @@ function ChallengeDetailPage() {
               <ul className="space-y-3.5">
                 {participantsProgress.map((p) => (
                   <li key={p.userId} className="flex items-center gap-3">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-[11px] font-bold text-primary">
                       {initials(p.name)}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -387,7 +388,9 @@ function ChallengeDetailPage() {
                 isCompleted ? "border-accent/40 bg-accent-soft/40" : "border-border bg-secondary/30"
               }`}
             >
-              <span className="text-3xl">{isCompleted ? challenge.badgeIcon : "🔒"}</span>
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+                <EmojiIcon emoji={isCompleted ? challenge.badgeIcon : "🔒"} className="h-6 w-6" />
+              </span>
               <div>
                 <p className="text-sm font-bold text-foreground">{challenge.badgeLabel}</p>
                 <p className="text-[11px] text-muted-foreground">
@@ -407,7 +410,10 @@ function ChallengeDetailPage() {
                     badge.achieved ? "bg-primary-soft/50" : "bg-secondary/30 opacity-60"
                   }`}
                 >
-                  <span className="text-lg">{badge.achieved ? badge.icon : "🔒"}</span>
+                  <EmojiIcon
+                    emoji={badge.achieved ? badge.icon : "🔒"}
+                    className="h-4 w-4 text-accent"
+                  />
                   <span className="font-semibold text-foreground">{td(badge.label)}</span>
                 </div>
               ))}

@@ -76,7 +76,7 @@ const clinicalPtBR = {
   "pro.duration": "Duração",
   "pro.minutes": "{n} minutos",
   "pro.addressOnBooking": "Endereço informado após o agendamento",
-  "pro.onlineDefault": "Chamada de vídeo; o link chega antes da consulta.",
+  "pro.onlineDefault": "Chamada de vídeo na sala do NutriConnect, aqui no site, sem instalar nada.",
   "pro.selfNotice":
     "Esta é a sua página pública de agendamento. É assim que os pacientes veem você.",
   "pro.editSettings": "Editar atendimento",
@@ -161,7 +161,9 @@ const clinicalPtBR = {
   "patientAppts.emptyPast": "Nada por aqui ainda",
 
   // Cartão/diálogos de consulta ---------------------------------------
-  "appt.join": "Entrar na chamada",
+  "appt.join": "Entrar na sala",
+  "appt.roomInfo":
+    "A consulta acontece na sala de vídeo do NutriConnect, aqui no site. A sala abre 30 min antes.",
   "appt.payNow": "Pagar agora",
   "appt.reschedule": "Remarcar",
   "appt.manage": "Gerenciar",
@@ -309,6 +311,31 @@ const clinicalPtBR = {
     "Olá! Te convidei para o acompanhamento nutricional no NutriConnect: {url}",
 
   "record.back": "Todos os pacientes",
+  "ai.summary.title": "Resumo com IA",
+  "ai.summary.hint":
+    "Resume o diário alimentar, as metas e as medidas do paciente. Nada é salvo na ficha.",
+  "ai.summary.days7": "Últimos 7 dias",
+  "ai.summary.days30": "Últimos 30 dias",
+  "ai.summary.generate": "Gerar resumo",
+  "ai.summary.regenerate": "Gerar novamente",
+  "ai.summary.generating": "Gerando…",
+  "ai.summary.disclaimer":
+    "Gerado por IA a partir dos registros do paciente. Pode conter erros: confira na ficha antes de usar.",
+  "ai.summary.error": "Não foi possível gerar o resumo.",
+  "ai.soap.title": "Rascunho com IA",
+  "ai.soap.hint":
+    "Cole suas anotações soltas e a IA organiza em Subjetivo, Objetivo, Avaliação e Plano. Não inclua nome, CPF ou contato do paciente.",
+  "ai.soap.placeholder":
+    "Ex.: relata menos fome à noite, peso 71,2 kg, boa adesão ao café da manhã, quer manter caminhadas…",
+  "ai.soap.generate": "Organizar com IA",
+  "ai.soap.generating": "Organizando…",
+  "ai.soap.done": "Rascunho preenchido. Revise antes de salvar.",
+  "ai.soap.overwrite": "Isso vai substituir o texto dos campos abaixo. Continuar?",
+  "ai.soap.error": "Não foi possível gerar o rascunho.",
+  "ai.reply.suggest": "Sugerir resposta",
+  "ai.reply.suggesting": "Pensando…",
+  "ai.reply.done": "Rascunho colocado na caixa de mensagem. Revise antes de enviar.",
+  "ai.reply.error": "Não foi possível sugerir uma resposta.",
   "record.notFound": "Paciente não encontrado no seu acompanhamento",
   "record.age": "{n} anos",
   "record.sex.feminino": "Feminino",
@@ -343,6 +370,8 @@ const clinicalPtBR = {
   "record.tab.antropometria": "Antropometria",
   "record.tab.plano": "Plano alimentar",
   "record.tab.metas": "Metas",
+  "record.tab.avaliacoes": "Avaliações",
+  "record.tab.cuidados": "Planos de cuidado",
   "record.tab.consultas": "Consultas",
   "summary.weight": "Peso atual",
   "summary.sinceStart": "{delta} desde o início",
@@ -702,8 +731,8 @@ const clinicalPtBR = {
   "docs.byYou": "enviado por você",
 
   // Pagamentos --------------------------------------------------------
-  "errors.payment": "Não foi possível falar com o Mercado Pago. Tente novamente em instantes.",
-  "appt.cancelledRefunded": "Consulta cancelada. O estorno foi solicitado ao Mercado Pago.",
+  "errors.payment": "Não foi possível falar com o Stripe. Tente novamente em instantes.",
+  "appt.cancelledRefunded": "Consulta cancelada. O estorno foi solicitado ao Stripe.",
   "appt.cancelledNoRefund":
     "Consulta cancelada. Como faltavam menos de {h} horas, o valor não é estornado automaticamente — fale com o profissional.",
   "appt.cancelledRefundFailed":
@@ -717,21 +746,9 @@ const clinicalPtBR = {
   "payment.returnFailure":
     "O pagamento não foi concluído. Você pode tentar de novo enquanto o horário estiver reservado.",
   "mp.title": "Pagamentos on-line",
-  "mp.connected": "Mercado Pago conectado",
-  "mp.notConnected": "Receba pelo Mercado Pago",
-  "mp.connectedText":
-    "Os pacientes pagam por Pix ou cartão ao agendar e o valor cai direto na sua conta. A plataforma retém {fee}% por consulta.",
-  "mp.notConnectedText":
-    "Conecte sua conta para cobrar por Pix ou cartão no agendamento. O dinheiro vai direto para você; a plataforma retém {fee}% por consulta.",
+  "mp.stripeText":
+    "Os pacientes pagam por cartão ao agendar. O NutriConnect recebe o valor e faz o repasse a você, descontada a taxa de {fee}% por consulta.",
   "mp.noPrice": "Defina um valor de consulta acima de zero para cobrar on-line.",
-  "mp.connect": "Conectar Mercado Pago",
-  "mp.disconnect": "Desconectar",
-  "mp.disconnectConfirm":
-    "Desconectar o Mercado Pago? Novos agendamentos deixam de exigir pagamento on-line.",
-  "mp.disconnected": "Mercado Pago desconectado.",
-  "mp.connectedToast":
-    "Mercado Pago conectado! Os próximos agendamentos já podem ser pagos on-line.",
-  "mp.errorToast": "Não foi possível conectar o Mercado Pago. Tente novamente.",
 
   // Financeiro --------------------------------------------------------
   "panelNav.finance": "Financeiro",

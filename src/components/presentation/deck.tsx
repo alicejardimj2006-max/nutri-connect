@@ -212,7 +212,7 @@ export function PresentationDeck() {
             >
               {LOCALES.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.flag} {l.id === "pt-BR" ? "PT" : l.id.toUpperCase()}
+                  {l.id === "pt-BR" ? "PT" : l.id.toUpperCase()}
                 </option>
               ))}
             </select>

@@ -72,10 +72,7 @@ function EditProfilePage() {
           <span>{t("edit.back")}</span>
         </Link>
 
-        <h1 className="text-3xl font-extrabold font-display text-foreground mb-1">
-          {t("edit.title")}
-        </h1>
-        <p className="text-sm text-muted-foreground mb-8">{t("edit.subtitle")}</p>
+        <h1 className="sr-only">{t("edit.title")}</h1>
 
         <form onSubmit={handleSave} className="space-y-5">
           <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-6 shadow-xs">

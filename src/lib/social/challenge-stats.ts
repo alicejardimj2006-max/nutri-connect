@@ -2,7 +2,7 @@
 // os desafios que vieram do banco (cada um já traz o progresso da pessoa logada).
 
 import { CHALLENGE_BADGE_TIERS, type ChallengeBadgeTier } from "@/lib/community";
-import type { RemoteChallenge } from "./challenges";
+import type { RemoteChallenge, UserChallenge } from "./challenges";
 
 const XP_PER_CHALLENGE = 100;
 const XP_PER_STEP = 15;
@@ -13,6 +13,21 @@ export function challengeXP(challenges: RemoteChallenge[]): number {
     if (!c.joined) return xp;
     return xp + (c.completed ? XP_PER_CHALLENGE : 0) + c.mySteps.length * XP_PER_STEP;
   }, 0);
+}
+
+/** XP de qualquer pessoa, a partir da lista pública dos desafios dela (user_challenges). */
+export function userChallengeXP(challenges: UserChallenge[]): number {
+  return challenges.reduce(
+    (xp, c) => xp + (c.completed ? XP_PER_CHALLENGE : 0) + c.stepsDone * XP_PER_STEP,
+    0,
+  );
+}
+
+/** Mesma ofensiva simplificada, para os desafios públicos de uma pessoa. */
+export function userChallengeStreak(challenges: UserChallenge[]): number {
+  const done = challenges.filter((c) => c.completed).length;
+  if (done > 0) return Math.min(done * 2 + 1, 30);
+  return challenges.length > 0 ? 1 : 0;
 }
 
 export function completedCount(challenges: RemoteChallenge[]): number {

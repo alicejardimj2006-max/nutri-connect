@@ -18,6 +18,7 @@ import { bmi, bmiClass } from "@/lib/clinical/calc";
 import { qk, useAnthropometrics, useClinicalMutation } from "@/lib/clinical/queries";
 import { ageFrom, formatDate, formatNumber, toDateKey } from "@/lib/clinical/format";
 import { useClinicalI18n, type ClinicalKey } from "@/lib/clinical/i18n";
+import { PatientAssessments } from "@/components/clinical/assessments-panel";
 
 export const Route = createFileRoute("/acompanhamento/evolucao")({
   component: PatientEvolutionPage,
@@ -101,6 +102,7 @@ function PatientEvolutionPage() {
               </ul>
             </Card>
           )}
+          <PatientAssessments patientId={user.id} />
         </div>
         <SelfWeighIn patientId={user.id} />
       </div>

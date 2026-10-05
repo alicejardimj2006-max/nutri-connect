@@ -159,6 +159,7 @@ export interface PresentationCopy {
     communities: TourSlide;
     challenges: TourSlide;
     discover: TourSlide;
+    care: TourSlide;
   };
   mock: {
     post1Name: string;
@@ -199,6 +200,14 @@ export interface PresentationCopy {
     pollOptions: string[];
     search: string;
     weekly: string;
+    careProName: string;
+    careRole: string;
+    careWhen: string;
+    careJoin: string;
+    careTools: string[];
+    careAssessment: string;
+    careScore: string;
+    carePlan: string;
   };
   team: SlideHeading & { text: string; role: string; leaderRole: string; pickHint: string };
   join: SlideHeading & {

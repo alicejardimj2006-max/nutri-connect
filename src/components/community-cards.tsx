@@ -15,9 +15,12 @@ import {
 } from "lucide-react";
 import { Fragment, useState, type ReactNode } from "react";
 import { toast } from "sonner";
+import { playSound } from "@/lib/sounds";
 import { VerifiedBadge } from "@/components/person-chip";
 import { PostCardFrame } from "@/components/post-card-frame";
+import { postDisplayImage } from "@/lib/post-type";
 import { PostImage } from "@/components/post-image";
+import { ReportButton } from "@/components/report-button";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +50,7 @@ import {
   getAvatarSrc,
   initials,
 } from "@/lib/community";
+import { EmojiIcon } from "@/components/emoji-icon";
 
 interface PostCardProps {
   post: Post;
@@ -76,6 +80,7 @@ export function PostCard({ post }: PostCardProps) {
   const preparedCount = (post.preparedBy || []).length;
 
   const handleSupport = () => {
+    playSound("support");
     if (!user) {
       toast.info(t("common.loginToSupport"));
       return;
@@ -122,10 +127,7 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
-  let displayImage = post.image;
-  if (!displayImage) {
-    if (post.type === "receita") displayImage = "/images/recipes/default-recipe.jpg";
-  }
+  const displayImage = postDisplayImage(post);
 
   const avatarImage = getAvatarSrc(post.authorId, post.authorAvatar);
   const authorIsProfessional = post.authorRole
@@ -137,13 +139,27 @@ export function PostCard({ post }: PostCardProps) {
     : null;
 
   // --- RENDERS COMUNS ---
+  const underReview = isOwnPost && post.hidden === true;
+  const reviewNotice = underReview ? (
+    <p className="mb-3 flex items-center gap-1.5 rounded-xl bg-warning/15 px-3 py-2 text-xs font-medium text-warning-foreground">
+      <Clock className="h-3.5 w-3.5 shrink-0" /> {t("postcard.underReview")}
+    </p>
+  ) : null;
+
   const renderAuthorInfo = () => (
+    <>
+      {reviewNotice}
+      {renderAuthorHeader()}
+    </>
+  );
+
+  const renderAuthorHeader = () => (
     <div className="flex flex-wrap items-start justify-between mb-4 gap-2">
       <div className="flex items-center gap-3 min-w-0">
         <Link
           to="/perfil/$userId"
           params={{ userId: post.authorId }}
-          className="grid h-10 w-10 overflow-hidden place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0"
+          className="grid h-10 w-10 overflow-hidden place-items-center rounded-full avatar-shape bg-primary-soft text-sm font-bold text-primary transition hover:opacity-80 shrink-0"
         >
           {avatarImage ? (
             <img src={avatarImage} alt={post.authorName} className="h-full w-full object-cover" />
@@ -257,6 +273,9 @@ export function PostCard({ post }: PostCardProps) {
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-foreground/90">{c.text}</p>
+                {user && c.authorId !== user.id && (
+                  <ReportButton targetType="comment" targetId={c.id} className="mt-2" />
+                )}
               </div>
             ))
           ) : (
@@ -318,7 +337,8 @@ export function PostCard({ post }: PostCardProps) {
           {opts.icon}
         </button>
         <span className="whitespace-nowrap text-[10px] leading-none tabular-nums text-muted-foreground">
-          {opts.label} {opts.count}
+          {opts.label}
+          <span className="stat-count"> {opts.count}</span>
         </span>
       </div>
     );
@@ -353,6 +373,10 @@ export function PostCard({ post }: PostCardProps) {
             active: hasSupported,
             activeClass: "bg-accent-soft text-accent",
           })}
+
+        {user && !isOwnPost && (
+          <ReportButton targetType="post" targetId={post.id} className="mt-2" />
+        )}
       </div>
     );
   };
@@ -374,8 +398,11 @@ export function PostCard({ post }: PostCardProps) {
   // --- RECEITA ---
   if (post.type === "receita") {
     return (
-      <PostCardFrame className={frameClass} footer={footer(false, true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
+      <PostCardFrame type={post.type} className={frameClass} footer={footer(false, true)}>
+        <div
+          className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider"
+          style={{ color: "var(--pt)" }}
+        >
           <ChefHat className="h-4 w-4" /> {t("postcard.communityRecipe")}
         </div>
 
@@ -447,8 +474,11 @@ export function PostCard({ post }: PostCardProps) {
   // --- EXPERIÊNCIA ---
   if (post.type === "experiencia") {
     return (
-      <PostCardFrame className={frameClass} footer={footer()}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-primary">
+      <PostCardFrame type={post.type} className={frameClass} footer={footer()}>
+        <div
+          className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider"
+          style={{ color: "var(--pt)" }}
+        >
           <Sparkles className="h-4 w-4" /> {t("postcard.communityStory")}
         </div>
 
@@ -480,8 +510,11 @@ export function PostCard({ post }: PostCardProps) {
   // --- PERGUNTA ---
   if (post.type === "pergunta") {
     return (
-      <PostCardFrame className={frameClass} footer={footer(true)}>
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider text-accent">
+      <PostCardFrame type={post.type} className={frameClass} footer={footer(true)}>
+        <div
+          className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-wider"
+          style={{ color: "var(--pt)" }}
+        >
           <HelpCircle className="h-4 w-4" /> {t("postcard.question")}
         </div>
 
@@ -505,7 +538,7 @@ export function PostCard({ post }: PostCardProps) {
 
   // --- GERAL (Fallback) ---
   return (
-    <PostCardFrame className={frameClass} footer={footer()}>
+    <PostCardFrame type={post.type} className={frameClass} footer={footer()}>
       {renderAuthorInfo()}
       {renderBlocks(["image", "title", "text"], {
         image: displayImage && (
@@ -630,8 +663,8 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
               className="w-full h-full object-cover"
               loading="lazy"
             />
-            <div className="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-lg bg-card/90 text-lg shadow-xs backdrop-blur-sm">
-              {challenge.badgeIcon || "🎯"}
+            <div className="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-lg bg-card/90 text-accent shadow-xs backdrop-blur-sm">
+              <EmojiIcon emoji={challenge.badgeIcon || "🎯"} className="h-4 w-4" />
             </div>
             <div className="absolute top-3 right-3 rounded-full bg-card/90 px-2.5 py-0.5 text-[11px] font-bold text-foreground backdrop-blur-sm shadow-xs">
               {challenge.duration || t("challenge.weekFallback")}
@@ -644,8 +677,8 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
           </div>
         ) : (
           <div className="flex items-center justify-between gap-2 p-5 pb-2">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-xl shadow-xs">
-              {challenge.badgeIcon || "🎯"}
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary shadow-xs">
+              <EmojiIcon emoji={challenge.badgeIcon || "🎯"} className="h-5 w-5" />
             </span>
             <div className="flex items-center gap-2">
               {isCompleted && (
@@ -694,7 +727,8 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
       <div className="mt-5 border-t border-border/60 pt-3 px-5 pb-5 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
-            👥 {challenge.participantCount} {t("challenge.participating")}
+            <EmojiIcon emoji="👥" className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
+            {challenge.participantCount} {t("challenge.participating")}
           </span>
           <Link
             to="/desafios/$challengeId"

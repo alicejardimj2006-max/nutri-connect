@@ -288,3 +288,17 @@ export async function togglePostPin(postId: string): Promise<boolean> {
   fail(error);
   return data === true;
 }
+
+/** Capas padrão quando a comunidade não tem foto própria (a escolha é estável pelo slug). */
+const DEFAULT_COVERS = [
+  "/images/communities/friends-dinner.jpg",
+  "/images/experiences/cooking.jpg",
+  "/images/hero/kitchen-prep.jpg",
+];
+
+export function communityCover(c: Pick<RemoteCommunity, "coverImage" | "slug">): string {
+  if (c.coverImage) return c.coverImage;
+  let h = 0;
+  for (const ch of c.slug) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return DEFAULT_COVERS[h % DEFAULT_COVERS.length];
+}

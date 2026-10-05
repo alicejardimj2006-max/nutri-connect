@@ -5,31 +5,59 @@ import {
   Eye,
   FlipHorizontal2,
   FlipVertical2,
+  Frame,
   Palette,
+  Pencil,
   Redo2,
   RotateCcw,
   RotateCw,
+  Smile,
   Sparkles,
   Sun,
+  Type,
   Undo2,
   Zap,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
+import { loadGoogleFont } from "@/lib/appearance";
 import {
-  ASPECTS,
   DEFAULT_EDITS,
-  LOOKS,
   POST_IMAGE_W,
   ZERO_ADJUSTMENTS,
   autoEnhance,
   clampOffsets,
   drawHistogram,
   frameSize,
+  hitOverlay,
+  hitStroke,
+  makeId,
+  needsAlpha,
+  overlayBox,
   renderEdits,
   type ImageEdits,
+  type Overlay,
+  type StrokeOverlay,
 } from "@/lib/image-edit";
+import {
+  ASPECTS,
+  LOOKS,
+  LOOK_CATEGORIES,
+  TEXT_FONTS,
+  type LookCategory,
+  type Names,
+} from "@/lib/image-edit-data";
+import {
+  DEFAULT_DRAW,
+  DrawPanel,
+  FramePanel,
+  StickerPanel,
+  TextPanel,
+  type DrawState,
+  type PanelCtx,
+} from "./image-editor-panels";
+import { ColorRow, Slider, toolBtn, useTr } from "./image-editor-ui";
 
 export { DEFAULT_EDITS };
 export type { ImageEdits };
@@ -39,11 +67,12 @@ const EXPORT_MAX_W = 1600;
 const THUMB_W = 88;
 const MAX_HISTORY = 60;
 
-type TabId = "crop" | "light" | "color" | "looks" | "detail";
+type TabId =
+  "crop" | "light" | "color" | "looks" | "detail" | "text" | "stickers" | "draw" | "frame";
 
 const TABS: {
   id: TabId;
-  label: DictKey;
+  label: DictKey | Names;
   icon: React.ComponentType<{ className?: string }>;
   keys: (keyof ImageEdits)[];
 }[] = [
@@ -51,90 +80,75 @@ const TABS: {
     id: "crop",
     label: "ie.tab.crop",
     icon: Crop,
-    keys: ["rotation", "straighten", "flipH", "flipV", "zoom", "offX", "offY", "aspect"],
+    keys: [
+      "rotation",
+      "straighten",
+      "flipH",
+      "flipV",
+      "zoom",
+      "offX",
+      "offY",
+      "aspect",
+      "customRatio",
+    ],
   },
   {
     id: "light",
     label: "ie.tab.light",
     icon: Sun,
-    keys: ["exposure", "contrast", "highlights", "shadows", "fade"],
+    keys: ["exposure", "contrast", "highlights", "shadows", "whites", "blacks", "fade"],
   },
   {
     id: "color",
     label: "ie.tab.color",
     icon: Palette,
-    keys: ["temperature", "tint", "saturation", "vibrance"],
+    keys: ["temperature", "tint", "hue", "saturation", "vibrance", "colorize"],
   },
   { id: "looks", label: "ie.tab.looks", icon: Sparkles, keys: ["look", "lookAmount"] },
   {
     id: "detail",
     label: "ie.tab.detail",
     icon: Aperture,
-    keys: ["sharpness", "blur", "vignette", "grain"],
+    keys: ["sharpness", "clarity", "blur", "tilt", "vignette", "grain", "sepia"],
+  },
+  { id: "text", label: ["Texto", "Text", "Texto", "Texte"], icon: Type, keys: [] },
+  {
+    id: "stickers",
+    label: ["Adesivos", "Stickers", "Adhesivos", "Autocollants"],
+    icon: Smile,
+    keys: [],
+  },
+  { id: "draw", label: ["Desenho", "Draw", "Dibujo", "Dessin"], icon: Pencil, keys: [] },
+  {
+    id: "frame",
+    label: ["Moldura", "Frame", "Marco", "Cadre"],
+    icon: Frame,
+    keys: ["frameStyle", "frameWidth", "frameColor", "frameRadius"],
   },
 ];
+
+const OVERLAY_TABS: Partial<Record<TabId, Overlay["type"][]>> = {
+  text: ["text"],
+  stickers: ["sticker"],
+  draw: ["stroke", "censor"],
+};
 
 const isDirty = (e: ImageEdits, keys: (keyof ImageEdits)[]) =>
   keys.some((k) => e[k] !== DEFAULT_EDITS[k]);
 
-function Slider({
-  label,
-  value,
-  min,
-  max,
-  step = 1,
-  unit = "",
-  neutral = 0,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  unit?: string;
-  /** Valor "sem efeito": duplo clique no rótulo volta para ele. */
-  neutral?: number;
-  onChange: (v: number) => void;
-}) {
-  const { t } = useI18n();
-  const shown = step < 1 ? value.toFixed(1) : Math.round(value);
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <button
-          type="button"
-          onDoubleClick={() => onChange(neutral)}
-          title={t("ie.resetTitle")}
-          className="font-medium text-foreground cursor-pointer select-none"
-        >
-          {label}
-        </button>
-        <span
-          className={`tabular-nums ${value !== neutral ? "font-semibold text-primary" : "text-muted-foreground"}`}
-        >
-          {value > neutral && neutral === 0 ? "+" : ""}
-          {shown}
-          {unit}
-        </span>
-      </div>
-      <input
-        type="range"
-        aria-label={label}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        onDoubleClick={() => onChange(neutral)}
-        className="w-full cursor-pointer accent-[var(--color-primary)]"
-      />
-    </div>
-  );
-}
+const tabDirty = (e: ImageEdits, tab: (typeof TABS)[number]) => {
+  const types = OVERLAY_TABS[tab.id];
+  if (types) return e.overlays.some((o) => types.includes(o.type));
+  return isDirty(e, tab.keys);
+};
 
-const toolBtn =
-  "inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition hover:bg-secondary disabled:opacity-40 disabled:hover:bg-card cursor-pointer disabled:cursor-not-allowed";
+const FREEHAND = new Set(["pen", "marker", "neon"]);
+
+type Drag =
+  | { mode: "pan"; x: number; y: number; moved: boolean }
+  | { mode: "move"; id: string; x: number; y: number; moved: boolean }
+  | { mode: "draw"; id: string; ox: number; oy: number }
+  | { mode: "erase"; moved: boolean };
 
 export function ImageEditor({
   open,
@@ -150,6 +164,7 @@ export function ImageEditor({
   onApply: (dataUrl: string, edits: ImageEdits) => void;
 }) {
   const { t } = useI18n();
+  const tr = useTr();
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [edits, setEdits] = useState<ImageEdits>({ ...DEFAULT_EDITS, ...initial });
   const editsRef = useRef(edits);
@@ -159,7 +174,12 @@ export function ImageEditor({
   const [tab, setTab] = useState<TabId>("crop");
   const [comparing, setComparing] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [lookCategory, setLookCategory] = useState<LookCategory | "all">("all");
   const [frameScale, setFrameScale] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draw, setDrawState] = useState<DrawState>(DEFAULT_DRAW);
+  const setDraw = (patch: Partial<DrawState>) => setDrawState((d) => ({ ...d, ...patch }));
+  const [fontTick, setFontTick] = useState(0);
   // No celular a foto ocupa todo o palco (a referência de altura do post deixaria ela minúscula).
   const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
   useEffect(() => {
@@ -172,7 +192,7 @@ export function ImageEditor({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const histRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
-  const pan = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const drag = useRef<Drag | null>(null);
   const sliding = useRef(false);
   const slideTimer = useRef<number | undefined>(undefined);
 
@@ -183,6 +203,8 @@ export function ImageEditor({
     setPast([]);
     setFuture([]);
     setTab("crop");
+    setSelectedId(null);
+    setDrawState(DEFAULT_DRAW);
   }, [open, initial]);
 
   useEffect(() => {
@@ -192,16 +214,34 @@ export function ImageEditor({
     image.src = src;
   }, [open, src]);
 
-  // Render principal + histograma. Ao comparar, mostra só o recorte, sem ajustes de cor.
+  // As fontes do texto precisam estar carregadas para o canvas desenhá-las.
+  useEffect(() => {
+    if (!open) return;
+    for (const f of TEXT_FONTS) {
+      loadGoogleFont(f);
+      void document.fonts?.load(`16px ${f.css}`).then(() => setFontTick((n) => n + 1));
+    }
+  }, [open]);
+
+  // Render principal + histograma. Ao comparar, mostra só o recorte, sem ajustes nem camadas.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!open || !img || !canvas) return;
     const shown = comparing
-      ? { ...edits, ...ZERO_ADJUSTMENTS, look: "none", lookAmount: 0 }
+      ? {
+          ...edits,
+          ...ZERO_ADJUSTMENTS,
+          look: "none",
+          lookAmount: 0,
+          overlays: [],
+          frameStyle: "none" as const,
+          frameWidth: 0,
+          frameRadius: 0,
+        }
       : edits;
     const hist = renderEdits(canvas, img, shown, PREVIEW_W, true);
     if (hist && histRef.current) drawHistogram(histRef.current, hist);
-  }, [open, img, edits, comparing]);
+  }, [open, img, edits, comparing, fontTick]);
 
   // Miniaturas dos filtros (quadradas, independentes do recorte atual).
   useEffect(() => {
@@ -235,6 +275,13 @@ export function ImageEditor({
   const update = (patch: Partial<ImageEdits>) =>
     setEdits((prev) => {
       const next = { ...prev, ...patch };
+      if (img) Object.assign(next, clampOffsets(img, next, PREVIEW_W));
+      return next;
+    });
+  /** Como `update`, mas a mudança é calculada a partir do estado mais recente (arrasto rápido). */
+  const updateFn = (fn: (e: ImageEdits) => Partial<ImageEdits>) =>
+    setEdits((prev) => {
+      const next = { ...prev, ...fn(prev) };
       if (img) Object.assign(next, clampOffsets(img, next, PREVIEW_W));
       return next;
     });
@@ -274,9 +321,17 @@ export function ImageEditor({
     setEdits(next);
   };
 
-  const resetKeys = (keys: (keyof ImageEdits)[]) => {
+  const currentTab = TABS.find((x) => x.id === tab)!;
+
+  const resetTab = () => {
+    const types = OVERLAY_TABS[tab];
+    if (types) {
+      change({ overlays: edits.overlays.filter((o) => !types.includes(o.type)) });
+      setSelectedId(null);
+      return;
+    }
     const patch: Record<string, unknown> = {};
-    keys.forEach((k) => (patch[k] = DEFAULT_EDITS[k]));
+    currentTab.keys.forEach((k) => (patch[k] = DEFAULT_EDITS[k]));
     change(patch as Partial<ImageEdits>);
   };
 
@@ -287,7 +342,18 @@ export function ImageEditor({
     const hist = renderEdits(
       probe,
       img,
-      { ...edits, exposure: 0, contrast: 0, highlights: 0, shadows: 0, fade: 0, vibrance: 0 },
+      {
+        ...edits,
+        exposure: 0,
+        contrast: 0,
+        highlights: 0,
+        shadows: 0,
+        whites: 0,
+        blacks: 0,
+        fade: 0,
+        vibrance: 0,
+        overlays: [],
+      },
       320,
       true,
     );
@@ -299,7 +365,11 @@ export function ImageEditor({
     const { rw } = frameSize(img, edits, 1);
     const canvas = document.createElement("canvas");
     renderEdits(canvas, img, edits, Math.min(EXPORT_MAX_W, Math.round(rw)));
-    onApply(canvas.toDataURL("image/jpeg", 0.92), edits);
+    // Cantos arredondados/círculo precisam de transparência (WebP); o resto segue em JPEG.
+    const url = needsAlpha(edits)
+      ? canvas.toDataURL("image/webp", 0.92)
+      : canvas.toDataURL("image/jpeg", 0.92);
+    onApply(url, edits);
   };
 
   // Zoom com a roda do mouse sobre a imagem.
@@ -317,25 +387,208 @@ export function ImageEditor({
   }, [open, img]);
 
   const dirtyAny = useMemo(
-    () => isDirty(edits, Object.keys(DEFAULT_EDITS) as (keyof ImageEdits)[]),
+    () =>
+      isDirty(
+        edits,
+        (Object.keys(DEFAULT_EDITS) as (keyof ImageEdits)[]).filter((k) => k !== "overlays"),
+      ) || edits.overlays.length > 0,
     [edits],
   );
 
+  // ── Interação com a foto: mover camadas, desenhar, censurar, apagar traços e reposicionar ──
+
+  const norm = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return {
+      nx: Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)),
+      ny: Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height)),
+      rect,
+    };
+  };
+  const outHeight = () => (img ? frameSize(img, editsRef.current, PREVIEW_W).outH : PREVIEW_W);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const { nx, ny } = norm(e);
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    if (tab === "draw") {
+      if (draw.mode === "draw" && draw.tool === "erase") {
+        const hit = hitStroke(editsRef.current.overlays, nx, ny, PREVIEW_W, outHeight());
+        drag.current = { mode: "erase", moved: false };
+        if (hit) {
+          checkpoint();
+          drag.current = { mode: "erase", moved: true };
+          updateFn((prev) => ({ overlays: prev.overlays.filter((o) => o.id !== hit.id) }));
+        }
+        return;
+      }
+      checkpoint();
+      const id = makeId();
+      const overlay: Overlay =
+        draw.mode === "censor"
+          ? {
+              id,
+              type: "censor",
+              mode: draw.censorMode,
+              shape: draw.censorShape,
+              x: nx,
+              y: ny,
+              w: 0,
+              h: 0,
+              amount: draw.censorAmount,
+              opacity: 1,
+            }
+          : {
+              id,
+              type: "stroke",
+              tool: draw.tool as StrokeOverlay["tool"],
+              points: [[nx, ny]],
+              color: draw.color,
+              width: draw.size,
+              opacity: draw.opacity,
+            };
+      updateFn((prev) => ({ overlays: [...prev.overlays, overlay] }));
+      drag.current = { mode: "draw", id, ox: nx, oy: ny };
+      return;
+    }
+
+    if (tab === "text" || tab === "stickers") {
+      const hit = hitOverlay(editsRef.current.overlays, nx, ny, PREVIEW_W, outHeight());
+      const allowed = OVERLAY_TABS[tab] ?? [];
+      if (hit && allowed.includes(hit.type)) {
+        setSelectedId(hit.id);
+        drag.current = { mode: "move", id: hit.id, x: e.clientX, y: e.clientY, moved: false };
+      } else {
+        setSelectedId(null);
+        drag.current = null;
+      }
+      return;
+    }
+
+    drag.current = { mode: "pan", x: e.clientX, y: e.clientY, moved: false };
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const { nx, ny, rect } = norm(e);
+
+    if (d.mode === "draw") {
+      updateFn((prev) => ({
+        overlays: prev.overlays.map((o) => {
+          if (o.id !== d.id) return o;
+          if (o.type === "stroke") {
+            return FREEHAND.has(o.tool)
+              ? { ...o, points: [...o.points, [nx, ny] as [number, number]] }
+              : { ...o, points: [o.points[0], [nx, ny] as [number, number]] };
+          }
+          if (o.type === "censor") {
+            return {
+              ...o,
+              x: Math.min(d.ox, nx),
+              y: Math.min(d.oy, ny),
+              w: Math.abs(nx - d.ox),
+              h: Math.abs(ny - d.oy),
+            };
+          }
+          return o;
+        }),
+      }));
+      return;
+    }
+
+    if (d.mode === "erase") {
+      const hit = hitStroke(editsRef.current.overlays, nx, ny, PREVIEW_W, outHeight());
+      if (hit) {
+        if (!d.moved) {
+          checkpoint();
+          d.moved = true;
+        }
+        updateFn((prev) => ({ overlays: prev.overlays.filter((o) => o.id !== hit.id) }));
+      }
+      return;
+    }
+
+    const dx = (e.clientX - d.x) / rect.width;
+    const dy = (e.clientY - d.y) / rect.height;
+    d.x = e.clientX;
+    d.y = e.clientY;
+    if (!d.moved) {
+      d.moved = true;
+      checkpoint();
+    }
+    if (d.mode === "move") {
+      updateFn((prev) => ({
+        overlays: prev.overlays.map((o) =>
+          o.id === d.id && (o.type === "text" || o.type === "sticker")
+            ? { ...o, x: Math.min(1, Math.max(0, o.x + dx)), y: Math.min(1, Math.max(0, o.y + dy)) }
+            : o,
+        ),
+      }));
+    } else {
+      update({ offX: editsRef.current.offX + dx, offY: editsRef.current.offY + dy });
+    }
+  };
+
+  const onPointerUp = () => {
+    const d = drag.current;
+    drag.current = null;
+    if (d?.mode === "draw") {
+      // Censura sem área (um simples toque) não vira camada.
+      updateFn((prev) => ({
+        overlays: prev.overlays.filter(
+          (o) => !(o.id === d.id && o.type === "censor" && (o.w < 0.01 || o.h < 0.01)),
+        ),
+      }));
+    }
+  };
+
+  const ctx: PanelCtx = { edits, selectedId, select: setSelectedId, change, slide };
+
+  // Caixa de seleção da camada escolhida (texto ou adesivo), sobre a foto.
+  const selected = edits.overlays.find((o) => o.id === selectedId) ?? null;
+  const selBox = (() => {
+    if (!img || !selected || comparing || (tab !== "text" && tab !== "stickers")) return null;
+    const outH = frameSize(img, edits, PREVIEW_W).outH;
+    const box = overlayBox(selected, PREVIEW_W, outH);
+    if (!box) return null;
+    return {
+      left: `${((box.cx - box.w / 2) / PREVIEW_W) * 100}%`,
+      top: `${((box.cy - box.h / 2) / outH) * 100}%`,
+      width: `${(box.w / PREVIEW_W) * 100}%`,
+      height: `${(box.h / outH) * 100}%`,
+      transform: `rotate(${box.rotation}deg)`,
+    };
+  })();
+
   const num = (key: keyof ImageEdits) => edits[key] as number;
-  const adjSlider = (key: keyof ImageEdits, label: DictKey, min = -100, max = 100) => (
+  const adjSlider = (key: keyof ImageEdits, label: DictKey | Names, min = -100, max = 100) => (
     <Slider
-      label={t(label)}
+      label={Array.isArray(label) ? tr(label as Names) : t(label as DictKey)}
       value={num(key)}
       min={min}
       max={max}
+      resetTitle={t("ie.resetTitle")}
       onChange={(v) => slide({ [key]: v } as Partial<ImageEdits>)}
     />
+  );
+
+  const visibleLooks = LOOKS.filter(
+    (l) => lookCategory === "all" || l.category === lookCategory || l.id === "none",
   );
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent
         onKeyDown={(e) => {
+          const target = e.target as HTMLElement;
+          const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+          if (!typing && (e.key === "Delete" || e.key === "Backspace") && selectedId) {
+            e.preventDefault();
+            change({ overlays: edits.overlays.filter((o) => o.id !== selectedId) });
+            setSelectedId(null);
+            return;
+          }
           const mod = e.ctrlKey || e.metaKey;
           if (!mod) return;
           const k = e.key.toLowerCase();
@@ -397,39 +650,52 @@ export function ImageEditor({
                 ref={frameRef}
                 className={`flex w-full justify-center overflow-hidden rounded-2xl bg-secondary/60 shadow-inner ${mobile ? "h-full items-center" : ""}`}
               >
-                <canvas
-                  ref={canvasRef}
-                  onPointerDown={(e) => {
-                    pan.current = { x: e.clientX, y: e.clientY, moved: false };
-                    e.currentTarget.setPointerCapture(e.pointerId);
-                  }}
-                  onPointerMove={(e) => {
-                    const p = pan.current;
-                    if (!p) return;
-                    if (!p.moved) {
-                      p.moved = true;
-                      checkpoint();
-                    }
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const dx = (e.clientX - p.x) / rect.width;
-                    const dy = (e.clientY - p.y) / rect.height;
-                    p.x = e.clientX;
-                    p.y = e.clientY;
-                    update({ offX: editsRef.current.offX + dx, offY: editsRef.current.offY + dy });
-                  }}
-                  onPointerUp={() => (pan.current = null)}
-                  onPointerCancel={() => (pan.current = null)}
-                  style={{
-                    maxHeight: mobile
-                      ? "100%"
-                      : `calc(clamp(10rem, calc(100dvh - 32rem), 26rem) * ${frameScale})`,
-                  }}
-                  className="block max-w-full cursor-grab touch-none rounded-2xl bg-white active:cursor-grabbing"
-                />
+                <div className="relative max-w-full">
+                  <canvas
+                    ref={canvasRef}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    onPointerCancel={onPointerUp}
+                    style={{
+                      maxHeight: mobile
+                        ? "100%"
+                        : `calc(clamp(10rem, calc(100dvh - 32rem), 26rem) * ${frameScale})`,
+                    }}
+                    className={`block max-w-full touch-none rounded-2xl bg-white ${
+                      tab === "draw"
+                        ? "cursor-crosshair"
+                        : tab === "text" || tab === "stickers"
+                          ? "cursor-pointer"
+                          : "cursor-grab active:cursor-grabbing"
+                    }`}
+                  />
+                  {selBox && (
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute rounded-md border-2 border-dashed border-primary"
+                      style={selBox}
+                    />
+                  )}
+                </div>
               </div>
             </div>
             <p className="hidden border-t border-border/60 px-4 py-2 text-[11px] text-muted-foreground md:block">
-              {t("ie.hint")}
+              {tab === "draw"
+                ? tr([
+                    "Arraste sobre a foto para desenhar ou censurar.",
+                    "Drag over the photo to draw or censor.",
+                    "Arrastra sobre la foto para dibujar o censurar.",
+                    "Faites glisser sur la photo pour dessiner ou masquer.",
+                  ])
+                : tab === "text" || tab === "stickers"
+                  ? tr([
+                      "Toque num item para selecioná-lo e arraste para mover. Delete apaga o selecionado.",
+                      "Tap an item to select it and drag to move. Delete removes the selected one.",
+                      "Toca un elemento para seleccionarlo y arrástralo para moverlo. Suprimir borra el seleccionado.",
+                      "Touchez un élément pour le sélectionner et faites-le glisser. Suppr. efface la sélection.",
+                    ])
+                  : t("ie.hint")}
             </p>
           </div>
 
@@ -462,15 +728,15 @@ export function ImageEditor({
                     role="tab"
                     aria-selected={active}
                     onClick={() => setTab(tb.id)}
-                    className={`relative flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-medium transition cursor-pointer ${
+                    className={`relative flex flex-col items-center gap-1 px-1 py-2 text-[11px] font-medium transition cursor-pointer ${
                       active
                         ? "bg-primary-soft text-primary"
                         : "text-muted-foreground hover:bg-secondary"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
-                    {t(tb.label)}
-                    {isDirty(edits, tb.keys) && (
+                    {Array.isArray(tb.label) ? tr(tb.label as Names) : t(tb.label as DictKey)}
+                    {tabDirty(edits, tb) && (
                       <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />
                     )}
                   </button>
@@ -504,11 +770,27 @@ export function ImageEditor({
                         >
                           {a.id === "original" || a.id === "native"
                             ? t(a.id === "original" ? "ie.aspect.original" : "ie.aspect.native")
-                            : a.label}
+                            : tr(a.names)}
                         </button>
                       ))}
                     </div>
                   </div>
+                  {edits.aspect === "free" && (
+                    <Slider
+                      label={tr([
+                        "Proporção (largura ÷ altura)",
+                        "Ratio (width ÷ height)",
+                        "Proporción (ancho ÷ alto)",
+                        "Rapport (largeur ÷ hauteur)",
+                      ])}
+                      value={Math.round(edits.customRatio * 100) / 100}
+                      min={0.3}
+                      max={3.5}
+                      step={0.05}
+                      neutral={1}
+                      onChange={(v) => slide({ customRatio: v })}
+                    />
+                  )}
                   <div className="grid grid-cols-4 gap-2">
                     <button
                       type="button"
@@ -578,6 +860,8 @@ export function ImageEditor({
                   {adjSlider("contrast", "ie.contrast")}
                   {adjSlider("highlights", "ie.highlights")}
                   {adjSlider("shadows", "ie.shadows")}
+                  {adjSlider("whites", ["Brancos", "Whites", "Blancos", "Blancs"])}
+                  {adjSlider("blacks", ["Pretos", "Blacks", "Negros", "Noirs"])}
                   {adjSlider("fade", "ie.fade", 0, 100)}
                 </>
               )}
@@ -586,15 +870,54 @@ export function ImageEditor({
                 <>
                   {adjSlider("temperature", "ie.temperature")}
                   {adjSlider("tint", "ie.tint")}
+                  {adjSlider("hue", ["Matiz", "Hue", "Matiz", "Teinte"], -180, 180)}
                   {adjSlider("saturation", "ie.saturation")}
                   {adjSlider("vibrance", "ie.vibrance")}
+                  {adjSlider(
+                    "colorize",
+                    ["Colorização", "Colorize", "Colorización", "Colorisation"],
+                    0,
+                    100,
+                  )}
+                  {edits.colorize > 0 && (
+                    <ColorRow
+                      label={tr([
+                        "Cor da colorização",
+                        "Colorize color",
+                        "Color de la colorización",
+                        "Couleur de colorisation",
+                      ])}
+                      value={edits.colorizeColor}
+                      onChange={(c) => c && change({ colorizeColor: c })}
+                    />
+                  )}
                 </>
               )}
 
               {tab === "looks" && (
                 <>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: "all" as const, label: tr(["Todos", "All", "Todos", "Tous"]) },
+                      ...LOOK_CATEGORIES.map((c) => ({ id: c.id, label: tr(c.names) })),
+                    ].map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        aria-pressed={lookCategory === c.id}
+                        onClick={() => setLookCategory(c.id)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition cursor-pointer ${
+                          lookCategory === c.id
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:bg-secondary"
+                        }`}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
                   <div className="grid grid-cols-3 gap-2.5">
-                    {LOOKS.map((look) => {
+                    {visibleLooks.map((look) => {
                       const active = edits.look === look.id;
                       return (
                         <button
@@ -616,7 +939,7 @@ export function ImageEditor({
                           ) : (
                             <span className="aspect-square w-full rounded-lg bg-secondary" />
                           )}
-                          {t(`ie.look.${look.id}` as DictKey)}
+                          {tr(look.names)}
                         </button>
                       );
                     })}
@@ -638,17 +961,35 @@ export function ImageEditor({
               {tab === "detail" && (
                 <>
                   {adjSlider("sharpness", "ie.sharpness", 0, 100)}
+                  {adjSlider("clarity", ["Clareza", "Clarity", "Claridad", "Clarté"])}
                   {adjSlider("blur", "ie.blur", 0, 100)}
+                  {adjSlider(
+                    "tilt",
+                    [
+                      "Desfoque de profundidade",
+                      "Depth blur",
+                      "Desenfoque de profundidad",
+                      "Flou de profondeur",
+                    ],
+                    0,
+                    100,
+                  )}
                   {adjSlider("vignette", "ie.vignette")}
                   {adjSlider("grain", "ie.grain", 0, 100)}
+                  {adjSlider("sepia", ["Sépia", "Sepia", "Sepia", "Sépia"], 0, 100)}
                 </>
               )}
 
-              {isDirty(edits, TABS.find((t) => t.id === tab)!.keys) && (
+              {tab === "text" && <TextPanel ctx={ctx} />}
+              {tab === "stickers" && <StickerPanel ctx={ctx} />}
+              {tab === "draw" && <DrawPanel ctx={ctx} draw={draw} setDraw={setDraw} />}
+              {tab === "frame" && <FramePanel ctx={ctx} />}
+
+              {tabDirty(edits, currentTab) && tab !== "frame" && (
                 <button
                   type="button"
                   className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline cursor-pointer"
-                  onClick={() => resetKeys(TABS.find((t) => t.id === tab)!.keys)}
+                  onClick={resetTab}
                 >
                   {t("ie.resetTab")}
                 </button>
@@ -658,7 +999,10 @@ export function ImageEditor({
             <div className="flex items-center justify-between gap-2 border-t border-border/60 p-3">
               <button
                 type="button"
-                onClick={() => change({ ...DEFAULT_EDITS })}
+                onClick={() => {
+                  change({ ...DEFAULT_EDITS, overlays: [] });
+                  setSelectedId(null);
+                }}
                 disabled={!dirtyAny}
                 className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
               >

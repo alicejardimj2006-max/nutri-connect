@@ -20,12 +20,12 @@ export const LOCALES: LocaleMeta[] = [
     id: "pt-BR",
     name: "Português (Brasil)",
     namePt: "Português (Brasil)",
-    flag: "🇧🇷",
+    flag: "BR",
     tag: "pt-BR",
   },
-  { id: "en", name: "English", namePt: "Inglês", flag: "🇺🇸", tag: "en-US" },
-  { id: "es", name: "Español", namePt: "Espanhol", flag: "🇪🇸", tag: "es" },
-  { id: "fr", name: "Français", namePt: "Francês", flag: "🇫🇷", tag: "fr" },
+  { id: "en", name: "English", namePt: "Inglês", flag: "US", tag: "en-US" },
+  { id: "es", name: "Español", namePt: "Espanhol", flag: "ES", tag: "es" },
+  { id: "fr", name: "Français", namePt: "Francês", flag: "FR", tag: "fr" },
 ];
 
 export function isLocale(value: string): value is Locale {

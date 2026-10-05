@@ -1,5 +1,7 @@
 // Confetes em canvas, sem dependências. Cada disparo cria uma camada temporária sobre a página.
 
+import { playSound } from "./sounds";
+
 export interface ConfettiOptions {
   /** Origem, em fração da tela (0–1). Padrão: centro, um pouco acima. */
   x?: number;
@@ -37,6 +39,58 @@ interface Piece {
   wobble: number;
   vw: number;
   life: number;
+}
+
+// O site não mostra emojis: cada "emoji" do confete vira uma forma desenhada (estrela, moeda ou fruta).
+const STARS = "⭐🌟✨👑🎉";
+const COINS = "🏅🪙🥇";
+const FRUIT_COLORS: Record<string, string> = {
+  "🍎": "#e04848",
+  "🍊": "#f08a2b",
+  "🥕": "#f08a2b",
+  "🥑": "#4f9a4b",
+  "🥦": "#3f8a3b",
+};
+
+function drawStar(ctx: CanvasRenderingContext2D, r: number, color: string) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const rad = i % 2 === 0 ? r : r * 0.45;
+    const a = (Math.PI / 5) * i - Math.PI / 2;
+    ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function drawToken(ctx: CanvasRenderingContext2D, emoji: string, size: number) {
+  const ch = Array.from(emoji.replace(/[️‍]/g, ""))[0] ?? "";
+  const r = size / 2;
+  if (STARS.includes(ch) || !ch) {
+    drawStar(ctx, r, "#facc15");
+    return;
+  }
+  if (COINS.includes(ch)) {
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2);
+    ctx.fillStyle = "#f59e0b";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2);
+    ctx.fillStyle = "#fde047";
+    ctx.fill();
+    return;
+  }
+  // Fruta: um círculo na cor dela com uma folhinha verde.
+  ctx.beginPath();
+  ctx.arc(0, r * 0.1, r * 0.7, 0, Math.PI * 2);
+  ctx.fillStyle = FRUIT_COLORS[ch] ?? "#f97316";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(r * 0.25, -r * 0.6, r * 0.32, r * 0.16, -0.6, 0, Math.PI * 2);
+  ctx.fillStyle = "#22c55e";
+  ctx.fill();
 }
 
 const reducedMotion = () =>
@@ -128,10 +182,7 @@ export function fireConfetti(options: ConfettiOptions = {}) {
       // Simula o giro em 3D achatando o pedaço
       const flip = Math.cos(p.wobble * 1.4);
       if (p.shape === "emoji") {
-        ctx.font = `${p.size}px serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(p.emoji ?? "✨", 0, 0);
+        drawToken(ctx, p.emoji ?? "", p.size);
       } else if (p.shape === "circle") {
         ctx.beginPath();
         ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
@@ -156,6 +207,7 @@ export function fireConfetti(options: ConfettiOptions = {}) {
 
 /** Explosão grande de comemoração: dois canhões laterais e uma chuva central. */
 export function celebrate(kind: "level" | "gold" | "levelup" = "level", playful = true) {
+  playSound("achievement");
   if (kind === "gold") {
     const emojis = ["⭐", "✨", "🏅", "🪙"];
     fireConfetti({

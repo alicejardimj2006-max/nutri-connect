@@ -12,7 +12,7 @@ export function monthRange(year: number, month: number): MonthRange {
   return { from: new Date(year, month, 1), to: new Date(year, month + 1, 1) };
 }
 
-/** Líquido que fica com o profissional (manual: tudo; Mercado Pago: menos a taxa). */
+/** Líquido que fica com o profissional (manual: tudo; Stripe: menos a taxa). */
 export const netOf = (p: Payment) => p.amount_cents - p.platform_fee_cents;
 
 /** Só pagamentos aprovados geram receita. */

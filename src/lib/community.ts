@@ -1,4 +1,5 @@
 import { loadLocale, localeMeta } from "./i18n";
+import { applyRegion } from "./region";
 // Tipos e funções puras da camada social (a fonte dos dados é o Supabase: ver src/lib/social/).
 
 export interface Comment {
@@ -65,6 +66,8 @@ export interface Post {
   publishAt?: string;
   /** A pessoa logada salvou este post. */
   saved?: boolean;
+  /** Oculto para os outros: aguardando a moderação ou reprovado (o autor ainda o vê). */
+  hidden?: boolean;
 }
 
 /**
@@ -172,12 +175,13 @@ export const RECIPE_CATEGORIES = [
 ] as const;
 
 export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(localeMeta(loadLocale()).tag, {
+  const [loc, options] = applyRegion(localeMeta(loadLocale()).tag, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
+  return new Intl.DateTimeFormat(loc, options).format(new Date(iso));
 }
 
 export function initials(name: string) {

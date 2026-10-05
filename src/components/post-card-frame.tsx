@@ -2,10 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
+import { useAppearance } from "@/hooks/use-appearance";
+import { usePostTypeStyle } from "@/lib/post-type";
 
 const PADDING = {
-  md: { top: "px-6 pt-6", bottom: "px-6 pb-6", toggle: "px-6 pt-3" },
-  sm: { top: "px-5 pt-5", bottom: "px-5 pb-5", toggle: "px-5 pt-3" },
+  md: {
+    top: "px-[var(--post-px)] pt-[var(--post-pt)]",
+    bottom: "px-[var(--post-px)] pb-[var(--post-pb)]",
+    toggle: "px-[var(--post-px)] pt-3",
+  },
+  sm: {
+    top: "px-[var(--post-px-sm)] pt-[var(--post-pt-sm)]",
+    bottom: "px-[var(--post-px-sm)] pb-[var(--post-pb-sm)]",
+    toggle: "px-[var(--post-px-sm)] pt-3",
+  },
 } as const;
 
 /** Respiro, em px, entre o cartão e cada barra de navegação. */
@@ -22,6 +32,8 @@ function availableHeight() {
 interface PostCardFrameProps {
   /** Classes do cartão (borda, cantos, fundo, sombra). O espaçamento interno é do próprio invólucro. */
   className?: string;
+  /** Tipo da publicação: define a cor do cartão (ver "Cor de cada tipo de post" em styles.css). */
+  type?: string;
   size?: keyof typeof PADDING;
   /** Sempre visível, abaixo do "Ver mais" (ex.: ações da publicação). */
   footer?: React.ReactNode;
@@ -35,6 +47,7 @@ interface PostCardFrameProps {
  */
 export function PostCardFrame({
   className = "",
+  type,
   size = "md",
   footer,
   children,
@@ -88,22 +101,33 @@ export function PostCardFrame({
     // A barra inferior só existe com usuário logado, então a medição refaz quando ele muda.
   }, [userId]);
 
-  const isExpanded = expanded;
+  const { appearance } = useAppearance();
+  const isExpanded = expanded || appearance.expandPosts;
   const clamped = !isExpanded && overflowing;
   const pad = PADDING[size];
+  const typeStyle = usePostTypeStyle(type);
 
   return (
     <article
       ref={articleRef}
-      style={isExpanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
-      className={`flex min-w-0 flex-col overflow-hidden ${className}`}
+      data-post-type={type}
+      style={{
+        ...typeStyle,
+        ...(isExpanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }),
+      }}
+      className={`post-card flex min-w-0 flex-col overflow-hidden ${className}`}
     >
       <div ref={regionRef} className={`relative min-h-0 overflow-hidden ${pad.top}`}>
         <div ref={innerRef} className="flow-root">
           {children}
         </div>
         {clamped && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-card to-transparent" />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
+            style={{
+              background: "linear-gradient(to top, var(--post-fade, var(--card)), transparent)",
+            }}
+          />
         )}
       </div>
 

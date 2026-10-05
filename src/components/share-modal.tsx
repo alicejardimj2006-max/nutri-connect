@@ -1,6 +1,7 @@
 import { td } from "@/lib/i18n/data";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { loadAppearance } from "@/lib/appearance";
 import {
   Sparkles,
   ChefHat,
@@ -282,7 +283,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
   const [isCommunity, setIsCommunity] = useState(false);
 
   // Quem pode ver e participação no tema da semana (só para publicações, não para comunidades).
-  const [audience, setAudience] = useState<PostAudience>("publico");
+  const [audience, setAudience] = useState<PostAudience>(() => loadAppearance().defaultAudience);
   const [joinTheme, setJoinTheme] = useState(false);
   const activeTheme = useActiveTheme(open && !isCommunity);
   const createPost = useCreatePost();
@@ -617,11 +618,11 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         themeId: joinTheme && activeTheme.data ? activeTheme.data.id : undefined,
       });
 
-      toast.success(t("sm.published"));
+      toast.success(t("sm.publishedReview"));
       setOpen(false);
       resetForm();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("sm.publishError"));
+    } catch {
+      // O motivo (reprovado pela IA ou erro de envio) já foi mostrado pelo aviso da publicação.
     }
   };
 
@@ -660,7 +661,7 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         >
           {/* Cabeçalho solto, sem caixa própria */}
           <div className="mb-8 flex items-center gap-3.5">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary-soft text-base font-bold text-primary shadow-md ring-4 ring-card">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-base font-bold text-primary shadow-md ring-4 ring-card">
               {initials(user?.name || t("sm.previewAuthor"))}
             </span>
             <div>

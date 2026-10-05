@@ -19,6 +19,8 @@ export interface AuthUser {
   goal?: string;
   journeyGoal?: string;
   avatarUrl?: string;
+  /** Conta suspensa pela administração: lê, mas não publica nem comenta. */
+  suspendedAt?: string;
   role: ProfileRole;
   isAdmin: boolean;
   /** Presente quando o perfil profissional foi verificado. */
@@ -62,6 +64,7 @@ async function fetchAuthUser(id: string, email: string): Promise<AuthUser | null
     goal: p.goal ?? undefined,
     journeyGoal: p.journey_goal ?? p.goal ?? undefined,
     avatarUrl: p.avatar_url ?? undefined,
+    suspendedAt: p.suspended_at ?? undefined,
     phone: v?.phone ?? undefined,
     cpf: v?.cpf ?? undefined,
     birthDate: v?.birth_date ?? undefined,

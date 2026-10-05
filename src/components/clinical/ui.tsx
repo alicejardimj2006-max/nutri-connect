@@ -28,23 +28,18 @@ export const buttonDanger =
 
 export function PageHeader({
   title,
-  subtitle,
   action,
 }: {
   title: string;
   subtitle?: ReactNode;
   action?: ReactNode;
 }) {
+  // Sem cabeçalho visível com título e descrição: o título fica só para leitores de tela.
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div className="min-w-0">
-        <h1 className="font-display text-2xl font-extrabold text-foreground sm:text-3xl">
-          {title}
-        </h1>
-        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-      </div>
-      {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
-    </div>
+    <>
+      <h1 className="sr-only">{title}</h1>
+      {action && <div className="mb-5 flex flex-wrap items-center justify-end gap-2">{action}</div>}
+    </>
   );
 }
 
@@ -128,7 +123,10 @@ export function Avatar({
       <img
         src={url}
         alt=""
-        className={cn("shrink-0 rounded-full object-cover", sizes[size].split(" text")[0])}
+        className={cn(
+          "shrink-0 rounded-full avatar-shape object-cover",
+          sizes[size].split(" text")[0],
+        )}
       />
     );
   }

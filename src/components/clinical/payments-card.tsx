@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, CreditCard, Unplug } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { connectMercadoPago, disconnectMercadoPago } from "@/lib/clinical/payments";
-import { qk, useClinicalMutation, useProfessional } from "@/lib/clinical/queries";
+import { useProfessional } from "@/lib/clinical/queries";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
-import { Card, buttonGhost, buttonPrimary } from "./ui";
+import { Card } from "./ui";
 
-/** Conexão da conta Mercado Pago do profissional (recebimento direto, com split). */
+/** Como o profissional recebe: pagamentos pelo Stripe, na conta da plataforma, com taxa por consulta. */
 export function PaymentsCard({ professionalId }: { professionalId: string }) {
   const { t } = useClinicalI18n();
   const pro = useProfessional(professionalId);
@@ -22,13 +21,7 @@ export function PaymentsCard({ professionalId }: { professionalId: string }) {
     },
     staleTime: Infinity,
   });
-  const connect = useClinicalMutation(() => connectMercadoPago());
-  const disconnect = useClinicalMutation(() => disconnectMercadoPago(), {
-    success: t("mp.disconnected"),
-    invalidate: [qk.professional(professionalId), qk.directory()],
-  });
 
-  const connected = !!pro.data?.mp_connected;
   const hasPrice = (pro.data?.consultation_price_cents ?? 0) > 0;
 
   return (
@@ -38,41 +31,9 @@ export function PaymentsCard({ professionalId }: { professionalId: string }) {
           <CreditCard className="h-6 w-6" />
         </span>
         <div className="min-w-0 flex-1 text-sm">
-          {connected ? (
-            <p className="flex items-center gap-1.5 font-semibold text-primary">
-              <CheckCircle2 className="h-4 w-4" /> {t("mp.connected")}
-            </p>
-          ) : (
-            <p className="font-semibold text-foreground">{t("mp.notConnected")}</p>
-          )}
-          <p className="mt-0.5 text-muted-foreground">
-            {connected
-              ? t("mp.connectedText", { fee: fee.data ?? 10 })
-              : t("mp.notConnectedText", { fee: fee.data ?? 10 })}
-          </p>
-          {connected && !hasPrice && <p className="mt-1 text-xs text-warning">{t("mp.noPrice")}</p>}
+          <p className="text-muted-foreground">{t("mp.stripeText", { fee: fee.data ?? 10 })}</p>
+          {!hasPrice && <p className="mt-1 text-xs text-warning">{t("mp.noPrice")}</p>}
         </div>
-        {connected ? (
-          <button
-            type="button"
-            className={buttonGhost}
-            disabled={disconnect.isPending}
-            onClick={() =>
-              window.confirm(t("mp.disconnectConfirm")) && disconnect.mutate(undefined)
-            }
-          >
-            <Unplug className="h-4 w-4" /> {t("mp.disconnect")}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={buttonPrimary}
-            disabled={connect.isPending}
-            onClick={() => connect.mutate(undefined)}
-          >
-            {t("mp.connect")}
-          </button>
-        )}
       </div>
     </Card>
   );

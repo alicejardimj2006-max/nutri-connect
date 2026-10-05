@@ -1,17 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Compass, Sparkles } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { FeedShell, type FeedShellPage } from "@/components/feed-shell";
+import { useAppearance } from "@/hooks/use-appearance";
+import { loadAppearance } from "@/lib/appearance";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from "@/components/ui/carousel";
 import type { Post } from "@/lib/community";
 import { themeText } from "@/lib/social/feed";
 import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
@@ -19,15 +15,8 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 
-// Duas páginas, cada uma separada da outra ao arrastar para o lado.
-type PageId = "geral" | "tema";
 // Filtros da página Geral: tudo, amigos, ou profissionais que a pessoa segue.
 type Filter = "todos" | "amigos" | "seguindo";
-
-const PAGES: { id: PageId; labelKey: DictKey }[] = [
-  { id: "geral", labelKey: "espaco.tab.geral" },
-  { id: "tema", labelKey: "weekly.badge" },
-];
 
 const FILTERS: { id: Filter; labelKey: DictKey }[] = [
   { id: "todos", labelKey: "espaco.filter.all" },
@@ -41,7 +30,7 @@ const EMPTY_FILTER_KEYS: Record<Filter, DictKey> = {
   seguindo: "espaco.empty.profissionais",
 };
 
-const PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 20;
 
 export const Route = createFileRoute("/espaco")({
   head: () => ({
@@ -122,76 +111,14 @@ function PostList({
   );
 }
 
-/** Navegação entre as duas páginas: fica no topo de cada página e some junto com a rolagem. */
-function PagesNav({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
-  const { t } = useI18n();
-  return (
-    <div className="mx-auto mb-4 flex w-fit items-center gap-1 rounded-full border border-border/60 bg-card/50 p-1">
-      {PAGES.map((page, index) => (
-        <button
-          key={page.id}
-          type="button"
-          onClick={() => onSelect(index)}
-          className={cn(
-            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-            active === index
-              ? "bg-secondary text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {t(page.labelKey)}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function EspacoDeHojePage() {
-  const { user, hydrated: authHydrated } = useRequireAuth();
+  const { user } = useRequireAuth();
   const { t, locale } = useI18n();
-  const [activePage, setActivePage] = useState(0);
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [filter, setFilter] = useState<Filter>("todos");
-  const [limit, setLimit] = useState(PAGE_SIZE);
-  const [themeLimit, setThemeLimit] = useState(PAGE_SIZE);
-
-  useEffect(() => {
-    if (!carouselApi) return;
-    setActivePage(carouselApi.selectedScrollSnap());
-    const onSelect = () => setActivePage(carouselApi.selectedScrollSnap());
-    carouselApi.on("select", onSelect);
-    return () => {
-      carouselApi.off("select", onSelect);
-    };
-  }, [carouselApi]);
-
-  // Os filtros somem ao rolar o feed para baixo e voltam ao rolar para cima (ou no topo).
-  const [filtersVisible, setFiltersVisible] = useState(true);
-  const lastScrollTop = useRef(0);
-  const handleGeralScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const top = e.currentTarget.scrollTop;
-    const previous = lastScrollTop.current;
-    if (top <= 16) setFiltersVisible(true);
-    else if (top > previous + 4) setFiltersVisible(false);
-    else if (top < previous - 4) setFiltersVisible(true);
-    lastScrollTop.current = top;
-  };
-
-  // Só o feed rola: cada página ocupa a altura que a coluna central tem (medida ao vivo),
-  // então rolar uma não mexe na outra e a janela fica parada.
-  const pagesRef = useRef<HTMLDivElement>(null);
-  const [pageHeight, setPageHeight] = useState<number>();
-  const ready = authHydrated && !!user;
-  useLayoutEffect(() => {
-    const el = pagesRef.current;
-    if (!ready || !el) return;
-    const measure = () => setPageHeight(Math.max(320, el.clientHeight));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [ready]);
-
+  const [pageSize] = useState(() => loadAppearance().feedPageSize || DEFAULT_PAGE_SIZE);
+  const [limit, setLimit] = useState(pageSize);
+  const [themeLimit, setThemeLimit] = useState(pageSize);
+  const { appearance } = useAppearance();
   const enabled = !!user;
   useFeedRealtime(user?.id);
   const geral = useFeed({ scope: filter, limit }, enabled);
@@ -201,136 +128,108 @@ function EspacoDeHojePage() {
     enabled && !!theme.data,
   );
 
-  if (!authHydrated || !user) return <AuthGateLoading />;
-
   const geralPosts = geral.data ?? [];
   const themePosts = themeFeed.data ?? [];
   const text = theme.data ? themeText(theme.data, locale) : null;
 
   const changeFilter = (next: Filter) => {
     setFilter(next);
-    setLimit(PAGE_SIZE);
+    setLimit(pageSize);
   };
-  const goToPage = (index: number) => carouselApi?.scrollTo(index);
+
+  const filters = (
+    <div className="flex flex-wrap items-center justify-center gap-1 rounded-full border border-border/60 bg-card/90 p-1 shadow-soft backdrop-blur">
+      {FILTERS.map((f) => (
+        <button
+          key={f.id}
+          type="button"
+          aria-pressed={filter === f.id}
+          onClick={() => changeFilter(f.id)}
+          className={cn(
+            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
+            filter === f.id
+              ? "bg-accent text-accent-foreground font-semibold shadow-xs"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {t(f.labelKey)}
+        </button>
+      ))}
+    </div>
+  );
+
+  const pages: FeedShellPage[] = [
+    {
+      id: "geral",
+      label: t("espaco.tab.geral"),
+      toolbar: filters,
+      content: (
+        <PostList
+          posts={geralPosts}
+          loading={geral.isLoading}
+          emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
+          hasMore={geralPosts.length >= limit}
+          onMore={() => setLimit((n) => n + pageSize)}
+        />
+      ),
+    },
+    {
+      id: "tema",
+      label: t("weekly.badge"),
+      content: (
+        <>
+          {text ? (
+            <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
+                <Sparkles className="h-4 w-4" /> {text.badge ?? t("weekly.badge")}
+              </p>
+              <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">
+                {text.title}
+              </h2>
+              {text.description && (
+                <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+                  {text.description}
+                </p>
+              )}
+              {text.question && (
+                <p className="mt-3 text-sm font-semibold text-foreground">{text.question}</p>
+              )}
+              <Link
+                to="/tema-da-semana"
+                className="mt-4 inline-block text-xs font-semibold text-accent hover:underline"
+              >
+                {t("espaco.theme.open")}
+              </Link>
+            </div>
+          ) : (
+            !theme.isLoading && (
+              <p className="mb-6 rounded-2xl bg-secondary/30 p-4 text-center text-sm text-muted-foreground">
+                {t("espaco.theme.none")}
+              </p>
+            )
+          )}
+          {text && (
+            <PostList
+              posts={themePosts}
+              loading={themeFeed.isLoading}
+              emptyMessage={t("espaco.empty.tema")}
+              hasMore={themePosts.length >= themeLimit}
+              onMore={() => setThemeLimit((n) => n + pageSize)}
+            />
+          )}
+        </>
+      ),
+    },
+  ];
 
   return (
-    // Altura fixa da tela: a janela não rola. Só o feed (cada página) rola; as colunas
-    // laterais ficam paradas e mostram só o que cabe.
-    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-      <SiteHeader />
-
-      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:pb-6">
-        <div className="grid h-full min-h-0 w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-          <div className="hidden h-full min-h-0 overflow-hidden xl:block">
-            <EspacoLeftColumn />
-          </div>
-
-          {/* Feed centralizado, deslizável entre páginas (arraste para o lado no celular).
-              Cada página é uma "tela" inteira, com um vão largo entre elas. */}
-          <div
-            ref={pagesRef}
-            className="mx-auto h-full min-h-0 w-full min-w-0 max-w-3xl overflow-x-clip"
-          >
-            <Carousel setApi={setCarouselApi} opts={{ align: "start" }} className="w-full">
-              <CarouselContent className="-ml-12">
-                <CarouselItem className="pl-12">
-                  <div
-                    onScroll={handleGeralScroll}
-                    className="overflow-y-auto overscroll-contain px-2 pb-12"
-                    style={{ height: pageHeight }}
-                  >
-                    <PagesNav active={activePage} onSelect={goToPage} />
-                    <div
-                      className={cn(
-                        "sticky top-0 z-10 -mx-2 mb-4 flex flex-wrap items-center justify-center gap-2 bg-background/90 px-2 py-2 backdrop-blur transition-transform duration-200",
-                        !filtersVisible && "-translate-y-full",
-                      )}
-                    >
-                      {FILTERS.map((f) => (
-                        <button
-                          key={f.id}
-                          type="button"
-                          aria-pressed={filter === f.id}
-                          onClick={() => changeFilter(f.id)}
-                          className={cn(
-                            "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
-                            filter === f.id
-                              ? "bg-accent text-accent-foreground font-semibold shadow-xs"
-                              : "bg-secondary text-muted-foreground hover:text-foreground",
-                          )}
-                        >
-                          {t(f.labelKey)}
-                        </button>
-                      ))}
-                    </div>
-                    <PostList
-                      posts={geralPosts}
-                      loading={geral.isLoading}
-                      emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
-                      hasMore={geralPosts.length >= limit}
-                      onMore={() => setLimit((n) => n + PAGE_SIZE)}
-                    />
-                  </div>
-                </CarouselItem>
-
-                <CarouselItem className="pl-12">
-                  <div
-                    className="overflow-y-auto overscroll-contain px-2 pb-12"
-                    style={{ height: pageHeight }}
-                  >
-                    <PagesNav active={activePage} onSelect={goToPage} />
-                    {text ? (
-                      <div className="mb-6 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-6 shadow-xs">
-                        <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-accent">
-                          <Sparkles className="h-4 w-4" /> {text.badge ?? t("weekly.badge")}
-                        </p>
-                        <h2 className="mt-2 text-xl font-extrabold font-display text-foreground">
-                          {text.title}
-                        </h2>
-                        {text.description && (
-                          <p className="mt-2 text-sm leading-relaxed text-foreground/85">
-                            {text.description}
-                          </p>
-                        )}
-                        {text.question && (
-                          <p className="mt-3 text-sm font-semibold text-foreground">
-                            {text.question}
-                          </p>
-                        )}
-                        <Link
-                          to="/tema-da-semana"
-                          className="mt-4 inline-block text-xs font-semibold text-accent hover:underline"
-                        >
-                          {t("espaco.theme.open")}
-                        </Link>
-                      </div>
-                    ) : (
-                      !theme.isLoading && (
-                        <p className="mb-6 rounded-2xl bg-secondary/30 p-4 text-center text-sm text-muted-foreground">
-                          {t("espaco.theme.none")}
-                        </p>
-                      )
-                    )}
-                    {text && (
-                      <PostList
-                        posts={themePosts}
-                        loading={themeFeed.isLoading}
-                        emptyMessage={t("espaco.empty.tema")}
-                        hasMore={themePosts.length >= themeLimit}
-                        onMore={() => setThemeLimit((n) => n + PAGE_SIZE)}
-                      />
-                    )}
-                  </div>
-                </CarouselItem>
-              </CarouselContent>
-            </Carousel>
-          </div>
-
-          <div className="hidden h-full min-h-0 overflow-hidden lg:block">
-            <EspacoRightColumn />
-          </div>
-        </div>
-      </main>
-    </div>
+    <FeedShell
+      pages={pages}
+      wings={
+        appearance.sidePanels
+          ? { left: <EspacoLeftColumn />, right: <EspacoRightColumn /> }
+          : undefined
+      }
+    />
   );
 }
