@@ -34,7 +34,14 @@ import type { UserChallenge } from "@/lib/social/challenges";
 import type { RemoteCommunity } from "@/lib/social/communities";
 import type { PublicProfile } from "@/lib/social/api";
 import type { Names } from "@/lib/appearance-data";
-import { BLOCK_SIZES, type Block, type BlockType } from "@/lib/profile-page";
+import {
+  BLOCK_SIZES,
+  GAP_PX,
+  GRID_COLUMNS,
+  ROW_PX,
+  type Block,
+  type BlockType,
+} from "@/lib/profile-page";
 import { EmojiIcon } from "@/components/emoji-icon";
 
 /** Tudo que os blocos precisam saber sobre o perfil que está sendo exibido. */
@@ -305,6 +312,41 @@ function StatsBlock() {
   );
 }
 
+// ── Altura automática dos blocos de publicações ────────────────────────────────────────────────
+// Miniaturas têm tamanho de Explorar (largura mínima fixa, quadradas); o bloco tem a altura exata
+// das linhas que ocupam, em vez de uma altura escolhida à mão que deixaria espaço sobrando.
+
+export const AUTO_HEIGHT_TYPES: BlockType[] = ["posts", "recipes"];
+const TILE_MIN = 180;
+const TILE_GAP = 12;
+const PAD_PX = { p: 12, m: 20, g: 28 } as const;
+
+/** Linhas da grade (ROW_PX + GAP_PX) que o bloco de publicações precisa para caber sem sobras. */
+function autoRows(block: Block, canvasWidth: number, mobile: boolean, shown: number): number {
+  const colStep = (canvasWidth + GAP_PX) / GRID_COLUMNS;
+  const outer = mobile ? canvasWidth : block.w * colStep - GAP_PX;
+  const chrome = 2 * (PAD_PX[block.style.pad] + (block.style.border === "accent" ? 2 : 1));
+  const inner = Math.max(TILE_MIN, outer - chrome);
+  const cols = Math.max(1, Math.floor((inner + TILE_GAP) / (TILE_MIN + TILE_GAP)));
+  const tile = (inner - (cols - 1) * TILE_GAP) / cols;
+  const rows = Math.max(1, Math.ceil(shown / cols));
+  const title = block.opts.hideTitle ? 0 : 32;
+  const content = shown === 0 ? 48 : rows * tile + (rows - 1) * TILE_GAP;
+  const px = content + title + chrome;
+  return Math.max(2, Math.ceil((px + GAP_PX) / (ROW_PX + GAP_PX)));
+}
+
+/** Devolve uma função que ajusta a altura dos blocos de publicações ao conteúdo atual. */
+export function useAutoHeight(canvasWidth: number, mobile: boolean) {
+  const d = useData();
+  return (block: Block): Block => {
+    if (!AUTO_HEIGHT_TYPES.includes(block.type)) return block;
+    const total = block.type === "posts" ? d.posts.length : d.recipes.length;
+    const h = autoRows(block, canvasWidth, mobile, Math.min(total, block.opts.count));
+    return h === block.h ? block : { ...block, h };
+  };
+}
+
 /** Publicações do perfil no mesmo formato do Explorar: miniaturas que abrem o post num modal. */
 function PostList({ posts, block, empty }: { posts: Post[]; block: Block; empty: string }) {
   const [openId, setOpenId] = useState<string | null>(null);
@@ -314,9 +356,14 @@ function PostList({ posts, block, empty }: { posts: Post[]; block: Block; empty:
   const open = openId ? (posts.find((p) => p.id === openId) ?? null) : null;
   return (
     <>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+      {/* A altura do bloco acompanha as linhas de miniaturas (ver useAutoHeight), então a grade
+          preenche o bloco inteiro: sem sobras embaixo nem ao lado. */}
+      <div
+        className="grid h-full auto-rows-fr gap-3"
+        style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${TILE_MIN}px, 1fr))` }}
+      >
         {list.map((p) => (
-          <PostTile key={p.id} post={p} onOpen={(post) => setOpenId(post.id)} />
+          <PostTile key={p.id} post={p} fill onOpen={(post) => setOpenId(post.id)} />
         ))}
       </div>
       <PostModal post={open} onClose={() => setOpenId(null)} />

@@ -51,7 +51,16 @@ function Author({ post, onImage }: { post: Post; onImage: boolean }) {
   );
 }
 
-export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) => void }) {
+export function PostTile({
+  post,
+  onOpen,
+  fill = false,
+}: {
+  post: Post;
+  onOpen: (post: Post) => void;
+  /** Ocupa a altura da célula da grade em vez de ser quadrado (blocos do perfil, que não deixam sobras). */
+  fill?: boolean;
+}) {
   const { locale } = useI18n();
   const type = normalizePostType(post.type);
   const color = usePostTypeColor(type);
@@ -76,7 +85,7 @@ export function PostTile({ post, onOpen }: { post: Post; onOpen: (post: Post) =>
       type="button"
       data-post-type={type}
       onClick={() => onOpen(post)}
-      className="post-tile group relative block aspect-square w-full cursor-pointer overflow-hidden rounded-xl border-2 text-left shadow-xs transition hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:rounded-2xl"
+      className={`post-tile group relative block ${fill ? "h-full min-h-0" : "aspect-square"} w-full cursor-pointer overflow-hidden rounded-xl border-2 text-left shadow-xs transition hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:rounded-2xl`}
       style={{
         borderColor: color,
         backgroundColor: image ? "#1c1917" : tinted,

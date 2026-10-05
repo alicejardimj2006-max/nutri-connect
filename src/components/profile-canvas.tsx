@@ -5,7 +5,13 @@
 // No celular a grade vira uma coluna na mesma ordem (de cima para baixo) e a edição usa setas.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, GripVertical, Settings2, Trash2 } from "lucide-react";
-import { BlockView, BLOCK_INFO, minSize } from "@/components/profile-blocks";
+import {
+  AUTO_HEIGHT_TYPES,
+  BlockView,
+  BLOCK_INFO,
+  minSize,
+  useAutoHeight,
+} from "@/components/profile-blocks";
 import { useTr } from "@/components/appearance-editor";
 import {
   GAP_PX,
@@ -69,11 +75,14 @@ export function ProfileCanvas({
   onDelete?: (id: string) => void;
 }) {
   const tr = useTr();
-  // Fora da edição os blocos sobem até encostar uns nos outros (sem vãos entre eles).
-  const layout = editing ? layoutProp : compactLayout(layoutProp);
   const mobile = useIsMobile();
   const boxRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1000);
+  // Blocos de publicações têm a altura das linhas de miniaturas (sem espaço sobrando).
+  const autoHeight = useAutoHeight(width, mobile);
+  // Fora da edição os blocos sobem até encostar uns nos outros (sem vãos entre eles).
+  const sized = layoutProp.map(autoHeight);
+  const layout = editing ? sized : compactLayout(sized);
   const drag = useRef<DragState | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const els = useRef(new Map<string, HTMLElement>());
@@ -153,14 +162,18 @@ export function ProfileCanvas({
       // O tamanho segue o cursor ao pixel; a grade só muda quando passa de uma célula para outra.
       const minPx = (n: number, step: number, gap: number) => n * step - gap;
       d.el.style.width = `${Math.max(minPx(min.w, colStep, GAP_PX), d.startW + dxPx)}px`;
-      d.el.style.height = `${Math.max(minPx(min.h, rowStep, GAP_PX), d.startH + dyPx)}px`;
+      if (!AUTO_HEIGHT_TYPES.includes(o.type)) {
+        d.el.style.height = `${Math.max(minPx(min.h, rowStep, GAP_PX), d.startH + dyPx)}px`;
+      }
       moved = {
         ...o,
         w: Math.min(
           GRID_COLUMNS - o.x,
           Math.max(min.w, Math.round((d.startW + GAP_PX + dxPx) / colStep)),
         ),
-        h: Math.min(40, Math.max(min.h, Math.round((d.startH + GAP_PX + dyPx) / rowStep))),
+        h: AUTO_HEIGHT_TYPES.includes(o.type)
+          ? o.h
+          : Math.min(40, Math.max(min.h, Math.round((d.startH + GAP_PX + dyPx) / rowStep))),
       };
     }
     const key = d.mode === "move" ? `${moved.x},${moved.y}` : `${moved.w},${moved.h}`;
@@ -341,7 +354,7 @@ export function ProfileCanvas({
               className={`relative ${editing && selectedId === block.id ? "rounded-3xl ring-2 ring-accent" : ""}`}
               style={{
                 minHeight: px,
-                height: block.type === "posts" || block.type === "recipes" ? undefined : px,
+                height: px,
               }}
               onClick={() => editing && onSelect?.(block.id)}
             >
