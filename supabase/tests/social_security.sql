@@ -630,7 +630,7 @@ begin
   r := pg_temp.as_user(b, 'authenticated', 'select (poll -> 1 ->> ''votes'') || '' '' || (poll -> 1 ->> ''mine'') from public.get_weekly_theme()');
   res := res || jsonb_build_object('teste', 'o resultado agregado aparece sem expor quem votou', 'ok', (r like '%1 false%'), 'obtido', r);
   r := pg_temp.as_user(a, 'authenticated', 'select (poll -> 1 ->> ''mine'') from public.get_weekly_theme()');
-  res := res || jsonb_build_object('teste', 'o resultado marca o meu voto', 'ok', (r = 'true'), 'obtido', r);
+  res := res || jsonb_build_object('teste', 'o resultado marca o meu voto', 'ok', (r in ('t', 'true')), 'obtido', r);
   r := pg_temp.as_user(a, 'authenticated', format('insert into public.theme_poll_votes (theme_id, option_id, user_id) values (%L, %L, %L)', th_old, opt1, a));
   res := res || jsonb_build_object('teste', 'NÃO vota em tema encerrado', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
   r := pg_temp.as_user(a, 'authenticated', 'select title || '' '' || recipes_count || '' '' || posts_count from public.theme_history() where title = ''Zzqx Tema Antigo''');
@@ -773,6 +773,95 @@ begin
     perform public.apply_pro_inactivity();
     s1 := (select score from public.pro_scores where professional_id = q);
     res := res || jsonb_build_object('teste', 'ausência tira 5 pontos uma vez por semana', 'ok', (s0 - s1 = 5), 'obtido', (s0 - s1)::text);
+  end;
+
+  -- ------------------------------------------------------------ PERFIL DE MEMBROS
+  declare
+    mc uuid; appt_id uuid; price integer;
+  begin
+    -- p está no nível 5 (testes de pontuação); q ficou no nível 1.
+    r := pg_temp.as_user(q, 'authenticated',
+      'select public.save_member_plan(''Plano'', ''desc'', 2500, 10, array[''a''], false)');
+    res := res || jsonb_build_object('teste', 'nível 1 NÃO cria perfil de membros', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(p, 'authenticated',
+      'select public.save_member_plan(''Plano da Hélena'', ''conteúdo e desconto'', 2500, 20, array[''Receitas exclusivas'', ''Lives''], true)');
+    res := res || jsonb_build_object('teste', 'ativar sem conta de recebimento é recusado', 'ok', (r like 'ERRO%'), 'obtido', left(r, 100));
+    r := pg_temp.as_user(p, 'authenticated',
+      'select public.save_member_plan(''Plano da Hélena'', ''conteúdo e desconto'', 500, 20, array[''x''], false)');
+    res := res || jsonb_build_object('teste', 'mensalidade abaixo de R$ 10 é recusada', 'ok', (r like 'ERRO%'), 'obtido', left(r, 100));
+    insert into public.pro_stripe_accounts (professional_id, stripe_account_id, charges_enabled) values (p, 'acct_zzqx', true);
+    r := pg_temp.as_user(p, 'authenticated',
+      'select public.save_member_plan(''Plano da Hélena'', ''conteúdo e desconto'', 2500, 20, array[''Receitas exclusivas'', ''Lives''], true)');
+    res := res || jsonb_build_object('teste', 'com conta conectada e nível, o plano é ativado', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 100));
+
+    r := pg_temp.as_user(a, 'authenticated', format('select price_cents || ''/'' || coalesce(fee_percent::text, '''') from public.get_member_plan(%L)', p));
+    res := res || jsonb_build_object('teste', 'visitante vê o plano ativo, sem a taxa', 'ok', (r = '2500/'), 'obtido', r);
+    r := pg_temp.as_user(p, 'authenticated', format('select fee_percent from public.get_member_plan(%L)', p));
+    res := res || jsonb_build_object('teste', 'o dono vê a taxa do nível (10% no nível 5)', 'ok', (r = '10'), 'obtido', r);
+
+    -- Conteúdo exclusivo.
+    r := pg_temp.as_user(p, 'authenticated', 'select public.publish_member_content(''Cardápio da semana'', ''Só para membros'', null) is not null');
+    res := res || jsonb_build_object('teste', 'profissional de nível 3+ publica conteúdo exclusivo', 'ok', (r in ('t', 'true')), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', 'select public.publish_member_content(''x'', ''y'', null)');
+    res := res || jsonb_build_object('teste', 'nível 1 NÃO publica conteúdo exclusivo', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.member_content where professional_id = %L', p));
+    res := res || jsonb_build_object('teste', 'quem não é membro NÃO lê o conteúdo exclusivo', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select content_count from public.get_member_plan(%L)', p));
+    res := res || jsonb_build_object('teste', 'o visitante vê só quantos conteúdos existem', 'ok', (r = '1'), 'obtido', r);
+
+    -- Assinatura em dia libera conteúdo e dá desconto.
+    insert into public.member_subscriptions (professional_id, member_id, status, price_cents, stripe_subscription_id, current_period_end)
+      values (p, a, 'ativa', 2500, 'sub_zzqx_a', now() + interval '20 days');
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.member_content where professional_id = %L', p));
+    res := res || jsonb_build_object('teste', 'membro lê o conteúdo exclusivo', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.member_content where professional_id = %L', p));
+    res := res || jsonb_build_object('teste', 'outro usuário continua sem acesso', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.member_subscriptions where professional_id = %L', p));
+    res := res || jsonb_build_object('teste', 'membro vê a própria assinatura', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.member_subscriptions where professional_id = %L', p));
+    res := res || jsonb_build_object('teste', 'outros NÃO veem assinaturas alheias', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(p, 'authenticated', 'select count(*) from public.my_subscribers()');
+    res := res || jsonb_build_object('teste', 'o profissional vê seus assinantes', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.my_subscribers()');
+    res := res || jsonb_build_object('teste', 'quem não é o profissional não vê assinantes de ninguém', 'ok', (r = '0'), 'obtido', r);
+
+    -- Desconto de 20% numa consulta de preço 20000.
+    update public.professionals set consultation_price_cents = 20000, accepting_patients = true where user_id = p;
+    insert into public.appointments (professional_id, patient_id, starts_at, ends_at, modality, status, price_cents, hold_expires_at, created_by)
+      values (p, a, now() + interval '9 days', now() + interval '9 days 1 hour', 'online', 'aguardando_pagamento', 20000, now() + interval '30 minutes', a)
+      returning id, price_cents into appt_id, price;
+    res := res || jsonb_build_object('teste', 'membro paga 20% a menos na consulta', 'ok', (price = 16000), 'obtido', price::text);
+    insert into public.appointments (professional_id, patient_id, starts_at, ends_at, modality, status, price_cents, hold_expires_at, created_by)
+      values (p, b, now() + interval '10 days', now() + interval '10 days 1 hour', 'online', 'aguardando_pagamento', 20000, now() + interval '30 minutes', b)
+      returning price_cents into price;
+    res := res || jsonb_build_object('teste', 'quem não é membro paga o preço cheio', 'ok', (price = 20000), 'obtido', price::text);
+
+    -- Assinatura cancelada fora do período perde o acesso; cancelando ainda vale até o fim do período.
+    update public.member_subscriptions set status = 'cancelando' where stripe_subscription_id = 'sub_zzqx_a';
+    res := res || jsonb_build_object('teste', 'assinatura cancelando mantém o acesso até o fim do período', 'ok', public.is_member(p, a), 'obtido', 'cancelando');
+    update public.member_subscriptions set current_period_end = now() - interval '1 day' where stripe_subscription_id = 'sub_zzqx_a';
+    res := res || jsonb_build_object('teste', 'período vencido encerra o acesso', 'ok', not public.is_member(p, a), 'obtido', 'vencida');
+    update public.member_subscriptions set status = 'inadimplente', current_period_end = now() + interval '5 days' where stripe_subscription_id = 'sub_zzqx_a';
+    res := res || jsonb_build_object('teste', 'inadimplente NÃO tem acesso', 'ok', not public.is_member(p, a), 'obtido', 'inadimplente');
+
+    -- Nada de gravar assinatura pelo app.
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.member_subscriptions (professional_id, member_id, status, price_cents) values (%L, %L, ''ativa'', 100)', p, b));
+    res := res || jsonb_build_object('teste', 'NÃO cria assinatura direto pelo app', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('select public.upsert_member_subscription(%L, %L, ''ativa'', 100, ''sub_x'', ''cus_x'', now())', p, b));
+    res := res || jsonb_build_object('teste', 'NÃO chama a gravação do servidor pelo app', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+    -- Faturas e divisão.
+    perform public.record_member_invoice('sub_zzqx_a', 'in_zzqx_1', 2500, 250);
+    perform public.record_member_invoice('sub_zzqx_a', 'in_zzqx_1', 2500, 250);
+    r := pg_temp.as_user(p, 'authenticated', 'select gross_cents || ''/'' || fee_cents || ''/'' || net_cents || ''/'' || invoices from public.my_member_earnings(30)');
+    res := res || jsonb_build_object('teste', 'ganhos: valor, parte da plataforma e líquido (fatura não duplica)', 'ok', (r = '2500/250/2250/1'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', 'select invoices from public.my_member_earnings(30)');
+    res := res || jsonb_build_object('teste', 'outro usuário não tem ganhos', 'ok', (r = '0'), 'obtido', r);
+
+    -- Perder o nível desativa a oferta.
+    perform public._pro_award(p, 'ajuste_admin', 'admin', gen_random_uuid(), 'teste', -5000);
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_member_plan(%L)', p));
+    res := res || jsonb_build_object('teste', 'ao perder o nível, o plano deixa de ser oferecido', 'ok', (r = '0'), 'obtido', r);
   end;
 
   -- Relatório (o erro desfaz toda a transação).

@@ -77,6 +77,55 @@ export function createRefund(paymentIntent: string): Promise<{ id: string; statu
   return call("POST", "/refunds", { payment_intent: paymentIntent });
 }
 
+// ── Stripe Connect e assinaturas (perfil de membros) ────────────────────────
+
+export interface StripeAccount {
+  id: string;
+  charges_enabled?: boolean;
+  payouts_enabled?: boolean;
+  details_submitted?: boolean;
+}
+
+/** Conta Express do profissional: ele cadastra os dados e o Stripe repassa a parte dele. */
+export function createConnectAccount(params: Record<string, unknown>): Promise<StripeAccount> {
+  return call<StripeAccount>("POST", "/accounts", params);
+}
+
+export function getConnectAccount(id: string): Promise<StripeAccount> {
+  return call<StripeAccount>("GET", `/accounts/${id}`);
+}
+
+export function createAccountLink(params: Record<string, unknown>): Promise<{ url: string }> {
+  return call<{ url: string }>("POST", "/account_links", params);
+}
+
+export interface StripeSubscription {
+  id: string;
+  status?: string;
+  customer?: string;
+  cancel_at_period_end?: boolean;
+  current_period_end?: number;
+  items?: { data?: { current_period_end?: number; price?: { unit_amount?: number } }[] };
+  metadata?: Record<string, string>;
+}
+
+export function getSubscription(id: string): Promise<StripeSubscription> {
+  return call<StripeSubscription>("GET", `/subscriptions/${id}`);
+}
+
+export function updateSubscription(
+  id: string,
+  params: Record<string, unknown>,
+): Promise<StripeSubscription> {
+  return call<StripeSubscription>("POST", `/subscriptions/${id}`, params);
+}
+
+/** Fim do período corrente de uma assinatura (o campo mudou de lugar entre versões da API). */
+export function periodEnd(sub: StripeSubscription): string | null {
+  const ts = sub.current_period_end ?? sub.items?.data?.[0]?.current_period_end;
+  return ts ? new Date(ts * 1000).toISOString() : null;
+}
+
 /** Verifica a assinatura Stripe-Signature do webhook (HMAC-SHA256). */
 export async function verifyWebhookSignature(req: Request, rawBody: string): Promise<boolean> {
   const secret = Deno.env.get("STRIPE_WEBHOOK_SECRET");

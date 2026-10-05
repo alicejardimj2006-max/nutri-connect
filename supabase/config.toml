@@ -34,3 +34,13 @@ verify_jwt = false
 # Servidores ICE (STUN/TURN) da videoconsulta: valida o login dentro da funcao (requireUser).
 [functions.call-ice]
 verify_jwt = false
+
+# Perfil de membros (Stripe Connect e assinaturas): validam o login dentro da funcao (requireUser).
+[functions.member-connect]
+verify_jwt = false
+
+[functions.member-checkout]
+verify_jwt = false
+
+[functions.member-cancel]
+verify_jwt = false
