@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import {
   CalendarDays,
+  Crown,
   LayoutDashboard,
   MessageCircle,
   Settings,
@@ -14,6 +15,7 @@ import { EmptyState, buttonPrimary } from "@/components/clinical/ui";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useClinicalRealtime, useConversations, useLinks } from "@/lib/clinical/queries";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
+import { useTr } from "@/components/appearance-editor";
 
 export const Route = createFileRoute("/painel")({
   head: () => ({ meta: [{ title: "Painel clínico — NutriConnect" }] }),
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/painel")({
 function ProfessionalPanelLayout() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useClinicalI18n();
+  const tr = useTr();
   const isPro = !!user?.professional;
   useClinicalRealtime(isPro ? user?.id : undefined);
   const links = useLinks("professional", isPro);
@@ -64,6 +67,11 @@ function ProfessionalPanelLayout() {
         .reduce((a, c) => a + c.unread, 0),
     },
     { to: "/painel/financeiro", label: t("panelNav.finance"), icon: Wallet },
+    {
+      to: "/painel/membros",
+      label: tr(["Membros", "Members", "Miembros", "Membres"]),
+      icon: Crown,
+    },
     { to: "/painel/configuracoes", label: t("panelNav.settings"), icon: Settings },
   ];
 

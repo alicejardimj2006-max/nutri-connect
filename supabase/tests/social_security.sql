@@ -864,6 +864,12 @@ begin
     res := res || jsonb_build_object('teste', 'ao perder o nível, o plano deixa de ser oferecido', 'ok', (r = '0'), 'obtido', r);
   end;
 
+  -- ------------------------------------------------ ABA PROFISSIONAIS DO FEED
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(''profissionais'', null, null, null, null, null, null, 100) where author_id = %L', p));
+  res := res || jsonb_build_object('teste', 'escopo profissionais traz as publicações de profissionais', 'ok', (r::integer >= 1), 'obtido', r);
+  r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(''profissionais'', null, null, null, null, null, null, 100) where author_id <> all (select user_id from public.professionals)'));
+  res := res || jsonb_build_object('teste', 'escopo profissionais NÃO traz publicações de quem não é profissional', 'ok', (r = '0'), 'obtido', r);
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

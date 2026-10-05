@@ -121,7 +121,17 @@ function EspacoDeHojePage() {
   const { appearance } = useAppearance();
   const enabled = !!user;
   useFeedRealtime(user?.id);
-  const geral = useFeed({ scope: filter, limit }, enabled);
+  const geralQuery = useFeed({ scope: filter, limit }, enabled);
+  // Aba Profissionais: quem a pessoa segue; se nenhum deles publicou ainda, os profissionais em geral.
+  const prosFallback = useFeed(
+    { scope: "profissionais", limit },
+    enabled &&
+      filter === "seguindo" &&
+      geralQuery.isSuccess &&
+      (geralQuery.data ?? []).length === 0,
+  );
+  const geral =
+    filter === "seguindo" && (geralQuery.data ?? []).length === 0 ? prosFallback : geralQuery;
   const theme = useActiveTheme(enabled);
   const themeFeed = useFeed(
     { scope: "tema", theme: theme.data?.id, limit: themeLimit },

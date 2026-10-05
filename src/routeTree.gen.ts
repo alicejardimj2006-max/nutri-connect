@@ -39,6 +39,7 @@ import { Route as AcompanhamentoExamesRouteImport } from './routes/acompanhament
 import { Route as AcompanhamentoMensagensRouteImport } from './routes/acompanhamento.mensagens'
 import { Route as AcompanhamentoMetasRouteImport } from './routes/acompanhamento.metas'
 import { Route as AcompanhamentoPlanoRouteImport } from './routes/acompanhamento.plano'
+import { Route as AssinarProfessionalIdRouteImport } from './routes/assinar.$professionalId'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
 import { Route as ConsultaAppointmentIdRouteImport } from './routes/consulta.$appointmentId'
@@ -50,6 +51,7 @@ import { Route as PainelIndexRouteImport } from './routes/painel.index'
 import { Route as PainelAgendaRouteImport } from './routes/painel.agenda'
 import { Route as PainelConfiguracoesRouteImport } from './routes/painel.configuracoes'
 import { Route as PainelFinanceiroRouteImport } from './routes/painel.financeiro'
+import { Route as PainelMembrosRouteImport } from './routes/painel.membros'
 import { Route as PainelMensagensRouteImport } from './routes/painel.mensagens'
 import { Route as PerfilUserIdRouteImport } from './routes/perfil.$userId'
 import { Route as PerfilConfiguracoesRouteImport } from './routes/perfil.configuracoes'
@@ -219,6 +221,11 @@ const AcompanhamentoPlanoRoute = AcompanhamentoPlanoRouteImport.update({
   path: '/plano',
   getParentRoute: () => AcompanhamentoRoute,
 } as any)
+const AssinarProfessionalIdRoute = AssinarProfessionalIdRouteImport.update({
+  id: '/assinar/$professionalId',
+  path: '/assinar/$professionalId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComunidadesIndexRoute = ComunidadesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -272,6 +279,11 @@ const PainelConfiguracoesRoute = PainelConfiguracoesRouteImport.update({
 const PainelFinanceiroRoute = PainelFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
+  getParentRoute: () => PainelRoute,
+} as any)
+const PainelMembrosRoute = PainelMembrosRouteImport.update({
+  id: '/membros',
+  path: '/membros',
   getParentRoute: () => PainelRoute,
 } as any)
 const PainelMensagensRoute = PainelMensagensRouteImport.update({
@@ -403,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
+  '/assinar/$professionalId': typeof AssinarProfessionalIdRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
@@ -411,6 +424,7 @@ export interface FileRoutesByFullPath {
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
+  '/painel/membros': typeof PainelMembrosRoute
   '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
@@ -460,6 +474,7 @@ export interface FileRoutesByTo {
   '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
+  '/assinar/$professionalId': typeof AssinarProfessionalIdRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
@@ -468,6 +483,7 @@ export interface FileRoutesByTo {
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
+  '/painel/membros': typeof PainelMembrosRoute
   '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -521,6 +537,7 @@ export interface FileRoutesById {
   '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
+  '/assinar/$professionalId': typeof AssinarProfessionalIdRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
   '/convite/$code': typeof ConviteCodeRoute
@@ -529,6 +546,7 @@ export interface FileRoutesById {
   '/painel/agenda': typeof PainelAgendaRoute
   '/painel/configuracoes': typeof PainelConfiguracoesRoute
   '/painel/financeiro': typeof PainelFinanceiroRoute
+  '/painel/membros': typeof PainelMembrosRoute
   '/painel/mensagens': typeof PainelMensagensRoute
   '/perfil/$userId': typeof PerfilUserIdRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesRouteWithChildren
@@ -584,6 +602,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/mensagens'
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
+    | '/assinar/$professionalId'
     | '/comunidades/$slug'
     | '/consulta/$appointmentId'
     | '/convite/$code'
@@ -592,6 +611,7 @@ export interface FileRouteTypes {
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
+    | '/painel/membros'
     | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
@@ -641,6 +661,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/mensagens'
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
+    | '/assinar/$professionalId'
     | '/comunidades/$slug'
     | '/consulta/$appointmentId'
     | '/convite/$code'
@@ -649,6 +670,7 @@ export interface FileRouteTypes {
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
+    | '/painel/membros'
     | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/editar'
@@ -701,6 +723,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/mensagens'
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
+    | '/assinar/$professionalId'
     | '/comunidades/$slug'
     | '/consulta/$appointmentId'
     | '/convite/$code'
@@ -709,6 +732,7 @@ export interface FileRouteTypes {
     | '/painel/agenda'
     | '/painel/configuracoes'
     | '/painel/financeiro'
+    | '/painel/membros'
     | '/painel/mensagens'
     | '/perfil/$userId'
     | '/perfil/configuracoes'
@@ -756,6 +780,7 @@ export interface RootRouteChildren {
   TemaDaSemanaRoute: typeof TemaDaSemanaRoute
   TermosRoute: typeof TermosRoute
   VerificacaoRoute: typeof VerificacaoRoute
+  AssinarProfessionalIdRoute: typeof AssinarProfessionalIdRoute
   ConsultaAppointmentIdRoute: typeof ConsultaAppointmentIdRoute
   ConviteCodeRoute: typeof ConviteCodeRoute
   PagamentoAppointmentIdRoute: typeof PagamentoAppointmentIdRoute
@@ -981,6 +1006,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcompanhamentoPlanoRouteImport
       parentRoute: typeof AcompanhamentoRoute
     }
+    '/assinar/$professionalId': {
+      id: '/assinar/$professionalId'
+      path: '/assinar/$professionalId'
+      fullPath: '/assinar/$professionalId'
+      preLoaderRoute: typeof AssinarProfessionalIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/comunidades/': {
       id: '/comunidades/'
       path: '/'
@@ -1056,6 +1088,13 @@ declare module '@tanstack/react-router' {
       path: '/financeiro'
       fullPath: '/painel/financeiro'
       preLoaderRoute: typeof PainelFinanceiroRouteImport
+      parentRoute: typeof PainelRoute
+    }
+    '/painel/membros': {
+      id: '/painel/membros'
+      path: '/membros'
+      fullPath: '/painel/membros'
+      preLoaderRoute: typeof PainelMembrosRouteImport
       parentRoute: typeof PainelRoute
     }
     '/painel/mensagens': {
@@ -1245,6 +1284,7 @@ interface PainelRouteChildren {
   PainelAgendaRoute: typeof PainelAgendaRoute
   PainelConfiguracoesRoute: typeof PainelConfiguracoesRoute
   PainelFinanceiroRoute: typeof PainelFinanceiroRoute
+  PainelMembrosRoute: typeof PainelMembrosRoute
   PainelMensagensRoute: typeof PainelMensagensRoute
   PainelIndexRoute: typeof PainelIndexRoute
   PainelPacientesPatientIdRoute: typeof PainelPacientesPatientIdRoute
@@ -1256,6 +1296,7 @@ const PainelRouteChildren: PainelRouteChildren = {
   PainelAgendaRoute: PainelAgendaRoute,
   PainelConfiguracoesRoute: PainelConfiguracoesRoute,
   PainelFinanceiroRoute: PainelFinanceiroRoute,
+  PainelMembrosRoute: PainelMembrosRoute,
   PainelMensagensRoute: PainelMensagensRoute,
   PainelIndexRoute: PainelIndexRoute,
   PainelPacientesPatientIdRoute: PainelPacientesPatientIdRoute,
@@ -1310,6 +1351,7 @@ const rootRouteChildren: RootRouteChildren = {
   TemaDaSemanaRoute: TemaDaSemanaRoute,
   TermosRoute: TermosRoute,
   VerificacaoRoute: VerificacaoRoute,
+  AssinarProfessionalIdRoute: AssinarProfessionalIdRoute,
   ConsultaAppointmentIdRoute: ConsultaAppointmentIdRoute,
   ConviteCodeRoute: ConviteCodeRoute,
   PagamentoAppointmentIdRoute: PagamentoAppointmentIdRoute,

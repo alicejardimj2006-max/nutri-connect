@@ -1834,6 +1834,93 @@ export type Database = {
           },
         ]
       }
+      member_content: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          image_url: string | null
+          professional_id: string
+          title: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          professional_id?: string
+          title?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          professional_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      member_plans: {
+        Row: {
+          active: boolean
+          benefits: string[]
+          consult_discount_percent: number
+          description: string
+          price_cents: number
+          professional_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          benefits?: string[]
+          consult_discount_percent?: number
+          description?: string
+          price_cents?: number
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          benefits?: string[]
+          consult_discount_percent?: number
+          description?: string
+          price_cents?: number
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pro_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean
+          details_submitted: boolean
+          payouts_enabled: boolean
+          professional_id: string
+          stripe_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          professional_id?: string
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          professional_id?: string
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meal_plans: {
         Row: {
           created_at: string
@@ -4063,6 +4150,72 @@ export type Database = {
       }
       pro_has_feature: { Args: { p_feature: string; p_pro: string }; Returns: boolean }
       pro_membership_fee_percent: { Args: { p_pro: string }; Returns: number }
+      save_member_plan: {
+        Args: {
+          p_active: boolean
+          p_benefits: string[]
+          p_description: string
+          p_discount: number
+          p_price_cents: number
+          p_title: string
+        }
+        Returns: undefined
+      }
+      get_member_plan: {
+        Args: { p_pro: string }
+        Returns: {
+          active: boolean
+          benefits: string[]
+          charges_enabled: boolean
+          consult_discount_percent: number
+          content_count: number
+          description: string
+          fee_percent: number
+          is_member: boolean
+          price_cents: number
+          professional_id: string
+          title: string
+        }[]
+      }
+      publish_member_content: {
+        Args: { p_body: string; p_image_url?: string; p_title: string }
+        Returns: string
+      }
+      my_member_subscriptions: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_period_end: string
+          id: string
+          price_cents: number
+          professional_id: string
+          professional_name: string
+          status: string
+        }[]
+      }
+      my_subscribers: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          current_period_end: string
+          id: string
+          member_id: string
+          name: string
+          price_cents: number
+          status: string
+          username: string
+        }[]
+      }
+      my_member_earnings: {
+        Args: { p_days?: number }
+        Returns: {
+          fee_cents: number
+          gross_cents: number
+          invoices: number
+          net_cents: number
+        }[]
+      }
       get_notifications: {
         Args: { p_before?: string; p_limit?: number }
         Returns: {
