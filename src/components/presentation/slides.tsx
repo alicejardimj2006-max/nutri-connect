@@ -74,7 +74,7 @@ import {
   StageNina,
   Words,
 } from "./layout";
-import { NinaIntroSlide, PartDivider, PRESENTERS, TeamRoster } from "./parts";
+import { NinaIntroSlide, PRESENTERS, TeamRoster } from "./parts";
 import { EmojiIcon } from "@/components/emoji-icon";
 
 export interface SlideApi {
@@ -689,6 +689,146 @@ function Canvas(c: PresentationCopy) {
   );
 }
 
+// ───────────────────────── Planejamento financeiro ─────────────────────────
+
+const FIN_COSTS = [99, 100, 89, 8000];
+const FIN_TOTAL = FIN_COSTS.reduce((a, b) => a + b, 0); // 8.288
+/** Taxa da plataforma sobre consultas pagas pelo site (platform_fee_percent). */
+const FIN_CONSULT_FEE = 10;
+/** Taxa sobre as mensalidades de membros em cada nível do profissional (pro_levels). */
+const FIN_MEMBER_FEES = [20, 18, 15, 12, 10];
+const FIN_AD_RATE = 0.5;
+
+function Finance(c: PresentationCopy) {
+  const f = c.finance;
+  const money = (n: number) =>
+    new Intl.NumberFormat(f.numberLocale, {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0,
+    }).format(n);
+  const int = (n: number) => new Intl.NumberFormat(f.numberLocale).format(n);
+  const fill = (text: string, vars: Record<string, string>) =>
+    Object.entries(vars).reduce((t, [k, v]) => t.replace(`{${k}}`, v), text);
+  // Quanto precisa passar pela plataforma para a taxa cobrir os custos.
+  const needed = (fee: number) => Math.ceil((FIN_TOTAL * 100) / fee);
+  const consultNeed = needed(FIN_CONSULT_FEE);
+  const maxNeed = needed(Math.min(...FIN_MEMBER_FEES, FIN_CONSULT_FEE));
+  const ads = Math.ceil(FIN_TOTAL / FIN_AD_RATE); // 16.576
+  const adsDay = Math.round(ads / 30);
+
+  const Bar = ({ value, delay, tone }: { value: number; delay: number; tone: string }) => (
+    <div className="mt-1 h-2 overflow-hidden rounded-full bg-card">
+      <div
+        className={`nc-grow-x h-full rounded-full ${tone}`}
+        style={{ width: `${Math.max(4, (value / maxNeed) * 100)}%`, animationDelay: `${delay}ms` }}
+      />
+    </div>
+  );
+
+  return (
+    <Scene>
+      <Blob className="-right-24 top-10 h-80 w-80 bg-accent/15" />
+      <Frame wide>
+        <Heading eyebrow={f.eyebrow} title={f.title} lead={f.lead} />
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          {/* Custos */}
+          <section
+            className="nc-rise rounded-3xl border border-border bg-card p-5 shadow-card"
+            style={{ animationDelay: "200ms" }}
+          >
+            <h3 className="font-display text-lg font-bold">{f.costsTitle}</h3>
+            <ul className="mt-3 space-y-2.5">
+              {FIN_COSTS.map((v, i) => (
+                <li key={f.costs[i]}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="text-foreground">{f.costs[i]}</span>
+                    <span className="font-semibold tabular-nums">{money(v)}</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="nc-grow-x h-full rounded-full bg-accent"
+                      style={{
+                        width: `${Math.max(3, (v / FIN_TOTAL) * 100)}%`,
+                        animationDelay: `${400 + i * 120}ms`,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex items-baseline justify-between border-t border-border pt-3">
+              <span className="text-sm font-semibold text-muted-foreground">{f.totalLabel}</span>
+              <span className="font-display text-2xl font-extrabold text-foreground">
+                {money(FIN_TOTAL)}
+                <span className="text-xs font-medium text-muted-foreground">{f.perMonth}</span>
+              </span>
+            </div>
+          </section>
+
+          {/* Como a plataforma ganha */}
+          <section
+            className="nc-rise rounded-3xl border border-accent/30 bg-accent-soft/40 p-5 shadow-card"
+            style={{ animationDelay: "320ms" }}
+          >
+            <h3 className="font-display text-lg font-bold">{f.revTitle}</h3>
+            <p className="mt-1 rounded-2xl bg-card/80 p-2.5 text-sm font-medium leading-snug">
+              {f.noSub}
+            </p>
+            <h4 className="mt-3 text-sm font-bold">{f.consultTitle}</h4>
+            <p className="text-sm text-muted-foreground">
+              {fill(f.consultText, { fee: `${FIN_CONSULT_FEE}%` })}
+            </p>
+            <h4 className="mt-2 text-sm font-bold">{f.membersTitle}</h4>
+            <p className="text-sm text-muted-foreground">
+              {fill(f.membersText, { fee: `${FIN_MEMBER_FEES[0]}%` })}
+            </p>
+          </section>
+
+          {/* Quanto precisa passar pela plataforma + anúncios */}
+          <section
+            className="nc-rise rounded-3xl border border-border bg-card p-5 shadow-card"
+            style={{ animationDelay: "440ms" }}
+          >
+            <h3 className="font-display text-sm font-bold leading-snug">
+              {fill(f.needTitle, { total: money(FIN_TOTAL) })}
+            </h3>
+            <div className="mt-2">
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <span>{fill(f.needConsult, { fee: `${FIN_CONSULT_FEE}%` })}</span>
+                <span className="font-semibold tabular-nums">{money(consultNeed)}</span>
+              </div>
+              <Bar value={consultNeed} delay={600} tone="bg-primary" />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-muted-foreground">{f.needMembers}</p>
+            <ul className="mt-1 space-y-1.5">
+              {FIN_MEMBER_FEES.map((fee, i) => (
+                <li key={fee}>
+                  <div className="flex items-baseline justify-between gap-3 text-xs">
+                    <span>{fill(f.levelLabel, { n: String(i + 1), fee: `${fee}%` })}</span>
+                    <span className="font-semibold tabular-nums">{money(needed(fee))}</span>
+                  </div>
+                  <Bar value={needed(fee)} delay={750 + i * 100} tone="bg-accent" />
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 border-t border-border pt-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-accent">
+                {f.adsTitle}
+              </h4>
+              <p className="mt-1 text-xs text-muted-foreground">{f.adsRate}</p>
+              <p className="text-sm">{fill(f.adsAlone, { n: int(ads), d: int(adsDay) })}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                <b className="text-foreground">{f.otherTitle}:</b> {f.otherText}
+              </p>
+            </div>
+          </section>
+        </div>
+      </Frame>
+    </Scene>
+  );
+}
+
 // ───────────────────────── 10. Curso ─────────────────────────
 
 const COURSE_ICONS: LucideIcon[] = [Smartphone, Atom, GitBranch, Presentation];
@@ -697,7 +837,6 @@ const STACK = [
   "CSS",
   "Tailwind CSS",
   "JavaScript",
-  "TypeScript",
   "React",
   "TanStack Router",
   "Git",
@@ -1079,13 +1218,6 @@ function Join(c: PresentationCopy, api: SlideApi) {
 
 type Draft = Omit<SlideDef, "part">;
 
-const divider = (index: number): Draft => ({
-  id: `parte-${index + 1}`,
-  nina: (c) => c.parts[index].subtitle,
-  hideNarrator: true,
-  render: (c) => <PartDivider c={c} index={index} topics={topicsFor(index, c)} />,
-});
-
 const tour = (key: TourKey, flip: boolean, ninaAction?: NinaAction): Draft => ({
   id: `tour-${key}`,
   nina: (c) => c.tour[key].nina,
@@ -1098,7 +1230,6 @@ const PART_SLIDES: Draft[][] = [
   // 1 · Maria Stella (líder): abertura, equipe e o problema.
   [
     { id: "capa", nina: (c) => c.cover.nina, hideNarrator: true, render: Cover },
-    divider(0),
     {
       id: "equipe",
       nina: (c) => c.team.nina,
@@ -1116,7 +1247,6 @@ const PART_SLIDES: Draft[][] = [
   ],
   // 2 · Cainã: a solução, diferenciais, a Nina e o modelo de negócio.
   [
-    divider(1),
     {
       id: "solucao",
       nina: (c) => c.solution.nina,
@@ -1148,7 +1278,6 @@ const PART_SLIDES: Draft[][] = [
   ],
   // 3 · Alice: mercado (personas e concorrentes).
   [
-    divider(2),
     {
       id: "persona-usuario",
       nina: (c) => c.personas.ninaUser,
@@ -1178,7 +1307,6 @@ const PART_SLIDES: Draft[][] = [
   ],
   // 4 · Maria Clara: a plataforma, parte 1.
   [
-    divider(3),
     {
       id: "tour",
       nina: (c) => c.tourIntro.nina,
@@ -1196,7 +1324,6 @@ const PART_SLIDES: Draft[][] = [
   ],
   // 5 · Emilly: a plataforma, parte 2, aprendizados e o convite final.
   [
-    divider(4),
     tour("communities", false, "wave"),
     tour("challenges", true),
     tour("discover", false, "think"),
@@ -1207,6 +1334,13 @@ const PART_SLIDES: Draft[][] = [
       ninaAction: "present",
       label: (c) => c.course.eyebrow,
       render: Course,
+    },
+    {
+      id: "financeiro",
+      nina: (c) => c.finance.nina,
+      ninaAction: "think",
+      label: (c) => c.finance.eyebrow,
+      render: Finance,
     },
     {
       id: "convite",
@@ -1223,12 +1357,4 @@ export const SLIDES: SlideDef[] = PART_SLIDES.flatMap((slides, part) =>
 );
 
 /** Índice da divisória de cada parte (atalhos 1–5 e cliques no "Quem somos"). */
-export const PART_STARTS = PRESENTERS.map((_, i) =>
-  SLIDES.findIndex((s) => s.id === `parte-${i + 1}`),
-);
-
-/** Assuntos de uma parte, sem repetir (as duas personas contam como um). */
-function topicsFor(part: number, c: PresentationCopy) {
-  const labels = SLIDES.filter((s) => s.part === part && s.label).map((s) => s.label!(c));
-  return [...new Set(labels)];
-}
+export const PART_STARTS = PRESENTERS.map((_, i) => SLIDES.findIndex((s) => s.part === i));

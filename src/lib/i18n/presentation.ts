@@ -143,6 +143,36 @@ export interface PresentationCopy {
     note: string;
   };
   canvas: SlideHeading & { value: string; blocks: { title: string; items: string[] }[] };
+  /** Planejamento financeiro: custos mensais, como a plataforma ganha (taxas) e anúncios. */
+  finance: SlideHeading & {
+    numberLocale: string;
+    lead: string;
+    costsTitle: string;
+    costs: [string, string, string, string];
+    totalLabel: string;
+    perMonth: string;
+    revTitle: string;
+    noSub: string;
+    consultTitle: string;
+    /** "{fee}" = taxa sobre a consulta. */
+    consultText: string;
+    membersTitle: string;
+    /** "{fee}" = taxa inicial das mensalidades de membros. */
+    membersText: string;
+    /** "{total}" = custo mensal. */
+    needTitle: string;
+    /** "{fee}" = taxa. */
+    needConsult: string;
+    needMembers: string;
+    /** "{n}" = nível, "{fee}" = taxa. */
+    levelLabel: string;
+    adsTitle: string;
+    adsRate: string;
+    /** "{n}" = anúncios por mês, "{d}" = por dia. */
+    adsAlone: string;
+    otherTitle: string;
+    otherText: string;
+  };
   course: SlideHeading & {
     intro: string;
     learnedLabel: string;

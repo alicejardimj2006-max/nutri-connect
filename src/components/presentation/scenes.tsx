@@ -556,24 +556,20 @@ const SNIPPETS: { file: string; lines: Token[][] }[] = [
     ],
   },
   {
-    file: "Nina.tsx",
+    file: "Nina.jsx",
     lines: [
       [
-        ["type ", T.kw],
-        ["Mood", T.fn],
-        [" = ", T.txt],
-        ['"happy"', T.str],
-        [" | ", T.txt],
-        ['"talk"', T.str],
+        ["import ", T.kw],
+        ["{ useState } ", T.txt],
+        ["from ", T.kw],
+        ['"react"', T.str],
         [";", T.txt],
       ],
       [["", T.txt]],
       [
         ["export function ", T.kw],
         ["Nina", T.fn],
-        ["({ mood }: { mood: ", T.txt],
-        ["Mood", T.fn],
-        [" }) {", T.txt],
+        ["({ mood }) {", T.txt],
       ],
       [
         ["  const ", T.kw],
