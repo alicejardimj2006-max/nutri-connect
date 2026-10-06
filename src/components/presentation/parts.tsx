@@ -309,6 +309,7 @@ export function TeamRoster({
                     )}
                     <figure className="w-full max-w-[200px] bg-[#fffdf8] p-2.5 pb-3 shadow-[0_18px_40px_-18px_rgb(52_45_36/0.55)] transition group-hover:-translate-y-1 group-hover:shadow-[0_24px_50px_-18px_rgb(52_45_36/0.6)]">
                       <div
+                        data-nc-photo={i}
                         className={`relative grid aspect-square place-items-center bg-gradient-to-br ${p.gradient}`}
                       >
                         {avatar ? (

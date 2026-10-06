@@ -8,10 +8,13 @@ import { presentationCopy } from "@/lib/i18n/presentation";
 import {
   applyTexts,
   arrangeSlides,
+  markCopy,
   partStartsOf,
   readLayout,
+  readMark,
   readTexts,
   usePublishedPresentation,
+  type DeckEditor,
 } from "@/lib/presentation-content";
 import { StaticContext } from "./effects";
 import { AvatarContext } from "./avatar-context";
@@ -26,17 +29,39 @@ function slideFromHash(hash: string, total: number): number {
   return Number.isFinite(n) && n >= 1 && n <= total ? n - 1 : 0;
 }
 
-export function PresentationDeck() {
-  const { locale, setLocale } = useI18n();
+/** Texto do campo clicado: o primeiro caminho marcado no próprio elemento ou no seu conteúdo direto. */
+function markPathAt(start: HTMLElement): string | null {
+  for (let el: HTMLElement | null = start; el; el = el.parentElement) {
+    for (const node of Array.from(el.childNodes)) {
+      if (node.nodeType !== Node.TEXT_NODE) continue;
+      const path = readMark(node.textContent ?? "");
+      if (path) return path;
+    }
+  }
+  return null;
+}
+
+export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
+  const i18n = useI18n();
+  const locale = editor?.locale ?? i18n.locale;
+  const setLocale = editor ? editor.onLocale : i18n.setLocale;
+  const isEditing = Boolean(editor);
   const { data: published, isFetched } = usePublishedPresentation();
   // O endereço é lido ao abrir, antes de qualquer escrita nele.
   const [startHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
   // Textos, ordem, slides escondidos e fotos publicados pelo painel; sem publicação, vale o código.
-  const copy = useMemo(
+  // No modo edição, vale o conteúdo em edição, com cada texto marcado para o clique.
+  const editorCopy = editor?.copy;
+  const publishedCopy = useMemo(
     () => applyTexts(presentationCopy(locale), readTexts(published?.[locale])),
     [locale, published],
   );
-  const layout = useMemo(() => readLayout(published?.layout), [published]);
+  const base = editorCopy ?? publishedCopy;
+  const copy = useMemo(() => (isEditing ? markCopy(base) : base), [base, isEditing]);
+  const layout = useMemo(
+    () => editor?.layout ?? readLayout(published?.layout),
+    [editor?.layout, published],
+  );
   const slides = useMemo(() => arrangeSlides(ALL_SLIDES, layout), [layout]);
   const partStarts = useMemo(() => partStartsOf(slides, PRESENTERS.length), [slides]);
   // A direção decide de que lado o slide entra na animação.
@@ -195,6 +220,21 @@ export function PresentationDeck() {
     };
   }, [printing]);
 
+  // Modo edição: o clique não navega nem abre o slide; vai para o painel com o campo ou a foto clicados.
+  const onEditorClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (!editor) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const photo = target.closest<HTMLElement>("[data-nc-photo]");
+    if (photo) {
+      editor.onPhoto(Number(photo.dataset.ncPhoto), photo.getBoundingClientRect());
+      return;
+    }
+    const path = markPathAt(target);
+    if (path) editor.onText(path, target.getBoundingClientRect());
+  };
+
   const counter = copy.ui.slideOf
     .replace("{n}", String(index + 1))
     .replace("{total}", String(total));
@@ -283,6 +323,7 @@ export function PresentationDeck() {
         <main
           ref={scroller}
           onPointerMove={onPointerMove}
+          onClickCapture={isEditing ? onEditorClick : undefined}
           className="relative flex-1 overflow-y-auto overflow-x-hidden"
           aria-roledescription="slide"
           aria-label={counter}

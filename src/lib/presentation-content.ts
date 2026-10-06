@@ -213,3 +213,69 @@ export function arrangeSlides<T extends { id: string; part: number }>(
 export function partStartsOf<T extends { part: number }>(slides: T[], parts: number): number[] {
   return Array.from({ length: parts }, (_, i) => slides.findIndex((s) => s.part === i));
 }
+
+// ── Edição sobre a apresentação real ─────────────────────────────────────────
+// No modo edição, cada texto do conteúdo leva o próprio caminho escondido em caracteres de largura
+// zero. Assim o clique no slide descobre qual campo é, sem mudar os componentes nem o visual.
+const MARK_OPEN = "﻿";
+const MARK_CLOSE = "‎";
+const MARK_DIGITS = ["​", "‌", "‍", "⁠", "⁡", "⁢", "⁣", "⁤"];
+
+function encodeMark(path: string): string {
+  return Array.from(path)
+    .map((ch) =>
+      ch
+        .charCodeAt(0)
+        .toString(8)
+        .padStart(3, "0")
+        .split("")
+        .map((d) => MARK_DIGITS[Number(d)])
+        .join(""),
+    )
+    .join("");
+}
+
+/** Caminho escondido no texto, ou null se o texto não tem marca. */
+export function readMark(text: string): string | null {
+  const start = text.indexOf(MARK_OPEN);
+  if (start < 0) return null;
+  const end = text.indexOf(MARK_CLOSE, start);
+  if (end < 0) return null;
+  const body = text.slice(start + 1, end);
+  let out = "";
+  for (let i = 0; i + 3 <= body.length; i += 3) {
+    const digits = [body[i], body[i + 1], body[i + 2]].map((s) => MARK_DIGITS.indexOf(s));
+    if (digits.some((d) => d < 0)) return null;
+    out += String.fromCharCode(parseInt(digits.join(""), 8));
+  }
+  return out || null;
+}
+
+/** Copia do conteúdo em que cada texto carrega o próprio caminho (só para exibir e clicar). */
+export function markCopy<T>(value: T, path = ""): T {
+  if (typeof value === "string") {
+    return `${value}${MARK_OPEN}${encodeMark(path)}${MARK_CLOSE}` as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v, i) => markCopy(v, path ? `${path}.${i}` : String(i))) as T;
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, markCopy(v, path ? `${path}.${k}` : k)]),
+    ) as T;
+  }
+  return value;
+}
+
+/** O que o modo edição da apresentação recebe do painel de administração. */
+export interface DeckEditor {
+  locale: Locale;
+  onLocale: (locale: Locale) => void;
+  /** Conteúdo em edição (já com os textos alterados). */
+  copy: PresentationCopy;
+  layout: PresentationLayout;
+  /** Clique num texto: caminho do campo e a posição na tela. */
+  onText: (path: string, rect: DOMRect) => void;
+  /** Clique numa foto da equipe (índice do integrante). */
+  onPhoto: (index: number, rect: DOMRect) => void;
+}
