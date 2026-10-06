@@ -143,6 +143,28 @@ export interface PresentationCopy {
     note: string;
   };
   canvas: SlideHeading & { value: string; blocks: { title: string; items: string[] }[] };
+  /** Planejamento financeiro: custos mensais, receita com profissionais e anúncios. */
+  finance: SlideHeading & {
+    numberLocale: string;
+    lead: string;
+    costsTitle: string;
+    costs: [string, string, string, string];
+    totalLabel: string;
+    perMonth: string;
+    proTitle: string;
+    proPrice: string;
+    proUnit: string;
+    proCover: string;
+    costLine: string;
+    adsTitle: string;
+    adsRate: string;
+    /** "{n}" = anúncios por mês. */
+    adsAlone: string;
+    /** "{gap}" = valor que falta, "{n}" = anúncios por mês, "{d}" = anúncios por dia. */
+    adsWith: string;
+    otherTitle: string;
+    otherText: string;
+  };
   course: SlideHeading & {
     intro: string;
     learnedLabel: string;

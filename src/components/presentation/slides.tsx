@@ -689,6 +689,138 @@ function Canvas(c: PresentationCopy) {
   );
 }
 
+// ───────────────────────── Planejamento financeiro ─────────────────────────
+
+const FIN_COSTS = [99, 100, 89, 8000];
+const FIN_TOTAL = FIN_COSTS.reduce((a, b) => a + b, 0); // 8.288
+const FIN_FEE = 50;
+const FIN_PRO_STEPS = [10, 50, 100, 166];
+const FIN_AD_RATE = 0.5;
+
+function Finance(c: PresentationCopy) {
+  const f = c.finance;
+  const money = (n: number) =>
+    new Intl.NumberFormat(f.numberLocale, {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0,
+    }).format(n);
+  const int = (n: number) => new Intl.NumberFormat(f.numberLocale).format(n);
+  const adsAlone = Math.ceil(FIN_TOTAL / FIN_AD_RATE); // 16.576
+  const gap = FIN_TOTAL - 100 * FIN_FEE; // 3.288
+  const adsGap = Math.ceil(gap / FIN_AD_RATE); // 6.576
+  const perDay = Math.round(adsGap / 30); // ~219
+  const fill = (text: string, vars: Record<string, string>) =>
+    Object.entries(vars).reduce((t, [k, v]) => t.replace(`{${k}}`, v), text);
+
+  return (
+    <Scene>
+      <Blob className="-right-24 top-10 h-80 w-80 bg-accent/15" />
+      <Frame wide>
+        <Heading eyebrow={f.eyebrow} title={f.title} lead={f.lead} />
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          {/* Custos */}
+          <section
+            className="nc-rise rounded-3xl border border-border bg-card p-5 shadow-card"
+            style={{ animationDelay: "200ms" }}
+          >
+            <h3 className="font-display text-lg font-bold">{f.costsTitle}</h3>
+            <ul className="mt-3 space-y-2.5">
+              {FIN_COSTS.map((v, i) => (
+                <li key={f.costs[i]}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="text-foreground">{f.costs[i]}</span>
+                    <span className="font-semibold tabular-nums">{money(v)}</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="nc-grow-x h-full rounded-full bg-accent"
+                      style={{
+                        width: `${Math.max(3, (v / FIN_TOTAL) * 100)}%`,
+                        animationDelay: `${400 + i * 120}ms`,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex items-baseline justify-between border-t border-border pt-3">
+              <span className="text-sm font-semibold text-muted-foreground">{f.totalLabel}</span>
+              <span className="font-display text-2xl font-extrabold text-foreground">
+                {money(FIN_TOTAL)}
+                <span className="text-xs font-medium text-muted-foreground">{f.perMonth}</span>
+              </span>
+            </div>
+          </section>
+
+          {/* Receita com profissionais */}
+          <section
+            className="nc-rise rounded-3xl border border-accent/30 bg-accent-soft/40 p-5 shadow-card"
+            style={{ animationDelay: "320ms" }}
+          >
+            <h3 className="font-display text-lg font-bold">{f.proTitle}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{f.proPrice}</p>
+            <ul className="mt-3 space-y-2.5">
+              {FIN_PRO_STEPS.map((n, i) => {
+                const revenue = n * FIN_FEE;
+                const covered = revenue >= FIN_TOTAL - 50;
+                return (
+                  <li key={n}>
+                    <div className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="text-foreground">
+                        {n} {f.proUnit}
+                      </span>
+                      <span
+                        className={`font-semibold tabular-nums ${covered ? "text-accent" : ""}`}
+                      >
+                        {money(revenue)}
+                      </span>
+                    </div>
+                    <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-card">
+                      <div
+                        className="nc-grow-x h-full rounded-full bg-primary"
+                        style={{
+                          width: `${Math.min(100, (revenue / FIN_TOTAL) * 100)}%`,
+                          animationDelay: `${500 + i * 140}ms`,
+                        }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="mt-3 text-xs font-semibold text-foreground/80">
+              {f.costLine}: {money(FIN_TOTAL)}
+            </p>
+            <p className="mt-2 rounded-2xl bg-card/80 p-3 text-sm font-medium leading-snug">
+              {f.proCover}
+            </p>
+          </section>
+
+          {/* Anúncios */}
+          <section
+            className="nc-rise rounded-3xl border border-border bg-card p-5 shadow-card"
+            style={{ animationDelay: "440ms" }}
+          >
+            <h3 className="font-display text-lg font-bold">{f.adsTitle}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{f.adsRate}</p>
+            <p className="mt-4 text-sm leading-snug">{fill(f.adsAlone, { n: int(adsAlone) })}</p>
+            <p className="mt-3 rounded-2xl bg-secondary/60 p-3 text-sm leading-snug">
+              {fill(f.adsWith, { gap: money(gap), n: int(adsGap), d: int(perDay) })}
+            </p>
+            <div className="mt-4 border-t border-border pt-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-accent">
+                {f.otherTitle}
+              </h4>
+              <p className="mt-1 text-sm text-muted-foreground">{f.otherText}</p>
+            </div>
+          </section>
+        </div>
+      </Frame>
+    </Scene>
+  );
+}
+
 // ───────────────────────── 10. Curso ─────────────────────────
 
 const COURSE_ICONS: LucideIcon[] = [Smartphone, Atom, GitBranch, Presentation];
@@ -1144,6 +1276,13 @@ const PART_SLIDES: Draft[][] = [
       ninaAction: "think",
       label: (c) => c.canvas.eyebrow,
       render: Canvas,
+    },
+    {
+      id: "financeiro",
+      nina: (c) => c.finance.nina,
+      ninaAction: "think",
+      label: (c) => c.finance.eyebrow,
+      render: Finance,
     },
   ],
   // 3 · Alice: mercado (personas e concorrentes).
