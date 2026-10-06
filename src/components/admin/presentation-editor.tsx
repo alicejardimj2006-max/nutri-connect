@@ -6,6 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2, Upload, X } from "lucide-react";
 import { btnCls, btnDanger, btnPrimary, inputCls } from "@/components/admin/admin-ui";
+import { SlideBuilder } from "@/components/admin/presentation-builder";
+import { makeSlide, duplicateSlide, TEMPLATES, type CustomSlide } from "@/lib/custom-slides";
 import { adminRpc } from "@/lib/admin-api";
 import { supabase } from "@/integrations/supabase/client";
 import { PresentationDeck } from "@/components/presentation/deck";
@@ -106,6 +108,12 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
   const [target, setTarget] = useState<Target | null>(null);
   const [drawer, setDrawer] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [currentSlide, setCurrentSlide] = useState<string | null>(null);
+  const [focus, setFocus] = useState<{ id: string; n: number } | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addPart, setAddPart] = useState(0);
+  const [addTemplate, setAddTemplate] = useState("titulo");
 
   const byKey = useMemo(() => new Map((rows.data ?? []).map((r) => [r.key, r])), [rows.data]);
   const savedWorks = useMemo(
@@ -195,6 +203,64 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
       setLayoutEdit(null);
     });
 
+  // ── Slides personalizados ─────────────────────────────────────────────────
+  const activeCustom = layout.custom.find((s) => s.id === currentSlide) ?? null;
+
+  const updateCustom = (id: string, fn: (s: CustomSlide) => CustomSlide) =>
+    setLayout((cur) => ({ ...cur, custom: cur.custom.map((s) => (s.id === id ? fn(s) : s)) }));
+
+  const addCustom = (part: number, template: string) => {
+    const slide = makeSlide(part, template, `Slide ${layout.custom.length + 1}`);
+    setLayout((cur) => ({ ...cur, custom: [...cur.custom, slide] }));
+    setFocus({ id: slide.id, n: Date.now() });
+    setCurrentSlide(slide.id);
+    setAddOpen(false);
+  };
+
+  const duplicateCustom = (id: string) => {
+    const src = layout.custom.find((s) => s.id === id);
+    if (!src) return;
+    const copy = duplicateSlide(src);
+    setLayout((cur) => ({ ...cur, custom: [...cur.custom, copy] }));
+    setFocus({ id: copy.id, n: Date.now() });
+    setCurrentSlide(copy.id);
+  };
+
+  const deleteCustom = (id: string) => {
+    if (!window.confirm("Excluir este slide? Essa mudança vale depois de publicar.")) return;
+    setLayout((cur) => ({
+      ...cur,
+      custom: cur.custom.filter((s) => s.id !== id),
+      hidden: cur.hidden.filter((x) => x !== id),
+      order: Object.fromEntries(
+        Object.entries(cur.order).map(([part, ids]) => [part, ids.filter((x) => x !== id)]),
+      ),
+    }));
+    setSelectedBlock(null);
+    setCurrentSlide(null);
+  };
+
+  const uploadBlockImage = async (file: File): Promise<string | null> => {
+    if (!PHOTO_TYPES.includes(file.type)) {
+      toast.error("Use uma imagem JPEG, PNG ou WebP.");
+      return null;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      toast.error("A imagem passa de 3 MB.");
+      return null;
+    }
+    const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    const path = `blocks/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { contentType: file.type, upsert: false });
+    if (error) {
+      toast.error(`Não foi possível enviar a imagem: ${error.message}`);
+      return null;
+    }
+    return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  };
+
   const changeLocale = (next: Locale) => {
     if (next === locale) return;
     if (dirty && !window.confirm("Há alterações não salvas. Trocar de idioma mesmo assim?")) return;
@@ -248,8 +314,21 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
     layout,
     onText: (path) => setTarget({ kind: "text", path }),
     onPhoto: (index) => setTarget({ kind: "photo", index }),
+    selectedBlock,
+    onSelectBlock: setSelectedBlock,
+    onPatchBlock: (slideId, blockId, patch) =>
+      updateCustom(slideId, (s) => ({
+        ...s,
+        blocks: s.blocks.map((b) => (b.id === blockId ? { ...b, ...patch } : b)),
+      })),
+    onCurrentSlide: setCurrentSlide,
+    focus,
   };
 
+  const allSlides = [
+    ...SLIDES,
+    ...layout.custom.map((c) => ({ id: c.id, part: c.part, label: () => c.name })),
+  ];
   const textValue = target?.kind === "text" ? getPath(work, target.path) : undefined;
   const item = target?.kind === "text" ? listOf(target.path) : null;
   const itemList = item ? (getPath(work, item.listPath) as unknown[]) : null;
@@ -266,6 +345,9 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
           numa foto para editar
         </span>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <button type="button" className={btnCls} onClick={() => setAddOpen((o) => !o)}>
+            <Plus className="h-3.5 w-3.5" /> Novo slide
+          </button>
           <button type="button" className={btnCls} onClick={() => setDrawer((d) => !d)}>
             {drawer ? "Fechar ordem" : "Ordem dos slides"}
           </button>
@@ -300,7 +382,66 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Painel do texto clicado */}
-      {target?.kind === "text" && typeof textValue === "string" && (
+      {/* Criar slide: parte e modelo pronto */}
+      {addOpen && (
+        <div className="fixed left-3 top-32 z-[80] w-[min(320px,calc(100vw-1.5rem))] space-y-3 rounded-2xl border border-border bg-card p-4 shadow-soft">
+          <p className="text-sm font-semibold">Novo slide</p>
+          <select
+            className={inputCls}
+            value={addPart}
+            onChange={(e) => setAddPart(Number(e.target.value))}
+          >
+            {PRESENTERS.map((p, i) => (
+              <option key={p.name} value={i}>
+                {i + 1} · {p.name}
+              </option>
+            ))}
+          </select>
+          <div className="grid grid-cols-2 gap-2">
+            {TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                aria-pressed={addTemplate === t.id}
+                onClick={() => setAddTemplate(t.id)}
+                className={`${btnCls} ${addTemplate === t.id ? "border-accent bg-accent-soft" : ""}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button type="button" className={btnCls} onClick={() => setAddOpen(false)}>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className={btnPrimary}
+              onClick={() => addCustom(addPart, addTemplate)}
+            >
+              Criar slide
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Slide montado com blocos: o painel acompanha o slide que está na tela */}
+      {activeCustom && (
+        <div className="fixed bottom-28 right-3 top-32 z-[80] w-[min(360px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-border bg-card p-4 shadow-soft">
+          <SlideBuilder
+            slide={activeCustom}
+            locale={locale}
+            selected={selectedBlock}
+            onSelect={setSelectedBlock}
+            onSlide={(fn) => updateCustom(activeCustom.id, fn)}
+            onDeleteSlide={() => deleteCustom(activeCustom.id)}
+            onDuplicateSlide={() => duplicateCustom(activeCustom.id)}
+            onUpload={uploadBlockImage}
+          />
+        </div>
+      )}
+
+      {target?.kind === "text" && !activeCustom && typeof textValue === "string" && (
         <div className="fixed bottom-28 right-3 z-[80] max-h-[50vh] w-[min(440px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-border bg-card p-4 shadow-soft">
           <div className="mb-2 flex items-start justify-between gap-2">
             <p className="font-mono text-[11px] text-muted-foreground">{target.path}</p>
@@ -477,7 +618,7 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
           </p>
           {PRESENTERS.map((p, part) => {
             const items = orderSlides(
-              SLIDES.filter((s) => s.part === part),
+              allSlides.filter((s) => s.part === part),
               layout,
             );
             const visible = items.filter((s) => !layout.hidden.includes(s.id)).length;

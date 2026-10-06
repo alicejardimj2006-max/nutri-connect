@@ -1338,3 +1338,19 @@ html[data-rails="on"]
   :is(.sm\:grid-cols-3, .md\:grid-cols-3, .lg\:grid-cols-3, .xl\:grid-cols-3) {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
 }
+
+/* Transições entre slides personalizados (escolhidas por slide no editor) */
+@keyframes nc-tr-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes nc-tr-zoom {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.nc-tr-fade {
+  animation: nc-tr-fade 0.5s ease both;
+}
+.nc-tr-zoom {
+  animation: nc-tr-zoom 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
 import type { Locale } from "@/lib/i18n/locales";
+import { readCustom, type Block, type CustomSlide } from "@/lib/custom-slides";
 
 /** Chave de cada documento em presentation_docs: um por idioma e um para o layout. */
 export type PresentationKey = Locale | "layout";
@@ -22,9 +23,11 @@ export interface PresentationLayout {
   hidden: string[];
   /** Índice do integrante (0–4) → URL da foto. */
   avatars: Record<string, string>;
+  /** Slides personalizados (montados com blocos), na ordem em que foram criados. */
+  custom: CustomSlide[];
 }
 
-export const EMPTY_LAYOUT: PresentationLayout = { order: {}, hidden: [], avatars: {} };
+export const EMPTY_LAYOUT: PresentationLayout = { order: {}, hidden: [], avatars: {}, custom: [] };
 
 export const PRESENTATION_KEYS: PresentationKey[] = ["pt-BR", "en", "es", "fr", "layout"];
 
@@ -70,6 +73,7 @@ export function readLayout(raw: unknown): PresentationLayout {
     order: r.order && typeof r.order === "object" ? r.order : {},
     hidden: Array.isArray(r.hidden) ? r.hidden.filter((x) => typeof x === "string") : [],
     avatars: r.avatars && typeof r.avatars === "object" ? r.avatars : {},
+    custom: readCustom(r.custom),
   };
 }
 
@@ -278,4 +282,17 @@ export interface DeckEditor {
   onText: (path: string, rect: DOMRect) => void;
   /** Clique numa foto da equipe (índice do integrante). */
   onPhoto: (index: number, rect: DOMRect) => void;
+  /** Bloco selecionado num slide personalizado. */
+  selectedBlock?: string | null;
+  onSelectBlock?: (blockId: string | null) => void;
+  /** Mudança de posição ou tamanho de um bloco (arrastar ou redimensionar). */
+  onPatchBlock?: (
+    slideId: string,
+    blockId: string,
+    patch: Partial<Pick<Block, "x" | "y" | "w" | "h">>,
+  ) => void;
+  /** Slide que está na tela agora (para o painel saber o que mostrar). */
+  onCurrentSlide?: (slideId: string) => void;
+  /** Pede para mostrar um slide (o n muda a cada pedido, mesmo para o mesmo slide). */
+  focus?: { id: string; n: number } | null;
 }

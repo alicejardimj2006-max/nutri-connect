@@ -18,8 +18,10 @@ import {
 } from "@/lib/presentation-content";
 import { StaticContext } from "./effects";
 import { AvatarContext } from "./avatar-context";
+import { CustomSlideView, type CanvasEditing } from "./custom-slide";
+import { type CustomSlide } from "@/lib/custom-slides";
 import { PRESENTERS, PresenterAvatar } from "./parts";
-import { SLIDES as ALL_SLIDES, type SlideApi } from "./slides";
+import { SLIDES as ALL_SLIDES, type SlideApi, type SlideDef } from "./slides";
 
 const SWIPE_MIN = 60;
 
@@ -62,7 +64,36 @@ export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
     () => editor?.layout ?? readLayout(published?.layout),
     [editor?.layout, published],
   );
-  const slides = useMemo(() => arrangeSlides(ALL_SLIDES, layout), [layout]);
+  // Slides montados com blocos entram na mesma lista, na ordem de cada parte.
+  const selectedBlock = editor?.selectedBlock ?? null;
+  const customDefs = useMemo<SlideDef[]>(
+    () =>
+      layout.custom.map((c: CustomSlide) => ({
+        id: c.id,
+        part: c.part,
+        nina: () => "",
+        hideNarrator: true,
+        label: () => c.name,
+        render: () => (
+          <CustomSlideView
+            slide={c}
+            locale={locale}
+            editing={
+              isEditing
+                ? ({
+                    selected: selectedBlock,
+                    onSelect: (id) => editor?.onSelectBlock?.(id),
+                    onPatch: (blockId, patch) => editor?.onPatchBlock?.(c.id, blockId, patch),
+                  } satisfies CanvasEditing)
+                : undefined
+            }
+          />
+        ),
+      })),
+    [layout.custom, locale, isEditing, selectedBlock, editor],
+  );
+  const pool = useMemo(() => [...ALL_SLIDES, ...customDefs], [customDefs]);
+  const slides = useMemo(() => arrangeSlides(pool, layout), [pool, layout]);
   const partStarts = useMemo(() => partStartsOf(slides, PRESENTERS.length), [slides]);
   // A direção decide de que lado o slide entra na animação.
   const [{ index, direction }, setPosition] = useState({ index: 0, direction: 1 });
@@ -74,7 +105,33 @@ export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
   const hashApplied = useRef(false);
 
   const total = slides.length;
-  const slide = slides[index];
+  const slide = slides[Math.min(index, slides.length - 1)];
+  // Transição do slide: a escolhida no editor, ou deslizar (padrão) para os slides prontos.
+  const customOf = layout.custom.find((c) => c.id === slide.id);
+  const transitionClass =
+    customOf?.transition === "fade"
+      ? "nc-tr-fade"
+      : customOf?.transition === "zoom"
+        ? "nc-tr-zoom"
+        : customOf?.transition === "none"
+          ? ""
+          : direction === 1
+            ? "nc-slide-next"
+            : "nc-slide-prev";
+  // Pedido do editor para mostrar um slide (criado ou duplicado).
+  const focusRequest = editor?.focus;
+  useEffect(() => {
+    if (!focusRequest) return;
+    const i = slides.findIndex((s) => s.id === focusRequest.id);
+    if (i >= 0) goTo(i);
+    // Só reage a um pedido novo, não a cada mudança da lista de slides.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest]);
+  // O editor acompanha o slide que está na tela.
+  const reportSlide = editor?.onCurrentSlide;
+  useEffect(() => {
+    reportSlide?.(slide.id);
+  }, [slide.id, reportSlide]);
   const presenter = PRESENTERS[slide.part];
 
   const goTo = useCallback(
@@ -328,10 +385,7 @@ export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
           aria-roledescription="slide"
           aria-label={counter}
         >
-          <div
-            key={`${slide.id}-${locale}`}
-            className={`flex min-h-full flex-col ${direction === 1 ? "nc-slide-next" : "nc-slide-prev"}`}
-          >
+          <div key={`${slide.id}-${locale}`} className={`flex min-h-full flex-col `}>
             {slide.render(copy, api)}
           </div>
         </main>
