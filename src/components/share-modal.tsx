@@ -21,18 +21,15 @@ import {
   Lock,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import {
   CATEGORIES,
   initials,
-  isCommunityAdmin,
   normalizeBlockOrder,
   type Post,
   type PostBlock,
   RECIPE_CATEGORIES,
   type PostType,
 } from "@/lib/community";
-import { createCommunityRemote } from "@/lib/community-remote";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +40,7 @@ import {
 import { ImageEditor, type ImageEdits } from "@/components/image-editor";
 import { PostCard } from "@/components/community-cards";
 import { useActiveTheme, useCreatePost } from "@/lib/social/feed-queries";
+import { useCommunities, useCreateCommunity } from "@/lib/social/communities-queries";
 import type { PostAudience } from "@/lib/social/feed";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
@@ -253,12 +251,17 @@ function PinnedCard({
 export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode }) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, profiles } = useCommunity();
   const [open, setOpen] = useState(false);
 
-  // Só usuários criam comunidades, e cada pessoa administra uma por vez.
-  const isProfessional = profiles.find((p) => p.userId === user?.id)?.role === "profissional";
-  const alreadyAdmin = !!user && isCommunityAdmin(user.id, communities);
+  // Só usuários criam comunidades, e cada pessoa administra uma por vez (o banco também exige).
+  const myCommunities = useCommunities(true, !!user && open);
+  const createCommunity = useCreateCommunity();
+  const isProfessional = !!user?.professional;
+  const alreadyAdmin =
+    !!user &&
+    (myCommunities.data ?? []).some(
+      (c) => c.adminUserId === user.id || c.professionalId === user.id,
+    );
   const communityBlockReason = isProfessional
     ? t("sm.blockPro")
     : alreadyAdmin
@@ -572,16 +575,17 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
         return;
       }
       try {
-        await createCommunityRemote({
+        // Cria no banco (a capa vai para o Storage); a comunidade nasce pendente, à espera de
+        // um profissional convidado aceitar ser o admin profissional.
+        await createCommunity.mutateAsync({
           name: title.trim(),
           description: text.trim(),
-          objective: objective.trim(),
-          coverImage: image ?? "",
+          objective: objective.trim() || undefined,
+          coverImage: image,
           category: communityCategory,
         });
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t("sm.communityError"));
-        return;
+      } catch {
+        return; // o aviso de erro já é mostrado pelo hook
       }
       toast.success(t("sm.communitySent"));
       setOpen(false);

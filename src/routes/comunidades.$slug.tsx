@@ -16,19 +16,20 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import { getProfessionalInfo, isPlatformAdmin } from "@/lib/community-admin";
-import { type Actor, type Community } from "@/lib/community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
+import { communityCover, type RemoteCommunity } from "@/lib/social/communities";
 import {
-  communityCover,
-  joinCommunity,
-  leaveCommunity,
-  leaveCommunityAdmin,
-  togglePostPin,
-} from "@/lib/community-remote";
+  useCommunityBySlug,
+  useJoinCommunity,
+  useLeaveAdmin,
+  useLeaveCommunity,
+  useTogglePostPin,
+} from "@/lib/social/communities-queries";
 import { PostCard } from "@/components/community-cards";
-import { useCreatePost, useDeletePost, useFeed } from "@/lib/social/feed-queries";
+import { useCreatePost, useDeletePost, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+
+type Actor = { id: string; name: string };
 
 export const Route = createFileRoute("/comunidades/$slug")({
   head: () => ({
@@ -54,20 +55,20 @@ function CommunityFeed() {
   const { slug } = useParams({ from: "/comunidades/$slug" });
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, profiles, hydrated } = useCommunity();
   const actor: Actor | null = user ? { id: user.id, name: user.name } : null;
+  // Dados de profissional (profissão, conselho) vêm da tabela professionals; o resto, do banco.
+  const professionals = useProfessionalMap(!!user);
 
-  const community = communities.find((c) => c.slug === slug);
-  // Comunidade pendente ainda não existe publicamente: só quem a criou (ou a plataforma) a vê.
-  const hiddenPending =
-    community?.status === "pendente" &&
-    community.adminUserId !== actor?.id &&
-    !isPlatformAdmin(user);
+  // O banco já esconde comunidades pendentes de quem não pode vê-las.
+  const communityQuery = useCommunityBySlug(slug);
+  const community = communityQuery.data ?? undefined;
+  const hydrated = !communityQuery.isLoading;
   // Publicações da comunidade, do banco (fixadas primeiro).
   const remoteFeed = useFeed(
     { scope: "comunidade", community: community?.id, limit: 40 },
-    !!community?.id && !hiddenPending,
+    !!user && !!community,
   );
+  useFeedRealtime(user?.id);
   const feed = useMemo(
     () =>
       [...(remoteFeed.data ?? [])].sort((a, b) =>
@@ -84,7 +85,7 @@ function CommunityFeed() {
     );
   }
 
-  if (!community || hiddenPending) {
+  if (!community) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-2xl font-bold text-primary">{t("cf.notFound")}</h1>
@@ -101,10 +102,10 @@ function CommunityFeed() {
   const isAdminUser = !!actor && community.adminUserId === actor.id;
   const isAdminPro = !!actor && community.professionalId === actor.id;
   const isModerator = isAdminUser || isAdminPro;
-  const isMember = !!actor && community.members.some((m) => m.userId === actor.id);
+  const isMember = community.isMember;
   const canPost = !!actor && (isMember || isModerator) && community.status === "ativa";
   const pro = community.professionalId
-    ? getProfessionalInfo(profiles, community.professionalId)
+    ? professionals.map.get(community.professionalId)?.info
     : undefined;
 
   const coverImage = communityCover(community);
@@ -163,7 +164,7 @@ function CommunityFeed() {
                 <AdminPerson
                   label={t("comunidades.adminUser")}
                   userId={community.adminUserId}
-                  name={community.adminUserName}
+                  name={community.adminName}
                   vacantText={t("comunidades.awaitingNomination")}
                 />
                 <AdminPerson
@@ -194,7 +195,7 @@ function CommunityFeed() {
 
             <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
               <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
-                <Users className="h-4 w-4 text-accent" /> {community.members.length}{" "}
+                <Users className="h-4 w-4 text-accent" /> {community.memberCount}{" "}
                 {t("comunidades.members")}
               </span>
 
@@ -227,7 +228,7 @@ function CommunityFeed() {
       )}
 
       {canPost ? (
-        <Composer communityId={community.id} actor={actor} />
+        <Composer communityId={community.id} />
       ) : (
         <p className="mt-6 rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
           {!actor ? (
@@ -273,7 +274,7 @@ function MembershipAction({
   isPro,
 }: {
   variant: "cover" | "inline";
-  community: Community;
+  community: RemoteCommunity;
   actor: Actor;
   isMember: boolean;
   isAdmin: boolean;
@@ -281,6 +282,9 @@ function MembershipAction({
 }) {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const join = useJoinCommunity();
+  const leave = useLeaveCommunity();
+  const leaveAdmin = useLeaveAdmin();
   const cover = variant === "cover";
   const base = cover
     ? "hidden sm:inline-flex rounded-full px-5 py-2.5 text-sm font-bold shadow-soft transition"
@@ -315,13 +319,14 @@ function MembershipAction({
           <AlertDialogFooter>
             <AlertDialogCancel>{t("cf.keepAdmin")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                void leaveCommunityAdmin(community.id)
-                  .then(() => {
-                    toast.success(t("cf.leftToast"));
-                    navigate({ to: "/comunidades" });
-                  })
-                  .catch((err) => toast.error(err instanceof Error ? err.message : String(err)));
+              onClick={async () => {
+                try {
+                  await leaveAdmin.mutateAsync(community.id);
+                  toast.success(t("cf.leftToast"));
+                  navigate({ to: "/comunidades" });
+                } catch {
+                  // o aviso de erro já é mostrado pelo hook
+                }
               }}
             >
               {t("cf.leaveAdmin")}
@@ -335,19 +340,16 @@ function MembershipAction({
   return (
     <button
       type="button"
-      onClick={() =>
-        void (
-          isMember ? leaveCommunity(community.id, actor.id) : joinCommunity(community.id, actor.id)
-        ).catch((err) => toast.error(err instanceof Error ? err.message : String(err)))
-      }
-      className={`${base} ${isMember ? secondary : primary}`}
+      disabled={join.isPending || leave.isPending}
+      onClick={() => (isMember ? leave.mutate(community.id) : join.mutate(community.id))}
+      className={`${base} ${isMember ? secondary : primary} disabled:opacity-60`}
     >
       {isMember ? t("cf.leaveCommunity") : t("cf.join")}
     </button>
   );
 }
 
-function Composer({ communityId }: { communityId: string; actor: Actor }) {
+function Composer({ communityId }: { communityId: string }) {
   const { t } = useI18n();
   const create = useCreatePost();
   const [text, setText] = useState("");
@@ -433,6 +435,7 @@ function ModeratorBar({
 }) {
   const { t } = useI18n();
   const remove = useDeletePost();
+  const togglePin = useTogglePostPin();
   return (
     <div className="mb-1.5 flex items-center gap-1 px-1">
       {pinned && (
@@ -444,11 +447,7 @@ function ModeratorBar({
         <span className="ml-auto flex gap-1">
           <button
             type="button"
-            onClick={() =>
-              void togglePostPin(postId).catch((err) =>
-                toast.error(err instanceof Error ? err.message : String(err)),
-              )
-            }
+            onClick={() => togglePin.mutate(postId)}
             className="rounded-lg p-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
             aria-label={pinned ? t("cf.unpin") : t("cf.pin")}
             title={pinned ? t("cf.unpin") : t("cf.pin")}

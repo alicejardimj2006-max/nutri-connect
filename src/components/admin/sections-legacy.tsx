@@ -1,22 +1,20 @@
 import { td } from "@/lib/i18n/data";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
-import { syncVerifications } from "@/lib/profile-sync";
 import { PostImage } from "@/components/post-image";
 import { ModerationPanel } from "@/components/moderation-panel";
-import { useCommunity } from "@/hooks/use-community";
-import { useQuery } from "@tanstack/react-query";
-import { communityCandidates, designateCommunityAdmin } from "@/lib/community-remote";
-import { useFeed } from "@/lib/social/feed-queries";
-import { useI18n } from "@/hooks/use-i18n";
-import { formatDate, type Community, type VerificationRequest } from "@/lib/community";
+import { useRefreshProfessionals, useVerifications } from "@/lib/social/professionals-queries";
+import type { RemoteCommunity } from "@/lib/social/communities";
 import {
-  needsAdminUser,
-  needsProfessional,
-  rankEngagedMembers,
-  reviewVerification,
-} from "@/lib/community-admin";
+  useCommunities,
+  useCommunityCandidates,
+  useDesignateAdminUser,
+  useEngagedMembers,
+} from "@/lib/social/communities-queries";
+import { useI18n } from "@/hooks/use-i18n";
+import { formatDate, type VerificationRequest } from "@/lib/community";
+import { reviewVerification } from "@/lib/community-admin";
 
 /** Pedidos de verificação profissional (aguardando e já analisados). */
 export function VerificationsSection({
@@ -25,15 +23,12 @@ export function VerificationsSection({
   user: { id: string; name: string; isAdmin?: boolean };
 }) {
   const { t } = useI18n();
-  const state = useCommunity();
-
   // Admins veem todos os pedidos, com links temporários para as imagens privadas.
-  useEffect(() => {
-    if (user.isAdmin) void syncVerifications(true);
-  }, [user.isAdmin]);
+  const verificationsQuery = useVerifications(true, !!user.isAdmin);
+  const verifications = verificationsQuery.data ?? [];
 
-  const pending = state.verifications.filter((v) => v.status === "em_analise");
-  const reviewed = state.verifications.filter((v) => v.status !== "em_analise");
+  const pending = verifications.filter((v) => v.status === "em_analise");
+  const reviewed = verifications.filter((v) => v.status !== "em_analise");
 
   return (
     <div className="space-y-6">
@@ -87,8 +82,9 @@ export function VerificationsSection({
 /** Comunidades que ainda precisam de administrador ou de profissional. */
 export function CommunitiesSection() {
   const { t } = useI18n();
-  const state = useCommunity();
-  const attention = state.communities.filter((c) => c.status !== "ativa");
+  // A plataforma enxerga todas as comunidades; as que precisam de atenção são as não ativas.
+  const communitiesQuery = useCommunities(false, true);
+  const attention = (communitiesQuery.data ?? []).filter((c) => c.status !== "ativa");
   return (
     <div className="space-y-4">
       {attention.length === 0 ? (
@@ -126,6 +122,7 @@ function VerificationCard({
   reviewer: { id: string; name: string };
 }) {
   const { t } = useI18n();
+  const refresh = useRefreshProfessionals();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -191,6 +188,7 @@ function VerificationCard({
                     approve: false,
                     reason,
                   });
+                  await refresh();
                   toast.success(t("admin.rejectedToast"));
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : t("reset.error"));
@@ -216,6 +214,7 @@ function VerificationCard({
             onClick={async () => {
               try {
                 await reviewVerification({ requestId: v.id, reviewer, approve: true });
+                await refresh();
                 toast.success(`${v.fullName} ${t("admin.approvedToast")}`);
               } catch (err) {
                 toast.error(err instanceof Error ? err.message : t("reset.error"));
@@ -238,23 +237,17 @@ function VerificationCard({
   );
 }
 
-function CommunityCase({ community: c }: { community: Community }) {
+function CommunityCase({ community: c }: { community: RemoteCommunity }) {
   const { t } = useI18n();
-  const state = useCommunity();
-  // Quem a plataforma convida (o banco calcula, com as mesmas regras do convite).
-  const pros = useQuery({
-    queryKey: ["community", "candidates", c.id],
-    queryFn: () => communityCandidates(c.id),
-    enabled: needsProfessional(c),
-  });
-  const invited = (pros.data ?? []).map((r) => ({
-    profile: { name: state.profiles.find((p) => p.userId === r.user_id)?.name ?? "…" },
-  }));
-  // Engajamento dos membros a partir das publicações reais da comunidade.
-  const feed = useFeed({ scope: "comunidade", community: c.id, limit: 100 }, needsAdminUser(c));
-  const candidates = needsAdminUser(c)
-    ? rankEngagedMembers(c, { ...state, posts: feed.data ?? [] })
-    : [];
+  // Faltam um profissional (convidados calculados no banco) e/ou um admin usuário (membros mais
+  // engajados). Pendente e suspensa sem profissional precisam de um; suspensa sem admin, do outro.
+  const needsPro = !c.professionalId && (c.status === "pendente" || c.status === "suspensa");
+  const needsUser = !c.adminUserId && c.status === "suspensa";
+  const invitedQuery = useCommunityCandidates(c.id, needsPro);
+  const engagedQuery = useEngagedMembers(c.id, needsUser);
+  const designate = useDesignateAdminUser();
+  const invited = invitedQuery.data ?? [];
+  const candidates = engagedQuery.data ?? [];
 
   return (
     <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
@@ -268,7 +261,7 @@ function CommunityCase({ community: c }: { community: Community }) {
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{td(c.category)}</p>
 
-      {needsProfessional(c) && (
+      {needsPro && (
         <div className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wider text-foreground">
             {t("admin.missingPro")}
@@ -277,14 +270,14 @@ function CommunityCase({ community: c }: { community: Community }) {
             <p className="mt-1 text-sm text-muted-foreground">{t("admin.noProAvailable")}</p>
           ) : (
             <p className="mt-1 text-sm text-muted-foreground">
-              {t("admin.invitedTo")} {invited.map((r) => r.profile.name).join(", ")}.{" "}
+              {t("admin.invitedTo")} {invited.map((r) => r.name).join(", ")}.{" "}
               {t("admin.firstToAccept")}
             </p>
           )}
         </div>
       )}
 
-      {needsAdminUser(c) && (
+      {needsUser && (
         <div className="mt-4">
           <p className="text-xs font-bold uppercase tracking-wider text-foreground">
             {t("admin.missingUser")}
@@ -294,10 +287,7 @@ function CommunityCase({ community: c }: { community: Community }) {
           ) : (
             <ul className="mt-2 divide-y divide-border/60 rounded-xl border border-border/70">
               {candidates.map((m) => (
-                <li
-                  key={m.userId}
-                  className="flex flex-wrap items-center justify-between gap-2 p-3"
-                >
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <span className="text-sm text-foreground">
                     {m.name}{" "}
                     <span className="text-xs text-muted-foreground">
@@ -307,15 +297,16 @@ function CommunityCase({ community: c }: { community: Community }) {
                   </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      void designateCommunityAdmin(c.id, m.userId)
-                        .then(() => toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`))
-                        .catch((err) =>
-                          toast.error(
-                            err instanceof Error ? err.message : t("admin.designateError"),
-                          ),
-                        );
-                    }}
+                    disabled={designate.isPending}
+                    onClick={() =>
+                      designate.mutate(
+                        { communityId: c.id, userId: m.id },
+                        {
+                          onSuccess: () =>
+                            toast.success(`${m.name} ${t("admin.designated")} ${c.name}.`),
+                        },
+                      )
+                    }
                     className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition hover:bg-accent/90"
                   >
                     {t("admin.designate")}

@@ -30,7 +30,12 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
-import { useCommunity } from "@/hooks/use-community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
+import { useCommunities } from "@/lib/social/communities-queries";
+import type { RemoteChallenge } from "@/lib/social/challenges";
+import { ThemePoll } from "@/components/theme-poll";
+import { formatWeekStart, localizeTheme, type RemoteTheme } from "@/lib/social/themes";
+import { useJoinChallenge, useLeaveChallenge } from "@/lib/social/challenges-queries";
 import {
   useAddComment,
   useDeleteComment,
@@ -41,17 +46,11 @@ import {
   type Post,
   type PostBlock,
   normalizeBlockOrder,
-  type WeeklyTheme,
-  type Challenge,
-  toggleSupport,
-  togglePrepared,
-  addComment,
   formatDate,
   getAvatarSrc,
   initials,
 } from "@/lib/community";
 import { EmojiIcon } from "@/components/emoji-icon";
-import { errorText, joinChallenge, leaveChallenge, votePoll } from "@/lib/community-remote";
 
 interface PostCardProps {
   post: Post;
@@ -60,13 +59,13 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities, profiles } = useCommunity();
+  const professionals = useProfessionalMap(!post.authorRole);
+  // Comunidade do post (link no cabeçalho): do banco.
+  const communitiesQuery = useCommunities(false, !!user && !!post.communityId);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Posts vindos do banco têm "audience"; os de comunidade ainda são locais (Etapa 4).
-  const remote = post.audience !== undefined;
   const toggleReaction = useToggleReaction();
   const addRemoteComment = useAddComment();
   const deleteRemoteComment = useDeleteComment();
@@ -86,16 +85,12 @@ export function PostCard({ post }: PostCardProps) {
       toast.info(t("common.loginToSupport"));
       return;
     }
-    if (remote) {
-      toggleReaction.mutate({
-        postId: post.id,
-        kind: "apoiar",
-        on: !hasSupported,
-        userId: user.id,
-      });
-    } else {
-      toggleSupport(post.id, user.id);
-    }
+    toggleReaction.mutate({
+      postId: post.id,
+      kind: "apoiar",
+      on: !hasSupported,
+      userId: user.id,
+    });
   };
 
   const handlePrepared = () => {
@@ -103,16 +98,12 @@ export function PostCard({ post }: PostCardProps) {
       toast.info(t("common.loginToPrepared"));
       return;
     }
-    if (remote) {
-      toggleReaction.mutate({
-        postId: post.id,
-        kind: "preparei",
-        on: !hasPrepared,
-        userId: user.id,
-      });
-    } else {
-      togglePrepared(post.id, user.id);
-    }
+    toggleReaction.mutate({
+      postId: post.id,
+      kind: "preparei",
+      on: !hasPrepared,
+      userId: user.id,
+    });
     if (!hasPrepared) {
       toast.success(t("postcard.preparedSuccess"));
     }
@@ -128,11 +119,7 @@ export function PostCard({ post }: PostCardProps) {
     if (!trimmed) return;
 
     try {
-      if (remote) {
-        await addRemoteComment.mutateAsync({ postId: post.id, text: trimmed });
-      } else {
-        addComment(post.id, { id: user.id, name: user.name }, trimmed);
-      }
+      await addRemoteComment.mutateAsync({ postId: post.id, text: trimmed });
       setCommentText("");
       toast.success(t("postcard.commentPublished"));
     } catch (err) {
@@ -145,12 +132,14 @@ export function PostCard({ post }: PostCardProps) {
   const avatarImage = getAvatarSrc(post.authorId, post.authorAvatar);
   const authorIsProfessional = post.authorRole
     ? post.authorRole === "profissional"
-    : profiles.find((p) => p.userId === post.authorId)?.role === "profissional";
+    : professionals.map.has(post.authorId);
 
-  const community = post.communityId ? communities.find((c) => c.id === post.communityId) : null;
+  const community = post.communityId
+    ? (communitiesQuery.data ?? []).find((c) => c.id === post.communityId)
+    : null;
 
   // --- RENDERS COMUNS ---
-  const underReview = remote && isOwnPost && post.hidden === true;
+  const underReview = isOwnPost && post.hidden === true;
   const reviewNotice = underReview ? (
     <p className="mb-3 flex items-center gap-1.5 rounded-xl bg-warning/15 px-3 py-2 text-xs font-medium text-warning-foreground">
       <Clock className="h-3.5 w-3.5 shrink-0" /> {t("postcard.underReview")}
@@ -200,7 +189,7 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </div>
 
-      {remote && isOwnPost && (
+      {isOwnPost && (
         <div className="shrink-0">
           {confirmDelete ? (
             <span className="flex items-center gap-1.5 text-[11px]">
@@ -269,7 +258,7 @@ export function PostCard({ post }: PostCardProps) {
                   </span>
                   <span className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     {formatDate(c.createdAt)}
-                    {remote && user && (c.authorId === user.id || isOwnPost) && (
+                    {user && (c.authorId === user.id || isOwnPost) && (
                       <button
                         type="button"
                         disabled={deleteRemoteComment.isPending}
@@ -284,7 +273,7 @@ export function PostCard({ post }: PostCardProps) {
                   </span>
                 </div>
                 <p className="text-xs leading-relaxed text-foreground/90">{c.text}</p>
-                {remote && user && c.authorId !== user.id && (
+                {user && c.authorId !== user.id && (
                   <ReportButton targetType="comment" targetId={c.id} className="mt-2" />
                 )}
               </div>
@@ -385,7 +374,7 @@ export function PostCard({ post }: PostCardProps) {
             activeClass: "bg-accent-soft text-accent",
           })}
 
-        {remote && user && !isOwnPost && (
+        {user && !isOwnPost && (
           <ReportButton targetType="post" targetId={post.id} className="mt-2" />
         )}
       </div>
@@ -575,131 +564,45 @@ export function PostCard({ post }: PostCardProps) {
 }
 
 interface WeeklyThemeCardProps {
-  theme: WeeklyTheme;
+  theme: RemoteTheme;
   compact?: boolean;
 }
 
+/** Cartão do tema da semana (do banco, no idioma da pessoa); a enquete só aparece no modo completo. */
 export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps) {
-  const { user } = useAuth();
-  const { t } = useI18n();
-  const currentUserId = user?.id || "guest";
-
-  const totalVotes = theme?.poll?.options
-    ? theme.poll.options.reduce((acc, opt) => acc + (opt.votes || 0), 0)
-    : 0;
-
-  const handleVote = (optionId: string) => {
-    if (!user) {
-      toast.info(t("weekly.loginToVote"));
-      return;
-    }
-    if (!theme) return;
-    void votePoll(theme.id, optionId, user.id)
-      .then(() => toast.success(t("weekly.voteRegistered")))
-      .catch((err) => toast.error(errorText(err)));
-  };
-
-  if (!theme) return null;
-
-  let themeImage = null;
-  if (theme.id === "tema-alimentos-frescos") {
-    themeImage = "/images/challenges/salad-bowl.jpg";
-  }
+  const { t, locale } = useI18n();
+  const text = localizeTheme(theme, locale);
+  const weekLabel = t("theme.weekOf").replace("{date}", formatWeekStart(theme.weekStart, locale));
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-card shadow-card flex flex-col">
-      {/* Capa Editorial do Tema */}
-      {themeImage && !compact && (
-        <div className="h-48 sm:h-64 w-full relative">
-          <img
-            src={themeImage}
-            alt={theme.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[10px] font-bold text-accent-foreground tracking-wide uppercase">
-              <Sparkles className="h-3 w-3" /> {theme.badge || t("weekly.badge")}
-            </span>
-          </div>
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-card via-card to-accent-soft/30">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
+            <Sparkles className="h-3.5 w-3.5" /> {text.badge || t("weekly.badge")}
+          </span>
+          <span className="text-xs font-medium text-muted-foreground">{weekLabel}</span>
         </div>
-      )}
-
-      <div
-        className={`p-6 sm:p-8 ${!themeImage || compact ? "bg-gradient-to-br from-card via-card to-accent-soft/30" : ""}`}
-      >
-        {(!themeImage || compact) && (
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground tracking-wide uppercase">
-              <Sparkles className="h-3.5 w-3.5" /> {theme.badge || t("weekly.badge")}
-            </span>
-            <span className="text-xs font-medium text-muted-foreground">{theme.currentWeek}</span>
-          </div>
-        )}
-
-        {themeImage && !compact && (
-          <div className="text-[11px] font-medium text-muted-foreground mb-3">
-            {theme.currentWeek}
-          </div>
-        )}
 
         <h2 className="text-xl sm:text-2xl font-extrabold text-foreground font-display leading-tight">
-          {theme.title}
+          {text.title}
         </h2>
         <p className="mt-2 text-sm text-foreground/80 leading-relaxed max-w-2xl">
-          {theme.description}
+          {text.description}
         </p>
 
         {/* Pergunta da Semana */}
-        {theme.questionOfTheWeek && (
+        {text.question && (
           <div className="mt-5 rounded-2xl border border-accent/20 bg-card/90 p-4 backdrop-blur-xs">
             <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
               {t("weekly.questionOfWeek")}
             </p>
-            <p className="text-sm font-medium text-foreground">“{theme.questionOfTheWeek}”</p>
+            <p className="text-sm font-medium text-foreground">“{text.question}”</p>
           </div>
         )}
 
-        {/* Enquete Interativa */}
-        {!compact && theme.poll && theme.poll.options && (
-          <div className="mt-6 border-t border-border/80 pt-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-              {t("weekly.pollPrefix")} {theme.poll.question}
-            </h3>
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {theme.poll.options.map((opt) => {
-                const hasVoted = (opt.votedUsers || []).includes(currentUserId);
-                const percentage =
-                  totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => handleVote(opt.id)}
-                    className={`group relative overflow-hidden rounded-xl border p-3 text-left transition cursor-pointer ${
-                      hasVoted
-                        ? "border-accent bg-accent-soft/40 shadow-xs"
-                        : "border-border bg-card hover:border-accent/60 hover:bg-secondary/40"
-                    }`}
-                  >
-                    <div
-                      className="absolute inset-y-0 left-0 bg-accent/15 transition-all"
-                      style={{ width: `${percentage}%` }}
-                    />
-                    <div className="relative flex items-center justify-between text-xs font-medium">
-                      <span className="text-foreground pr-2">{opt.text}</span>
-                      <span className="font-bold text-accent">{percentage}%</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-[11px] text-muted-foreground text-right">
-              {totalVotes} {t("weekly.membersParticipated")}
-            </p>
-          </div>
-        )}
+        {/* Enquete interativa */}
+        {!compact && <ThemePoll themeId={theme.id} theme={text} />}
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -716,37 +619,37 @@ export function WeeklyThemeCard({ theme, compact = false }: WeeklyThemeCardProps
 }
 
 interface ChallengeCardProps {
-  challenge: Challenge;
+  challenge: RemoteChallenge;
 }
 
 export function ChallengeCard({ challenge }: ChallengeCardProps) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const currentUserId = user?.id || "guest";
-  const participants = challenge?.participants || [];
-  const isJoined = participants.includes(currentUserId);
-  const isCompleted = (challenge?.completedBy || []).includes(currentUserId);
+  const join = useJoinChallenge();
+  const leave = useLeaveChallenge();
+  const isJoined = challenge?.joined ?? false;
+  const isCompleted = challenge?.completed ?? false;
   const totalSteps = challenge?.steps?.length || 0;
-  const completedSteps = (challenge?.progress?.[currentUserId] || []).length;
+  const completedSteps = challenge?.mySteps.length ?? 0;
 
   const handleJoin = () => {
     if (!user) {
       toast.info(t("challenge.loginToJoin"));
       return;
     }
-    void (isJoined ? leaveChallenge(challenge.id, user.id) : joinChallenge(challenge.id, user.id))
-      .then(() =>
-        isJoined ? toast.info(t("challenge.left")) : toast.success(t("challenge.joined")),
-      )
-      .catch((err) => toast.error(errorText(err)));
+    if (isJoined) {
+      leave.mutate(challenge.id, { onSuccess: () => toast.info(t("challenge.left")) });
+    } else {
+      join.mutate(challenge.id, { onSuccess: () => toast.success(t("challenge.joined")) });
+    }
   };
 
   if (!challenge) return null;
 
-  let challengeImage = null;
-  if (challenge.id === "desafio-3-frescos") {
-    challengeImage = "/images/challenges/salad-bowl.jpg";
-  }
+  // Só o desafio dos "3 alimentos frescos" tem foto de capa; os demais usam o cabeçalho colorido.
+  const challengeImage = /3 alimentos frescos/i.test(challenge.title)
+    ? "/images/challenges/salad-bowl.jpg"
+    : null;
 
   return (
     <div className="rounded-2xl border border-border bg-card shadow-xs flex flex-col justify-between transition hover:shadow-sm overflow-hidden">
@@ -825,7 +728,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             <EmojiIcon emoji="👥" className="mr-1 inline h-3.5 w-3.5 align-[-2px]" />
-            {participants.length} {t("challenge.participating")}
+            {challenge.participantCount} {t("challenge.participating")}
           </span>
           <Link
             to="/desafios/$challengeId"
@@ -837,6 +740,7 @@ export function ChallengeCard({ challenge }: ChallengeCardProps) {
         </div>
         <button
           type="button"
+          disabled={join.isPending || leave.isPending}
           onClick={handleJoin}
           className={`w-full rounded-full px-4 py-1.5 text-xs font-semibold transition cursor-pointer ${
             isJoined

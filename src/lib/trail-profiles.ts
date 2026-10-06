@@ -3,6 +3,7 @@ import { t } from "./i18n";
 // sem rede social). Cada perfil tem o seu próprio progresso (veja setTrailScope em learning-trail.ts).
 import { useCallback, useEffect, useState } from "react";
 import type { CharacterId, TrailProfile } from "./trail-types";
+import { pushKidCreated, pushKidRemoved } from "./trail-sync";
 
 export const ADULT_PROFILE_ID = "adult";
 export const MAX_KID_PROFILES = 4;
@@ -57,18 +58,21 @@ export function addKidProfile(userId: string, userName: string, name: string, av
   const kids = current.filter((p) => p.kind === "kid");
   if (kids.length >= MAX_KID_PROFILES) throw new Error(t("err.kidLimit"));
   const profile: TrailProfile = {
-    id: `kid-${Date.now().toString(36)}`,
+    // Mesmo id local e no banco (uuid), então o progresso do perfil nunca fica sem dono.
+    id: crypto.randomUUID(),
     name: name.trim() || "Criança",
     kind: "kid",
     avatar,
   };
   saveKids(userId, [...kids, profile]);
+  pushKidCreated(userId, profile);
   return profile;
 }
 
 export function removeKidProfile(userId: string, userName: string, profileId: string) {
   const kids = loadProfiles(userId, userName).filter((p) => p.kind === "kid" && p.id !== profileId);
   saveKids(userId, kids);
+  pushKidRemoved(userId, profileId);
   localStorage.removeItem(`nutriconnect_trail_v3:${userId}:${profileId}`);
   if (getActiveProfileId(userId) === profileId) setActiveProfileId(userId, ADULT_PROFILE_ID);
 }

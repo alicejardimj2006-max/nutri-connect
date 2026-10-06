@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Award, BookOpen, Flame, Sparkles, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { ChallengeCard } from "@/components/community-cards";
 import {
   TrailHeader,
@@ -16,7 +15,15 @@ import {
 import { ProfileSwitcher } from "@/components/trail-profile-switcher";
 import { LearningTrailMap, StopSheet } from "@/components/trail-map";
 import { LessonModal } from "@/components/lesson-modal";
-import { getEarnedBadges, getUserXP, getUserLevel, getUserStreak } from "@/lib/community";
+import { getUserLevel } from "@/lib/community";
+import {
+  challengeStreak,
+  challengeXP as computeChallengeXP,
+  completedCount,
+  earnedBadges,
+} from "@/lib/social/challenge-stats";
+import { useChallenges } from "@/lib/social/challenges-queries";
+import { useCommunities } from "@/lib/social/communities-queries";
 import {
   DAILY_GOAL_XP,
   TRAIL_CHANGE_EVENT,
@@ -63,7 +70,12 @@ const TABS: { key: Tab; label: DictKey; icon: React.ReactNode }[] = [
 function DesafiosIndexPage() {
   const { user } = useAuth();
   const { t, locale } = useI18n();
-  const { challenges, communities, hydrated } = useCommunity();
+  // Desafios e comunidades vêm do banco; o progresso é o da pessoa logada.
+  const challengesQuery = useChallenges(!!user);
+  const myCommunities = useCommunities(true, !!user);
+  const challenges = useMemo(() => challengesQuery.data ?? [], [challengesQuery.data]);
+  const communities = useMemo(() => myCommunities.data ?? [], [myCommunities.data]);
+  const hydrated = !challengesQuery.isLoading;
   const [tab, setTab] = useState<Tab>("trilha");
 
   const currentUserId = user?.id || "guest";
@@ -118,22 +130,19 @@ function DesafiosIndexPage() {
 
   // ── XP combinado (trilha + desafios); desafios sociais só contam no perfil do responsável ──
   const challengeXP = useMemo(
-    () => (active.kind === "adult" ? getUserXP(currentUserId, challenges) : 0),
-    [active.kind, currentUserId, challenges],
+    () => (active.kind === "adult" ? computeChallengeXP(challenges) : 0),
+    [active.kind, challenges],
   );
   const totalXP = trailProgress.totalXP + challengeXP;
   const levelInfo = useMemo(() => getUserLevel(totalXP), [totalXP]);
   const streak = useMemo(
     () =>
       active.kind === "adult"
-        ? Math.max(getActiveStreak(trailProgress), getUserStreak(currentUserId, challenges))
+        ? Math.max(getActiveStreak(trailProgress), challengeStreak(challenges))
         : getActiveStreak(trailProgress),
-    [active.kind, trailProgress, currentUserId, challenges],
+    [active.kind, trailProgress, challenges],
   );
-  const earnedBadges = useMemo(
-    () => getEarnedBadges(currentUserId, challenges),
-    [currentUserId, challenges],
-  );
+  const badges = useMemo(() => earnedBadges(challenges), [challenges]);
   const totals = useMemo(
     () => getTrailTotals(trailProgress, active.kind),
     [trailProgress, active.kind],
@@ -147,23 +156,21 @@ function DesafiosIndexPage() {
   const popularChallenges = useMemo(
     () =>
       [...challenges]
-        .filter((c) => c.createdByProfessionalId)
-        .sort((a, b) => b.participants.length - a.participants.length),
+        .filter((c) => c.createdById)
+        .sort((a, b) => b.participantCount - a.participantCount),
     [challenges],
   );
 
   // Comunidades do usuário com desafios
   const userCommunityChallenges = useMemo(() => {
-    const userCommunities = communities.filter((c) =>
-      c.members.some((m) => m.userId === currentUserId),
-    );
-    return userCommunities
+    // `communities` já são só as comunidades de que a pessoa participa.
+    return communities
       .map((community) => {
         const commChallenges = challenges.filter((c) => c.communityId === community.id);
         return { community, challenges: commChallenges };
       })
       .filter((g) => g.challenges.length > 0);
-  }, [communities, challenges, currentUserId]);
+  }, [communities, challenges]);
 
   const startLevel = (stop: Stop, unit: Unit, level: LevelNumber) => {
     setSheet(null);
@@ -222,13 +229,12 @@ function DesafiosIndexPage() {
                 <span>{t("dz.achievements")}</span>
               </h2>
               <span className="text-[10px] text-muted-foreground font-medium">
-                {totals.levels} {t("dz.levelsAnd")}{" "}
-                {challenges.filter((c) => c.completedBy.includes(currentUserId)).length}{" "}
+                {totals.levels} {t("dz.levelsAnd")} {completedCount(challenges)}{" "}
                 {t("dz.challengesDone")}
               </span>
             </div>
             <div className="flex flex-wrap gap-3">
-              {earnedBadges.map((badge) => (
+              {badges.map((badge) => (
                 <div
                   key={badge.label}
                   className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition ${
@@ -336,19 +342,17 @@ function DesafiosIndexPage() {
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {popularChallenges.map((c) => (
                       <div key={c.id} className="relative">
-                        {c.participants.length >= 10 && (
+                        {c.participantCount >= 10 && (
                           <div className="absolute top-3 right-3 z-10">
                             <PopularBadge />
                           </div>
                         )}
                         <ChallengeCard challenge={c} />
-                        {c.createdByProfessionalName && (
+                        {c.createdByName && (
                           <div className="mt-2 px-2 text-[10px] text-muted-foreground flex items-center gap-1">
                             <Sparkles className="h-3 w-3 text-accent" />
                             {t("dz.createdBy")}{" "}
-                            <span className="font-semibold text-foreground">
-                              {c.createdByProfessionalName}
-                            </span>
+                            <span className="font-semibold text-foreground">{c.createdByName}</span>
                           </div>
                         )}
                       </div>
@@ -391,7 +395,6 @@ function DesafiosIndexPage() {
                         key={community.id}
                         community={community}
                         challenges={commChallenges}
-                        userId={currentUserId}
                       />
                     ))}
                   </div>

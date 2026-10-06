@@ -13,6 +13,7 @@ import {
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { VerifiedBadge } from "@/components/person-chip";
 import { SlotPicker } from "@/components/clinical/slot-picker";
+import { MemberPlanCard } from "@/components/member-plan-card";
 import {
   Avatar,
   Card,
@@ -133,6 +134,8 @@ function ProfessionalPage() {
               {t("pro.seeProfile")}
             </Link>
           </Card>
+
+          <MemberPlanCard professionalId={professionalId} />
 
           <Card title={t("pro.howItWorks")}>
             <dl className="space-y-3 text-sm">

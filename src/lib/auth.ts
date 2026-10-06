@@ -1,7 +1,6 @@
 import { t } from "./i18n";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
-import { syncCommunityWithRemote } from "./profile-sync";
 import type { ProfessionalInfo, ProfileRole } from "./community";
 
 // Autenticação via Supabase Auth. O usuário logado (perfil + dados privados)
@@ -93,6 +92,12 @@ async function loadSessionUser() {
     : null;
 }
 
+/** Baixa perfis e progresso da trilha da conta (módulo carregado sob demanda: é grande). */
+function syncTrails(userId: string | undefined) {
+  if (!userId) return;
+  void import("./trail-sync").then((m) => m.hydrateTrails(userId));
+}
+
 /** Carrega a sessão uma única vez e passa a acompanhar login/logout. */
 export function initAuth(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
@@ -106,7 +111,7 @@ export function initAuth(): Promise<void> {
     }
     ready = true;
     emit();
-    void syncCommunityWithRemote();
+    syncTrails(currentUser?.id);
     supabase.auth.onAuthStateChange((event, session) => {
       if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
       // Não usar await dentro do callback (trava o cliente do Supabase).
@@ -115,7 +120,7 @@ export function initAuth(): Promise<void> {
           ? await fetchAuthUser(session.user.id, session.user.email ?? "")
           : null;
         emit();
-        void syncCommunityWithRemote(true);
+        syncTrails(currentUser?.id);
       }, 0);
     });
   })();
@@ -185,9 +190,12 @@ export async function loginUser(email: string, password?: string): Promise<AuthU
 }
 
 export async function signOut() {
+  const previousId = currentUser?.id;
   await supabase.auth.signOut();
   currentUser = null;
   emit();
+  // O próximo login no mesmo navegador não herda o cache da trilha desta conta.
+  if (previousId) void import("./trail-sync").then((m) => m.clearTrailCache(previousId));
 }
 
 export async function updateCurrentUser(

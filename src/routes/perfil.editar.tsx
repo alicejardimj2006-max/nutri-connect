@@ -7,7 +7,6 @@ import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { updateCurrentUser } from "@/lib/auth";
 import { JOURNEY_GOALS } from "@/lib/community";
-import { syncRemoteProfiles } from "@/lib/profile-sync";
 import { Field } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -55,9 +54,6 @@ function EditProfilePage() {
       toast.error(err instanceof Error ? err.message : t("reset.error"));
       return;
     }
-
-    // O banco é a fonte do perfil; só atualiza o nome exibido nas telas de comunidade.
-    void syncRemoteProfiles();
 
     toast.success(t("edit.updated"));
     navigate({ to: "/perfil/$userId", params: { userId: user.id } });

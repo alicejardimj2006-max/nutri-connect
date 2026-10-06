@@ -32,12 +32,20 @@ import {
 } from "lucide-react";
 import { Mascot } from "@/components/mascots";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, getUserLevel, getUserStreak, getUserXP, initials } from "@/lib/community";
+import { CATEGORIES, getUserLevel, initials } from "@/lib/community";
+import { challengeStreak, challengeXP } from "@/lib/social/challenge-stats";
+import { useChallenges } from "@/lib/social/challenges-queries";
+import {
+  useCommunities,
+  useCommunityBySlug,
+  useCommunityMembers,
+} from "@/lib/social/communities-queries";
+import { localizeTheme } from "@/lib/social/themes";
+import { useWeeklyTheme } from "@/lib/social/themes-queries";
+import { useProfessionals } from "@/lib/social/professionals-queries";
 import { setCommunityFilters, useCommunityFilters } from "@/lib/community-filters";
-import { getProfessionalInfo } from "@/lib/community-admin";
 import { formatDate, formatTime } from "@/lib/clinical/format";
 import { useAppointments, useLinks } from "@/lib/clinical/queries";
 import { LEVEL_LABEL_KEYS } from "@/lib/i18n/content";
@@ -114,14 +122,14 @@ export function useAdultTrailProgress(userId: string | undefined) {
 export function ProfileCard() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { challenges } = useCommunity();
+  const challenges = useChallenges(!!user).data ?? [];
   const trailProgress = useAdultTrailProgress(user?.id);
   if (!user) return null;
 
-  const xp = getUserXP(user.id, challenges) + (trailProgress?.totalXP ?? 0);
+  const xp = challengeXP(challenges) + (trailProgress?.totalXP ?? 0);
   const lvl = getUserLevel(xp);
   const streak = Math.max(
-    getUserStreak(user.id, challenges),
+    challengeStreak(challenges),
     trailProgress ? getActiveStreak(trailProgress) : 0,
   );
   const pct = Math.min(100, Math.round((lvl.xpInLevel / lvl.xpForNext) * 100));
@@ -166,11 +174,7 @@ export function ProfileCard() {
 export function MyCommunitiesCard() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities } = useCommunity();
-  const mine = useMemo(
-    () => (user ? communities.filter((c) => c.members.some((m) => m.userId === user.id)) : []),
-    [communities, user],
-  );
+  const mine = useCommunities(true, !!user).data ?? [];
   if (!user) return null;
   return (
     <Panel
@@ -198,7 +202,7 @@ export function MyCommunitiesCard() {
                     {c.name}
                   </span>
                   <span className="block text-[11px] text-muted-foreground">
-                    {c.members.length} {t("comunidades.members")}
+                    {c.memberCount} {t("comunidades.members")}
                   </span>
                 </span>
               </Link>
@@ -286,17 +290,19 @@ export function TrailCard() {
 }
 
 export function WeeklyThemeCard() {
-  const { t } = useI18n();
-  const { weeklyTheme, hydrated } = useCommunity();
-  if (!hydrated || !weeklyTheme) return null;
+  const { t, locale } = useI18n();
+  const { user } = useAuth();
+  const themeQuery = useWeeklyTheme("ativo", !!user);
+  const weeklyTheme = themeQuery.data ? localizeTheme(themeQuery.data, locale) : null;
+  if (!weeklyTheme) return null;
   return (
     <Panel title={weeklyTheme.badge || t("weekly.badge")}>
       <p className="font-display text-base font-bold leading-snug text-foreground">
         {weeklyTheme.title}
       </p>
-      {weeklyTheme.questionOfTheWeek && (
+      {weeklyTheme.question && (
         <p className="mt-2 rounded-xl bg-secondary/50 p-3 text-xs italic text-foreground/85">
-          “{weeklyTheme.questionOfTheWeek}”
+          “{weeklyTheme.question}”
         </p>
       )}
       <Link
@@ -312,15 +318,10 @@ export function WeeklyThemeCard() {
 export function MyChallengesCard() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { challenges } = useCommunity();
+  const challengesQuery = useChallenges(!!user);
   const mine = useMemo(
-    () =>
-      user
-        ? challenges.filter(
-            (c) => c.participants.includes(user.id) && !c.completedBy.includes(user.id),
-          )
-        : [],
-    [challenges, user],
+    () => (challengesQuery.data ?? []).filter((c) => c.joined && !c.completed),
+    [challengesQuery.data],
   );
   if (!user) return null;
   return (
@@ -335,7 +336,7 @@ export function MyChallengesCard() {
       {mine.length > 0 ? (
         <ul className="space-y-2">
           {mine.slice(0, 3).map((c) => {
-            const done = (c.progress?.[user.id] || []).length;
+            const done = c.mySteps.length;
             const total = c.steps.length;
             return (
               <li key={c.id}>
@@ -380,10 +381,10 @@ export function MyChallengesCard() {
 export function SuggestedCommunitiesCard({ limit = 3 }: { limit?: number }) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities } = useCommunity();
+  const allCommunities = useCommunities(false, !!user);
   const suggested = useMemo(
-    () => (user ? communities.filter((c) => !c.members.some((m) => m.userId === user.id)) : []),
-    [communities, user],
+    () => (allCommunities.data ?? []).filter((c) => !c.isMember && c.status !== "pendente"),
+    [allCommunities.data],
   );
   if (suggested.length === 0) return null;
   return (
@@ -418,11 +419,10 @@ export function SuggestedCommunitiesCard({ limit = 3 }: { limit?: number }) {
 export function ProfessionalsCard({ limit = 3 }: { limit?: number }) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { profiles } = useCommunity();
+  const professionals = useProfessionals(!!user);
   const pros = useMemo(
-    () =>
-      profiles.filter((p) => p.role === "profissional" && p.userId !== user?.id).slice(0, limit),
-    [profiles, user, limit],
+    () => (professionals.data ?? []).filter((p) => p.userId !== user?.id).slice(0, limit),
+    [professionals.data, user, limit],
   );
   if (pros.length === 0) return null;
   return (
@@ -436,7 +436,7 @@ export function ProfessionalsCard({ limit = 3 }: { limit?: number }) {
     >
       <ul className="space-y-1">
         {pros.map((p) => {
-          const info = getProfessionalInfo(profiles, p.userId);
+          const info = p.info;
           return (
             <li key={p.userId}>
               <Link
@@ -1140,8 +1140,7 @@ export function ProTasksCard() {
 
 export function CommunityAboutCard({ slug }: { slug: string }) {
   const tr = useTr();
-  const { communities } = useCommunity();
-  const c = communities.find((x) => x.slug === slug);
+  const c = useCommunityBySlug(slug).data;
   if (!c) return null;
   return (
     <Panel
@@ -1169,14 +1168,14 @@ export function CommunityAboutCard({ slug }: { slug: string }) {
           <dt className="text-muted-foreground">
             {tr(["Membros", "Members", "Miembros", "Membres"])}
           </dt>
-          <dd className="font-semibold text-foreground">{c.members.length}</dd>
+          <dd className="font-semibold text-foreground">{c.memberCount}</dd>
         </div>
-        {c.adminUserName && (
+        {c.adminName && (
           <div className="flex justify-between gap-3">
             <dt className="text-muted-foreground">
               {tr(["Administração", "Admin", "Administración", "Administration"])}
             </dt>
-            <dd className="truncate font-semibold text-foreground">{c.adminUserName}</dd>
+            <dd className="truncate font-semibold text-foreground">{c.adminName}</dd>
           </div>
         )}
         {c.professionalName && (
@@ -1196,17 +1195,17 @@ export function CommunityAboutCard({ slug }: { slug: string }) {
 
 export function CommunityMembersCard({ slug }: { slug: string }) {
   const tr = useTr();
-  const { communities } = useCommunity();
-  const c = communities.find((x) => x.slug === slug);
-  if (!c || c.members.length === 0) return null;
+  const c = useCommunityBySlug(slug).data;
+  const members = useCommunityMembers(c?.id).data ?? [];
+  if (!c || members.length === 0) return null;
   return (
-    <Panel title={`${tr(["Membros", "Members", "Miembros", "Membres"])} (${c.members.length})`}>
+    <Panel title={`${tr(["Membros", "Members", "Miembros", "Membres"])} (${c.memberCount})`}>
       <ul className="space-y-1">
-        {c.members.slice(0, 8).map((m) => (
-          <li key={m.userId}>
+        {members.slice(0, 8).map((m) => (
+          <li key={m.id}>
             <Link
               to="/perfil/$userId"
-              params={{ userId: m.userId }}
+              params={{ userId: m.id }}
               className="flex items-center gap-3 rounded-xl p-2 transition hover:bg-secondary"
             >
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full avatar-shape bg-primary-soft text-[11px] font-bold text-primary">
@@ -1224,10 +1223,10 @@ export function CommunityMembersCard({ slug }: { slug: string }) {
 export function ChallengeStatsCard() {
   const { user } = useAuth();
   const tr = useTr();
-  const { challenges } = useCommunity();
+  const challenges = useChallenges(!!user).data ?? [];
   if (!user) return null;
-  const joined = challenges.filter((c) => c.participants.includes(user.id));
-  const done = challenges.filter((c) => c.completedBy.includes(user.id));
+  const joined = challenges.filter((c) => c.joined);
+  const done = challenges.filter((c) => c.completed);
   const stats: [Names, number][] = [
     [["Participando", "Taking part", "Participando", "En cours"], joined.length - done.length],
     [["Concluídos", "Completed", "Completados", "Terminés"], done.length],
@@ -1251,8 +1250,8 @@ export function ChallengeStatsCard() {
 
 export function ChallengeInfoCard({ id }: { id: string }) {
   const tr = useTr();
-  const { challenges } = useCommunity();
-  const c = challenges.find((x) => x.id === id);
+  const { user } = useAuth();
+  const c = (useChallenges(!!user).data ?? []).find((x) => x.id === id);
   if (!c) return null;
   return (
     <Panel
@@ -1276,13 +1275,13 @@ export function ChallengeInfoCard({ id }: { id: string }) {
           <dt className="text-muted-foreground">
             {tr(["Participantes", "Participants", "Participantes", "Participants"])}
           </dt>
-          <dd className="font-semibold text-foreground">{c.participants.length}</dd>
+          <dd className="font-semibold text-foreground">{c.participantCount}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted-foreground">
             {tr(["Concluíram", "Completed it", "Lo completaron", "L'ont terminé"])}
           </dt>
-          <dd className="font-semibold text-foreground">{c.completedBy.length}</dd>
+          <dd className="font-semibold text-foreground">{c.completedCount}</dd>
         </div>
       </dl>
     </Panel>

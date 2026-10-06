@@ -13,25 +13,21 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
 import { useI18n } from "@/hooks/use-i18n";
-import {
-  formatDate,
-  getEarnedBadges,
-  initials,
-  type Post,
-  type PublicProfile,
-} from "@/lib/community";
-import type { AuthUser } from "@/lib/auth";
+import { formatDate, initials } from "@/lib/community";
 import { sendBrowserNotification } from "@/lib/settings";
 import { EmojiIcon } from "@/components/emoji-icon";
+import { earnedBadges as computeBadges } from "@/lib/social/challenge-stats";
 import {
-  addChallengeTipRemote,
-  errorText,
-  joinChallenge,
-  leaveChallenge,
-  toggleChallengeStepRemote,
-} from "@/lib/community-remote";
+  useAddTip,
+  useChallenge,
+  useChallengeParticipants,
+  useChallengeTips,
+  useChallenges,
+  useJoinChallenge,
+  useLeaveChallenge,
+  useSetStep,
+} from "@/lib/social/challenges-queries";
 
 export const Route = createFileRoute("/desafios/$challengeId")({
   head: () => ({
@@ -40,35 +36,26 @@ export const Route = createFileRoute("/desafios/$challengeId")({
   component: ChallengeDetailPage,
 });
 
-function resolveDisplayName(
-  userId: string,
-  profiles: PublicProfile[],
-  posts: Post[],
-  currentUser: AuthUser | null,
-  memberLabel: string,
-) {
-  if (currentUser && currentUser.id === userId) return currentUser.name;
-  const profile = profiles.find((p) => p.userId === userId);
-  if (profile) return profile.name;
-  const post = posts.find((p) => p.authorId === userId);
-  if (post) return post.authorName;
-  if (userId.startsWith("user-demo-")) {
-    return `${memberLabel} #${userId.replace("user-demo-", "")}`;
-  }
-  return memberLabel;
-}
-
 function ChallengeDetailPage() {
   const { challengeId } = useParams({ from: "/desafios/$challengeId" });
   const { user } = useAuth();
   const { t } = useI18n();
-  const { challenges, profiles, posts, hydrated } = useCommunity();
   const [tipText, setTipText] = useState("");
 
-  const challenge = challenges.find((c) => c.id === challengeId);
+  // Tudo vem do banco: o desafio (com o meu progresso), quem participa e as dicas da comunidade.
+  const challengeQuery = useChallenge(challengeId);
+  const participantsQuery = useChallengeParticipants(challengeId);
+  const tipsQuery = useChallengeTips(challengeId);
+  const allChallenges = useChallenges(!!user);
+  const join = useJoinChallenge();
+  const leave = useLeaveChallenge();
+  const setStep = useSetStep();
+  const addTip = useAddTip();
+
+  const challenge = challengeQuery.data ?? undefined;
   const currentUserId = user?.id || "guest";
 
-  if (!hydrated) {
+  if (challengeQuery.isLoading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-center text-sm text-muted-foreground">
         {t("cd.loading")}
@@ -87,23 +74,24 @@ function ChallengeDetailPage() {
     );
   }
 
-  const isJoined = challenge.participants.includes(currentUserId);
-  const isCompleted = challenge.completedBy.includes(currentUserId);
+  const isJoined = challenge.joined;
+  const isCompleted = challenge.completed;
   const totalSteps = challenge.steps.length;
-  const myCompletedSteps = challenge.progress[currentUserId] || [];
+  const myCompletedSteps = challenge.mySteps;
   const progressPct = totalSteps > 0 ? Math.round((myCompletedSteps.length / totalSteps) * 100) : 0;
-  const earnedBadges = getEarnedBadges(currentUserId, challenges);
+  const earnedBadges = computeBadges(allChallenges.data ?? []);
+  const communityTips = tipsQuery.data ?? [];
 
   const handleJoin = () => {
     if (!user) {
       toast.info(t("challenge.loginToJoin"));
       return;
     }
-    void (isJoined ? leaveChallenge(challenge.id, user.id) : joinChallenge(challenge.id, user.id))
-      .then(() =>
-        toast[isJoined ? "info" : "success"](isJoined ? t("cd.leftToast") : t("cd.joinedToast")),
-      )
-      .catch((err) => toast.error(errorText(err)));
+    if (isJoined) {
+      leave.mutate(challenge.id, { onSuccess: () => toast.info(t("cd.leftToast")) });
+    } else {
+      join.mutate(challenge.id, { onSuccess: () => toast.success(t("cd.joinedToast")) });
+    }
   };
 
   const handleToggleStep = (index: number) => {
@@ -111,52 +99,48 @@ function ChallengeDetailPage() {
       toast.info(t("cd.loginProgress"));
       return;
     }
+    const done = !myCompletedSteps.includes(index);
     const willComplete =
-      !isCompleted &&
-      totalSteps > 0 &&
-      myCompletedSteps.length === totalSteps - 1 &&
-      !myCompletedSteps.includes(index);
-    void toggleChallengeStepRemote(challenge.id, user.id, myCompletedSteps, index, isJoined).catch(
-      (err) => toast.error(errorText(err)),
+      done && !isCompleted && totalSteps > 0 && myCompletedSteps.length === totalSteps - 1;
+    setStep.mutate(
+      { challengeId: challenge.id, currentSteps: myCompletedSteps, stepIndex: index, done },
+      {
+        onSuccess: () => {
+          if (!willComplete) return;
+          toast.success(`${t("cd.doneToast")} ${challenge.badgeLabel}.`);
+          sendBrowserNotification(
+            user.id,
+            "achievements",
+            t("cd.doneNotifTitle"),
+            `${t("cd.notifBody")} ${challenge.badgeLabel}.`,
+          );
+        },
+      },
     );
-    if (willComplete) {
-      toast.success(`${t("cd.doneToast")} ${challenge.badgeLabel}.`);
-      sendBrowserNotification(
-        user.id,
-        "achievements",
-        t("cd.doneNotifTitle"),
-        `${t("cd.notifBody")} ${challenge.badgeLabel}.`,
-      );
-    }
   };
 
-  const handleAddTip = (e: React.FormEvent) => {
+  const handleAddTip = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       toast.info(t("cd.loginTip"));
       return;
     }
-    if (!tipText.trim()) return;
-    void addChallengeTipRemote(challenge.id, user.id, tipText)
-      .then(() => {
-        setTipText("");
-        toast.success(t("cd.tipShared"));
-      })
-      .catch((err) => toast.error(err instanceof Error ? err.message : t("cd.tipError")));
+    try {
+      await addTip.mutateAsync({ challengeId: challenge.id, text: tipText });
+      setTipText("");
+      toast.success(t("cd.tipShared"));
+    } catch {
+      // o aviso de erro já é mostrado pelo hook
+    }
   };
 
-  const participantsProgress = challenge.participants
-    .map((participantId) => {
-      const completed = (challenge.progress[participantId] || []).length;
-      return {
-        userId: participantId,
-        name: resolveDisplayName(participantId, profiles, posts, user, t("cd.member")),
-        completed,
-        pct: totalSteps > 0 ? Math.round((completed / totalSteps) * 100) : 0,
-        isDone: challenge.completedBy.includes(participantId),
-      };
-    })
-    .sort((a, b) => b.completed - a.completed);
+  const participantsProgress = (participantsQuery.data ?? []).map((p) => ({
+    userId: p.id,
+    name: p.name,
+    completed: p.stepsDone,
+    pct: totalSteps > 0 ? Math.round((p.stepsDone / totalSteps) * 100) : 0,
+    isDone: p.completed,
+  }));
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
@@ -197,8 +181,8 @@ function ChallengeDetailPage() {
               </p>
               <p className="mt-3 text-xs text-muted-foreground flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5" />
-                {challenge.participants.length} {t("cd.peopleParticipating")} ·{" "}
-                {challenge.completedBy.length} {t("cd.alreadyDone")}
+                {challenge.participantCount} {t("cd.peopleParticipating")} ·{" "}
+                {challenge.completedCount} {t("cd.alreadyDone")}
               </p>
             </div>
           </div>
@@ -312,9 +296,9 @@ function ChallengeDetailPage() {
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
               {t("cd.communityTips")}
             </h3>
-            {challenge.communityTips.length > 0 ? (
+            {communityTips.length > 0 ? (
               <div className="space-y-3 mb-5">
-                {challenge.communityTips.map((tip) => (
+                {communityTips.map((tip) => (
                   <div key={tip.id} className="rounded-2xl bg-secondary/40 p-3.5 text-sm">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold text-foreground text-xs">{tip.authorName}</span>

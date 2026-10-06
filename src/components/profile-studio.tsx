@@ -464,20 +464,6 @@ export function BlockEditor({
         </Group>
       )}
 
-      {(block.type === "posts" || block.type === "recipes") && (
-        <Group title={tr(["Disposição", "Layout", "Disposición", "Disposition"])}>
-          <Segmented
-            columns="grid-cols-2"
-            options={[
-              { id: "list" as const, label: tr(["Lista", "List", "Lista", "Liste"]) },
-              { id: "grid" as const, label: tr(["Grade", "Grid", "Cuadrícula", "Grille"]) },
-            ]}
-            value={block.opts.view}
-            onChange={(view) => setOpts({ view })}
-          />
-        </Group>
-      )}
-
       <div className="space-y-5 border-t border-border pt-5">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           {tr(["Aparência do bloco", "Block look", "Aspecto del bloque", "Apparence du bloc"])}

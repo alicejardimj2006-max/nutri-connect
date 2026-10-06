@@ -4,12 +4,12 @@ import { useEffect, useMemo } from "react";
 import { MessageCircle, UserCheck, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminPerson } from "@/components/person-chip";
-import { useCommunity } from "@/hooks/use-community";
-import { communityCover } from "@/lib/community-remote";
-import { getProfessionalInfo } from "@/lib/community-admin";
-import { type Community } from "@/lib/community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
+import { CATEGORIES } from "@/lib/community";
+import { communityCover, type RemoteCommunity } from "@/lib/social/communities";
 import { resetCommunityFilters, useCommunityFilters, useRailsOn } from "@/lib/community-filters";
 import { CommunityCategoriesCard, CommunitySearchCard } from "@/components/rail-cards";
+import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
 
 export const Route = createFileRoute("/comunidades/")({
@@ -35,12 +35,10 @@ export const Route = createFileRoute("/comunidades/")({
 function ComunidadesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { communities: allCommunities, hydrated } = useCommunity();
-  // Comunidades pendentes ainda não existem publicamente: só quem as criou as vê.
-  const communities = useMemo(
-    () => allCommunities.filter((c) => c.status !== "pendente" || c.adminUserId === user?.id),
-    [allCommunities, user?.id],
-  );
+  // As comunidades vêm do banco, que já esconde as pendentes de quem não pode vê-las.
+  const communitiesQuery = useCommunities(false, !!user);
+  const hydrated = !communitiesQuery.isLoading;
+  const communities = useMemo(() => communitiesQuery.data ?? [], [communitiesQuery.data]);
   // Busca e categorias são cards das colunas laterais (ou aparecem aqui em cima, se as colunas não
   // estiverem visíveis); o estado é compartilhado e volta ao padrão ao sair da página.
   const { query: searchTerm, category } = useCommunityFilters();
@@ -85,7 +83,7 @@ function ComunidadesPage() {
 
       <div className={showFeatured ? "mt-12 border-t border-border pt-12" : ""}>
         {!railsOn && (
-          <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <div className="mb-6 grid items-start gap-4 md:grid-cols-2">
             <CommunitySearchCard />
             <CommunityCategoriesCard />
           </div>
@@ -111,16 +109,15 @@ function ComunidadesPage() {
   );
 }
 
-function CommunityCard({ community: c }: { community: Community }) {
-  const { profiles } = useCommunity();
-  const { user } = useAuth();
+function CommunityCard({ community: c }: { community: RemoteCommunity }) {
+  const professionals = useProfessionalMap();
   const { t } = useI18n();
   const STATUS_LABEL = {
     pendente: t("comunidades.status.pendente"),
     suspensa: t("comunidades.status.suspensa"),
   } as const;
-  const isMember = !!user && c.members.some((m) => m.userId === user.id);
-  const pro = c.professionalId ? getProfessionalInfo(profiles, c.professionalId) : undefined;
+  const isMember = c.isMember;
+  const pro = c.professionalId ? professionals.map.get(c.professionalId)?.info : undefined;
 
   const coverImage = communityCover(c);
 
@@ -168,7 +165,7 @@ function CommunityCard({ community: c }: { community: Community }) {
             raised
             label={t("comunidades.adminUser")}
             userId={c.adminUserId}
-            name={c.adminUserName}
+            name={c.adminName}
             vacantText={t("comunidades.awaitingNomination")}
           />
           <AdminPerson
@@ -188,11 +185,11 @@ function CommunityCard({ community: c }: { community: Community }) {
 
         <div className="mt-4 flex items-center justify-between text-[11px] font-medium text-muted-foreground border-t border-border/60 pt-4">
           <span className="inline-flex items-center gap-1">
-            <Users className="h-4 w-4 text-accent" /> {c.members.length} {t("comunidades.members")}
+            <Users className="h-4 w-4 text-accent" /> {c.memberCount} {t("comunidades.members")}
           </span>
           <span className="inline-flex items-center gap-1">
             <MessageCircle className="h-4 w-4 text-accent" />
-            {c.postCount ?? 0} {t("comunidades.posts")}
+            {c.postCount} {t("comunidades.posts")}
           </span>
         </div>
       </div>

@@ -47,7 +47,7 @@ import type { ProfessionKey } from "@/lib/clinical/professions";
 import { EmojiIcon } from "@/components/emoji-icon";
 import { Panel } from "@/components/rail-cards";
 import { useAuth } from "@/hooks/use-auth";
-import { useCommunity } from "@/hooks/use-community";
+import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
 import { pickName, type Names } from "@/lib/appearance-data";
 import { td } from "@/lib/i18n/data";
@@ -1493,13 +1493,12 @@ export function WeeklyPledgeCard() {
 export function CommunityRouletteCard() {
   const tr = useTr();
   const { user } = useAuth();
-  const { communities } = useCommunity();
+  const communitiesQuery = useCommunities(false, !!user);
   const pool = useMemo(() => {
-    const notMine = user
-      ? communities.filter((c) => !c.members.some((m) => m.userId === user.id))
-      : communities;
+    const communities = (communitiesQuery.data ?? []).filter((c) => c.status !== "pendente");
+    const notMine = communities.filter((c) => !c.isMember);
     return notMine.length > 0 ? notMine : communities;
-  }, [communities, user]);
+  }, [communitiesQuery.data]);
   const [shown, setShown] = useState<number | null>(null);
   const [spinning, setSpinning] = useState(false);
   const timer = useRef<number | null>(null);
@@ -1538,8 +1537,7 @@ export function CommunityRouletteCard() {
           <div className={spinning ? "opacity-60" : "nc-pop-in"}>
             <p className="text-sm font-bold text-foreground">{c.name}</p>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {td(c.category)} · {c.members.length}{" "}
-              {tr(["membros", "members", "miembros", "membres"])}
+              {td(c.category)} · {c.memberCount} {tr(["membros", "members", "miembros", "membres"])}
             </p>
           </div>
         ) : (

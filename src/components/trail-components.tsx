@@ -13,7 +13,8 @@ import {
   FlaskConical,
   type LucideIcon,
 } from "lucide-react";
-import type { Challenge, Community } from "@/lib/community";
+import type { RemoteChallenge } from "@/lib/social/challenges";
+import type { RemoteCommunity } from "@/lib/social/communities";
 import { Mascot, type MascotMood } from "@/components/mascots";
 import {
   ACHIEVEMENTS,
@@ -592,16 +593,11 @@ export function PopularBadge() {
 }
 
 interface CommunityChallengeGroupProps {
-  community: Community;
-  challenges: Challenge[];
-  userId: string;
+  community: RemoteCommunity;
+  challenges: RemoteChallenge[];
 }
 
-export function CommunityChallengeGroup({
-  community,
-  challenges,
-  userId,
-}: CommunityChallengeGroupProps) {
+export function CommunityChallengeGroup({ community, challenges }: CommunityChallengeGroupProps) {
   const { t } = useI18n();
   return (
     <div className="rounded-[2rem] border-2 border-border bg-card p-6 shadow-sm sm:p-8">
@@ -619,7 +615,7 @@ export function CommunityChallengeGroup({
           </Link>
           <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             {t("tc.membersChallenges")
-              .replace("{members}", String(community.members.length))
+              .replace("{members}", String(community.memberCount))
               .replace("{n}", String(challenges.length))
               .replace("{word}", challenges.length === 1 ? t("tc.challenge") : t("tc.challenges"))}
           </p>
@@ -627,10 +623,10 @@ export function CommunityChallengeGroup({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {challenges.map((c) => {
-          const isCompleted = c.completedBy.includes(userId);
-          const isJoined = c.participants.includes(userId);
+          const isCompleted = c.completed;
+          const isJoined = c.joined;
           const totalSteps = c.steps.length;
-          const completedSteps = (c.progress[userId] || []).length;
+          const completedSteps = c.mySteps.length;
           const progressPct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
           return (
@@ -661,7 +657,7 @@ export function CommunityChallengeGroup({
                 <p className="truncate text-sm font-black text-foreground">{c.title}</p>
                 <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   <Users className="h-3 w-3" />
-                  {c.participants.length} · {c.duration}
+                  {c.participantCount} · {c.duration}
                 </p>
                 {isJoined && !isCompleted && totalSteps > 0 && (
                   <div className="mt-2">

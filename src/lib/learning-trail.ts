@@ -200,6 +200,14 @@ let scope = "guest:adult";
 export function setTrailScope(userId: string, profileId: string) {
   scope = `${userId}:${profileId}`;
 }
+export const getTrailScope = () => scope;
+
+/** Quem quiser saber de cada salvamento (a sincronização com o Supabase, em trail-sync.ts). */
+type SaveListener = (scope: string, progress: TrailProgress) => void;
+let saveListener: SaveListener | null = null;
+export function setTrailSaveListener(listener: SaveListener | null) {
+  saveListener = listener;
+}
 const storageKey = () => `nutriconnect_trail_v3:${scope}`;
 
 const dayKey = (d = new Date()) =>
@@ -248,6 +256,7 @@ export function saveTrailProgress(progress: TrailProgress): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(storageKey(), JSON.stringify(progress));
   window.dispatchEvent(new Event(TRAIL_CHANGE_EVENT));
+  saveListener?.(scope, progress);
 }
 
 export const getStopProgress = (progress: TrailProgress, stopId: string): StopProgress =>

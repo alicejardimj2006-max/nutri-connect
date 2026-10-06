@@ -10,15 +10,17 @@ import {
 } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity, usePastThemes } from "@/hooks/use-community";
-import { useTr } from "@/components/settings-ui";
-import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+import { ThemePoll } from "@/components/theme-poll";
+import { formatWeekStart, localizeTheme } from "@/lib/social/themes";
+import { useThemeHistory, useWeeklyTheme } from "@/lib/social/themes-queries";
+import { useChallenges } from "@/lib/social/challenges-queries";
 import { PostCard, ChallengeCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 import { stripEmoji } from "@/lib/emoji";
-import { errorText, votePoll } from "@/lib/community-remote";
+import { useTr } from "@/components/settings-ui";
 import { toast } from "sonner";
 import { EmojiIcon } from "@/components/emoji-icon";
 
@@ -38,39 +40,44 @@ export const Route = createFileRoute("/tema-da-semana")({
 
 function TemaDaSemanaPage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const tr = useTr();
-  const { weeklyTheme, challenges, themeHydrated: hydrated } = useCommunity();
-  const pastThemes = usePastThemes();
-  // Receitas publicadas para o tema da semana ATIVO (do banco). O cabeçalho e a enquete deste
-  // tema ainda vêm do estado local e migram na Etapa 6.
-  const activeTheme = useActiveTheme(!!user);
+  const challengesQuery = useChallenges(!!user);
+  const challenges = challengesQuery.data ?? [];
+  // Tema ativo, enquete (com resultado e o meu voto), histórico e receitas do tema: tudo do banco.
+  const themeQuery = useWeeklyTheme("ativo", !!user);
+  const theme = themeQuery.data ?? null;
+  const text = theme ? localizeTheme(theme, locale) : null;
+  const history = useThemeHistory(6, !!user);
   const themeFeed = useFeed(
-    { scope: "tema", theme: activeTheme.data?.id, type: "receita", limit: 6 },
-    !!user && !!activeTheme.data,
+    { scope: "tema", theme: theme?.id, type: "receita", limit: 6 },
+    !!user && !!theme,
   );
   useFeedRealtime(user?.id);
 
   if (!authHydrated || !user) return <AuthGateLoading />;
 
   const themeRecipes = themeFeed.data ?? [];
-  const linkedChallenge = challenges.find((c) => c.themeId === weeklyTheme?.id) || challenges[0];
+  // Desafio ligado ao tema ativo; sem um, o primeiro da trilha.
+  const linkedChallenge = challenges.find((c) => c.themeId === theme?.id) || challenges[0];
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
-        {!hydrated || !weeklyTheme ? (
+        {themeQuery.isLoading ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
-            {!hydrated
-              ? t("theme.loading")
-              : tr([
-                  "O tema desta semana ainda está sendo preparado. Volte em breve!",
-                  "This week's theme is still being prepared. Check back soon!",
-                  "El tema de esta semana aún se está preparando. ¡Vuelve pronto!",
-                  "Le thème de la semaine est en préparation. Revenez bientôt !",
-                ])}
+            {t("theme.loading")}
+          </div>
+        ) : !theme || !text ? (
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            {tr([
+              "O tema desta semana ainda está sendo preparado. Volte em breve!",
+              "This week's theme is still being prepared. Check back soon!",
+              "El tema de esta semana aún se está preparando. ¡Vuelve pronto!",
+              "Le thème de la semaine est en préparation. Revenez bientôt !",
+            ])}
           </div>
         ) : (
           <div className="space-y-12">
@@ -79,28 +86,31 @@ function TemaDaSemanaPage() {
               <div className="h-64 sm:h-80 w-full relative">
                 <img
                   src="/images/challenges/salad-bowl.jpg"
-                  alt={weeklyTheme.title}
+                  alt={text.title}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                 <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10 pr-6">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
                     <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider">
-                      {stripEmoji(weeklyTheme.badge ?? "")}
+                      {stripEmoji(text.badge ?? t("weekly.badge"))}
                     </span>
                     <span className="text-xs font-medium text-white/90">
-                      {weeklyTheme.currentWeek}
+                      {t("theme.weekOf").replace(
+                        "{date}",
+                        formatWeekStart(theme.weekStart, locale),
+                      )}
                     </span>
                   </div>
                   <h1 className="text-3xl sm:text-5xl font-extrabold font-display text-white leading-tight">
-                    {weeklyTheme.title}
+                    {text.title}
                   </h1>
                 </div>
               </div>
 
               <div className="p-6 sm:p-10 bg-gradient-to-br from-card via-card to-accent-soft/30">
                 <p className="text-base sm:text-lg text-foreground/90 leading-relaxed max-w-3xl">
-                  {weeklyTheme.description}
+                  {text.description}
                 </p>
 
                 {/* Destaque da Pergunta da Semana */}
@@ -117,58 +127,10 @@ function TemaDaSemanaPage() {
                         {t("weekly.questionOfWeek")}
                       </h3>
                       <p className="text-lg font-semibold text-foreground italic">
-                        “{weeklyTheme.questionOfTheWeek}”
+                        “{text.question}”
                       </p>
 
-                      {weeklyTheme.poll && weeklyTheme.poll.options.length > 0 && (
-                        <div className="mt-6 space-y-2">
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                            {t("theme.vote")}
-                          </p>
-                          {(() => {
-                            const total = weeklyTheme.poll.options.reduce((a, o) => a + o.votes, 0);
-                            const voted = weeklyTheme.poll.options.some((o) =>
-                              o.votedUsers.includes(user.id),
-                            );
-                            return weeklyTheme.poll.options.map((opt) => {
-                              const mine = opt.votedUsers.includes(user.id);
-                              const pct = total ? Math.round((opt.votes / total) * 100) : 0;
-                              return (
-                                <button
-                                  key={opt.id}
-                                  type="button"
-                                  aria-pressed={mine}
-                                  onClick={() =>
-                                    void votePoll(weeklyTheme.id, opt.id, user.id)
-                                      .then(() => toast.success(t("weekly.voteRegistered")))
-                                      .catch((err) => toast.error(errorText(err)))
-                                  }
-                                  className={`relative flex w-full cursor-pointer items-center justify-between overflow-hidden rounded-xl border p-3 text-left transition ${
-                                    mine
-                                      ? "border-accent bg-accent-soft/40"
-                                      : "border-border/50 bg-secondary/40 hover:bg-secondary/60"
-                                  }`}
-                                >
-                                  {voted && (
-                                    <span
-                                      aria-hidden
-                                      className="absolute inset-y-0 left-0 bg-accent/15 transition-all duration-500"
-                                      style={{ width: `${pct}%` }}
-                                    />
-                                  )}
-                                  <span className="relative z-10 text-sm font-medium text-foreground">
-                                    {opt.text}
-                                  </span>
-                                  <span className="relative z-10 text-xs font-semibold text-muted-foreground">
-                                    {voted ? `${pct}% · ` : ""}
-                                    {opt.votes} {t("theme.votes")}
-                                  </span>
-                                </button>
-                              );
-                            });
-                          })()}
-                        </div>
-                      )}
+                      <ThemePoll themeId={theme.id} theme={text} />
 
                       <div className="mt-6 flex items-center gap-3">
                         <ShareModal
@@ -229,7 +191,7 @@ function TemaDaSemanaPage() {
             </div>
 
             {/* Histórico de Temas Anteriores */}
-            {pastThemes.length > 0 && (
+            {(history.data ?? []).length > 0 && (
               <section className="border-t border-border pt-10">
                 <div className="mb-6">
                   <h3 className="text-xl font-bold font-display text-foreground">
@@ -239,7 +201,14 @@ function TemaDaSemanaPage() {
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-3">
-                  {pastThemes.map((pt, index) => {
+                  {(history.data ?? []).map((pt, index) => {
+                    const ptText =
+                      locale !== "pt-BR" && pt.translations[locale]
+                        ? {
+                            title: pt.translations[locale].title || pt.title,
+                            summary: pt.translations[locale].description || pt.description,
+                          }
+                        : { title: pt.title, summary: pt.description };
                     const cover =
                       index === 0
                         ? "/images/hero/kitchen-prep.jpg"
@@ -255,23 +224,26 @@ function TemaDaSemanaPage() {
                         <div className="h-32 w-full relative">
                           <img
                             src={cover}
-                            alt={pt.title}
+                            alt={ptText.title}
                             className="w-full h-full object-cover"
                             loading="lazy"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                           <div className="absolute bottom-3 left-4">
                             <span className="text-[10px] font-bold text-white/90 drop-shadow-md">
-                              {pt.week}
+                              {t("theme.weekOf").replace(
+                                "{date}",
+                                formatWeekStart(pt.weekStart, locale),
+                              )}
                             </span>
                           </div>
                         </div>
                         <div className="p-5 flex flex-col flex-1">
                           <h4 className="text-sm font-bold font-display text-foreground mb-2">
-                            {pt.title}
+                            {ptText.title}
                           </h4>
                           <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed flex-1">
-                            {pt.summary}
+                            {ptText.summary}
                           </p>
                           <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
                             <span>
@@ -286,7 +258,7 @@ function TemaDaSemanaPage() {
                                 emoji={"💬"}
                                 className="mr-1 inline h-3.5 w-3.5 align-[-2px]"
                               />
-                              {pt.reflectionsCount} {t("theme.storiesCount")}
+                              {pt.postsCount} {t("theme.storiesCount")}
                             </span>
                           </div>
                         </div>

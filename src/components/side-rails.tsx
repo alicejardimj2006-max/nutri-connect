@@ -191,9 +191,14 @@ export function SideRails() {
       {active.rest.length > 0 && !rails.locked && (
         <section
           aria-label="Mais"
-          className="mx-auto w-full max-w-[96rem] px-6 pb-12 pt-2 text-left lg:px-10"
+          className="w-full pb-12 pt-2 text-left"
+          // Mesmas margens do conteúdo da página: nunca fica por baixo das colunas laterais.
+          style={{ paddingInline: "calc(var(--rail-edge) + var(--rail-w) + var(--rail-gap))" }}
         >
-          <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            className="grid items-start gap-5"
+            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 16rem), 1fr))" }}
+          >
             {active.rest.map((i) => (
               <div key={i}>{all[i]}</div>
             ))}

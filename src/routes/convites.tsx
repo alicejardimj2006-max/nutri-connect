@@ -16,15 +16,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity, useMyCommunityInvites } from "@/hooks/use-community";
-import { acceptCommunityInvite } from "@/lib/community-remote";
 import { useI18n } from "@/hooks/use-i18n";
-import { type Community } from "@/lib/community";
+import type { RemoteCommunity } from "@/lib/social/communities";
 import {
-  getAdministeredCommunity,
-  getProfessionalInfo,
-  isVerifiedProfessional,
-} from "@/lib/community-admin";
+  useAcceptInvite,
+  useCommunities,
+  useCommunityInvites,
+} from "@/lib/social/communities-queries";
 
 export const Route = createFileRoute("/convites")({
   head: () => ({ meta: [{ title: "Convites de comunidades — NutriConnect" }] }),
@@ -34,17 +32,19 @@ export const Route = createFileRoute("/convites")({
 function InvitesPage() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useI18n();
-  const state = useCommunity();
-  const isPro = !!user && isVerifiedProfessional(state.profiles, user.id);
-  const inviteIds = useMyCommunityInvites(isPro);
+  const isPro = !!user?.professional;
+  // Convites calculados no banco (até 5 profissionais por comunidade) e a comunidade que já administro.
+  const invitesQuery = useCommunityInvites(!!user && isPro);
+  const mine = useCommunities(true, !!user);
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
-  const info = getProfessionalInfo(state.profiles, user.id);
-  const administered = getAdministeredCommunity(user.id, state.communities);
-  const invites = isPro
-    ? state.communities.filter((c) => (inviteIds.data ?? []).includes(c.id))
-    : [];
+  const info = user.professional;
+  const administered = (mine.data ?? []).find(
+    (c) => c.adminUserId === user.id || c.professionalId === user.id,
+  );
+  const invites = invitesQuery.data ?? [];
+  const loading = mine.isLoading || (isPro && invitesQuery.isLoading);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -61,7 +61,7 @@ function InvitesPage() {
 
         <h1 className="sr-only">{t("invites.title")}</h1>
 
-        {!state.hydrated ? (
+        {loading ? (
           <p className="mt-8 text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : !isPro ? (
           <section className="mt-8 rounded-2xl border border-border/70 bg-card p-6 text-center shadow-xs">
@@ -112,7 +112,6 @@ function InvitesPage() {
                       community={c}
                       matchesTopic={!!info?.specialties.includes(c.category)}
                       blocked={!!administered}
-                      actor={{ id: user.id, name: user.name }}
                     />
                   </li>
                 ))}
@@ -129,15 +128,14 @@ function InviteCard({
   community: c,
   matchesTopic,
   blocked,
-  actor,
 }: {
-  community: Community;
+  community: RemoteCommunity;
   matchesTopic: boolean;
   blocked: boolean;
-  actor: { id: string; name: string };
 }) {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const accept = useAcceptInvite();
 
   return (
     <article className="rounded-2xl border border-border/70 bg-card p-5 shadow-xs sm:p-6">
@@ -169,11 +167,11 @@ function InviteCard({
           <AdminPerson
             label={t("comunidades.adminUser")}
             userId={c.adminUserId}
-            name={c.adminUserName}
+            name={c.adminName}
             vacantText={t("comunidades.awaitingNomination")}
           />
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="h-4 w-4 text-accent" /> {c.members.length} {t("comunidades.members")}
+            <Users className="h-4 w-4 text-accent" /> {c.memberCount} {t("comunidades.members")}
           </span>
         </div>
 
@@ -193,22 +191,21 @@ function InviteCard({
                 {t("invites.confirmTitle")} {c.name}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {t("invites.confirmText1")} {c.adminUserName ?? t("invites.theUserAdmin")}.{" "}
+                {t("invites.confirmText1")} {c.adminName ?? t("invites.theUserAdmin")}.{" "}
                 {t("invites.confirmText2")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t("invites.notNow")}</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  void acceptCommunityInvite(c.id)
-                    .then(() => {
-                      toast.success(t("invites.acceptedToast"));
-                      navigate({ to: "/comunidades/$slug", params: { slug: c.slug } });
-                    })
-                    .catch((err) =>
-                      toast.error(err instanceof Error ? err.message : t("invites.acceptError")),
-                    );
+                onClick={async () => {
+                  try {
+                    await accept.mutateAsync(c.id);
+                  } catch {
+                    return; // o aviso de erro já é mostrado pelo hook
+                  }
+                  toast.success(t("invites.acceptedToast"));
+                  navigate({ to: "/comunidades/$slug", params: { slug: c.slug } });
                 }}
               >
                 {t("invites.accept")}

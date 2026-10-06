@@ -17,6 +17,7 @@ export type FeedScope =
   | "todos"
   | "amigos"
   | "seguindo"
+  | "profissionais"
   | "comunidades"
   | "comunidade"
   | "autor"

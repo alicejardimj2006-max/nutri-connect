@@ -24,14 +24,13 @@ import {
 import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
-import { useCommunity, useMyCommunityInvites } from "@/hooks/use-community";
+import { useProfessionalMap } from "@/lib/social/professionals-queries";
+import { userChallengeStreak, userChallengeXP } from "@/lib/social/challenge-stats";
+import { useUserChallenges } from "@/lib/social/challenges-queries";
+import { useCommunities, useCommunityInvites } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
-import { getUserStreak, getUserXP, initials } from "@/lib/community";
-import {
-  getAdministeredCommunity,
-  getProfessionalInfo,
-  isPlatformAdmin,
-} from "@/lib/community-admin";
+import { initials } from "@/lib/community";
+import { isPlatformAdmin } from "@/lib/community-admin";
 import { VerifiedBadge } from "@/components/person-chip";
 import { fetchContactInfo, refreshUser, signOut } from "@/lib/auth";
 import { ShareModal } from "@/components/share-modal";
@@ -102,10 +101,7 @@ function PublicProfilePage() {
   const { user, hydrated: authHydrated } = useRequireAuth();
   const { t } = useI18n();
   const tr = useTr();
-  const state = useCommunity();
-  // Convites para administrar comunidades (só conta para o próprio profissional).
-  const inviteIds = useMyCommunityInvites(!!user?.professional);
-  const { profiles, communities, challenges, hydrated } = state;
+  const professionals = useProfessionalMap(!!user);
   const navigate = useNavigate();
   const qc = useQueryClient();
   // Perfil, privacidade e bloqueio vêm do banco (valem em qualquer aparelho e para todas as pessoas).
@@ -117,9 +113,14 @@ function PublicProfilePage() {
   // Publicações da pessoa e receitas que ela preparou: do banco, e só se este perfil pode ser visto
   // (perfil privado de quem não é amigo não carrega nada).
   const canSeeContent = !!user && remoteProfile.data?.can_view_content !== false;
+  const challengesQuery = useUserChallenges(userId, canSeeContent);
   const postsQuery = useFeed({ scope: "autor", author: userId, limit: 30 }, canSeeContent);
   const preparedQuery = useFeed({ scope: "preparados", author: userId, limit: 30 }, canSeeContent);
   useFeedRealtime(user?.id);
+  // Comunidades (do banco): a que esta pessoa administra e, se for o próprio profissional, os convites.
+  const communitiesQuery = useCommunities(false, !!user);
+  const mineQuery = useCommunities(true, !!user && user.id === userId);
+  const invitesQuery = useCommunityInvites(!!user && user.id === userId && !!user.professional);
   const blockMutation = useBlockUser();
   const unblockMutation = useUnblockUser();
   const isSelf = user?.id === userId;
@@ -131,9 +132,9 @@ function PublicProfilePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
 
-  const stored = profiles.find((p) => p.userId === userId);
   const remote = remoteProfile.data ?? null;
-  const isProfessional = stored?.role === "profissional" || remote?.role === "profissional";
+  const professionalInfo = professionals.map.get(userId)?.info;
+  const isProfessional = !!professionalInfo || remote?.role === "profissional";
 
   const record = pageQuery.data ?? null;
   // A posição que quem visita vê (blocos colados uns nos outros) é a posição de verdade: a edição
@@ -198,18 +199,20 @@ function PublicProfilePage() {
 
   const myPosts = postsQuery.data ?? [];
   const preparedRecipes = (preparedQuery.data ?? []).filter((p) => p.type === "receita");
-  const myChallenges = challenges.filter((c) => c.participants.includes(userId));
-  const myCommunities = communities.filter((c) => c.members.some((m) => m.userId === userId));
+  const myChallenges = challengesQuery.data ?? [];
   // Comunidade que a pessoa administra (uma por vez); pendentes só aparecem para ela mesma.
-  const administered = getAdministeredCommunity(userId, communities);
+  const administered = (communitiesQuery.data ?? []).find(
+    (c) => c.adminUserId === userId || c.professionalId === userId,
+  );
   const administeredCommunities =
     administered && (administered.status !== "pendente" || isSelf) ? [administered] : [];
-  const professionalInfo = getProfessionalInfo(profiles, userId);
-  const inviteCount = isSelf && isProfessional ? (inviteIds.data ?? []).length : 0;
+  // As comunidades de que participa só se sabem para a própria pessoa; para os outros, as que administra.
+  const myCommunities = isSelf ? (mineQuery.data ?? []) : administeredCommunities;
+  const inviteCount = isSelf && isProfessional ? (invitesQuery.data?.length ?? 0) : 0;
 
-  const xp = getUserXP(userId, challenges) + (isSelf ? (trailProgress?.totalXP ?? 0) : 0);
+  const xp = userChallengeXP(myChallenges) + (isSelf ? (trailProgress?.totalXP ?? 0) : 0);
   const streak = Math.max(
-    getUserStreak(userId, challenges),
+    userChallengeStreak(myChallenges),
     isSelf && trailProgress ? getActiveStreak(trailProgress) : 0,
   );
 
@@ -226,7 +229,7 @@ function PublicProfilePage() {
     communities: myCommunities,
     xp,
     streak,
-    professionalInfo: isProfessional ? professionalInfo : null,
+    professionalInfo: isProfessional ? (professionalInfo ?? null) : null,
   };
 
   // ── Edição ────────────────────────────────────────────────────────────────

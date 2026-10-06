@@ -111,12 +111,14 @@ export function railsFor(pathname: string): RailSet | null {
           <HabitCheckinCard />
         </>
       ),
+      // A Nina chama para a trilha: tem lugar garantido numa das colunas. Se algo precisar sobrar
+      // para a seção "Mais", são os cards de baixo.
       right: (
         <>
+          <TrailCard />
           <MyChallengesCard />
           <QuizCard />
           <WeeklyThemeCard />
-          <TrailCard />
         </>
       ),
     };

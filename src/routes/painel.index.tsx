@@ -16,6 +16,7 @@ import {
 import { addDays, formatDate, isSameDay, startOfDay, startOfWeek } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
+import { ProScoreCard } from "@/components/pro-score-card";
 
 export const Route = createFileRoute("/painel/")({
   component: PanelOverview,
@@ -93,6 +94,12 @@ function PanelOverview() {
         <Stat icon={Users} label={t("overview.activePatients")} value={activePatients} />
         <Stat icon={Inbox} label={t("overview.requests")} value={pending.length} />
       </div>
+
+      {user && (
+        <div className="mt-4">
+          <ProScoreCard professionalId={user.id} />
+        </div>
+      )}
 
       {!setupDone && !rules.isLoading && (
         <Card title={t("overview.setupTitle")} className="mt-4">

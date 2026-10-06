@@ -1834,6 +1834,93 @@ export type Database = {
           },
         ]
       }
+      member_content: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          image_url: string | null
+          professional_id: string
+          title: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          professional_id?: string
+          title?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          professional_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      member_plans: {
+        Row: {
+          active: boolean
+          benefits: string[]
+          consult_discount_percent: number
+          description: string
+          price_cents: number
+          professional_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          benefits?: string[]
+          consult_discount_percent?: number
+          description?: string
+          price_cents?: number
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          benefits?: string[]
+          consult_discount_percent?: number
+          description?: string
+          price_cents?: number
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pro_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean
+          details_submitted: boolean
+          payouts_enabled: boolean
+          professional_id: string
+          stripe_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          professional_id?: string
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          professional_id?: string
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meal_plans: {
         Row: {
           created_at: string
@@ -3701,6 +3788,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      community_engaged_members: {
+        Args: { p_community: string }
+        Returns: {
+          avatar_url: string
+          comments: number
+          id: string
+          name: string
+          posts: number
+          score: number
+          supports: number
+          username: string
+        }[]
+      }
       community_is_visible: {
         Args: { p_community: string; p_user?: string }
         Returns: boolean
@@ -3882,6 +3982,57 @@ export type Database = {
           valid: boolean
         }[]
       }
+      get_challenge_participants: {
+        Args: { p_challenge: string }
+        Returns: {
+          avatar_url: string
+          completed: boolean
+          id: string
+          joined_at: string
+          name: string
+          steps_done: number
+          username: string
+        }[]
+      }
+      get_challenge_tips: {
+        Args: { p_challenge: string }
+        Returns: {
+          author_id: string
+          author_name: string
+          author_username: string
+          body: string
+          created_at: string
+          id: string
+        }[]
+      }
+      get_challenges: {
+        Args: { p_community?: string; p_id?: string }
+        Returns: {
+          badge_icon: string
+          badge_label: string
+          category: string
+          community_id: string
+          community_name: string
+          community_slug: string
+          completed_count: number
+          created_at: string
+          created_by: string
+          created_by_name: string
+          description: string
+          duration: string
+          id: string
+          joined: boolean
+          my_completed_at: string
+          my_steps: number[]
+          participant_count: number
+          position: number
+          required_challenge_id: string
+          steps: string[]
+          theme_id: string
+          tips: string[]
+          title: string
+        }[]
+      }
       get_communities: {
         Args: { p_only_mine?: boolean; p_slug?: string }
         Returns: {
@@ -3965,6 +4116,138 @@ export type Database = {
         Returns: {
           email: string
           phone: string
+        }[]
+      }
+      admin_adjust_pro_score: {
+        Args: { p_note: string; p_points: number; p_pro: string }
+        Returns: undefined
+      }
+      get_my_pro_events: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          id: string
+          kind: string
+          note: string
+          points: number
+        }[]
+      }
+      get_pro_rules: { Args: never; Returns: Json }
+      get_pro_status: {
+        Args: { p_pro?: string }
+        Returns: {
+          excellence: boolean
+          features: string[]
+          fee_percent: number
+          level: number
+          level_code: string
+          next_level: number
+          next_level_code: string
+          next_level_score: number
+          professional_id: string
+          score: number
+        }[]
+      }
+      pro_has_feature: { Args: { p_feature: string; p_pro: string }; Returns: boolean }
+      pro_membership_fee_percent: { Args: { p_pro: string }; Returns: number }
+      save_member_plan: {
+        Args: {
+          p_active: boolean
+          p_benefits: string[]
+          p_description: string
+          p_discount: number
+          p_price_cents: number
+          p_title: string
+        }
+        Returns: undefined
+      }
+      get_member_plan: {
+        Args: { p_pro: string }
+        Returns: {
+          active: boolean
+          benefits: string[]
+          charges_enabled: boolean
+          consult_discount_percent: number
+          content_count: number
+          description: string
+          fee_percent: number
+          is_member: boolean
+          price_cents: number
+          professional_id: string
+          title: string
+        }[]
+      }
+      publish_member_content: {
+        Args: { p_body: string; p_image_url?: string; p_title: string }
+        Returns: string
+      }
+      my_member_subscriptions: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_period_end: string
+          id: string
+          price_cents: number
+          professional_id: string
+          professional_name: string
+          status: string
+        }[]
+      }
+      my_subscribers: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          current_period_end: string
+          id: string
+          member_id: string
+          name: string
+          price_cents: number
+          status: string
+          username: string
+        }[]
+      }
+      my_member_earnings: {
+        Args: { p_days?: number }
+        Returns: {
+          fee_cents: number
+          gross_cents: number
+          invoices: number
+          net_cents: number
+        }[]
+      }
+      get_notifications: {
+        Args: { p_before?: string; p_limit?: number }
+        Returns: {
+          actor_avatar: string
+          actor_id: string
+          actor_name: string
+          actor_username: string
+          created_at: string
+          data: Json
+          entity_id: string
+          entity_type: string
+          id: string
+          read_at: string
+          type: string
+        }[]
+      }
+      get_weekly_theme: {
+        Args: { p_id?: string; p_status?: string }
+        Returns: {
+          activated_at: string
+          badge: string
+          description: string
+          id: string
+          poll: Json
+          poll_question: string
+          question: string
+          source: string
+          status: Database["public"]["Enums"]["theme_status"]
+          subtitle: string
+          title: string
+          translations: Json
+          week_start: string
         }[]
       }
       get_profile_page: { Args: { p_user: string }; Returns: Json }
@@ -4349,6 +4632,18 @@ export type Database = {
         Returns: number
       }
       storage_owner: { Args: { p_name: string }; Returns: string }
+      theme_history: {
+        Args: { p_limit?: number }
+        Returns: {
+          description: string
+          id: string
+          posts_count: number
+          recipes_count: number
+          title: string
+          translations: Json
+          week_start: string
+        }[]
+      }
       theme_poll_results: {
         Args: { p_theme: string }
         Returns: {
@@ -4366,6 +4661,21 @@ export type Database = {
         }[]
       }
       unique_slug: { Args: { p_name: string }; Returns: string }
+      user_challenges: {
+        Args: { p_user?: string }
+        Returns: {
+          badge_icon: string
+          badge_label: string
+          category: string
+          challenge_id: string
+          completed: boolean
+          completed_at: string
+          joined_at: string
+          steps_done: number
+          steps_total: number
+          title: string
+        }[]
+      }
     }
     Enums: {
       app_role: "paciente" | "profissional"
