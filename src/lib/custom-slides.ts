@@ -325,6 +325,31 @@ export const TEMPLATES: { id: string; label: string; blocks: () => Block[] }[] =
     ],
   },
   {
+    id: "citacao",
+    label: "Citação",
+    blocks: () => [
+      makeBlock("text", {
+        x: 10,
+        y: 24,
+        w: 80,
+        h: 28,
+        size: "xl",
+        title: { "pt-BR": '"Escreva a frase de destaque aqui."' },
+        anim: "pop",
+      }),
+      makeBlock("text", {
+        x: 10,
+        y: 60,
+        w: 60,
+        h: 8,
+        size: "md",
+        body: { "pt-BR": "— Autor" },
+        anim: "rise",
+        delay: 300,
+      }),
+    ],
+  },
+  {
     id: "imagem",
     label: "Imagem e texto",
     blocks: () => [
@@ -433,4 +458,35 @@ export function readCustom(raw: unknown): CustomSlide[] {
       },
     ];
   });
+}
+
+// ── Temas do slide: trocam fundo e cores de texto de uma vez ─────────────────
+
+export interface SlideTheme {
+  id: string;
+  label: string;
+  background: string;
+  dark: boolean;
+}
+
+export const THEMES: SlideTheme[] = [
+  { id: "claro", label: "Claro", background: "creme", dark: false },
+  { id: "sala", label: "Sálvia", background: "sage", dark: false },
+  { id: "pessego", label: "Pêssego", background: "pessego", dark: false },
+  { id: "escuro", label: "Escuro", background: "noite", dark: true },
+  { id: "ameixa", label: "Ameixa", background: "ameixa", dark: true },
+];
+
+/** Aplica um tema: troca o fundo e ajusta as cores de texto (tinta ↔ claro) dos blocos. */
+export function applyTheme(slide: CustomSlide, theme: SlideTheme): CustomSlide {
+  const toDark = (t: Tone): Tone => (t === "ink" ? "light" : t);
+  const toLight = (t: Tone): Tone => (t === "light" ? "ink" : t);
+  return {
+    ...slide,
+    background: theme.background,
+    blocks: slide.blocks.map((b) => ({
+      ...b,
+      tone: theme.dark ? toDark(b.tone) : toLight(b.tone),
+    })),
+  };
 }

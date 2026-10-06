@@ -5,6 +5,8 @@ import { btnCls, btnDanger, inputCls } from "@/components/admin/admin-ui";
 import { PRESENTERS } from "@/components/presentation/parts";
 import {
   ANIMS,
+  applyTheme,
+  THEMES,
   BACKGROUNDS,
   BLOCK_LABEL,
   makeBlock,
@@ -120,6 +122,19 @@ export function SlideBuilder({
             ))}
           </select>
         </label>
+        <p className="text-xs font-semibold text-muted-foreground">Tema</p>
+        <div className="flex flex-wrap gap-2">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={btnCls}
+              onClick={() => onSlide((s) => applyTheme(s, t))}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
         <p className="text-xs font-semibold text-muted-foreground">Papel de parede</p>
         <div className="grid grid-cols-4 gap-2">
           {BACKGROUNDS.map((bg) => (
