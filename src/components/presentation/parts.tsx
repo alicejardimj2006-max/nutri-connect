@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Crown } from "lucide-react";
 import type { NinaAction } from "@/components/nina-live";
 import type { PresentationCopy } from "@/lib/i18n/presentation";
@@ -6,6 +6,7 @@ import { FoodField, useStatic } from "./effects";
 import { Blob, Frame, Heading, Scene, StageNina, Words } from "./layout";
 import type { SlideApi } from "./slides";
 import { EmojiIcon } from "@/components/emoji-icon";
+import { AvatarContext } from "./avatar-context";
 
 // As 5 partes da apresentação: uma por integrante. A ordem aqui é a ordem de apresentação e
 // corresponde a copy.parts (títulos traduzidos).
@@ -20,6 +21,8 @@ export interface Presenter {
   gradient: string;
   /** Foto de fundo da divisória da parte. */
   photo: string;
+  /** Foto do integrante (quadrada); sem ela, o avatar mostra as iniciais. */
+  avatar?: string;
   /** O que a Nina faz na divisória. */
   nina: NinaAction;
 }
@@ -40,6 +43,7 @@ export const PRESENTERS: Presenter[] = [
     color: "#555f36",
     gradient: "from-[#e3e5ce] to-[#b9c28f]",
     photo: "/images/presentation/cutting-board.jpg",
+    avatar: "/images/presentation/team/caina.jpg",
     nina: "present",
   },
   {
@@ -56,6 +60,7 @@ export const PRESENTERS: Presenter[] = [
     color: "#8a8848",
     gradient: "from-[#fbf3c8] to-[#e5cf6b]",
     photo: "/images/presentation/cooking-together.jpg",
+    avatar: "/images/presentation/team/maria-clara.jpg",
     nina: "dance",
   },
   {
@@ -64,6 +69,7 @@ export const PRESENTERS: Presenter[] = [
     color: "#7a3f8f",
     gradient: "from-[#efe3f3] to-[#c9a3d6]",
     photo: "/images/presentation/study-group.jpg",
+    avatar: "/images/presentation/team/emilly.jpg",
     nina: "cheer",
   },
 ];
@@ -78,6 +84,10 @@ export function initials(name: string) {
     : name[0];
 }
 
+export function avatarOf(index: number, avatars: Record<string, string>): string | undefined {
+  return avatars[String(index)] ?? PRESENTERS[index].avatar;
+}
+
 export function PresenterAvatar({
   presenter,
   size = "md",
@@ -85,6 +95,8 @@ export function PresenterAvatar({
   presenter: Presenter;
   size?: "sm" | "md" | "lg";
 }) {
+  const avatars = useContext(AvatarContext);
+  const avatar = avatarOf(PRESENTERS.indexOf(presenter), avatars);
   const box = { sm: "h-7 w-7 text-[11px]", md: "h-12 w-12 text-lg", lg: "h-16 w-16 text-2xl" }[
     size
   ];
@@ -97,7 +109,15 @@ export function PresenterAvatar({
     <span
       className={`relative grid shrink-0 place-items-center rounded-full bg-gradient-to-br font-display font-bold text-[#342d24] ${presenter.gradient} ${box}`}
     >
-      {initials(presenter.name)}
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={presenter.name}
+          className="h-full w-full rounded-full object-cover"
+        />
+      ) : (
+        initials(presenter.name)
+      )}
       <span className={`absolute ${badge} text-[#342d24]`}>
         <EmojiIcon emoji={presenter.emoji} className="h-[1em] w-[1em]" tinted />
       </span>
@@ -230,6 +250,7 @@ export function TeamRoster({
   api: SlideApi;
   partStarts: number[];
 }) {
+  const avatars = useContext(AvatarContext);
   return (
     <Scene>
       <Blob className="-left-24 top-10 h-96 w-96 bg-accent/15" />
@@ -254,62 +275,82 @@ export function TeamRoster({
             />
           </svg>
           <div className="relative grid grid-cols-2 gap-4 pt-2 sm:grid-cols-3 lg:grid-cols-5 lg:pt-5">
-            {PRESENTERS.map((p, i) => (
-              <div
-                key={p.name}
-                className="nc-drop-in flex justify-center"
-                style={
-                  {
-                    animationDelay: `${300 + i * 180}ms`,
-                    "--nc-rot": "0deg",
-                    marginTop: [0, 22, 30, 22, 0][i],
-                  } as React.CSSProperties
-                }
-              >
-                <button
-                  type="button"
-                  onClick={() => api.goTo(partStarts[i])}
-                  className="nc-swing group relative text-left"
-                  style={{ animationDuration: `${3.6 + i * 0.45}s`, animationDelay: `${i * 0.3}s` }}
+            {PRESENTERS.map((p, i) => {
+              const avatar = avatarOf(i, avatars);
+              return (
+                <div
+                  key={p.name}
+                  className="nc-drop-in flex justify-center"
+                  style={
+                    {
+                      animationDelay: `${300 + i * 180}ms`,
+                      "--nc-rot": "0deg",
+                      marginTop: [0, 22, 30, 22, 0][i],
+                    } as React.CSSProperties
+                  }
                 >
-                  <span
-                    className="absolute -top-3 left-1/2 z-10 h-6 w-3 -translate-x-1/2 rounded-sm shadow"
-                    style={{ background: p.color }}
-                  />
-                  {p.leader && (
-                    <span className="absolute -right-2 -top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f5c542] px-2 py-0.5 text-[11px] font-bold text-[#342d24] shadow">
-                      <Crown className="h-3 w-3" /> {c.ui.leader}
-                    </span>
-                  )}
-                  <figure className="w-full max-w-[200px] bg-[#fffdf8] p-2.5 pb-3 shadow-[0_18px_40px_-18px_rgb(52_45_36/0.55)] transition group-hover:-translate-y-1 group-hover:shadow-[0_24px_50px_-18px_rgb(52_45_36/0.6)]">
-                    <div
-                      className={`relative grid aspect-square place-items-center bg-gradient-to-br ${p.gradient}`}
-                    >
-                      <span className="font-display text-5xl font-bold text-[#342d24]/80">
-                        {initials(p.name)}
+                  <button
+                    type="button"
+                    onClick={() => api.goTo(partStarts[i])}
+                    className="nc-swing group relative text-left"
+                    style={{
+                      animationDuration: `${3.6 + i * 0.45}s`,
+                      animationDelay: `${i * 0.3}s`,
+                    }}
+                  >
+                    <span
+                      className="absolute -top-3 left-1/2 z-10 h-6 w-3 -translate-x-1/2 rounded-sm shadow"
+                      style={{ background: p.color }}
+                    />
+                    {p.leader && (
+                      <span className="absolute -right-2 -top-2 z-10 inline-flex items-center gap-1 rounded-full bg-[#f5c542] px-2 py-0.5 text-[11px] font-bold text-[#342d24] shadow">
+                        <Crown className="h-3 w-3" /> {c.ui.leader}
                       </span>
-                      <span className="nc-floaty absolute bottom-2 right-3">
-                        <EmojiIcon emoji={p.emoji} className="h-8 w-8" tinted />
-                      </span>
-                    </div>
-                    <figcaption className="mt-2.5 text-center">
-                      <span className="block font-display text-base font-bold leading-snug text-[#342d24]">
-                        {p.name}
-                      </span>
-                      <span className="mt-0.5 block text-[11px] leading-snug text-[#6d6355]">
-                        {p.leader ? c.team.leaderRole : c.team.role}
-                      </span>
-                      <span
-                        className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                        style={{ background: p.color }}
+                    )}
+                    <figure className="w-full max-w-[200px] bg-[#fffdf8] p-2.5 pb-3 shadow-[0_18px_40px_-18px_rgb(52_45_36/0.55)] transition group-hover:-translate-y-1 group-hover:shadow-[0_24px_50px_-18px_rgb(52_45_36/0.6)]">
+                      <div
+                        className={`relative grid aspect-square place-items-center bg-gradient-to-br ${p.gradient}`}
                       >
-                        {i + 1} · {c.parts[i].title}
-                      </span>
-                    </figcaption>
-                  </figure>
-                </button>
-              </div>
-            ))}
+                        {avatar ? (
+                          <img
+                            src={avatar}
+                            alt={p.name}
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="font-display text-5xl font-bold text-[#342d24]/80">
+                            {initials(p.name)}
+                          </span>
+                        )}
+                        <span
+                          className={`nc-floaty absolute bottom-2 right-3 ${avatar ? "rounded-full bg-[#fffdf8]/90 p-1.5 shadow" : ""}`}
+                        >
+                          <EmojiIcon
+                            emoji={p.emoji}
+                            className={avatar ? "h-6 w-6" : "h-8 w-8"}
+                            tinted
+                          />
+                        </span>
+                      </div>
+                      <figcaption className="mt-2.5 text-center">
+                        <span className="block font-display text-base font-bold leading-snug text-[#342d24]">
+                          {p.name}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] leading-snug text-[#6d6355]">
+                          {p.leader ? c.team.leaderRole : c.team.role}
+                        </span>
+                        <span
+                          className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+                          style={{ background: p.color }}
+                        >
+                          {i + 1} · {c.parts[i].title}
+                        </span>
+                      </figcaption>
+                    </figure>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
         <p className="mt-6 text-center text-xs text-muted-foreground print:hidden">

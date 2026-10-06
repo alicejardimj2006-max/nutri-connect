@@ -8,6 +8,7 @@ import { useOverview } from "@/lib/admin-api";
 import { SECTIONS, isSectionId, type SectionId } from "@/components/admin/sections";
 import { OverviewSection } from "@/components/admin/sections-overview";
 import { ContactSection, UsersSection } from "@/components/admin/sections-people";
+import { PresentationSection } from "@/components/admin/sections-presentation";
 import {
   AnnouncementsSection,
   PostsSection,
@@ -152,6 +153,7 @@ function AdminPage() {
           {section === "moderacao" && <ModerationSection />}
           {section === "comunidades" && <CommunitiesSection />}
           {section === "temas" && <ThemesSection />}
+          {section === "apresentacao" && <PresentationSection />}
           {section === "anuncios" && <AnnouncementsSection />}
           {section === "financeiro" && <FinanceSection />}
           {section === "ia" && <AiSection />}

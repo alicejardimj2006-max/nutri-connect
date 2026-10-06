@@ -10,6 +10,7 @@ import {
   Inbox,
   LayoutDashboard,
   Megaphone,
+  Presentation,
   Settings,
   Users,
   UsersRound,
@@ -25,6 +26,7 @@ export type SectionId =
   | "moderacao"
   | "comunidades"
   | "temas"
+  | "apresentacao"
   | "anuncios"
   | "financeiro"
   | "ia"
@@ -47,6 +49,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "moderacao", label: "Moderação", icon: Flag, group: "Conteúdo" },
   { id: "comunidades", label: "Comunidades", icon: UsersRound, group: "Conteúdo" },
   { id: "temas", label: "Temas da semana", icon: CalendarDays, group: "Conteúdo" },
+  { id: "apresentacao", label: "Apresentação", icon: Presentation, group: "Conteúdo" },
   { id: "anuncios", label: "Anúncios", icon: Megaphone, group: "Conteúdo" },
   { id: "financeiro", label: "Financeiro", icon: Banknote, group: "Negócio" },
   { id: "ia", label: "Inteligência artificial", icon: Brain, group: "Sistema" },

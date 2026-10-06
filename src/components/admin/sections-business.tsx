@@ -453,6 +453,9 @@ const ACTION_LABEL: Record<string, string> = {
   fale_conosco_status: "Mudou o status de uma mensagem",
   exportou_pessoas: "Exportou a lista de pessoas",
   exportou_pagamentos: "Exportou os pagamentos",
+  apresentacao_rascunho: "Salvou um rascunho da apresentação",
+  apresentacao_publicada: "Publicou a apresentação",
+  apresentacao_rascunho_descartado: "Descartou o rascunho da apresentação",
 };
 
 export function AuditSection() {

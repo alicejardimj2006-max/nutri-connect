@@ -13,3 +13,5 @@ Fotos do [Unsplash](https://unsplash.com), sob a [Licença Unsplash](https://uns
 | friends.jpg | https://unsplash.com/photos/1529156069898-49953e39b3ac |
 | salad-dark.jpg | https://unsplash.com/photos/1540189549336-e6e99c3679fe |
 | cooking-together.jpg | https://unsplash.com/photos/1556910103-1c02745aae4d |
+
+As fotos em `team/` são dos próprios integrantes da equipe.

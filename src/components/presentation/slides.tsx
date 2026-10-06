@@ -80,6 +80,10 @@ import { EmojiIcon } from "@/components/emoji-icon";
 export interface SlideApi {
   next: () => void;
   goTo: (index: number) => void;
+  /** Vai ao slide com este id (ignora se estiver escondido). */
+  goToId: (id: string) => void;
+  /** Índice da divisória de cada parte (atalhos 1–5 e "Quem somos"). */
+  partStarts: number[];
 }
 
 export interface SlideDef {
@@ -1235,7 +1239,7 @@ const PART_SLIDES: Draft[][] = [
       nina: (c) => c.team.nina,
       ninaAction: "wave",
       label: (c) => c.team.eyebrow,
-      render: (c, api) => <TeamRoster c={c} api={api} partStarts={PART_STARTS} />,
+      render: (c, api) => <TeamRoster c={c} api={api} partStarts={api.partStarts} />,
     },
     {
       id: "problema",
@@ -1312,10 +1316,7 @@ const PART_SLIDES: Draft[][] = [
       nina: (c) => c.tourIntro.nina,
       hideNarrator: true,
       label: (c) => c.tourIntro.eyebrow,
-      render: (c, api) =>
-        TourIntro(c, (i) =>
-          api.goTo(SLIDES.findIndex((sl) => sl.id === `tour-${TOUR_ORDER[i].key}`)),
-        ),
+      render: (c, api) => TourIntro(c, (i) => api.goToId(`tour-${TOUR_ORDER[i].key}`)),
     },
     tour("feed", false),
     tour("profile", true, "happy"),
@@ -1355,6 +1356,3 @@ const PART_SLIDES: Draft[][] = [
 export const SLIDES: SlideDef[] = PART_SLIDES.flatMap((slides, part) =>
   slides.map((slide) => ({ ...slide, part })),
 );
-
-/** Índice da divisória de cada parte (atalhos 1–5 e cliques no "Quem somos"). */
-export const PART_STARTS = PRESENTERS.map((_, i) => SLIDES.findIndex((s) => s.part === i));
