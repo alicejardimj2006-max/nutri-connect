@@ -23,6 +23,8 @@ export interface PresentationLayout {
   hidden: string[];
   /** Slides prontos excluídos (ficam na lixeira e podem voltar). */
   deleted: string[];
+  /** Papel de parede escolhido para slides prontos (id do slide → id do fundo). */
+  backgrounds: Record<string, string>;
   /** Índice do integrante (0–4) → URL da foto. */
   avatars: Record<string, string>;
   /** Slides personalizados (montados com blocos), na ordem em que foram criados. */
@@ -33,6 +35,7 @@ export const EMPTY_LAYOUT: PresentationLayout = {
   order: {},
   hidden: [],
   deleted: [],
+  backgrounds: {},
   avatars: {},
   custom: [],
 };
@@ -81,6 +84,10 @@ export function readLayout(raw: unknown): PresentationLayout {
     order: r.order && typeof r.order === "object" ? r.order : {},
     hidden: Array.isArray(r.hidden) ? r.hidden.filter((x) => typeof x === "string") : [],
     deleted: Array.isArray(r.deleted) ? r.deleted.filter((x) => typeof x === "string") : [],
+    backgrounds:
+      r.backgrounds && typeof r.backgrounds === "object"
+        ? Object.fromEntries(Object.entries(r.backgrounds).filter(([, v]) => typeof v === "string"))
+        : {},
     avatars: r.avatars && typeof r.avatars === "object" ? r.avatars : {},
     custom: readCustom(r.custom),
   };

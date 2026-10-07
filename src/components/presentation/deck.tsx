@@ -19,7 +19,7 @@ import {
 import { StaticContext } from "./effects";
 import { AvatarContext } from "./avatar-context";
 import { CustomSlideView, type CanvasEditing } from "./custom-slide";
-import { type CustomSlide } from "@/lib/custom-slides";
+import { backgroundOf, type CustomSlide } from "@/lib/custom-slides";
 import { PRESENTERS, PresenterAvatar } from "./parts";
 import { SLIDES as ALL_SLIDES, type SlideApi, type SlideDef } from "./slides";
 
@@ -385,7 +385,15 @@ export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
           aria-roledescription="slide"
           aria-label={counter}
         >
-          <div key={`${slide.id}-${locale}`} className={`flex min-h-full flex-col `}>
+          <div
+            key={`${slide.id}-${locale}`}
+            className={`flex min-h-full flex-col ${transitionClass}`}
+            style={
+              !customOf && layout.backgrounds[slide.id]
+                ? backgroundOf(layout.backgrounds[slide.id]).style
+                : undefined
+            }
+          >
             {slide.render(copy, api)}
           </div>
         </main>

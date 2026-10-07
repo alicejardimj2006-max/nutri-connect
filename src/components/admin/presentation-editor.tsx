@@ -1,13 +1,33 @@
 // Editor da apresentação no admin: a apresentação real (mesmo componente do /apresentacao, com a Nina 3D)
 // em tela cheia. Clicar num texto abre o campo para editar; clicar numa foto troca a imagem.
 // Tudo fica em rascunho até "Publicar".
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Eye,
+  EyeOff,
+  Plus,
+  Redo2,
+  RotateCcw,
+  Trash2,
+  Undo2,
+  Upload,
+  X,
+} from "lucide-react";
 import { btnCls, btnDanger, btnPrimary, inputCls } from "@/components/admin/admin-ui";
 import { SlideBuilder } from "@/components/admin/presentation-builder";
-import { makeSlide, duplicateSlide, TEMPLATES, type CustomSlide } from "@/lib/custom-slides";
+import {
+  BACKGROUNDS,
+  makeBlock,
+  makeSlide,
+  duplicateSlide,
+  TEMPLATES,
+  type Block,
+  type CustomSlide,
+} from "@/lib/custom-slides";
 import { adminRpc } from "@/lib/admin-api";
 import { supabase } from "@/integrations/supabase/client";
 import { PresentationDeck } from "@/components/presentation/deck";
@@ -99,6 +119,11 @@ function listOf(path: string): { listPath: string; index: number } | null {
 
 type Target = { kind: "text"; path: string } | { kind: "photo"; index: number };
 
+type Snapshot = {
+  works: Partial<Record<Locale, PresentationCopy>>;
+  layoutEdit: PresentationLayout | null;
+};
+
 export function PresentationEditor({ onClose }: { onClose: () => void }) {
   const rows = usePresentationRows();
   const act = usePresentationAction();
@@ -132,10 +157,80 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
   const work = works[locale] ?? savedWorks[locale];
   const layout = layoutEdit ?? layoutSaved;
 
-  const setWork = (fn: (c: PresentationCopy) => PresentationCopy) =>
+  // Desfazer e refazer: cada mudança guarda o estado anterior. Digitação seguida vira um passo só.
+  const past = useRef<Snapshot[]>([]);
+  const future = useRef<Snapshot[]>([]);
+  const lastRecord = useRef(0);
+  const record = () => {
+    const now = Date.now();
+    if (now - lastRecord.current > 800) {
+      past.current.push({ works, layoutEdit });
+      if (past.current.length > 100) past.current.shift();
+      future.current = [];
+    }
+    lastRecord.current = now;
+  };
+  const restore = (snap: Snapshot) => {
+    setWorks(snap.works);
+    setLayoutEdit(snap.layoutEdit);
+  };
+  const undo = () => {
+    const prev = past.current.pop();
+    if (!prev) return;
+    future.current.push({ works, layoutEdit });
+    lastRecord.current = 0;
+    restore(prev);
+  };
+  const redo = () => {
+    const next = future.current.pop();
+    if (!next) return;
+    past.current.push({ works, layoutEdit });
+    lastRecord.current = 0;
+    restore(next);
+  };
+  const setWork = (fn: (c: PresentationCopy) => PresentationCopy) => {
+    record();
     setWorks((cur) => ({ ...cur, [locale]: fn(cur[locale] ?? savedWorks[locale]) }));
-  const setLayout = (fn: (l: PresentationLayout) => PresentationLayout) =>
+  };
+  const setLayout = (fn: (l: PresentationLayout) => PresentationLayout) => {
+    record();
     setLayoutEdit((cur) => fn(cur ?? layoutSaved));
+  };
+
+  // Atalhos: Ctrl+Z desfaz, Ctrl+Y refaz, Ctrl+C e Ctrl+V copiam blocos do slide montado.
+  const clip = useRef<Block | null>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = (e.target as HTMLElement | null)?.closest(
+        "input, textarea, select, [contenteditable=true]",
+      );
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod || typing) return;
+      const k = e.key.toLowerCase();
+      if (k === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if (k === "y" || (k === "z" && e.shiftKey)) {
+        e.preventDefault();
+        redo();
+      } else if (k === "c" && activeCustom && selectedBlock) {
+        clip.current = activeCustom.blocks.find((b) => b.id === selectedBlock) ?? null;
+      } else if (k === "v" && activeCustom && clip.current) {
+        e.preventDefault();
+        const src = clip.current;
+        const copy: Block = {
+          ...src,
+          id: makeBlock(src.type).id,
+          x: Math.min(src.x + 3, 100 - src.w),
+          y: Math.min(src.y + 3, 100 - src.h),
+        };
+        updateCustom(activeCustom.id, (sl) => ({ ...sl, blocks: [...sl.blocks, copy] }));
+        setSelectedBlock(copy.id);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   const overrides = useMemo(() => diffCopy(presentationCopy(locale), work), [locale, work]);
   const textRow = byKey.get(locale);
@@ -348,6 +443,26 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <button type="button" className={btnCls} onClick={() => setAddOpen((o) => !o)}>
             <Plus className="h-3.5 w-3.5" /> Novo slide
+          </button>
+          <button
+            type="button"
+            className={btnCls}
+            onClick={undo}
+            disabled={past.current.length === 0}
+            aria-label="Desfazer"
+            title="Desfazer (Ctrl+Z)"
+          >
+            <Undo2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            className={btnCls}
+            onClick={redo}
+            disabled={future.current.length === 0}
+            aria-label="Refazer"
+            title="Refazer (Ctrl+Y)"
+          >
+            <Redo2 className="h-3.5 w-3.5" />
           </button>
           <button type="button" className={btnCls} onClick={() => setDrawer((d) => !d)}>
             {drawer ? "Fechar ordem" : "Ordem dos slides"}
@@ -621,11 +736,17 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
               onClick={() => {
                 if (
                   !window.confirm(
-                    "Voltar a ordem, os ocultos e as exclusões ao original? Seus slides novos continuam.",
+                    "Voltar a ordem, os ocultos, as exclusões e os papéis de parede ao original? Seus slides novos continuam.",
                   )
                 )
                   return;
-                setLayout((cur) => ({ ...cur, order: {}, hidden: [], deleted: [] }));
+                setLayout((cur) => ({
+                  ...cur,
+                  order: {},
+                  hidden: [],
+                  deleted: [],
+                  backgrounds: {},
+                }));
               }}
             >
               <RotateCcw className="h-3 w-3" /> Restaurar original
@@ -659,6 +780,28 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                         key={s.id}
                         className={`flex items-center gap-1 rounded-lg border border-border px-2 py-1 ${hidden ? "opacity-50" : ""}`}
                       >
+                        {!custom && (
+                          <select
+                            className="max-w-[7rem] rounded-md border border-border bg-background px-1 py-0.5 text-[10px]"
+                            value={layout.backgrounds[s.id] ?? ""}
+                            aria-label={`Papel de parede de ${label}`}
+                            onChange={(e) =>
+                              setLayout((cur) => {
+                                const backgrounds = { ...cur.backgrounds };
+                                if (e.target.value) backgrounds[s.id] = e.target.value;
+                                else delete backgrounds[s.id];
+                                return { ...cur, backgrounds };
+                              })
+                            }
+                          >
+                            <option value="">Padrão</option>
+                            {BACKGROUNDS.map((bg) => (
+                              <option key={bg.id} value={bg.id}>
+                                {bg.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                         <span className="flex-1 truncate text-xs">
                           {label}
                           {deleted && (
