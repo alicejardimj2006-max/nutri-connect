@@ -110,11 +110,10 @@ export function PresenterAvatar({
       className={`relative grid shrink-0 place-items-center rounded-full bg-gradient-to-br font-display font-bold text-[#342d24] ${presenter.gradient} ${box}`}
     >
       {avatar ? (
-        <img
-          src={avatar}
-          alt={presenter.name}
-          className="h-full w-full rounded-full object-cover"
-        />
+        // Moldura que corta: fotos que não são quadradas não passam da bolinha.
+        <span className="absolute inset-0 overflow-hidden rounded-full">
+          <img src={avatar} alt={presenter.name} className="h-full w-full object-cover" />
+        </span>
       ) : (
         initials(presenter.name)
       )}
