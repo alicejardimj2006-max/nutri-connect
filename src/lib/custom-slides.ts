@@ -5,7 +5,7 @@ import type { NinaAction } from "@/lib/nina-scene";
 import type { Locale } from "@/lib/i18n/locales";
 
 export type Loc = Partial<Record<Locale, string>>;
-export type BlockType = "text" | "card" | "nina" | "image" | "shape" | "emoji";
+export type BlockType = "text" | "card" | "nina" | "image" | "shape" | "emoji" | "diagram" | "mockup";
 export type Anim = "none" | "rise" | "pop" | "drop" | "fade" | "stamp";
 export type Transition = "slide" | "fade" | "zoom" | "none";
 export type Tone = "ink" | "light" | "primary" | "accent" | "plum" | "card" | "sage" | "peach";
@@ -31,6 +31,10 @@ export interface Block {
   pose: NinaAction;
   src: string;
   shape: Shape;
+  /** Tipo do diagrama (venn, ciclo, fluxo, barras, pirâmide) ou da tela da maquete. */
+  kind: string;
+  /** Itens de diagramas e linhas de maquetes (texto por idioma). */
+  items: Loc[];
 }
 
 export interface CustomSlide {
@@ -177,6 +181,8 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
   image: "Imagem",
   shape: "Forma",
   emoji: "Emoji",
+  diagram: "Diagrama",
+  mockup: "Maquete de tela",
 };
 
 export const SIZE_CLASS: Record<Size, string> = {
@@ -206,6 +212,8 @@ const DEFAULT_BLOCK: Omit<Block, "id" | "type"> = {
   pose: "talk",
   src: "",
   shape: "circle",
+  kind: "",
+  items: [],
 };
 
 const SIZES: Partial<Record<BlockType, { w: number; h: number }>> = {
@@ -215,12 +223,36 @@ const SIZES: Partial<Record<BlockType, { w: number; h: number }>> = {
   image: { w: 34, h: 42 },
   shape: { w: 18, h: 30 },
   emoji: { w: 12, h: 20 },
+  diagram: { w: 44, h: 50 },
+  mockup: { w: 22, h: 78 },
 };
+
+export const DIAGRAM_KINDS: { id: string; label: string }[] = [
+  { id: "venn", label: "Venn (sobreposição)" },
+  { id: "cycle", label: "Ciclo" },
+  { id: "flow", label: "Fluxo em etapas" },
+  { id: "bars", label: "Barras" },
+  { id: "pyramid", label: "Pirâmide" },
+];
+
+export const MOCKUP_KINDS: { id: string; label: string }[] = [
+  { id: "feed", label: "Feed" },
+  { id: "perfil", label: "Perfil" },
+  { id: "trilha", label: "Trilha" },
+  { id: "comunidade", label: "Comunidade" },
+  { id: "desafio", label: "Desafio" },
+];
 
 export function makeBlock(type: BlockType, patch: Partial<Block> = {}): Block {
   const size = SIZES[type] ?? { w: 30, h: 20 };
   const tone: Tone = type === "card" ? "card" : type === "shape" ? "sage" : "ink";
-  return { ...DEFAULT_BLOCK, id: rid("b"), type, ...size, tone, ...patch };
+  const sample: Partial<Block> =
+    type === "diagram"
+      ? { kind: "venn", items: [{ "pt-BR": "Comunidade" }, { "pt-BR": "Educação" }, { "pt-BR": "Cuidado" }] }
+      : type === "mockup"
+        ? { kind: "feed", items: [{ "pt-BR": "Publicação de uma receita" }, { "pt-BR": "Desafio da semana" }, { "pt-BR": "Comentário de alguém" }] }
+        : {};
+  return { ...DEFAULT_BLOCK, id: rid("b"), type, ...size, tone, ...sample, ...patch };
 }
 
 export const TEMPLATES: { id: string; label: string; blocks: () => Block[] }[] = [
@@ -436,6 +468,8 @@ export function readBlock(raw: unknown): Block | null {
     pose: r.pose ?? "talk",
     src: typeof r.src === "string" ? r.src : "",
     shape: r.shape ?? "circle",
+    kind: typeof r.kind === "string" ? r.kind : "",
+    items: Array.isArray(r.items) ? r.items.map(asLoc) : [],
   };
 }
 

@@ -5,6 +5,8 @@ import { btnCls, btnDanger, inputCls } from "@/components/admin/admin-ui";
 import { PRESENTERS } from "@/components/presentation/parts";
 import {
   ANIMS,
+  DIAGRAM_KINDS,
+  MOCKUP_KINDS,
   applyTheme,
   THEMES,
   BACKGROUNDS,
@@ -21,7 +23,16 @@ import {
 } from "@/lib/custom-slides";
 import type { Locale } from "@/lib/i18n/locales";
 
-const BLOCK_TYPES: BlockType[] = ["text", "card", "nina", "image", "shape", "emoji"];
+const BLOCK_TYPES: BlockType[] = [
+  "text",
+  "card",
+  "nina",
+  "image",
+  "shape",
+  "emoji",
+  "diagram",
+  "mockup",
+];
 const SIZES: Size[] = ["sm", "md", "lg", "xl"];
 const SHAPES: { id: Shape; label: string }[] = [
   { id: "circle", label: "Círculo" },
@@ -325,6 +336,90 @@ export function SlideBuilder({
                   Tirar imagem
                 </button>
               )}
+            </div>
+          )}
+          {block.type === "diagram" && (
+            <label className="block text-xs font-semibold text-muted-foreground">
+              Tipo de diagrama
+              <select
+                className={inputCls}
+                value={block.kind}
+                onChange={(e) => setBlock(block.id, (b) => ({ ...b, kind: e.target.value }))}
+              >
+                {DIAGRAM_KINDS.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {block.type === "mockup" && (
+            <label className="block text-xs font-semibold text-muted-foreground">
+              Tela do app
+              <select
+                className={inputCls}
+                value={block.kind}
+                onChange={(e) => setBlock(block.id, (b) => ({ ...b, kind: e.target.value }))}
+              >
+                {MOCKUP_KINDS.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {(block.type === "diagram" || block.type === "mockup") && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">
+                {block.type === "diagram"
+                  ? block.kind === "bars"
+                    ? `Barras (${locale}): escreva "rótulo:valor", ex.: Abril:30`
+                    : `Itens do diagrama (${locale})`
+                  : `Linhas da tela (${locale})`}
+              </p>
+              {block.items.map((item, i) => (
+                <div key={i} className="flex gap-1">
+                  <input
+                    className={inputCls}
+                    value={item[locale] ?? item["pt-BR"] ?? ""}
+                    onChange={(e) =>
+                      setBlock(block.id, (b) => ({
+                        ...b,
+                        items: b.items.map((it, j) =>
+                          j === i ? { ...it, [locale]: e.target.value } : it,
+                        ),
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    aria-label="Remover item"
+                    onClick={() =>
+                      setBlock(block.id, (b) => ({
+                        ...b,
+                        items: b.items.filter((_, j) => j !== i),
+                      }))
+                    }
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                className={btnCls}
+                onClick={() =>
+                  setBlock(block.id, (b) => ({
+                    ...b,
+                    items: [...b.items, { [locale]: "Novo item" }],
+                  }))
+                }
+              >
+                <Plus className="h-3.5 w-3.5" /> Adicionar item
+              </button>
             </div>
           )}
           {block.type === "shape" && (
