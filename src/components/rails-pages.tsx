@@ -2,6 +2,7 @@
 // O padrão fica aqui; a administração pode trocar quais cards aparecem, a ordem e o lado de cada
 // página (configuração "site_rails"), sem mexer no código.
 import type { ReactNode } from "react";
+import type { FeatureFlags, FeatureKey } from "@/lib/features";
 import {
   ChallengeInfoCard,
   ChallengeStatsCard,
@@ -85,6 +86,8 @@ export interface RailCardDef {
   group: RailGroup;
   /** Só funciona numa página de comunidade ou de desafio. */
   needs?: "slug" | "challengeId";
+  /** Some quando esta funcionalidade está desligada. */
+  feature?: FeatureKey;
   render: (ctx: RailContext) => ReactNode;
 }
 
@@ -111,43 +114,55 @@ export const RAIL_CARDS: Record<string, RailCardDef> = {
   },
   quiz: { label: "Quiz", group: "Bem-estar", render: () => <QuizCard /> },
   "minhas-comunidades": {
+    feature: "comunidades",
     label: "Minhas comunidades",
     group: "Comunidades",
     render: () => <MyCommunitiesCard />,
   },
   "comunidades-sugeridas": {
+    feature: "comunidades",
     label: "Comunidades sugeridas",
     group: "Comunidades",
     render: (ctx) => <SuggestedCommunitiesCard limit={ctx.suggest ?? 3} />,
   },
   "buscar-comunidades": {
+    feature: "comunidades",
     label: "Buscar comunidades",
     group: "Comunidades",
     render: () => <CommunitySearchCard />,
   },
   "categorias-comunidades": {
+    feature: "comunidades",
     label: "Categorias de comunidades",
     group: "Comunidades",
     render: () => <CommunityCategoriesCard />,
   },
   "roleta-comunidades": {
+    feature: "comunidades",
     label: "Roleta de comunidades",
     group: "Comunidades",
     render: () => <CommunityRouletteCard />,
   },
-  "quebra-gelo": { label: "Quebra-gelo", group: "Comunidades", render: () => <IcebreakerCard /> },
+  "quebra-gelo": {
+    feature: "comunidades",
+    label: "Quebra-gelo",
+    group: "Comunidades",
+    render: () => <IcebreakerCard />,
+  },
   "regras-comunidade": {
     label: "Regras da comunidade",
     group: "Comunidades",
     render: () => <CommunityRulesCard />,
   },
   "sobre-comunidade": {
+    feature: "comunidades",
     label: "Sobre esta comunidade",
     group: "Comunidades",
     needs: "slug",
     render: (ctx) => (ctx.slug ? <CommunityAboutCard slug={ctx.slug} /> : null),
   },
   "membros-comunidade": {
+    feature: "comunidades",
     label: "Membros desta comunidade",
     group: "Comunidades",
     needs: "slug",
@@ -155,27 +170,32 @@ export const RAIL_CARDS: Record<string, RailCardDef> = {
   },
   trilha: { label: "Trilha (com a Nina)", group: "Desafios e trilha", render: () => <TrailCard /> },
   "tema-da-semana": {
+    feature: "tema",
     label: "Tema da semana",
     group: "Desafios e trilha",
     render: () => <WeeklyThemeCard />,
   },
   "meus-desafios": {
+    feature: "desafios",
     label: "Meus desafios",
     group: "Desafios e trilha",
     render: () => <MyChallengesCard />,
   },
   "estatisticas-desafios": {
+    feature: "desafios",
     label: "Estatísticas de desafios",
     group: "Desafios e trilha",
     render: () => <ChallengeStatsCard />,
   },
   "info-desafio": {
+    feature: "desafios",
     label: "Sobre este desafio",
     group: "Desafios e trilha",
     needs: "challengeId",
     render: (ctx) => (ctx.challengeId ? <ChallengeInfoCard id={ctx.challengeId} /> : null),
   },
   "receitas-em-alta": {
+    feature: "receitas",
     label: "Receitas em alta",
     group: "Cozinha",
     render: () => <TopRecipesCard />,
@@ -202,27 +222,37 @@ export const RAIL_CARDS: Record<string, RailCardDef> = {
     render: () => <ShoppingListCard />,
   },
   "temas-explorar": {
+    feature: "explorar",
     label: "Temas para explorar",
     group: "Cozinha",
     render: () => <ExploreTopicsCard />,
   },
-  "dicas-busca": { label: "Dicas de busca", group: "Cozinha", render: () => <SearchTipsCard /> },
+  "dicas-busca": {
+    feature: "explorar",
+    label: "Dicas de busca",
+    group: "Cozinha",
+    render: () => <SearchTipsCard />,
+  },
   profissionais: {
+    feature: "profissionais",
     label: "Profissionais",
     group: "Profissionais",
     render: () => <ProfessionalsCard />,
   },
   "match-profissional": {
+    feature: "profissionais",
     label: "Encontre seu profissional",
     group: "Profissionais",
     render: () => <ProMatchCard />,
   },
   "proximas-consultas": {
+    feature: "profissionais",
     label: "Próximas consultas",
     group: "Profissionais",
     render: () => <UpcomingAppointmentsCard />,
   },
   "como-agendar": {
+    feature: "profissionais",
     label: "Como agendar",
     group: "Profissionais",
     render: () => <HowBookingCard />,
@@ -237,8 +267,18 @@ export const RAIL_CARDS: Record<string, RailCardDef> = {
     group: "Profissionais",
     render: () => <EducationalNoticeCard />,
   },
-  "temas-nina": { label: "Assuntos com a Nina", group: "Nina", render: () => <NinaTopicsCard /> },
-  "uso-nina": { label: "Uso da Nina", group: "Nina", render: () => <NinaUsageCard /> },
+  "temas-nina": {
+    feature: "nina",
+    label: "Assuntos com a Nina",
+    group: "Nina",
+    render: () => <NinaTopicsCard />,
+  },
+  "uso-nina": {
+    feature: "nina",
+    label: "Uso da Nina",
+    group: "Nina",
+    render: () => <NinaUsageCard />,
+  },
   atalhos: { label: "Atalhos", group: "Ajuda e conta", render: () => <ShortcutsCard /> },
   "menu-configuracoes": {
     label: "Menu de configurações",
@@ -413,10 +453,14 @@ export function railSidesOf(page: RailPageDef, overrides: RailOverrides = {}) {
 }
 
 /** Os cards de uma lista, prontos para desenhar (cada um com a sua chave). */
-export function renderRailCards(ids: string[], ctx: RailContext): ReactNode[] {
+export function renderRailCards(
+  ids: string[],
+  ctx: RailContext,
+  features?: FeatureFlags,
+): ReactNode[] {
   return ids.flatMap((id) => {
     const def = RAIL_CARDS[id];
-    if (!def) return [];
+    if (!def || (def.feature && features && !features[def.feature])) return [];
     const node = def.render(ctx);
     return node ? [<RailSlot key={id}>{node}</RailSlot>] : [];
   });
@@ -427,7 +471,11 @@ function RailSlot({ children }: { children: ReactNode }) {
 }
 
 /** Cards das colunas laterais da página em `pathname`, ou null se a página não usa colunas. */
-export function railsFor(pathname: string, overrides: RailOverrides = {}): RailSet | null {
+export function railsFor(
+  pathname: string,
+  overrides: RailOverrides = {},
+  features?: FeatureFlags,
+): RailSet | null {
   const p = pathname.replace(/\/+$/, "") || "/";
   for (const page of RAIL_PAGES) {
     const ctx = page.match?.(p);
@@ -435,8 +483,8 @@ export function railsFor(pathname: string, overrides: RailOverrides = {}): RailS
     const sides = railSidesOf(page, overrides);
     return {
       locked: page.locked,
-      left: <>{renderRailCards(sides.left, ctx)}</>,
-      right: <>{renderRailCards(sides.right, ctx)}</>,
+      left: <>{renderRailCards(sides.left, ctx, features)}</>,
+      right: <>{renderRailCards(sides.right, ctx, features)}</>,
     };
   }
   // O perfil de cada pessoa é um espaço livre montado por ela: não usa as colunas laterais do site.

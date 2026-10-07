@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Megaphone,
   PanelsLeftRight,
+  ToggleRight,
   Presentation,
   Settings,
   Users,
@@ -32,6 +33,7 @@ export type SectionId =
   | "apresentacao"
   | "anuncios"
   | "site_cards"
+  | "site_features"
   | "financeiro"
   | "ia"
   | "config"
@@ -57,6 +59,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "apresentacao", label: "Apresentação", icon: Presentation, group: "Conteúdo" },
   { id: "anuncios", label: "Anúncios", icon: Megaphone, group: "Conteúdo" },
   { id: "site_cards", label: "Cards das laterais", icon: PanelsLeftRight, group: "Site" },
+  { id: "site_features", label: "Funcionalidades", icon: ToggleRight, group: "Site" },
   { id: "financeiro", label: "Financeiro", icon: Banknote, group: "Negócio" },
   { id: "ia", label: "Inteligência artificial", icon: Brain, group: "Sistema" },
   { id: "config", label: "Configurações", icon: Settings, group: "Sistema" },

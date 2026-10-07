@@ -12,6 +12,7 @@ import {
   AiRejectionsSection,
   useAiRejectionsSummary,
 } from "@/components/admin/sections-ai-rejections";
+import { SiteFeaturesSection } from "@/components/admin/sections-site-features";
 import { SiteRailsSection } from "@/components/admin/sections-site-rails";
 import { PresentationSection } from "@/components/admin/sections-presentation";
 import {
@@ -164,6 +165,7 @@ function AdminPage() {
           {section === "apresentacao" && <PresentationSection />}
           {section === "anuncios" && <AnnouncementsSection />}
           {section === "site_cards" && <SiteRailsSection />}
+          {section === "site_features" && <SiteFeaturesSection />}
           {section === "financeiro" && <FinanceSection />}
           {section === "ia" && <AiSection />}
           {section === "config" && <SettingsSection />}
