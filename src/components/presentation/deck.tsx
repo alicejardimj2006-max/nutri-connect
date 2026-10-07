@@ -11,12 +11,13 @@ import {
   markCopy,
   partStartsOf,
   readLayout,
-  readMark,
+  getPath,
   readTexts,
   usePublishedPresentation,
   type DeckEditor,
 } from "@/lib/presentation-content";
 import { StaticContext } from "./effects";
+import { InlineTextEditor, pathAt } from "./inline-text-editor";
 import { AvatarContext } from "./avatar-context";
 import { CustomSlideView, type CanvasEditing } from "./custom-slide";
 import { backgroundOf, type CustomSlide } from "@/lib/custom-slides";
@@ -29,18 +30,6 @@ const SWIPE_MIN = 60;
 function slideFromHash(hash: string, total: number): number {
   const n = Number.parseInt(hash.replace("#", ""), 10);
   return Number.isFinite(n) && n >= 1 && n <= total ? n - 1 : 0;
-}
-
-/** Texto do campo clicado: o primeiro caminho marcado no próprio elemento ou no seu conteúdo direto. */
-function markPathAt(start: HTMLElement): string | null {
-  for (let el: HTMLElement | null = start; el; el = el.parentElement) {
-    for (const node of Array.from(el.childNodes)) {
-      if (node.nodeType !== Node.TEXT_NODE) continue;
-      const path = readMark(node.textContent ?? "");
-      if (path) return path;
-    }
-  }
-  return null;
 }
 
 export function PresentationDeck({
@@ -280,19 +269,26 @@ export function PresentationDeck({
     };
   }, [printing]);
 
-  // Modo edição: o clique não navega nem abre o slide; vai para o painel com o campo ou a foto clicados.
+  // Modo edição: o clique não navega nem abre o slide. Texto clicado vira caixa de digitação no lugar;
+  // foto clicada vai para o painel.
+  const [inlinePath, setInlinePath] = useState<string | null>(null);
+  useEffect(() => setInlinePath(null), [slide.id, locale]);
   const onEditorClick = (e: React.MouseEvent<HTMLElement>) => {
     if (!editor) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-nc-inline]")) return;
     e.preventDefault();
     e.stopPropagation();
-    const target = e.target as HTMLElement;
     const photo = target.closest<HTMLElement>("[data-nc-photo]");
     if (photo) {
       editor.onPhoto(Number(photo.dataset.ncPhoto), photo.getBoundingClientRect());
       return;
     }
-    const path = markPathAt(target);
-    if (path) editor.onText(path, target.getBoundingClientRect());
+    const root = scroller.current;
+    const path = root ? pathAt(target, root) : null;
+    if (!path || typeof getPath(base, path) !== "string") return;
+    setInlinePath(path);
+    editor.onText(path, target.getBoundingClientRect());
   };
 
   const counter = copy.ui.slideOf
@@ -399,6 +395,19 @@ export function PresentationDeck({
           >
             {slide.render(copy, api)}
           </div>
+          {editor &&
+            inlinePath &&
+            scroller.current &&
+            typeof getPath(base, inlinePath) === "string" && (
+              <InlineTextEditor
+                key={inlinePath}
+                root={scroller.current}
+                path={inlinePath}
+                value={getPath(base, inlinePath) as string}
+                onChange={(v) => editor.onTextChange(inlinePath, v)}
+                onDone={() => setInlinePath(null)}
+              />
+            )}
         </main>
 
         {/* Rodapé: narradora, progresso e navegação */}

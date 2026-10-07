@@ -284,7 +284,10 @@ export function markCopy<T>(value: T, path = ""): T {
   }
   if (value && typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, UNMARKED.has(k) ? v : markCopy(v, path ? `${path}.${k}` : k)]),
+      Object.entries(value).map(([k, v]) => [
+        k,
+        UNMARKED.has(k) ? v : markCopy(v, path ? `${path}.${k}` : k),
+      ]),
     ) as T;
   }
   return value;
@@ -299,6 +302,8 @@ export interface DeckEditor {
   layout: PresentationLayout;
   /** Clique num texto: caminho do campo e a posição na tela. */
   onText: (path: string, rect: DOMRect) => void;
+  /** Texto digitado direto no slide. */
+  onTextChange: (path: string, value: string) => void;
   /** Clique numa foto da equipe (índice do integrante). */
   onPhoto: (index: number, rect: DOMRect) => void;
   /** Bloco selecionado num slide personalizado. */

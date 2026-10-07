@@ -494,6 +494,7 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
     copy: work,
     layout,
     onText: (path) => setTarget({ kind: "text", path }),
+    onTextChange: (path, value) => setWork((c) => setPath(c, path, value)),
     onPhoto: (index) => setTarget({ kind: "photo", index }),
     selectedBlock,
     onSelectBlock: setSelectedBlock,
@@ -644,7 +645,7 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {target?.kind === "text" && !activeCustom && typeof textValue === "string" && (
+          {target?.kind === "text" && !activeCustom && typeof textValue === "string" && item && (
             <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <p className="font-mono text-[11px] text-muted-foreground">{target.path}</p>
@@ -657,24 +658,9 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-              {textValue.length > 70 || textValue.includes("\n") ? (
-                <textarea
-                  className={`${inputCls} min-h-[6rem]`}
-                  value={textValue}
-                  onChange={(e) => setWork((c) => setPath(c, target.path, e.target.value))}
-                  autoFocus
-                />
-              ) : (
-                <input
-                  className={inputCls}
-                  value={textValue}
-                  onChange={(e) => setWork((c) => setPath(c, target.path, e.target.value))}
-                  autoFocus
-                />
-              )}
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                Campos entre chaves, como {"{n}"} ou {"{fee}"}, são preenchidos pelo sistema:
-                mantenha-os.
+              <p className="text-[11px] text-muted-foreground">
+                Digite direto no slide. Enter termina, Esc desfaz. Mantenha campos entre chaves,
+                como {"{n}"} ou {"{fee}"}.
               </p>
               {item && itemList && (
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
