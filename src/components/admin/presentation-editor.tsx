@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   ArrowDown,
   ArrowUp,
+  Copy,
   Eye,
   EyeOff,
   Plus,
@@ -18,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { btnCls, btnDanger, btnPrimary, inputCls } from "@/components/admin/admin-ui";
+import type { Loc } from "@/lib/custom-slides";
 import { SlideBuilder } from "@/components/admin/presentation-builder";
 import {
   BACKGROUNDS,
@@ -319,6 +321,89 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
     setLayout((cur) => ({ ...cur, custom: [...cur.custom, copy] }));
     setFocus({ id: copy.id, n: Date.now() });
     setCurrentSlide(copy.id);
+  };
+
+  // Cópia editável de um slide pronto: textos nos quatro idiomas em blocos, e a Nina ao lado.
+  const copyFromPronto = (id: string, label: string, part: number) => {
+    const SECTION: Record<string, string> = {
+      capa: "cover",
+      equipe: "team",
+      problema: "problem",
+      solucao: "solution",
+      diferenciais: "differentials",
+      nina: "ninaIntro",
+      canvas: "canvas",
+      concorrentes: "competitors",
+      comparativo: "comparison",
+      tour: "tourIntro",
+      curso: "course",
+      financeiro: "finance",
+      convite: "join",
+      "persona-usuario": "personas",
+      "persona-profissional": "personas",
+    };
+    const textsOf = (loc: Locale): { eyebrow: string; title: string; body: string } => {
+      const c = presentationCopy(loc) as unknown as Record<string, Record<string, unknown>>;
+      const key = SECTION[id];
+      let node: Record<string, unknown> | undefined = key ? c[key] : undefined;
+      if (id === "persona-usuario")
+        node = (c.personas as unknown as Record<string, Record<string, unknown>>).user;
+      if (id === "persona-profissional")
+        node = (c.personas as unknown as Record<string, Record<string, unknown>>).pro;
+      const pick = (...keys: string[]) => {
+        for (const k of keys) {
+          const v = node?.[k];
+          if (typeof v === "string") return v;
+        }
+        return "";
+      };
+      return {
+        eyebrow: pick("eyebrow", "userTitle", "proTitle"),
+        title: pick("title", "name"),
+        body: pick("text", "intro", "lead", "quote", "bio"),
+      };
+    };
+    const loc = (field: "eyebrow" | "title" | "body"): Loc =>
+      Object.fromEntries(LOCALES.map((l) => [l.id, textsOf(l.id)[field]]));
+    const slide = makeSlide(part, "vazio", `${label} (cópia)`);
+    slide.background = layout.backgrounds[id] ?? "creme";
+    slide.blocks = [
+      makeBlock("text", {
+        x: 6,
+        y: 8,
+        w: 60,
+        h: 7,
+        size: "sm",
+        tone: "primary",
+        title: loc("eyebrow"),
+        anim: "fade",
+      }),
+      makeBlock("text", {
+        x: 6,
+        y: 16,
+        w: 60,
+        h: 18,
+        size: "xl",
+        title: loc("title"),
+        anim: "rise",
+        delay: 150,
+      }),
+      makeBlock("text", {
+        x: 6,
+        y: 38,
+        w: 52,
+        h: 26,
+        size: "md",
+        body: loc("body"),
+        anim: "rise",
+        delay: 300,
+      }),
+      makeBlock("nina", { x: 68, y: 18, w: 26, h: 64, pose: "talk", anim: "drop", delay: 200 }),
+    ];
+    setLayout((cur) => ({ ...cur, custom: [...cur.custom, slide] }));
+    setFocus({ id: slide.id, n: Date.now() });
+    setCurrentSlide(slide.id);
+    setSelectedBlock(null);
   };
 
   const deleteCustom = (id: string) => {
@@ -865,6 +950,17 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                                 <Eye className="h-3 w-3" />
                               )}
                             </button>
+                            {!custom && !deleted && (
+                              <button
+                                type="button"
+                                className={btnCls}
+                                aria-label={`Criar cópia editável de ${label}`}
+                                title="Cria um slide editável com os textos deste"
+                                onClick={() => copyFromPronto(s.id, label, part)}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </button>
+                            )}
                             {deleted ? (
                               <button
                                 type="button"
