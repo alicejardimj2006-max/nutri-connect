@@ -430,475 +430,487 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
   const itemList = item ? (getPath(work, item.listPath) as unknown[]) : null;
 
   return (
-    <div className="fixed inset-0 z-[60]">
-      <PresentationDeck editor={editor} />
-
-      {/* Barra do editor, logo abaixo do cabeçalho da apresentação */}
-      <div className="fixed inset-x-0 top-14 z-[70] flex flex-wrap items-center gap-2 border-b border-amber-500/40 bg-amber-50 px-3 py-2 text-xs text-foreground dark:bg-amber-950/80">
-        <span className="rounded-full bg-amber-500 px-2 py-0.5 font-bold text-white">Editando</span>
-        <span className="text-muted-foreground">
-          {dirty || pending ? "Alterações não publicadas" : "Tudo publicado"} · clique num texto ou
-          numa foto para editar
-        </span>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <button type="button" className={btnCls} onClick={() => setAddOpen((o) => !o)}>
-            <Plus className="h-3.5 w-3.5" /> Novo slide
-          </button>
-          <button
-            type="button"
-            className={btnCls}
-            onClick={undo}
-            disabled={past.current.length === 0}
-            aria-label="Desfazer"
-            title="Desfazer (Ctrl+Z)"
-          >
-            <Undo2 className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            className={btnCls}
-            onClick={redo}
-            disabled={future.current.length === 0}
-            aria-label="Refazer"
-            title="Refazer (Ctrl+Y)"
-          >
-            <Redo2 className="h-3.5 w-3.5" />
-          </button>
-          <button type="button" className={btnCls} onClick={() => setDrawer((d) => !d)}>
-            {drawer ? "Fechar ordem" : "Ordem dos slides"}
-          </button>
-          <button
-            type="button"
-            className={btnDanger}
-            onClick={() => void discard()}
-            disabled={act.isPending || !pending || dirty}
-          >
-            Descartar
-          </button>
-          <button
-            type="button"
-            className={btnCls}
-            onClick={() => void run(saveAll)}
-            disabled={act.isPending || !dirty}
-          >
-            Salvar rascunho
-          </button>
-          <button
-            type="button"
-            className={btnPrimary}
-            onClick={() => void publish()}
-            disabled={act.isPending || (!dirty && !pending)}
-          >
-            Publicar
-          </button>
-          <button type="button" className={btnCls} onClick={close} aria-label="Fechar editor">
-            <X className="h-3.5 w-3.5" /> Fechar editor
-          </button>
-        </div>
-      </div>
-
-      {/* Painel do texto clicado */}
-      {/* Criar slide: parte e modelo pronto */}
-      {addOpen && (
-        <div className="fixed left-3 top-32 z-[80] w-[min(320px,calc(100vw-1.5rem))] space-y-3 rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <p className="text-sm font-semibold">Novo slide</p>
-          <select
-            className={inputCls}
-            value={addPart}
-            onChange={(e) => setAddPart(Number(e.target.value))}
-          >
-            {PRESENTERS.map((p, i) => (
-              <option key={p.name} value={i}>
-                {i + 1} · {p.name}
-              </option>
-            ))}
-          </select>
-          <div className="grid grid-cols-2 gap-2">
-            {TEMPLATES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                aria-pressed={addTemplate === t.id}
-                onClick={() => setAddTemplate(t.id)}
-                className={`${btnCls} ${addTemplate === t.id ? "border-accent bg-accent-soft" : ""}`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex justify-end gap-2">
-            <button type="button" className={btnCls} onClick={() => setAddOpen(false)}>
-              Cancelar
+    <div className="fixed inset-0 z-[60] flex bg-background">
+      <aside className="flex h-full w-[min(400px,42vw)] shrink-0 flex-col overflow-hidden border-r border-border bg-card">
+        {/* Barra do editor, logo abaixo do cabeçalho da apresentação */}
+        <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-amber-500/40 bg-amber-50 px-3 py-2 text-xs text-foreground dark:bg-amber-950/80">
+          <span className="rounded-full bg-amber-500 px-2 py-0.5 font-bold text-white">
+            Editando
+          </span>
+          <span className="text-muted-foreground">
+            {dirty || pending ? "Alterações não publicadas" : "Tudo publicado"} · clique num texto
+            ou numa foto para editar
+          </span>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <button type="button" className={btnCls} onClick={() => setAddOpen((o) => !o)}>
+              <Plus className="h-3.5 w-3.5" /> Novo slide
+            </button>
+            <button
+              type="button"
+              className={btnCls}
+              onClick={undo}
+              disabled={past.current.length === 0}
+              aria-label="Desfazer"
+              title="Desfazer (Ctrl+Z)"
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              className={btnCls}
+              onClick={redo}
+              disabled={future.current.length === 0}
+              aria-label="Refazer"
+              title="Refazer (Ctrl+Y)"
+            >
+              <Redo2 className="h-3.5 w-3.5" />
+            </button>
+            <button type="button" className={btnCls} onClick={() => setDrawer((d) => !d)}>
+              {drawer ? "Fechar ordem" : "Ordem dos slides"}
+            </button>
+            <button
+              type="button"
+              className={btnDanger}
+              onClick={() => void discard()}
+              disabled={act.isPending || !pending || dirty}
+            >
+              Descartar
+            </button>
+            <button
+              type="button"
+              className={btnCls}
+              onClick={() => void run(saveAll)}
+              disabled={act.isPending || !dirty}
+            >
+              Salvar rascunho
             </button>
             <button
               type="button"
               className={btnPrimary}
-              onClick={() => addCustom(addPart, addTemplate)}
+              onClick={() => void publish()}
+              disabled={act.isPending || (!dirty && !pending)}
             >
-              Criar slide
+              Publicar
+            </button>
+            <button type="button" className={btnCls} onClick={close} aria-label="Fechar editor">
+              <X className="h-3.5 w-3.5" /> Fechar editor
             </button>
           </div>
         </div>
-      )}
 
-      {/* Slide montado com blocos: o painel acompanha o slide que está na tela */}
-      {activeCustom && (
-        <div className="fixed bottom-28 right-3 top-32 z-[80] w-[min(360px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <SlideBuilder
-            slide={activeCustom}
-            locale={locale}
-            selected={selectedBlock}
-            onSelect={setSelectedBlock}
-            onSlide={(fn) => updateCustom(activeCustom.id, fn)}
-            onDeleteSlide={() => deleteCustom(activeCustom.id)}
-            onDuplicateSlide={() => duplicateCustom(activeCustom.id)}
-            onUpload={uploadBlockImage}
-          />
-        </div>
-      )}
-
-      {target?.kind === "text" && !activeCustom && typeof textValue === "string" && (
-        <div className="fixed bottom-28 right-3 z-[80] max-h-[50vh] w-[min(440px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <div className="mb-2 flex items-start justify-between gap-2">
-            <p className="font-mono text-[11px] text-muted-foreground">{target.path}</p>
-            <button
-              type="button"
-              className={btnCls}
-              onClick={() => setTarget(null)}
-              aria-label="Fechar"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          {textValue.length > 70 || textValue.includes("\n") ? (
-            <textarea
-              className={`${inputCls} min-h-[6rem]`}
-              value={textValue}
-              onChange={(e) => setWork((c) => setPath(c, target.path, e.target.value))}
-              autoFocus
-            />
-          ) : (
-            <input
-              className={inputCls}
-              value={textValue}
-              onChange={(e) => setWork((c) => setPath(c, target.path, e.target.value))}
-              autoFocus
-            />
-          )}
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            Campos entre chaves, como {"{n}"} ou {"{fee}"}, são preenchidos pelo sistema:
-            mantenha-os.
-          </p>
-          {item && itemList && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-              <span className="text-xs font-semibold text-muted-foreground">
-                Item {item.index + 1} de {itemList.length}
-              </span>
-              <button
-                type="button"
-                className={btnCls}
-                disabled={item.index === 0}
-                onClick={() => {
-                  const next = [...itemList];
-                  [next[item.index - 1], next[item.index]] = [
-                    next[item.index],
-                    next[item.index - 1],
-                  ];
-                  setWork((c) => setPath(c, item.listPath, next));
-                }}
-                aria-label="Subir item"
+        <div className="flex-1 space-y-3 overflow-y-auto p-3">
+          {/* Painel do texto clicado */}
+          {/* Criar slide: parte e modelo pronto */}
+          {addOpen && (
+            <div className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <p className="text-sm font-semibold">Novo slide</p>
+              <select
+                className={inputCls}
+                value={addPart}
+                onChange={(e) => setAddPart(Number(e.target.value))}
               >
-                <ArrowUp className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                className={btnCls}
-                disabled={item.index === itemList.length - 1}
-                onClick={() => {
-                  const next = [...itemList];
-                  [next[item.index + 1], next[item.index]] = [
-                    next[item.index],
-                    next[item.index + 1],
-                  ];
-                  setWork((c) => setPath(c, item.listPath, next));
-                }}
-                aria-label="Descer item"
-              >
-                <ArrowDown className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                className={btnCls}
-                onClick={() => {
-                  const template = itemList[item.index];
-                  const next = [
-                    ...itemList.slice(0, item.index + 1),
-                    blankLike(template),
-                    ...itemList.slice(item.index + 1),
-                  ];
-                  setWork((c) => setPath(c, item.listPath, next));
-                }}
-              >
-                <Plus className="h-3.5 w-3.5" /> Adicionar item depois
-              </button>
-              <button
-                type="button"
-                className={btnDanger}
-                disabled={itemList.length <= 1}
-                onClick={() => {
-                  setWork((c) =>
-                    setPath(
-                      c,
-                      item.listPath,
-                      itemList.filter((_, i) => i !== item.index),
-                    ),
-                  );
-                  setTarget(null);
-                }}
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Remover item
-              </button>
+                {PRESENTERS.map((p, i) => (
+                  <option key={p.name} value={i}>
+                    {i + 1} · {p.name}
+                  </option>
+                ))}
+              </select>
+              <div className="grid grid-cols-2 gap-2">
+                {TEMPLATES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    aria-pressed={addTemplate === t.id}
+                    onClick={() => setAddTemplate(t.id)}
+                    className={`${btnCls} ${addTemplate === t.id ? "border-accent bg-accent-soft" : ""}`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" className={btnCls} onClick={() => setAddOpen(false)}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => addCustom(addPart, addTemplate)}
+                >
+                  Criar slide
+                </button>
+              </div>
             </div>
           )}
-        </div>
-      )}
 
-      {/* Painel da foto clicada */}
-      {target?.kind === "photo" && (
-        <div className="fixed bottom-28 right-3 z-[80] w-[min(360px,calc(100vw-1.5rem))] rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="font-semibold">Foto de {PRESENTERS[target.index].name}</p>
-            <button
-              type="button"
-              className={btnCls}
-              onClick={() => setTarget(null)}
-              aria-label="Fechar"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-secondary font-bold">
-              {avatarOf(target.index, layout.avatars) ? (
-                <img
-                  src={avatarOf(target.index, layout.avatars)}
-                  alt={PRESENTERS[target.index].name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                initials(PRESENTERS[target.index].name)
-              )}
-            </span>
-            <div className="flex flex-col gap-2">
-              <label className={`${btnPrimary} cursor-pointer`}>
-                <Upload className="h-3.5 w-3.5" />
-                {uploading === target.index ? "Enviando…" : "Trocar foto"}
-                <input
-                  type="file"
-                  accept={PHOTO_TYPES.join(",")}
-                  className="sr-only"
-                  disabled={uploading !== null}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    if (file) void uploadPhoto(target.index, file);
-                  }}
-                />
-              </label>
-              {layout.avatars[String(target.index)] && (
+          {/* Slide montado com blocos: o painel acompanha o slide que está na tela */}
+          {activeCustom && (
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <SlideBuilder
+                slide={activeCustom}
+                locale={locale}
+                selected={selectedBlock}
+                onSelect={setSelectedBlock}
+                onSlide={(fn) => updateCustom(activeCustom.id, fn)}
+                onDeleteSlide={() => deleteCustom(activeCustom.id)}
+                onDuplicateSlide={() => duplicateCustom(activeCustom.id)}
+                onUpload={uploadBlockImage}
+              />
+            </div>
+          )}
+
+          {target?.kind === "text" && !activeCustom && typeof textValue === "string" && (
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <p className="font-mono text-[11px] text-muted-foreground">{target.path}</p>
                 <button
                   type="button"
                   className={btnCls}
-                  onClick={() =>
-                    setLayout((cur) => {
-                      const avatars = { ...cur.avatars };
-                      delete avatars[String(target.index)];
-                      return { ...cur, avatars };
-                    })
-                  }
+                  onClick={() => setTarget(null)}
+                  aria-label="Fechar"
                 >
-                  Usar a foto do código
+                  <X className="h-3.5 w-3.5" />
                 </button>
+              </div>
+              {textValue.length > 70 || textValue.includes("\n") ? (
+                <textarea
+                  className={`${inputCls} min-h-[6rem]`}
+                  value={textValue}
+                  onChange={(e) => setWork((c) => setPath(c, target.path, e.target.value))}
+                  autoFocus
+                />
+              ) : (
+                <input
+                  className={inputCls}
+                  value={textValue}
+                  onChange={(e) => setWork((c) => setPath(c, target.path, e.target.value))}
+                  autoFocus
+                />
+              )}
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Campos entre chaves, como {"{n}"} ou {"{fee}"}, são preenchidos pelo sistema:
+                mantenha-os.
+              </p>
+              {item && itemList && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    Item {item.index + 1} de {itemList.length}
+                  </span>
+                  <button
+                    type="button"
+                    className={btnCls}
+                    disabled={item.index === 0}
+                    onClick={() => {
+                      const next = [...itemList];
+                      [next[item.index - 1], next[item.index]] = [
+                        next[item.index],
+                        next[item.index - 1],
+                      ];
+                      setWork((c) => setPath(c, item.listPath, next));
+                    }}
+                    aria-label="Subir item"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    className={btnCls}
+                    disabled={item.index === itemList.length - 1}
+                    onClick={() => {
+                      const next = [...itemList];
+                      [next[item.index + 1], next[item.index]] = [
+                        next[item.index],
+                        next[item.index + 1],
+                      ];
+                      setWork((c) => setPath(c, item.listPath, next));
+                    }}
+                    aria-label="Descer item"
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    className={btnCls}
+                    onClick={() => {
+                      const template = itemList[item.index];
+                      const next = [
+                        ...itemList.slice(0, item.index + 1),
+                        blankLike(template),
+                        ...itemList.slice(item.index + 1),
+                      ];
+                      setWork((c) => setPath(c, item.listPath, next));
+                    }}
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Adicionar item depois
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    disabled={itemList.length <= 1}
+                    onClick={() => {
+                      setWork((c) =>
+                        setPath(
+                          c,
+                          item.listPath,
+                          itemList.filter((_, i) => i !== item.index),
+                        ),
+                      );
+                      setTarget(null);
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Remover item
+                  </button>
+                </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Ordem e slides escondidos: só dentro de cada parte, para não trocar quem apresenta */}
-      {drawer && (
-        <div className="fixed bottom-28 left-3 top-32 z-[80] w-[min(380px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold">Ordem e slides</p>
-            <button
-              type="button"
-              className={btnCls}
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    "Voltar a ordem, os ocultos, as exclusões e os papéis de parede ao original? Seus slides novos continuam.",
-                  )
-                )
-                  return;
-                setLayout((cur) => ({
-                  ...cur,
-                  order: {},
-                  hidden: [],
-                  deleted: [],
-                  backgrounds: {},
-                }));
-              }}
-            >
-              <RotateCcw className="h-3 w-3" /> Restaurar original
-            </button>
-          </div>
-          <p className="mb-3 text-[11px] text-muted-foreground">
-            Os slides mudam de posição só dentro da própria parte. A capa nunca some.
-          </p>
-          {PRESENTERS.map((p, part) => {
-            const items = orderSlides(
-              allSlides.filter((s) => s.part === part),
-              layout,
-            );
-            const off = (id: string) => layout.hidden.includes(id) || layout.deleted.includes(id);
-            const visible = items.filter((s) => !off(s.id)).length;
-            const copy = work;
-            return (
-              <div key={p.name} className="mb-4">
-                <p className="mb-1 text-xs font-semibold">
-                  {part + 1} · {p.name}
-                </p>
-                <ol className="space-y-1">
-                  {items.map((s, i) => {
-                    const deleted = layout.deleted.includes(s.id);
-                    const hidden = off(s.id);
-                    const custom = layout.custom.some((c) => c.id === s.id);
-                    const last = !hidden && visible === 1;
-                    const label = s.label ? s.label(copy) : s.id;
-                    return (
-                      <li
-                        key={s.id}
-                        className={`flex items-center gap-1 rounded-lg border border-border px-2 py-1 ${hidden ? "opacity-50" : ""}`}
-                      >
-                        {!custom && (
-                          <select
-                            className="max-w-[7rem] rounded-md border border-border bg-background px-1 py-0.5 text-[10px]"
-                            value={layout.backgrounds[s.id] ?? ""}
-                            aria-label={`Papel de parede de ${label}`}
-                            onChange={(e) =>
-                              setLayout((cur) => {
-                                const backgrounds = { ...cur.backgrounds };
-                                if (e.target.value) backgrounds[s.id] = e.target.value;
-                                else delete backgrounds[s.id];
-                                return { ...cur, backgrounds };
-                              })
-                            }
-                          >
-                            <option value="">Padrão</option>
-                            {BACKGROUNDS.map((bg) => (
-                              <option key={bg.id} value={bg.id}>
-                                {bg.label}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        <span className="flex-1 truncate text-xs">
-                          {label}
-                          {deleted && (
-                            <span className="ml-1 text-[10px] text-muted-foreground">
-                              (excluído)
-                            </span>
-                          )}
-                        </span>
-                        <button
-                          type="button"
-                          className={btnCls}
-                          disabled={i === 0}
-                          aria-label={`Subir ${label}`}
-                          onClick={() => {
-                            const ids = items.map((x) => x.id);
-                            [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]];
-                            setLayout((cur) => ({
-                              ...cur,
-                              order: { ...cur.order, [String(part)]: ids },
-                            }));
-                          }}
-                        >
-                          <ArrowUp className="h-3 w-3" />
-                        </button>
-                        <button
-                          type="button"
-                          className={btnCls}
-                          disabled={i === items.length - 1}
-                          aria-label={`Descer ${label}`}
-                          onClick={() => {
-                            const ids = items.map((x) => x.id);
-                            [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]];
-                            setLayout((cur) => ({
-                              ...cur,
-                              order: { ...cur.order, [String(part)]: ids },
-                            }));
-                          }}
-                        >
-                          <ArrowDown className="h-3 w-3" />
-                        </button>
-                        <button
-                          type="button"
-                          className={btnCls}
-                          disabled={s.id === "capa" || last || deleted}
-                          aria-label={hidden ? `Mostrar ${label}` : `Esconder ${label}`}
-                          onClick={() =>
-                            setLayout((cur) => ({
-                              ...cur,
-                              hidden: cur.hidden.includes(s.id)
-                                ? cur.hidden.filter((x) => x !== s.id)
-                                : [...cur.hidden, s.id],
-                            }))
-                          }
-                        >
-                          {hidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </button>
-                        {deleted ? (
-                          <button
-                            type="button"
-                            className={btnCls}
-                            aria-label={`Restaurar ${label}`}
-                            onClick={() =>
-                              setLayout((cur) => ({
-                                ...cur,
-                                deleted: cur.deleted.filter((x) => x !== s.id),
-                              }))
-                            }
-                          >
-                            <RotateCcw className="h-3 w-3" /> Restaurar
-                          </button>
-                        ) : !custom && s.id !== "capa" ? (
-                          <button
-                            type="button"
-                            className={btnDanger}
-                            disabled={last}
-                            aria-label={`Excluir ${label}`}
-                            title={
-                              last
-                                ? "Cada parte precisa de pelo menos um slide"
-                                : "Excluir (pode restaurar)"
-                            }
-                            onClick={() =>
-                              setLayout((cur) => ({ ...cur, deleted: [...cur.deleted, s.id] }))
-                            }
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ol>
+          {/* Painel da foto clicada */}
+          {target?.kind === "photo" && (
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="font-semibold">Foto de {PRESENTERS[target.index].name}</p>
+                <button
+                  type="button"
+                  className={btnCls}
+                  onClick={() => setTarget(null)}
+                  aria-label="Fechar"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
-            );
-          })}
+              <div className="flex items-center gap-3">
+                <span className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-secondary font-bold">
+                  {avatarOf(target.index, layout.avatars) ? (
+                    <img
+                      src={avatarOf(target.index, layout.avatars)}
+                      alt={PRESENTERS[target.index].name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    initials(PRESENTERS[target.index].name)
+                  )}
+                </span>
+                <div className="flex flex-col gap-2">
+                  <label className={`${btnPrimary} cursor-pointer`}>
+                    <Upload className="h-3.5 w-3.5" />
+                    {uploading === target.index ? "Enviando…" : "Trocar foto"}
+                    <input
+                      type="file"
+                      accept={PHOTO_TYPES.join(",")}
+                      className="sr-only"
+                      disabled={uploading !== null}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) void uploadPhoto(target.index, file);
+                      }}
+                    />
+                  </label>
+                  {layout.avatars[String(target.index)] && (
+                    <button
+                      type="button"
+                      className={btnCls}
+                      onClick={() =>
+                        setLayout((cur) => {
+                          const avatars = { ...cur.avatars };
+                          delete avatars[String(target.index)];
+                          return { ...cur, avatars };
+                        })
+                      }
+                    >
+                      Usar a foto do código
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Ordem e slides escondidos: só dentro de cada parte, para não trocar quem apresenta */}
+          {drawer && (
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold">Ordem e slides</p>
+                <button
+                  type="button"
+                  className={btnCls}
+                  onClick={() => {
+                    if (
+                      !window.confirm(
+                        "Voltar a ordem, os ocultos, as exclusões e os papéis de parede ao original? Seus slides novos continuam.",
+                      )
+                    )
+                      return;
+                    setLayout((cur) => ({
+                      ...cur,
+                      order: {},
+                      hidden: [],
+                      deleted: [],
+                      backgrounds: {},
+                    }));
+                  }}
+                >
+                  <RotateCcw className="h-3 w-3" /> Restaurar original
+                </button>
+              </div>
+              <p className="mb-3 text-[11px] text-muted-foreground">
+                Os slides mudam de posição só dentro da própria parte. A capa nunca some.
+              </p>
+              {PRESENTERS.map((p, part) => {
+                const items = orderSlides(
+                  allSlides.filter((s) => s.part === part),
+                  layout,
+                );
+                const off = (id: string) =>
+                  layout.hidden.includes(id) || layout.deleted.includes(id);
+                const visible = items.filter((s) => !off(s.id)).length;
+                const copy = work;
+                return (
+                  <div key={p.name} className="mb-4">
+                    <p className="mb-1 text-xs font-semibold">
+                      {part + 1} · {p.name}
+                    </p>
+                    <ol className="space-y-1">
+                      {items.map((s, i) => {
+                        const deleted = layout.deleted.includes(s.id);
+                        const hidden = off(s.id);
+                        const custom = layout.custom.some((c) => c.id === s.id);
+                        const last = !hidden && visible === 1;
+                        const label = s.label ? s.label(copy) : s.id;
+                        return (
+                          <li
+                            key={s.id}
+                            className={`flex items-center gap-1 rounded-lg border border-border px-2 py-1 ${hidden ? "opacity-50" : ""}`}
+                          >
+                            {!custom && (
+                              <select
+                                className="max-w-[7rem] rounded-md border border-border bg-background px-1 py-0.5 text-[10px]"
+                                value={layout.backgrounds[s.id] ?? ""}
+                                aria-label={`Papel de parede de ${label}`}
+                                onChange={(e) =>
+                                  setLayout((cur) => {
+                                    const backgrounds = { ...cur.backgrounds };
+                                    if (e.target.value) backgrounds[s.id] = e.target.value;
+                                    else delete backgrounds[s.id];
+                                    return { ...cur, backgrounds };
+                                  })
+                                }
+                              >
+                                <option value="">Padrão</option>
+                                {BACKGROUNDS.map((bg) => (
+                                  <option key={bg.id} value={bg.id}>
+                                    {bg.label}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            <span className="flex-1 truncate text-xs">
+                              {label}
+                              {deleted && (
+                                <span className="ml-1 text-[10px] text-muted-foreground">
+                                  (excluído)
+                                </span>
+                              )}
+                            </span>
+                            <button
+                              type="button"
+                              className={btnCls}
+                              disabled={i === 0}
+                              aria-label={`Subir ${label}`}
+                              onClick={() => {
+                                const ids = items.map((x) => x.id);
+                                [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]];
+                                setLayout((cur) => ({
+                                  ...cur,
+                                  order: { ...cur.order, [String(part)]: ids },
+                                }));
+                              }}
+                            >
+                              <ArrowUp className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              className={btnCls}
+                              disabled={i === items.length - 1}
+                              aria-label={`Descer ${label}`}
+                              onClick={() => {
+                                const ids = items.map((x) => x.id);
+                                [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]];
+                                setLayout((cur) => ({
+                                  ...cur,
+                                  order: { ...cur.order, [String(part)]: ids },
+                                }));
+                              }}
+                            >
+                              <ArrowDown className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              className={btnCls}
+                              disabled={s.id === "capa" || last || deleted}
+                              aria-label={hidden ? `Mostrar ${label}` : `Esconder ${label}`}
+                              onClick={() =>
+                                setLayout((cur) => ({
+                                  ...cur,
+                                  hidden: cur.hidden.includes(s.id)
+                                    ? cur.hidden.filter((x) => x !== s.id)
+                                    : [...cur.hidden, s.id],
+                                }))
+                              }
+                            >
+                              {hidden ? (
+                                <EyeOff className="h-3 w-3" />
+                              ) : (
+                                <Eye className="h-3 w-3" />
+                              )}
+                            </button>
+                            {deleted ? (
+                              <button
+                                type="button"
+                                className={btnCls}
+                                aria-label={`Restaurar ${label}`}
+                                onClick={() =>
+                                  setLayout((cur) => ({
+                                    ...cur,
+                                    deleted: cur.deleted.filter((x) => x !== s.id),
+                                  }))
+                                }
+                              >
+                                <RotateCcw className="h-3 w-3" /> Restaurar
+                              </button>
+                            ) : !custom && s.id !== "capa" ? (
+                              <button
+                                type="button"
+                                className={btnDanger}
+                                disabled={last}
+                                aria-label={`Excluir ${label}`}
+                                title={
+                                  last
+                                    ? "Cada parte precisa de pelo menos um slide"
+                                    : "Excluir (pode restaurar)"
+                                }
+                                onClick={() =>
+                                  setLayout((cur) => ({ ...cur, deleted: [...cur.deleted, s.id] }))
+                                }
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </aside>
+      <div className="relative min-w-0 flex-1">
+        <PresentationDeck editor={editor} embedded />
+      </div>
     </div>
   );
 }

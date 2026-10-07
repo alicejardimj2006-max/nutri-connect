@@ -43,7 +43,10 @@ function markPathAt(start: HTMLElement): string | null {
   return null;
 }
 
-export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
+export function PresentationDeck({
+  editor,
+  embedded = false,
+}: { editor?: DeckEditor; embedded?: boolean } = {}) {
   const i18n = useI18n();
   const locale = editor?.locale ?? i18n.locale;
   const setLocale = editor ? editor.onLocale : i18n.setLocale;
@@ -299,7 +302,7 @@ export function PresentationDeck({ editor }: { editor?: DeckEditor } = {}) {
   return (
     <AvatarContext.Provider value={layout.avatars}>
       <div
-        className="deck-root fixed inset-0 z-50 flex h-[100dvh] flex-col bg-background print:hidden"
+        className={`deck-root flex flex-col bg-background print:hidden ${embedded ? "relative h-full w-full" : "fixed inset-0 z-50 h-[100dvh]"}`}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
