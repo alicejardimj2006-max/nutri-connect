@@ -1,6 +1,7 @@
 // Lista das seções do console de administração (menu lateral).
 import {
   BadgeCheck,
+  Bot,
   Banknote,
   Brain,
   CalendarDays,
@@ -24,6 +25,7 @@ export type SectionId =
   | "contato"
   | "posts"
   | "moderacao"
+  | "ia_barrados"
   | "comunidades"
   | "temas"
   | "apresentacao"
@@ -46,6 +48,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "verificacoes", label: "Verificações", icon: BadgeCheck, group: "Pessoas" },
   { id: "contato", label: "Fale conosco", icon: Inbox, group: "Pessoas" },
   { id: "posts", label: "Publicações", icon: FileText, group: "Conteúdo" },
+  { id: "ia_barrados", label: "Barrados pela IA", icon: Bot, group: "Conteúdo" },
   { id: "moderacao", label: "Moderação", icon: Flag, group: "Conteúdo" },
   { id: "comunidades", label: "Comunidades", icon: UsersRound, group: "Conteúdo" },
   { id: "temas", label: "Temas da semana", icon: CalendarDays, group: "Conteúdo" },

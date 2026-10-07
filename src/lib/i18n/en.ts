@@ -231,6 +231,7 @@ const en: Record<DictKey, string> = {
   "notif.type.diario_comentario": "{name} commented on your diary",
   "notif.type.plano_publicado": "{name} published a meal plan for you",
   "notif.type.conteudo_oculto": "One of your posts was hidden after community reports",
+  "notif.type.conteudo_liberado": "One of your items was reviewed by the team and published",
   "notif.type.conquista": "New achievement unlocked",
   "notif.type.other": "You have something new",
   "admin.theme.tab": "Weekly theme",

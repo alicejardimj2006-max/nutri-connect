@@ -244,6 +244,7 @@ const ptBR = {
   "notif.type.diario_comentario": "{name} comentou no seu diário",
   "notif.type.plano_publicado": "{name} publicou um plano alimentar para você",
   "notif.type.conteudo_oculto": "Um conteúdo seu foi ocultado após denúncias da comunidade",
+  "notif.type.conteudo_liberado": "Um conteúdo seu foi revisado pela equipe e publicado",
   "notif.type.conquista": "Nova conquista desbloqueada",
   "notif.type.other": "Você tem uma novidade",
   "admin.theme.tab": "Tema da semana",

@@ -170,6 +170,80 @@ async function downloadOwnImage(url: string, userId: string): Promise<{ dataUrl:
   return { dataUrl: `data:${type};base64,${btoa(binary)}` };
 }
 
+// ── Registro do que a IA barrou (para a administração revisar; some em 30 dias) ──
+const REJECTION_BUCKET = "ai-rejections";
+const UUID = /^[0-9a-f-]{36}$/i;
+const POST_TYPES = ["receita", "experiencia", "pergunta", "geral"];
+
+/** Campos da publicação que a IA não analisa, guardados só para uma eventual liberação. */
+function readContext(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== "object") return {};
+  const r = raw as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  if (typeof r.type === "string" && POST_TYPES.includes(r.type)) out.type = r.type;
+  if (r.audience === "publico" || r.audience === "amigos") out.audience = r.audience;
+  if (typeof r.communityId === "string" && UUID.test(r.communityId)) out.communityId = r.communityId;
+  if (typeof r.themeId === "string" && UUID.test(r.themeId)) out.themeId = r.themeId;
+  if (Array.isArray(r.blockOrder)) {
+    out.blockOrder = r.blockOrder.filter((x): x is string => typeof x === "string").slice(0, 20).map((x) => x.slice(0, 40));
+  }
+  return out;
+}
+
+async function logRejection(entry: {
+  userId: string;
+  kind: "post" | "comment";
+  postId: string | null;
+  title: string | null;
+  body: string;
+  tags: string[];
+  recipe: unknown;
+  context: Record<string, unknown>;
+  image: { bytes: Uint8Array; type: string } | null;
+  code: string;
+  message: string;
+}) {
+  try {
+    const admin = adminClient();
+    let imagePath: string | null = null;
+    if (entry.image) {
+      const path = `${entry.userId}/${crypto.randomUUID()}.${IMAGE_TYPES[entry.image.type] ?? "jpg"}`;
+      const { error } = await admin.storage
+        .from(REJECTION_BUCKET)
+        .upload(path, entry.image.bytes, { contentType: entry.image.type, upsert: false });
+      if (!error) imagePath = path;
+    }
+    await admin.from("ai_rejections").insert({
+      user_id: entry.userId,
+      kind: entry.kind,
+      post_id: entry.postId,
+      title: entry.title,
+      body: entry.body,
+      tags: entry.tags,
+      recipe: entry.recipe,
+      context: entry.context,
+      image_path: imagePath,
+      code: entry.code,
+      message: entry.message,
+    });
+    // Limpeza: registros com mais de 30 dias saem junto com a foto.
+    const cutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+    const { data: old } = await admin
+      .from("ai_rejections")
+      .select("id, image_path")
+      .lt("created_at", cutoff)
+      .limit(50);
+    if (old?.length) {
+      const files = old.map((o) => o.image_path).filter((p): p is string => !!p);
+      if (files.length) await admin.storage.from(REJECTION_BUCKET).remove(files);
+      await admin.from("ai_rejections").delete().in("id", old.map((o) => o.id));
+    }
+  } catch (err) {
+    // O registro nunca pode atrapalhar quem está publicando.
+    console.error("check-content: registro da rejeição falhou", err);
+  }
+}
+
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.slice(0, max) : "";
 }
@@ -189,6 +263,7 @@ serve(async (req) => {
     .slice(0, 20)
     .map((t) => t.slice(0, 40));
   const recipe = raw.recipe && typeof raw.recipe === "object" ? raw.recipe : null;
+  const context = kind === "post" ? readContext(raw.context) : {};
   const recipeText = recipe ? JSON.stringify(recipe) : "";
   if (recipeText.length > 30000) throw new HttpError(413, "Receita grande demais.");
   const postId = kind === "comment" ? str(raw.postId, 64) : "";
@@ -249,6 +324,28 @@ serve(async (req) => {
     });
   }
   if (!verdict.approved) {
+    const message = verdict.message || DEFAULT_MESSAGES[verdict.code === "ok" ? "fora_do_tema" : verdict.code];
+    let image = upload;
+    if (!image && imageDataUrl) {
+      try {
+        image = decodeDataUrl(imageDataUrl);
+      } catch {
+        image = null;
+      }
+    }
+    await logRejection({
+      userId: user.id,
+      kind,
+      postId: kind === "comment" ? postId : null,
+      title: kind === "post" ? title : null,
+      body,
+      tags: kind === "post" ? tags : [],
+      recipe: kind === "post" ? recipe : null,
+      context,
+      image,
+      code: verdict.code,
+      message,
+    });
     if (existingUrl) {
       // Foto já estava no Storage: remove, para não sobrar arquivo reprovado.
       const path = existingUrl.slice(existingUrl.indexOf(`/${IMAGE_BUCKET}/`) + IMAGE_BUCKET.length + 2);

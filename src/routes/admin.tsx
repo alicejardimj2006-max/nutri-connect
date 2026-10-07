@@ -8,6 +8,10 @@ import { useOverview } from "@/lib/admin-api";
 import { SECTIONS, isSectionId, type SectionId } from "@/components/admin/sections";
 import { OverviewSection } from "@/components/admin/sections-overview";
 import { ContactSection, UsersSection } from "@/components/admin/sections-people";
+import {
+  AiRejectionsSection,
+  useAiRejectionsSummary,
+} from "@/components/admin/sections-ai-rejections";
 import { PresentationSection } from "@/components/admin/sections-presentation";
 import {
   AnnouncementsSection,
@@ -42,6 +46,7 @@ function AdminPage() {
   const section: SectionId = secao ?? "visao";
   const admin = !!user && isPlatformAdmin(user);
   const overview = useOverview();
+  const aiRejections = useAiRejectionsSummary();
 
   if (!hydrated || !user) return <AuthGateLoading />;
 
@@ -62,6 +67,7 @@ function AdminPage() {
   const o = overview.data;
   const badges: Partial<Record<SectionId, number>> = {
     moderacao: o?.reports_pending,
+    ia_barrados: aiRejections.data?.pending,
     verificacoes: o?.verifications_pending,
     contato: o?.contact_new,
     comunidades: o?.communities_attention,
@@ -151,6 +157,7 @@ function AdminPage() {
           {section === "contato" && <ContactSection />}
           {section === "posts" && <PostsSection />}
           {section === "moderacao" && <ModerationSection />}
+          {section === "ia_barrados" && <AiRejectionsSection />}
           {section === "comunidades" && <CommunitiesSection />}
           {section === "temas" && <ThemesSection />}
           {section === "apresentacao" && <PresentationSection />}
