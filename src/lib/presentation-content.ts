@@ -272,6 +272,9 @@ export function readMark(text: string): string | null {
 }
 
 /** Copia do conteúdo em que cada texto carrega o próprio caminho (só para exibir e clicar). */
+/** Campos que o código usa como configuração (não como texto): nunca recebem a marca. */
+const UNMARKED = new Set(["numberLocale"]);
+
 export function markCopy<T>(value: T, path = ""): T {
   if (typeof value === "string") {
     return `${value}${MARK_OPEN}${encodeMark(path)}${MARK_CLOSE}` as T;
@@ -281,7 +284,7 @@ export function markCopy<T>(value: T, path = ""): T {
   }
   if (value && typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, markCopy(v, path ? `${path}.${k}` : k)]),
+      Object.entries(value).map(([k, v]) => [k, UNMARKED.has(k) ? v : markCopy(v, path ? `${path}.${k}` : k)]),
     ) as T;
   }
   return value;
