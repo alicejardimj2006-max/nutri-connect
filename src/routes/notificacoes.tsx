@@ -17,6 +17,7 @@ import {
   MessageCircle,
   MessageSquare,
   ShieldAlert,
+  ShieldCheck,
   Sparkles,
   Trash2,
   Trophy,
@@ -153,7 +154,12 @@ function categoryOf(type: string): CategoryId {
     return "clinical";
   }
   if (type === "conquista" || type.startsWith("tema_")) return "achievements";
-  if (type === "conteudo_oculto" || type === "conta_suspensa" || type === "conta_reativada")
+  if (
+    type === "conteudo_oculto" ||
+    type === "conteudo_liberado" ||
+    type === "conta_suspensa" ||
+    type === "conta_reativada"
+  )
     return "moderation";
   return "system";
 }
@@ -414,6 +420,25 @@ function describe(
         ]),
         detail: str(data.title),
         go: { to: "/acompanhamento/plano" },
+      };
+    case "conteudo_liberado":
+      return {
+        icon: ShieldCheck,
+        text: tr([
+          data.kind === "comment"
+            ? "Seu comentário foi revisado pela equipe e publicado"
+            : "Sua publicação foi revisada pela equipe e publicada",
+          data.kind === "comment"
+            ? "Your comment was reviewed by the team and published"
+            : "Your post was reviewed by the team and published",
+          data.kind === "comment"
+            ? "Tu comentario fue revisado por el equipo y publicado"
+            : "Tu publicación fue revisada por el equipo y publicada",
+          data.kind === "comment"
+            ? "Votre commentaire a été vérifié par l'équipe et publié"
+            : "Votre publication a été vérifiée par l'équipe et publiée",
+        ]),
+        go: post,
       };
     case "conteudo_oculto":
       return {

@@ -1,25 +1,92 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Download, Maximize, Minimize, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NinaLive } from "@/components/nina-live";
 import { useI18n } from "@/hooks/use-i18n";
 import { LOCALES, isLocale } from "@/lib/i18n";
 import { presentationCopy } from "@/lib/i18n/presentation";
+import {
+  applyTexts,
+  arrangeSlides,
+  markCopy,
+  partStartsOf,
+  readLayout,
+  getPath,
+  readTexts,
+  usePublishedPresentation,
+  type DeckEditor,
+} from "@/lib/presentation-content";
 import { StaticContext } from "./effects";
+import { InlineTextEditor, pathAt } from "./inline-text-editor";
+import { AvatarContext } from "./avatar-context";
+import { CustomSlideView, type CanvasEditing } from "./custom-slide";
+import { backgroundOf, type CustomSlide } from "@/lib/custom-slides";
 import { PRESENTERS, PresenterAvatar } from "./parts";
-import { PART_STARTS, SLIDES, type SlideApi } from "./slides";
+import { SLIDES as ALL_SLIDES, type SlideApi, type SlideDef } from "./slides";
 
 const SWIPE_MIN = 60;
 
 /** Lê o slide inicial do endereço (#5 abre o quinto slide), para poder compartilhar um ponto exato. */
-function slideFromHash(): number {
-  const n = Number.parseInt(window.location.hash.replace("#", ""), 10);
-  return Number.isFinite(n) && n >= 1 && n <= SLIDES.length ? n - 1 : 0;
+function slideFromHash(hash: string, total: number): number {
+  const n = Number.parseInt(hash.replace("#", ""), 10);
+  return Number.isFinite(n) && n >= 1 && n <= total ? n - 1 : 0;
 }
 
-export function PresentationDeck() {
-  const { locale, setLocale } = useI18n();
-  const copy = presentationCopy(locale);
+export function PresentationDeck({
+  editor,
+  embedded = false,
+}: { editor?: DeckEditor; embedded?: boolean } = {}) {
+  const i18n = useI18n();
+  const locale = editor?.locale ?? i18n.locale;
+  const setLocale = editor ? editor.onLocale : i18n.setLocale;
+  const isEditing = Boolean(editor);
+  const { data: published, isFetched } = usePublishedPresentation();
+  // O endereço é lido ao abrir, antes de qualquer escrita nele.
+  const [startHash] = useState(() => (typeof window === "undefined" ? "" : window.location.hash));
+  // Textos, ordem, slides escondidos e fotos publicados pelo painel; sem publicação, vale o código.
+  // No modo edição, vale o conteúdo em edição, com cada texto marcado para o clique.
+  const editorCopy = editor?.copy;
+  const publishedCopy = useMemo(
+    () => applyTexts(presentationCopy(locale), readTexts(published?.[locale])),
+    [locale, published],
+  );
+  const base = editorCopy ?? publishedCopy;
+  const copy = useMemo(() => (isEditing ? markCopy(base) : base), [base, isEditing]);
+  const layout = useMemo(
+    () => editor?.layout ?? readLayout(published?.layout),
+    [editor?.layout, published],
+  );
+  // Slides montados com blocos entram na mesma lista, na ordem de cada parte.
+  const selectedBlock = editor?.selectedBlock ?? null;
+  const customDefs = useMemo<SlideDef[]>(
+    () =>
+      layout.custom.map((c: CustomSlide) => ({
+        id: c.id,
+        part: c.part,
+        nina: () => "",
+        hideNarrator: true,
+        label: () => c.name,
+        render: () => (
+          <CustomSlideView
+            slide={c}
+            locale={locale}
+            editing={
+              isEditing
+                ? ({
+                    selected: selectedBlock,
+                    onSelect: (id) => editor?.onSelectBlock?.(id),
+                    onPatch: (blockId, patch) => editor?.onPatchBlock?.(c.id, blockId, patch),
+                  } satisfies CanvasEditing)
+                : undefined
+            }
+          />
+        ),
+      })),
+    [layout.custom, locale, isEditing, selectedBlock, editor],
+  );
+  const pool = useMemo(() => [...ALL_SLIDES, ...customDefs], [customDefs]);
+  const slides = useMemo(() => arrangeSlides(pool, layout), [pool, layout]);
+  const partStarts = useMemo(() => partStartsOf(slides, PRESENTERS.length), [slides]);
   // A direção decide de que lado o slide entra na animação.
   const [{ index, direction }, setPosition] = useState({ index: 0, direction: 1 });
   const [fullscreen, setFullscreen] = useState(false);
@@ -27,37 +94,76 @@ export function PresentationDeck() {
   const touch = useRef<{ x: number; y: number } | null>(null);
   const scroller = useRef<HTMLElement>(null);
   const printRoot = useRef<HTMLDivElement>(null);
+  const hashApplied = useRef(false);
 
-  const total = SLIDES.length;
-  const slide = SLIDES[index];
+  const total = slides.length;
+  const slide = slides[Math.min(index, slides.length - 1)];
+  // Transição do slide: a escolhida no editor, ou deslizar (padrão) para os slides prontos.
+  const customOf = layout.custom.find((c) => c.id === slide.id);
+  const transitionClass =
+    customOf?.transition === "fade"
+      ? "nc-tr-fade"
+      : customOf?.transition === "zoom"
+        ? "nc-tr-zoom"
+        : customOf?.transition === "none"
+          ? ""
+          : direction === 1
+            ? "nc-slide-next"
+            : "nc-slide-prev";
+  // Pedido do editor para mostrar um slide (criado ou duplicado).
+  const focusRequest = editor?.focus;
+  useEffect(() => {
+    if (!focusRequest) return;
+    const i = slides.findIndex((s) => s.id === focusRequest.id);
+    if (i >= 0) goTo(i);
+    // Só reage a um pedido novo, não a cada mudança da lista de slides.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest]);
+  // O editor acompanha o slide que está na tela.
+  const reportSlide = editor?.onCurrentSlide;
+  useEffect(() => {
+    reportSlide?.(slide.id);
+  }, [slide.id, reportSlide]);
   const presenter = PRESENTERS[slide.part];
 
-  const goTo = useCallback((target: number) => {
-    setPosition((cur) => {
-      const clamped = Math.max(0, Math.min(SLIDES.length - 1, target));
-      return { index: clamped, direction: clamped >= cur.index ? 1 : -1 };
-    });
-  }, []);
+  const goTo = useCallback(
+    (target: number) => {
+      setPosition((cur) => {
+        const clamped = Math.max(0, Math.min(total - 1, target));
+        return { index: clamped, direction: clamped >= cur.index ? 1 : -1 };
+      });
+    },
+    [total],
+  );
   const next = useCallback(
-    () =>
-      setPosition((cur) => ({ index: Math.min(SLIDES.length - 1, cur.index + 1), direction: 1 })),
-    [],
+    () => setPosition((cur) => ({ index: Math.min(total - 1, cur.index + 1), direction: 1 })),
+    [total],
   );
   const prev = useCallback(
     () => setPosition((cur) => ({ index: Math.max(0, cur.index - 1), direction: -1 })),
     [],
   );
-  const api: SlideApi = { next, goTo };
+  const goToId = useCallback(
+    (id: string) => {
+      const i = slides.findIndex((s) => s.id === id);
+      if (i >= 0) goTo(i);
+    },
+    [slides, goTo],
+  );
+  const api: SlideApi = { next, goTo, goToId, partStarts };
 
+  // O endereço (#n) só vale depois que a publicação carregar, pois ela pode esconder slides.
   useEffect(() => {
-    goTo(slideFromHash());
-  }, [goTo]);
+    if (!isFetched || hashApplied.current) return;
+    hashApplied.current = true;
+    goTo(slideFromHash(startHash, total));
+  }, [isFetched, goTo, total, startHash]);
 
   // Mantém o endereço em sincronia e volta cada slide ao topo.
   useEffect(() => {
-    window.history.replaceState(null, "", `#${index + 1}`);
+    if (isFetched) window.history.replaceState(null, "", `#${index + 1}`);
     scroller.current?.scrollTo({ top: 0 });
-  }, [index]);
+  }, [index, isFetched]);
 
   const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen();
@@ -98,7 +204,7 @@ export function PresentationDeck() {
           break;
         case "End":
           e.preventDefault();
-          goTo(SLIDES.length - 1);
+          goTo(total - 1);
           break;
         case "f":
         case "F":
@@ -106,15 +212,15 @@ export function PresentationDeck() {
           break;
         default:
           // 1 a 5: vai direto para a parte de cada integrante.
-          if (/^[1-9]$/.test(e.key) && Number(e.key) <= PART_STARTS.length) {
+          if (/^[1-9]$/.test(e.key) && Number(e.key) <= partStarts.length) {
             e.preventDefault();
-            goTo(PART_STARTS[Number(e.key) - 1]);
+            goTo(partStarts[Number(e.key) - 1]);
           }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [next, prev, goTo, toggleFullscreen]);
+  }, [next, prev, goTo, toggleFullscreen, total, partStarts]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
@@ -163,14 +269,36 @@ export function PresentationDeck() {
     };
   }, [printing]);
 
+  // Modo edição: o clique não navega nem abre o slide. Texto clicado vira caixa de digitação no lugar;
+  // foto clicada vai para o painel.
+  const [inlinePath, setInlinePath] = useState<string | null>(null);
+  useEffect(() => setInlinePath(null), [slide.id, locale]);
+  const onEditorClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (!editor) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-nc-inline]")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const photo = target.closest<HTMLElement>("[data-nc-photo]");
+    if (photo) {
+      editor.onPhoto(Number(photo.dataset.ncPhoto), photo.getBoundingClientRect());
+      return;
+    }
+    const root = scroller.current;
+    const path = root ? pathAt(target, root) : null;
+    if (!path || typeof getPath(base, path) !== "string") return;
+    setInlinePath(path);
+    editor.onText(path, target.getBoundingClientRect());
+  };
+
   const counter = copy.ui.slideOf
     .replace("{n}", String(index + 1))
     .replace("{total}", String(total));
 
   return (
-    <>
+    <AvatarContext.Provider value={layout.avatars}>
       <div
-        className="deck-root fixed inset-0 z-50 flex h-[100dvh] flex-col bg-background print:hidden"
+        className={`deck-root flex flex-col bg-background print:hidden ${embedded ? "relative h-full w-full" : "fixed inset-0 z-50 h-[100dvh]"}`}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -251,16 +379,35 @@ export function PresentationDeck() {
         <main
           ref={scroller}
           onPointerMove={onPointerMove}
+          onClickCapture={isEditing ? onEditorClick : undefined}
           className="relative flex-1 overflow-y-auto overflow-x-hidden"
           aria-roledescription="slide"
           aria-label={counter}
         >
           <div
             key={`${slide.id}-${locale}`}
-            className={`flex min-h-full flex-col ${direction === 1 ? "nc-slide-next" : "nc-slide-prev"}`}
+            className={`flex min-h-full flex-col ${transitionClass}`}
+            style={
+              !customOf && layout.backgrounds[slide.id]
+                ? backgroundOf(layout.backgrounds[slide.id]).style
+                : undefined
+            }
           >
             {slide.render(copy, api)}
           </div>
+          {editor &&
+            inlinePath &&
+            scroller.current &&
+            typeof getPath(base, inlinePath) === "string" && (
+              <InlineTextEditor
+                key={inlinePath}
+                root={scroller.current}
+                path={inlinePath}
+                value={getPath(base, inlinePath) as string}
+                onChange={(v) => editor.onTextChange(inlinePath, v)}
+                onDone={() => setInlinePath(null)}
+              />
+            )}
         </main>
 
         {/* Rodapé: narradora, progresso e navegação */}
@@ -271,10 +418,10 @@ export function PresentationDeck() {
               <div
                 key={p.name}
                 className="flex min-w-0 gap-0.5"
-                style={{ flexGrow: SLIDES.filter((s) => s.part === part).length }}
+                style={{ flexGrow: slides.filter((s) => s.part === part).length }}
                 title={`${part + 1} · ${copy.parts[part].title} · ${p.name}`}
               >
-                {SLIDES.map((s, i) =>
+                {slides.map((s, i) =>
                   s.part !== part ? null : (
                     <button
                       key={s.id}
@@ -354,7 +501,7 @@ export function PresentationDeck() {
       {printing && (
         <StaticContext.Provider value={true}>
           <div ref={printRoot} className="deck-root deck-print hidden print:block">
-            {SLIDES.map((s, i) => (
+            {slides.map((s, i) => (
               <section key={s.id} className="deck-print-page">
                 <div className="deck-print-inner">{s.render(copy, api)}</div>
                 <footer className="deck-print-footer">
@@ -371,6 +518,6 @@ export function PresentationDeck() {
           </div>
         </StaticContext.Provider>
       )}
-    </>
+    </AvatarContext.Provider>
   );
 }

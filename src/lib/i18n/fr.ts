@@ -236,6 +236,7 @@ const fr: Record<DictKey, string> = {
   "notif.type.diario_comentario": "{name} a commenté votre journal",
   "notif.type.plano_publicado": "{name} a publié un plan alimentaire pour vous",
   "notif.type.conteudo_oculto": "Un de vos contenus a été masqué après des signalements",
+  "notif.type.conteudo_liberado": "Un de vos contenus a été vérifié par l'équipe et publié",
   "notif.type.conquista": "Nouveau succès débloqué",
   "notif.type.other": "Vous avez du nouveau",
   "admin.theme.tab": "Thème de la semaine",

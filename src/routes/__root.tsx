@@ -14,6 +14,7 @@ import { ConsentGate } from "../components/consent-gate";
 import { useAppSounds } from "../hooks/use-app-sounds";
 import { AccessibilityTools } from "../components/accessibility-tools";
 import { SideRails } from "../components/side-rails";
+import { FeatureGate } from "../components/feature-gate";
 import { AnnouncementBar } from "../components/announcement-bar";
 import { useAppearanceSync } from "../hooks/use-appearance-sync";
 
@@ -149,7 +150,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <FeatureGate>
+        <Outlet />
+      </FeatureGate>
       <ConsentGate />
       <AccessibilityTools />
       <SideRails />

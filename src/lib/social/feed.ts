@@ -200,6 +200,13 @@ export async function createPost(input: NewPostInput): Promise<string> {
     tags: input.tags ?? [],
     recipe: input.recipeData,
     image: input.image ?? null,
+    context: {
+      type: input.type,
+      audience: input.audience ?? "publico",
+      communityId: input.communityId ?? null,
+      themeId: input.themeId ?? null,
+      blockOrder: input.blockOrder ?? null,
+    },
   });
 
   const { data, error } = await supabase

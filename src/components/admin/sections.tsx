@@ -1,6 +1,7 @@
 // Lista das seções do console de administração (menu lateral).
 import {
   BadgeCheck,
+  Bot,
   Banknote,
   Brain,
   CalendarDays,
@@ -10,6 +11,9 @@ import {
   Inbox,
   LayoutDashboard,
   Megaphone,
+  PanelsLeftRight,
+  ToggleRight,
+  Presentation,
   Settings,
   Users,
   UsersRound,
@@ -23,9 +27,13 @@ export type SectionId =
   | "contato"
   | "posts"
   | "moderacao"
+  | "ia_barrados"
   | "comunidades"
   | "temas"
+  | "apresentacao"
   | "anuncios"
+  | "site_cards"
+  | "site_features"
   | "financeiro"
   | "ia"
   | "config"
@@ -44,10 +52,14 @@ export const SECTIONS: SectionDef[] = [
   { id: "verificacoes", label: "Verificações", icon: BadgeCheck, group: "Pessoas" },
   { id: "contato", label: "Fale conosco", icon: Inbox, group: "Pessoas" },
   { id: "posts", label: "Publicações", icon: FileText, group: "Conteúdo" },
+  { id: "ia_barrados", label: "Barrados pela IA", icon: Bot, group: "Conteúdo" },
   { id: "moderacao", label: "Moderação", icon: Flag, group: "Conteúdo" },
   { id: "comunidades", label: "Comunidades", icon: UsersRound, group: "Conteúdo" },
   { id: "temas", label: "Temas da semana", icon: CalendarDays, group: "Conteúdo" },
+  { id: "apresentacao", label: "Apresentação", icon: Presentation, group: "Conteúdo" },
   { id: "anuncios", label: "Anúncios", icon: Megaphone, group: "Conteúdo" },
+  { id: "site_cards", label: "Cards das laterais", icon: PanelsLeftRight, group: "Site" },
+  { id: "site_features", label: "Funcionalidades", icon: ToggleRight, group: "Site" },
   { id: "financeiro", label: "Financeiro", icon: Banknote, group: "Negócio" },
   { id: "ia", label: "Inteligência artificial", icon: Brain, group: "Sistema" },
   { id: "config", label: "Configurações", icon: Settings, group: "Sistema" },

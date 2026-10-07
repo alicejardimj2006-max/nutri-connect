@@ -11,6 +11,7 @@ import {
   CalendarDays,
   type LucideIcon,
 } from "lucide-react";
+import { featureOfPath, useFeatures } from "@/lib/features";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { ShareModal } from "@/components/share-modal";
@@ -117,6 +118,9 @@ function NavTab({
 }) {
   const { color, active, tint } = useNavState(navKey, to);
   const { user } = useAuth();
+  const features = useFeatures();
+  const feature = featureOfPath(to);
+  const off = !!feature && !features[feature.key] && !user?.isAdmin;
   // Ponto de "não lidas" no sino.
   const unread = useUnreadCount(navKey === "notificacoes" ? user?.id : undefined).data ?? 0;
   const dot =
@@ -127,6 +131,8 @@ function NavTab({
         aria-label={`${unread}`}
       />
     ) : null;
+  // Funcionalidade desligada pela administração: some do menu (administradores continuam vendo).
+  if (off) return null;
   if (variant === "bottom") {
     return (
       <Link

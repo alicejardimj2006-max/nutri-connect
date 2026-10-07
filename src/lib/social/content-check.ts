@@ -20,6 +20,14 @@ export interface PostCheckInput {
   recipe?: unknown;
   /** Foto como data URL, ou endereço de uma foto já enviada pela própria pessoa. */
   image?: string | null;
+  /** Campos que a IA não analisa; ficam guardados só se o conteúdo for barrado e depois liberado. */
+  context?: {
+    type?: string;
+    audience?: string;
+    communityId?: string | null;
+    themeId?: string | null;
+    blockOrder?: string[] | null;
+  };
 }
 
 export interface CommentCheckInput {

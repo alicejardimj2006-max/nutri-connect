@@ -12,7 +12,9 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { railsFor } from "@/components/rails-pages";
+import { railsFor, readRailOverrides } from "@/components/rails-pages";
+import { useSiteConfig } from "@/lib/site-config";
+import { useFeatures } from "@/lib/features";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -61,7 +63,14 @@ export function SideRails() {
   const { appearance } = useAppearance();
   const { locale } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const rails = useMemo(() => railsFor(pathname), [pathname]);
+  const railConfig = useSiteConfig("site_rails");
+  const features = useFeatures();
+  const featureKey = JSON.stringify(features);
+  const rails = useMemo(
+    () => railsFor(pathname, readRailOverrides(railConfig), features),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pathname, railConfig, featureKey],
+  );
   const enabled = !!user && appearance.sidePanels && !!rails;
   const [layout, setLayout] = useState<(Metrics & { top: number; height: number }) | null>(null);
 

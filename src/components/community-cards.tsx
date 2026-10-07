@@ -520,7 +520,14 @@ export function PostCard({ post }: PostCardProps) {
 
         {renderAuthorInfo()}
 
-        {renderBlocks(["title", "text"], {
+        {renderBlocks(["title", "text", "image"], {
+          image: displayImage && (
+            <PostImage
+              src={displayImage}
+              alt={t("postcard.altPost")}
+              className="mb-4 w-full rounded-2xl shadow-sm"
+            />
+          ),
           title: (
             <h3 className="text-base sm:text-lg font-bold font-display text-foreground mb-2 leading-snug">
               {post.title || post.text}

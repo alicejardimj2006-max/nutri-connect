@@ -232,6 +232,7 @@ const es: Record<DictKey, string> = {
   "notif.type.diario_comentario": "{name} comentó en tu diario",
   "notif.type.plano_publicado": "{name} publicó un plan alimentario para ti",
   "notif.type.conteudo_oculto": "Un contenido tuyo fue ocultado tras denuncias de la comunidad",
+  "notif.type.conteudo_liberado": "Un contenido tuyo fue revisado por el equipo y publicado",
   "notif.type.conquista": "Nuevo logro desbloqueado",
   "notif.type.other": "Tienes una novedad",
   "admin.theme.tab": "Tema de la semana",
