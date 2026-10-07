@@ -4,7 +4,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2, Upload, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import { btnCls, btnDanger, btnPrimary, inputCls } from "@/components/admin/admin-ui";
 import { SlideBuilder } from "@/components/admin/presentation-builder";
 import { makeSlide, duplicateSlide, TEMPLATES, type CustomSlide } from "@/lib/custom-slides";
@@ -232,6 +232,7 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
       ...cur,
       custom: cur.custom.filter((s) => s.id !== id),
       hidden: cur.hidden.filter((x) => x !== id),
+      deleted: cur.deleted.filter((x) => x !== id),
       order: Object.fromEntries(
         Object.entries(cur.order).map(([part, ids]) => [part, ids.filter((x) => x !== id)]),
       ),
@@ -612,7 +613,24 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
       {/* Ordem e slides escondidos: só dentro de cada parte, para não trocar quem apresenta */}
       {drawer && (
         <div className="fixed bottom-28 left-3 top-32 z-[80] w-[min(380px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <p className="mb-3 text-sm font-semibold">Ordem e slides</p>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold">Ordem e slides</p>
+            <button
+              type="button"
+              className={btnCls}
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    "Voltar a ordem, os ocultos e as exclusões ao original? Seus slides novos continuam.",
+                  )
+                )
+                  return;
+                setLayout((cur) => ({ ...cur, order: {}, hidden: [], deleted: [] }));
+              }}
+            >
+              <RotateCcw className="h-3 w-3" /> Restaurar original
+            </button>
+          </div>
           <p className="mb-3 text-[11px] text-muted-foreground">
             Os slides mudam de posição só dentro da própria parte. A capa nunca some.
           </p>
@@ -621,7 +639,8 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
               allSlides.filter((s) => s.part === part),
               layout,
             );
-            const visible = items.filter((s) => !layout.hidden.includes(s.id)).length;
+            const off = (id: string) => layout.hidden.includes(id) || layout.deleted.includes(id);
+            const visible = items.filter((s) => !off(s.id)).length;
             const copy = work;
             return (
               <div key={p.name} className="mb-4">
@@ -630,7 +649,9 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                 </p>
                 <ol className="space-y-1">
                   {items.map((s, i) => {
-                    const hidden = layout.hidden.includes(s.id);
+                    const deleted = layout.deleted.includes(s.id);
+                    const hidden = off(s.id);
+                    const custom = layout.custom.some((c) => c.id === s.id);
                     const last = !hidden && visible === 1;
                     const label = s.label ? s.label(copy) : s.id;
                     return (
@@ -638,7 +659,14 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                         key={s.id}
                         className={`flex items-center gap-1 rounded-lg border border-border px-2 py-1 ${hidden ? "opacity-50" : ""}`}
                       >
-                        <span className="flex-1 truncate text-xs">{label}</span>
+                        <span className="flex-1 truncate text-xs">
+                          {label}
+                          {deleted && (
+                            <span className="ml-1 text-[10px] text-muted-foreground">
+                              (excluído)
+                            </span>
+                          )}
+                        </span>
                         <button
                           type="button"
                           className={btnCls}
@@ -674,7 +702,7 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                         <button
                           type="button"
                           className={btnCls}
-                          disabled={s.id === "capa" || last}
+                          disabled={s.id === "capa" || last || deleted}
                           aria-label={hidden ? `Mostrar ${label}` : `Esconder ${label}`}
                           onClick={() =>
                             setLayout((cur) => ({
@@ -687,6 +715,38 @@ export function PresentationEditor({ onClose }: { onClose: () => void }) {
                         >
                           {hidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </button>
+                        {deleted ? (
+                          <button
+                            type="button"
+                            className={btnCls}
+                            aria-label={`Restaurar ${label}`}
+                            onClick={() =>
+                              setLayout((cur) => ({
+                                ...cur,
+                                deleted: cur.deleted.filter((x) => x !== s.id),
+                              }))
+                            }
+                          >
+                            <RotateCcw className="h-3 w-3" /> Restaurar
+                          </button>
+                        ) : !custom && s.id !== "capa" ? (
+                          <button
+                            type="button"
+                            className={btnDanger}
+                            disabled={last}
+                            aria-label={`Excluir ${label}`}
+                            title={
+                              last
+                                ? "Cada parte precisa de pelo menos um slide"
+                                : "Excluir (pode restaurar)"
+                            }
+                            onClick={() =>
+                              setLayout((cur) => ({ ...cur, deleted: [...cur.deleted, s.id] }))
+                            }
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        ) : null}
                       </li>
                     );
                   })}

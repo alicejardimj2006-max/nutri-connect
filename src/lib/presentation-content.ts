@@ -21,13 +21,21 @@ export interface PresentationLayout {
   order: Record<string, string[]>;
   /** Ids dos slides que não aparecem. */
   hidden: string[];
+  /** Slides prontos excluídos (ficam na lixeira e podem voltar). */
+  deleted: string[];
   /** Índice do integrante (0–4) → URL da foto. */
   avatars: Record<string, string>;
   /** Slides personalizados (montados com blocos), na ordem em que foram criados. */
   custom: CustomSlide[];
 }
 
-export const EMPTY_LAYOUT: PresentationLayout = { order: {}, hidden: [], avatars: {}, custom: [] };
+export const EMPTY_LAYOUT: PresentationLayout = {
+  order: {},
+  hidden: [],
+  deleted: [],
+  avatars: {},
+  custom: [],
+};
 
 export const PRESENTATION_KEYS: PresentationKey[] = ["pt-BR", "en", "es", "fr", "layout"];
 
@@ -72,6 +80,7 @@ export function readLayout(raw: unknown): PresentationLayout {
   return {
     order: r.order && typeof r.order === "object" ? r.order : {},
     hidden: Array.isArray(r.hidden) ? r.hidden.filter((x) => typeof x === "string") : [],
+    deleted: Array.isArray(r.deleted) ? r.deleted.filter((x) => typeof x === "string") : [],
     avatars: r.avatars && typeof r.avatars === "object" ? r.avatars : {},
     custom: readCustom(r.custom),
   };
@@ -198,7 +207,7 @@ export function arrangeSlides<T extends { id: string; part: number }>(
   slides: T[],
   layout: PresentationLayout,
 ): T[] {
-  const hidden = new Set(layout.hidden.filter((id) => id !== "capa"));
+  const hidden = new Set([...layout.hidden, ...layout.deleted].filter((id) => id !== "capa"));
   const result: T[] = [];
   const parts = [...new Set(slides.map((s) => s.part))].sort((a, b) => a - b);
   for (const part of parts) {
