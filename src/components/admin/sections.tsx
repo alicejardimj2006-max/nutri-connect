@@ -11,6 +11,7 @@ import {
   Inbox,
   LayoutDashboard,
   Megaphone,
+  PanelsLeftRight,
   Presentation,
   Settings,
   Users,
@@ -30,6 +31,7 @@ export type SectionId =
   | "temas"
   | "apresentacao"
   | "anuncios"
+  | "site_cards"
   | "financeiro"
   | "ia"
   | "config"
@@ -54,6 +56,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "temas", label: "Temas da semana", icon: CalendarDays, group: "Conteúdo" },
   { id: "apresentacao", label: "Apresentação", icon: Presentation, group: "Conteúdo" },
   { id: "anuncios", label: "Anúncios", icon: Megaphone, group: "Conteúdo" },
+  { id: "site_cards", label: "Cards das laterais", icon: PanelsLeftRight, group: "Site" },
   { id: "financeiro", label: "Financeiro", icon: Banknote, group: "Negócio" },
   { id: "ia", label: "Inteligência artificial", icon: Brain, group: "Sistema" },
   { id: "config", label: "Configurações", icon: Settings, group: "Sistema" },
