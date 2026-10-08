@@ -90,8 +90,11 @@ function NinaPage() {
       } else {
         await queryClient.invalidateQueries({ queryKey: historyKey });
       }
-    } catch {
-      setError(t("nina.error"));
+    } catch (err) {
+      console.error("nina", err);
+      // Em desenvolvimento, mostra o motivo real para facilitar o diagnóstico.
+      const detail = import.meta.env.DEV && err instanceof Error ? ` (${err.message})` : "";
+      setError(t("nina.error") + detail);
       setDraft(text);
     } finally {
       setPending(null);
