@@ -65,7 +65,7 @@ export function sendBrowserNotification(
   try {
     new Notification(prefs.notifPreview ? title : "NutriConnect", {
       body: prefs.notifPreview ? body : "",
-      icon: "/favicon.ico",
+      icon: "/favicon.png",
     });
   } catch {
     // ambiente sem suporte real (ex.: alguns navegadores mobile) — ignora

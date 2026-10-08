@@ -83,7 +83,7 @@ function NotificacoesPage() {
     try {
       new Notification(t("settings.notifications.push.testTitle"), {
         body: t("settings.notifications.push.testBody"),
-        icon: "/favicon.ico",
+        icon: "/favicon.png",
       });
     } catch {
       toast.error(t("settings.notifications.push.status.unsupported"));

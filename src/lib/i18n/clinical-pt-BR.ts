@@ -49,7 +49,7 @@ const clinicalPtBR = {
   "payment.method.transferencia": "Transferência",
   "payment.method.credit_card": "Cartão de crédito",
   "payment.method.debit_card": "Cartão de débito",
-  "payment.method.account_money": "Saldo Mercado Pago",
+
   "payment.method.ticket": "Boleto",
 
   "modality.online": "On-line",

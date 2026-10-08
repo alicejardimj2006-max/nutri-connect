@@ -41,7 +41,7 @@ const clinical: Record<ClinicalKey, string> = {
   "payment.method.transferencia": "Transferencia",
   "payment.method.credit_card": "Tarjeta de crédito",
   "payment.method.debit_card": "Tarjeta de débito",
-  "payment.method.account_money": "Saldo de Mercado Pago",
+
   "payment.method.ticket": "Boleto",
   "modality.online": "En línea",
   "modality.presencial": "Presencial",

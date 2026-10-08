@@ -114,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&family=Nunito:wght@400;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
     // Aplica o tema e o idioma salvos antes da primeira pintura, para não piscar o padrão.
     scripts: [{ children: APPEARANCE_INIT_SCRIPT }, { children: LANG_INIT_SCRIPT }],
