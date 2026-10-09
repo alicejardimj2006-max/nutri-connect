@@ -17,7 +17,10 @@ fisioterapeuta. Lembre que há profissionais verificados no próprio NutriConnec
 "Encontrar profissional"). Em sinais de risco ou urgência, oriente buscar atendimento imediato (SAMU 192)
 e, em sofrimento emocional intenso, o CVV (188). Responda em até 180 palavras, no idioma de quem perguntou.`;
 
-const schema = z.object({ message: z.string().trim().min(1).max(2000) });
+const schema = z.object({
+  message: z.string().trim().min(1).max(2000),
+  image: z.string().startsWith("data:image/").max(4_000_000).optional(),
+});
 
 export type NinaReply = { answer: string; used: number } | { error: string; used?: number };
 
@@ -43,6 +46,7 @@ export const askNutriAssistant = createServerFn({ method: "POST" })
       kind: "nina",
       system: SYSTEM,
       messages: [...history, { role: "user", content: data.message }],
+      image: data.image,
     });
     const { data: used } = await supabase.rpc("ai_usage_today", { p_kind: "nina" });
     if (!result.ok && result.limit) {

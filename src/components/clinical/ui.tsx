@@ -59,18 +59,21 @@ export function Card({
   return (
     <section
       className={cn(
-        "rounded-2xl border border-border/70 bg-card shadow-xs",
-        padded && "p-4 sm:p-5",
+        "group relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/60 backdrop-blur-2xl shadow-sm transition-all duration-300 hover:shadow-card hover:-translate-y-0.5",
+        padded && "p-5 sm:p-6",
         className,
       )}
     >
+      {/* Efeito de brilho de fundo bem sutil no hover */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
+      
       {(title || action) && (
-        <div className={cn("mb-4 flex items-center justify-between gap-3", !padded && "p-4 pb-0")}>
-          {title && <h2 className="font-display text-base font-bold text-foreground">{title}</h2>}
+        <div className={cn("mb-5 flex items-center justify-between gap-4", !padded && "p-5 pb-0")}>
+          {title && <h2 className="font-display text-lg font-bold tracking-tight text-foreground">{title}</h2>}
           {action}
         </div>
       )}
-      {children}
+      <div className="relative z-10">{children}</div>
     </section>
   );
 }
@@ -87,13 +90,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card/50 px-6 py-10 text-center">
-      <span className="grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary">
+    <div className="flex flex-col items-center justify-center rounded-[1.75rem] border border-dashed border-border/60 bg-card/30 backdrop-blur-sm px-6 py-12 text-center transition-all duration-300 hover:bg-card/50">
+      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft/50 text-primary shadow-inner">
         <Icon className="h-6 w-6" />
       </span>
-      <p className="mt-3 font-display text-base font-bold text-foreground">{title}</p>
-      {text && <p className="mt-1 max-w-sm text-sm text-muted-foreground">{text}</p>}
-      {action && <div className="mt-4">{action}</div>}
+      <p className="mt-4 font-display text-lg font-bold tracking-tight text-foreground">{title}</p>
+      {text && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{text}</p>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 }
@@ -155,15 +158,16 @@ export function Stat({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
-          <Icon className="h-4 w-4" />
+    <div className="group relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
+      <div className="flex items-start justify-between gap-3 relative z-10">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent shadow-sm transition-transform duration-300 group-hover:scale-110">
+          <Icon className="h-5 w-5" />
         </span>
       </div>
-      <p className="mt-1 font-display text-2xl font-bold tracking-tight text-foreground">{value}</p>
-      {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
+      <p className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground relative z-10">{value}</p>
+      {hint && <p className="mt-1 text-xs text-muted-foreground opacity-80 relative z-10">{hint}</p>}
     </div>
   );
 }
@@ -245,7 +249,6 @@ export function Field({
   );
 }
 
-/** Abas horizontais simples (sem mudar a URL). */
 export function Tabs<T extends string>({
   value,
   onChange,
@@ -256,7 +259,7 @@ export function Tabs<T extends string>({
   items: { value: T; label: string; count?: number }[];
 }) {
   return (
-    <div className="-mx-1 mb-4 flex gap-1 overflow-x-auto px-1 pb-1">
+    <div className="-mx-1 mb-6 flex gap-2 overflow-x-auto px-1 pb-2 scroll-smooth">
       {items.map((item) => (
         <button
           key={item.value}
@@ -264,15 +267,20 @@ export function Tabs<T extends string>({
           onClick={() => onChange(item.value)}
           aria-pressed={value === item.value}
           className={cn(
-            "shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition",
+            "relative shrink-0 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-300",
             value === item.value
-              ? "bg-primary text-primary-foreground"
-              : "bg-secondary text-muted-foreground hover:text-foreground",
+              ? "bg-accent text-accent-foreground shadow-md scale-105"
+              : "bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground hover:scale-[1.02]",
           )}
         >
           {item.label}
           {item.count !== undefined && (
-            <span className="ml-1.5 text-xs opacity-80">{item.count}</span>
+            <span className={cn(
+              "ml-2 inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-black",
+              value === item.value ? "bg-accent-foreground/20 text-accent-foreground" : "bg-muted text-muted-foreground"
+            )}>
+              {item.count}
+            </span>
           )}
         </button>
       ))}

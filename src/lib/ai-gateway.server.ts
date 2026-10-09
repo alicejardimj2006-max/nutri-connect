@@ -13,6 +13,8 @@ export async function aiChat(opts: {
   system: string;
   messages: { role: "user" | "assistant"; content: string }[];
   temperature?: number;
+  /** Data URL de imagem (JPEG/PNG/WebP) anexada à última mensagem do usuário. */
+  image?: string;
 }): Promise<AiChatResult> {
   const url = process.env["SUPABASE_URL"];
   const apikey = process.env["SUPABASE_PUBLISHABLE_KEY"];
@@ -27,11 +29,13 @@ export async function aiChat(opts: {
         system: opts.system,
         messages: opts.messages,
         temperature: opts.temperature,
+        image: opts.image,
       }),
     });
     if (!res.ok) {
-      console.error("ai-chat", res.status, (await res.text().catch(() => "")).slice(0, 300));
-      return { ok: false, status: res.status === 401 ? 403 : 502 };
+      const text = await res.text().catch(() => "");
+      console.error("ai-chat", res.status, text.slice(0, 300));
+      return { ok: false, status: res.status === 401 ? 403 : res.status };
     }
     return (await res.json()) as AiChatResult;
   } catch (err) {
@@ -46,5 +50,6 @@ export function aiErrorMessage(status: number): string {
   if (status === 429) return "Muitas perguntas agora. Tente em instantes.";
   if (status === 402) return "Os créditos de IA acabaram. Avise o administrador.";
   if (status === 403) return "A IA não está disponível no momento.";
-  return "A IA não conseguiu responder. Tente novamente.";
+  if (status === 400) return "A imagem enviada é inválida ou muito grande.";
+  return `A IA não conseguiu responder (Erro ${status}). Tente novamente.`;
 }

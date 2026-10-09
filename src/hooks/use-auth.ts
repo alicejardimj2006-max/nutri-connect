@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { AUTH_EVENT, getUser, initAuth, isAuthReady, type AuthUser } from "@/lib/auth";
 
 export function useAuth() {
-  const [user, setUserState] = useState<AuthUser | null>(null);
-  const [hydrated, setHydrated] = useState(false);
+  const [user, setUserState] = useState<AuthUser | null>(getUser);
+  const [hydrated, setHydrated] = useState<boolean>(isAuthReady);
 
   useEffect(() => {
     const sync = () => {

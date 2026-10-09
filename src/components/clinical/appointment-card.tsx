@@ -92,14 +92,16 @@ export function AppointmentCard({
   return (
     <article
       className={cn(
-        "@container rounded-2xl border border-border/70 bg-card p-4 shadow-xs",
+        "group relative overflow-hidden @container rounded-[1.75rem] border border-border/50 bg-card/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card",
         appt.status === "cancelada" && "opacity-70",
       )}
     >
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
+      
       {/* O layout segue a largura do card (que pode estar numa coluna estreita), não a da tela. */}
-      <div className="flex flex-col gap-3 @xl:flex-row @xl:items-center">
-        <div className="flex w-full items-center gap-3 @xl:w-auto">
-          <div className="grid w-14 shrink-0 place-items-center rounded-xl bg-secondary py-2 text-center">
+      <div className="relative z-10 flex flex-col gap-4 @xl:flex-row @xl:items-center">
+        <div className="flex w-full items-center gap-4 @xl:w-auto">
+          <div className="grid w-16 shrink-0 place-items-center rounded-2xl bg-secondary/80 py-3 text-center shadow-inner">
             <span className="text-[10px] font-semibold uppercase text-muted-foreground">
               {formatDate(start, locale, { month: "short" })}
             </span>

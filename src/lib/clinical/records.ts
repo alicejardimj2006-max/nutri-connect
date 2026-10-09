@@ -2,6 +2,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import * as mock from "./mock-data";
 
 export type ClinicalNote = Tables<"clinical_notes">;
 export type Anthropometric = Tables<"anthropometrics">;
@@ -349,6 +350,21 @@ export async function saveGoal(
   goal: Omit<TablesInsert<"goals">, "professional_id"> & { id?: string },
   asProfessional: boolean,
 ) {
+  if (goal.patient_id === "mock-patient" || goal.id?.startsWith("mock-")) {
+    if (goal.id) {
+      const idx = mock.MOCK_GOALS.findIndex((g) => g.id === goal.id);
+      if (idx !== -1) Object.assign(mock.MOCK_GOALS[idx], goal);
+    } else {
+      mock.MOCK_GOALS.push({
+        ...goal,
+        id: `mock-goal-${Date.now()}`,
+        professional_id: asProfessional ? "mock-pro" : null,
+        created_at: new Date().toISOString(),
+      });
+    }
+    return;
+  }
+
   if (goal.id) {
     const { id, ...patch } = goal;
     const { error } = await supabase.from("goals").update(patch).eq("id", id);
@@ -362,6 +378,11 @@ export async function saveGoal(
 }
 
 export async function deleteGoal(id: string) {
+  if (id.startsWith("mock-")) {
+    const idx = mock.MOCK_GOALS.findIndex((g) => g.id === id);
+    if (idx !== -1) mock.MOCK_GOALS.splice(idx, 1);
+    return;
+  }
   const { error } = await supabase.from("goals").delete().eq("id", id);
   fail(error);
 }
@@ -378,6 +399,24 @@ export async function listCheckins(patientId: string, fromDay: string): Promise<
 }
 
 export async function setCheckin(goalId: string, patientId: string, day: string, value: number) {
+  if (goalId.startsWith("mock-")) {
+    const existing = mock.MOCK_CHECKINS.find((c) => c.goal_id === goalId && c.day === day);
+    if (existing) {
+      existing.value = value;
+      existing.updated_at = new Date().toISOString();
+    } else {
+      mock.MOCK_CHECKINS.push({
+        id: `mock-chk-${Date.now()}`,
+        goal_id: goalId,
+        patient_id: patientId,
+        day,
+        value,
+        updated_at: new Date().toISOString(),
+      });
+    }
+    return;
+  }
+
   const { error } = await supabase
     .from("goal_checkins")
     .upsert(

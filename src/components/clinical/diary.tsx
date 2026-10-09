@@ -59,8 +59,8 @@ function Scale({
 }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="flex gap-1" role="radiogroup" aria-label={label}>
+      <p className="mb-2 text-sm font-semibold text-foreground/80">{label}</p>
+      <div className="flex gap-2" role="radiogroup" aria-label={label}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -69,10 +69,10 @@ function Scale({
             aria-checked={value === n}
             onClick={() => onChange(value === n ? null : n)}
             className={cn(
-              "h-8 w-8 rounded-lg border text-sm font-semibold transition",
+              "grid h-10 w-10 place-items-center rounded-full text-sm font-bold transition-all duration-300",
               value === n
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background hover:bg-secondary",
+                ? "bg-primary text-primary-foreground scale-110 shadow-md ring-4 ring-primary/20"
+                : "bg-secondary/80 text-muted-foreground hover:bg-primary/10 hover:text-primary",
             )}
           >
             {n}
@@ -125,9 +125,27 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
   );
 
   return (
-    <Card title={t("diary.newEntry")}>
-      <div className="space-y-3">
-        <div className="flex flex-wrap gap-1.5">
+    <Card 
+      title={
+        <div className="flex items-center gap-2">
+          <NotebookPen className="h-5 w-5 text-accent" />
+          <span>{t("diary.newEntry")}</span>
+        </div>
+      }
+      className="relative border-t-8 border-t-accent/80"
+    >
+      {/* Detalhe visual de fita adesiva ou arame de caderno (simulado com um padrão pontilhado no topo) */}
+      <div className="absolute top-0 left-4 right-4 h-2 flex justify-between px-2 opacity-20 pointer-events-none">
+        <div className="w-2 h-4 rounded-full bg-foreground -mt-1" />
+        <div className="w-2 h-4 rounded-full bg-foreground -mt-1" />
+        <div className="w-2 h-4 rounded-full bg-foreground -mt-1" />
+        <div className="w-2 h-4 rounded-full bg-foreground -mt-1" />
+        <div className="w-2 h-4 rounded-full bg-foreground -mt-1" />
+        <div className="w-2 h-4 rounded-full bg-foreground -mt-1" />
+      </div>
+
+      <div className="space-y-6 pt-2">
+        <div className="flex flex-wrap gap-2">
           {MEAL_TYPES.map((m) => (
             <button
               key={m}
@@ -135,48 +153,54 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
               aria-pressed={mealType === m}
               onClick={() => setMealType(m)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                "rounded-full px-4 py-2 text-sm font-bold transition-all duration-300",
                 mealType === m
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-muted-foreground hover:text-foreground",
+                  ? "bg-accent text-accent-foreground shadow-md scale-[1.02]"
+                  : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground",
               )}
             >
               {t(`diary.meal.${m}` as ClinicalKey)}
             </button>
           ))}
         </div>
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-          <Field label={t("diary.whatDidYouEat")}>
+        
+        <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto]">
+          <div className="sm:col-span-1 rounded-2xl bg-secondary/30 p-4 border border-border/40 relative overflow-hidden">
+            {/* Lined paper effect */}
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(transparent 27px, var(--color-border) 28px)", backgroundSize: "100% 28px", opacity: 0.4 }} />
             <textarea
-              rows={2}
-              className={cn(inputClass, "resize-y")}
+              rows={3}
+              className="w-full resize-none bg-transparent text-base leading-[28px] text-foreground outline-none placeholder:text-muted-foreground/60 relative z-10"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("diary.placeholder")}
             />
-          </Field>
-          <Field label={t("diary.date")}>
-            <input
-              type="date"
-              className={inputClass}
-              value={date}
-              max={toDateKey(new Date())}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </Field>
-          <Field label={t("diary.time")}>
-            <input
-              type="time"
-              className={inputClass}
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </Field>
+          </div>
+          
+          <div className="flex gap-3 sm:flex-col sm:gap-4">
+            <Field label={t("diary.date")}>
+              <input
+                type="date"
+                className={cn(inputClass, "rounded-xl py-3")}
+                value={date}
+                max={toDateKey(new Date())}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </Field>
+            <Field label={t("diary.time")}>
+              <input
+                type="time"
+                className={cn(inputClass, "rounded-xl py-3")}
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+              />
+            </Field>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-start gap-4">
+        <div className="flex flex-wrap items-start gap-8 rounded-2xl bg-card/40 p-4 border border-border/30">
           <div>
-            <p className="mb-1 text-xs font-medium text-muted-foreground">{t("diary.photo")}</p>
+            <p className="mb-2 text-sm font-semibold text-foreground/80">{t("diary.photo")}</p>
             <input
               ref={fileRef}
               type="file"
@@ -193,7 +217,7 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
               }}
             />
             {preview ? (
-              <div className="relative h-20 w-20 overflow-hidden rounded-xl">
+              <div className="relative h-24 w-24 overflow-hidden rounded-2xl shadow-sm transition-transform hover:scale-105">
                 <img src={preview} alt="" className="h-full w-full object-cover" />
                 <button
                   type="button"
@@ -202,27 +226,32 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
                     setPhoto(null);
                     setPreview(null);
                   }}
-                  className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white"
+                  className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="grid h-20 w-20 place-items-center rounded-xl border-2 border-dashed border-border text-muted-foreground hover:bg-secondary"
+                className="grid h-24 w-24 place-items-center rounded-2xl border-2 border-dashed border-primary/30 bg-primary-soft/20 text-primary transition-colors hover:bg-primary-soft/50 hover:border-primary/50"
                 aria-label={t("diary.addPhoto")}
               >
-                <Camera className="h-6 w-6" />
+                <div className="flex flex-col items-center gap-1">
+                  <Camera className="h-7 w-7" />
+                  <span className="text-[10px] font-medium uppercase tracking-wider">{t("diary.photo")}</span>
+                </div>
               </button>
             )}
           </div>
+          
           <Scale label={t("diary.hunger")} value={hunger} onChange={setHunger} />
           <Scale label={t("diary.satiety")} value={satiety} onChange={setSatiety} />
+          
           <div>
-            <p className="mb-1 text-xs font-medium text-muted-foreground">{t("diary.mood")}</p>
-            <div className="flex gap-1">
+            <p className="mb-2 text-sm font-semibold text-foreground/80">{t("diary.mood")}</p>
+            <div className="flex gap-2">
               {MOODS.map((m) => (
                 <button
                   key={m}
@@ -230,22 +259,23 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
                   aria-pressed={mood === m}
                   onClick={() => setMood(mood === m ? null : m)}
                   className={cn(
-                    "grid h-8 w-8 place-items-center rounded-lg border transition",
+                    "grid h-10 w-10 place-items-center rounded-full border-2 text-xl transition-all duration-300",
                     mood === m
-                      ? "border-primary bg-primary-soft text-primary"
-                      : "border-border bg-background hover:bg-secondary",
+                      ? "border-accent bg-accent-soft scale-110 shadow-md ring-4 ring-accent/20"
+                      : "border-transparent bg-secondary/80 hover:bg-secondary hover:scale-105 grayscale hover:grayscale-0",
                   )}
                 >
-                  <EmojiIcon emoji={m} className="h-4.5 w-4.5" />
+                  <EmojiIcon emoji={m} className="h-6 w-6" />
                 </button>
               ))}
             </div>
           </div>
+          
           <div>
-            <p className="mb-1 text-xs font-medium text-muted-foreground">
+            <p className="mb-2 text-sm font-semibold text-foreground/80">
               {t("diary.followedPlan")}
             </p>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {[true, false].map((v) => (
                 <button
                   key={String(v)}
@@ -253,12 +283,13 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
                   aria-pressed={followed === v}
                   onClick={() => setFollowed(followed === v ? null : v)}
                   className={cn(
-                    "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
+                    "flex items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all duration-300",
                     followed === v
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background hover:bg-secondary",
+                      ? (v ? "border-primary bg-primary text-primary-foreground shadow-md scale-105" : "border-destructive bg-destructive text-destructive-foreground shadow-md scale-105")
+                      : "border-transparent bg-secondary/80 text-muted-foreground hover:bg-secondary",
                   )}
                 >
+                  {v ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                   {v ? t("diary.yes") : t("diary.no")}
                 </button>
               ))}
@@ -266,14 +297,14 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-2">
           <button
             type="button"
-            className={buttonPrimary}
+            className={cn(buttonPrimary, "px-8 py-3 text-base shadow-lg")}
             disabled={(!description.trim() && !photo) || add.isPending}
             onClick={() => add.mutate(undefined)}
           >
-            <NotebookPen className="h-4 w-4" /> {t("diary.save")}
+            <Send className="h-4 w-4 mr-1" /> {t("diary.save")}
           </button>
         </div>
       </div>
@@ -398,33 +429,39 @@ function EntryCard({
   });
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
-      <div className="flex gap-3 p-4">
+    <article className="group relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/60 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-card hover:-translate-y-0.5">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
+      
+      <div className="flex gap-4 p-5 relative z-10">
         {photoUrl && (
-          <a href={photoUrl} target="_blank" rel="noreferrer" className="shrink-0">
-            <img
-              src={photoUrl}
-              alt={t("diary.photoAlt")}
-              className="h-24 w-24 rounded-xl object-cover sm:h-28 sm:w-28"
-            />
+          <a href={photoUrl} target="_blank" rel="noreferrer" className="shrink-0 group/photo">
+            <div className="relative h-28 w-28 overflow-hidden rounded-2xl shadow-sm transition-transform duration-300 group-hover/photo:scale-105 sm:h-32 sm:w-32 border-4 border-card">
+              <img
+                src={photoUrl}
+                alt={t("diary.photoAlt")}
+                className="h-full w-full object-cover"
+              />
+            </div>
           </a>
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-sm font-semibold text-foreground">
-              {t(`diary.meal.${entry.meal_type}` as ClinicalKey)}{" "}
-              <span className="font-normal text-muted-foreground">
-                · {formatTime(entry.eaten_at, locale)}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col">
+              <p className="text-base font-bold text-foreground">
+                {t(`diary.meal.${entry.meal_type}` as ClinicalKey)}
+              </p>
+              <span className="text-xs font-medium text-muted-foreground/80">
+                {formatTime(entry.eaten_at, locale)}
               </span>
-            </p>
+            </div>
             {canDelete && (
               <button
                 type="button"
-                className={cn(buttonGhost, "px-2 py-1")}
+                className={cn(buttonGhost, "px-2 py-2 rounded-xl")}
                 aria-label={t("common.remove")}
                 onClick={() => window.confirm(t("diary.deleteConfirm")) && remove.mutate(undefined)}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 opacity-50 transition-opacity hover:opacity-100" />
               </button>
             )}
           </div>

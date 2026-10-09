@@ -31,13 +31,42 @@ function parseBody(raw: unknown) {
   if (!system || messages.length === 0) throw new HttpError(400, "Informe system e messages.");
   const t = Number(b.temperature);
   const temperature = Number.isFinite(t) ? Math.min(Math.max(t, 0), 1) : 0.5;
-  return { kind, system, messages, temperature };
+  // Imagem opcional (leitor de rótulos): data URL de imagem, anexada à última mensagem do usuário.
+  const image =
+    typeof b.image === "string" &&
+    /^data:image\/(jpeg|png|webp);base64,/.test(b.image) &&
+    b.image.length <= MAX_IMAGE_CHARS
+      ? b.image
+      : null;
+  if (b.image && !image) throw new HttpError(400, "Imagem inválida ou grande demais.");
+  return { kind, system, messages, temperature, image };
+}
+
+const MAX_IMAGE_CHARS = 4_000_000;
+
+/** Mensagens no formato do gateway; a imagem vai junto da última mensagem do usuário. */
+function withImage(messages: Message[], image: string | null) {
+  if (!image) return messages;
+  const last = messages.map((m) => m.role).lastIndexOf("user");
+  return messages.map((m, i) =>
+    i === last
+      ? {
+          role: m.role,
+          content: [
+            { type: "text", text: m.content },
+            { type: "image_url", image_url: { url: image } },
+          ],
+        }
+      : m,
+  );
 }
 
 serve(async (req) => {
   if (req.method !== "POST") throw new HttpError(405, "Método não permitido.");
   const user = await requireUser(req);
-  const { kind, system, messages, temperature } = parseBody(await req.json().catch(() => null));
+  const { kind, system, messages, temperature, image } = parseBody(
+    await req.json().catch(() => null),
+  );
 
   const key = Deno.env.get("LOVABLE_API_KEY");
   if (!key) return json({ ok: false, status: 503 });
@@ -68,7 +97,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: Deno.env.get("AI_MODEL") ?? "google/gemini-2.5-flash",
         temperature,
-        messages: [{ role: "system", content: system }, ...messages],
+        messages: [{ role: "system", content: system }, ...withImage(messages, image)],
       }),
     });
     if (!res.ok) {

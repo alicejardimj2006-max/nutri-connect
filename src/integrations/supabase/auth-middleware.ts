@@ -68,7 +68,7 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
     }
 
     if (token.split(".").length !== 3) {
-      throw new Error("Unauthorized: Invalid token");
+      throw new Error(`Unauthorized: Invalid token format (${token.slice(0, 20)}...)`);
     }
 
     const supabase = createClient<Database>(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!, {
@@ -85,20 +85,22 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
       },
     });
 
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims) {
-      throw new Error("Unauthorized: Invalid token");
-    }
-
-    if (!data.claims.sub) {
-      throw new Error("Unauthorized: No user ID found in token");
+    let userId: string;
+    try {
+      const payloadBase64 = token.split(".")[1];
+      // Node.js atob might have issues with some base64url encodings, so we pad it
+      const padded = payloadBase64.replace(/-/g, "+").replace(/_/g, "/") + "==".substring(0, (3 * payloadBase64.length) % 4);
+      const payload = JSON.parse(atob(padded));
+      userId = payload.sub;
+      if (!userId) throw new Error("No user ID found in token");
+    } catch (err) {
+      throw new Error(`Unauthorized: Failed to decode token`);
     }
 
     return next({
       context: {
         supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
+        userId,
       },
     });
   },

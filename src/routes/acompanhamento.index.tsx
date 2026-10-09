@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, HeartHandshake, MessageCircle, Stethoscope, Utensils } from "lucide-react";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { TodayGoals } from "@/components/clinical/goals-today";
+import { LabelReaderCard } from "@/components/clinical/label-reader-card";
 import { NextMeal } from "@/components/clinical/next-meal";
 import {
   Avatar,
@@ -135,6 +136,8 @@ function PatientHome() {
             />
           )}
         </Card>
+
+        <LabelReaderCard />
 
         <Card title={t("patientHome.myProfessionals")}>
           {links.isLoading ? (

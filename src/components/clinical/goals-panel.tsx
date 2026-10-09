@@ -57,25 +57,26 @@ export function GoalsPanel({ patientId, readOnly }: { patientId: string; readOnl
       {list.length === 0 ? (
         !adding && <EmptyState icon={Target} title={t("goals.empty")} text={t("goals.emptyText")} />
       ) : (
-        <Card padded={false}>
-          <ul className="divide-y divide-border/60">
-            {list.map((g) => (
-              <li
-                key={g.id}
-                className={cn(
-                  "flex flex-col gap-3 p-4 sm:flex-row sm:items-center",
-                  !g.active && "opacity-60",
-                )}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
+        <ul className="space-y-4">
+          {list.map((g) => (
+            <li
+              key={g.id}
+              className={cn(
+                "group relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/60 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-card hover:-translate-y-0.5",
+                !g.active && "opacity-60",
+              )}
+            >
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
+              <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex min-w-0 flex-1 items-center gap-4">
                   <span
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-accent"
+                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary/80 text-accent shadow-inner transition-transform group-hover:scale-110"
                     aria-hidden
                   >
-                    <EmojiIcon emoji={g.icon} className="h-5 w-5" fallback={null} />
+                    <EmojiIcon emoji={g.icon} className="h-6 w-6" fallback={null} />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{g.title}</p>
+                    <p className="truncate text-base font-bold text-foreground">{g.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {t("goals.target", {
                         value: formatNumber(Number(g.target_value), locale),
@@ -86,40 +87,42 @@ export function GoalsPanel({ patientId, readOnly }: { patientId: string; readOnl
                     </p>
                   </div>
                 </div>
-                <WeekStrip goal={g} checkins={checkins.data ?? []} days={days} />
-                {!readOnly && g.professional_id && (
-                  <div className="flex shrink-0 gap-1">
-                    <button
-                      type="button"
-                      className={buttonGhost}
-                      aria-label={g.active ? t("goals.pause") : t("goals.resume")}
-                      title={g.active ? t("goals.pause") : t("goals.resume")}
-                      onClick={() => toggle.mutate(g)}
-                    >
-                      {g.active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    </button>
-                    <button
-                      type="button"
-                      className={buttonGhost}
-                      aria-label={t("common.remove")}
-                      onClick={() =>
-                        window.confirm(t("goals.deleteConfirm")) && remove.mutate(g.id)
-                      }
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </Card>
+                <div className="flex flex-col sm:items-end gap-3">
+                  <WeekStrip goal={g} checkins={checkins.data ?? []} days={days} />
+                  {!readOnly && g.professional_id && (
+                    <div className="flex shrink-0 gap-1 sm:mt-1">
+                      <button
+                        type="button"
+                        className={buttonGhost}
+                        aria-label={g.active ? t("goals.pause") : t("goals.resume")}
+                        title={g.active ? t("goals.pause") : t("goals.resume")}
+                        onClick={() => toggle.mutate(g)}
+                      >
+                        {g.active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        className={buttonGhost}
+                        aria-label={t("common.remove")}
+                        onClick={() =>
+                          window.confirm(t("goals.deleteConfirm")) && remove.mutate(g.id)
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
 }
 
-/** Sete quadradinhos (um por dia), mais escuros quanto mais perto da meta. */
+/** Sete bolinhas (uma por dia), preenchendo mais escuro conforme a meta é batida. */
 export function WeekStrip({
   goal,
   checkins,
@@ -133,8 +136,8 @@ export function WeekStrip({
   const target = Number(goal.target_value) || 1;
   const pct = adherence(goal, checkins, days);
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex gap-1" role="img" aria-label={t("goals.adherence", { pct })}>
+    <div className="flex items-center gap-3 rounded-2xl bg-secondary/40 px-3 py-2 border border-border/30">
+      <div className="flex gap-1.5" role="img" aria-label={t("goals.adherence", { pct })}>
         {days.map((d) => {
           const c = checkins.find((x) => x.goal_id === goal.id && x.day === d);
           const value = c ? Number(c.value) : 0;
@@ -143,24 +146,26 @@ export function WeekStrip({
             <span
               key={d}
               title={`${formatWeekday(parseDate(d), locale)}: ${formatNumber(value, locale)} / ${formatNumber(target, locale)} ${goal.unit}`}
-              className="flex flex-col items-center gap-0.5"
+              className="flex flex-col items-center gap-1"
             >
               <span
-                className="h-6 w-6 rounded-md border border-primary/20"
+                className={cn("h-7 w-7 rounded-full shadow-inner transition-colors", ratio === 0 && "border border-border/50")}
                 style={{
                   background: ratio
                     ? `color-mix(in oklch, var(--color-primary) ${Math.round(20 + ratio * 80)}%, transparent)`
-                    : "var(--color-secondary)",
+                    : "var(--color-background)",
                 }}
               />
-              <span className="text-[9px] uppercase text-muted-foreground">
+              <span className="text-[10px] font-medium uppercase text-muted-foreground/80">
                 {formatWeekday(parseDate(d), locale).slice(0, 1)}
               </span>
             </span>
           );
         })}
       </div>
-      <span className="w-10 text-right text-sm font-bold tabular-nums text-foreground">{pct}%</span>
+      <div className="flex flex-col items-center justify-center">
+        <span className="text-xs font-bold text-foreground leading-tight">{pct}%</span>
+      </div>
     </div>
   );
 }
