@@ -4,6 +4,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { ct } from "./i18n";
+import { blockInDemo, demo, demoActive, demoPeople, isDemoId } from "./demo";
 
 export type AppointmentStatus = Database["public"]["Enums"]["appointment_status"];
 export type AppointmentModality = Database["public"]["Enums"]["appointment_modality"];
@@ -49,8 +50,11 @@ async function currentUserId(): Promise<string> {
 // ---------------------------------------------------------------------------
 
 export async function fetchPeople(ids: string[]): Promise<Map<string, PersonSummary>> {
-  const unique = [...new Set(ids.filter(Boolean))];
-  const map = new Map<string, PersonSummary>();
+  const map0 = new Map<string, PersonSummary>();
+  // Pessoas do modo demonstração vêm de exemplo; as demais, do banco.
+  for (const p of demoPeople(ids)) map0.set(p.id, p);
+  const unique = [...new Set(ids.filter((id) => id && !isDemoId(id)))];
+  const map = map0;
   if (!unique.length) return map;
   const { data, error } = await supabase
     .from("profiles")
@@ -64,6 +68,7 @@ export async function fetchPeople(ids: string[]): Promise<Map<string, PersonSumm
 }
 
 export async function fetchPatientPrivate(patientId: string) {
+  if (demoActive()) return demo.fetchPatientPrivate(patientId);
   const { data, error } = await supabase
     .from("profile_private")
     .select("*")
@@ -84,6 +89,7 @@ export async function listDirectory(): Promise<DirectoryEntry[]> {
 }
 
 export async function getDirectoryEntry(id: string): Promise<DirectoryEntry | null> {
+  if (demoActive()) return demo.getDirectoryEntry(id);
   const { data, error } = await supabase
     .from("professional_directory")
     .select("*")
@@ -94,6 +100,7 @@ export async function getDirectoryEntry(id: string): Promise<DirectoryEntry | nu
 }
 
 export async function getProfessional(id: string): Promise<Professional | null> {
+  if (demoActive()) return demo.getProfessional(id);
   const { data, error } = await supabase
     .from("professionals")
     .select("*")
@@ -107,6 +114,7 @@ export async function updateProfessionalSettings(
   id: string,
   patch: TablesUpdate<"professionals">,
 ): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.from("professionals").update(patch).eq("user_id", id);
   fail(error);
 }
@@ -132,6 +140,7 @@ export async function bookAppointment(input: {
   notes?: string;
   communitySlug?: string;
 }): Promise<Appointment> {
+  blockInDemo();
   const { data, error } = await supabase.rpc("book_appointment", {
     p_professional: input.professionalId,
     p_starts_at: input.startsAt,
@@ -144,6 +153,7 @@ export async function bookAppointment(input: {
 }
 
 export async function cancelAppointment(id: string, reason?: string): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.rpc("cancel_appointment", {
     p_appointment: id,
     p_reason: reason || undefined,
@@ -152,6 +162,7 @@ export async function cancelAppointment(id: string, reason?: string): Promise<vo
 }
 
 export async function rescheduleAppointment(id: string, startsAt: string): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.rpc("reschedule_appointment", {
     p_appointment: id,
     p_starts_at: startsAt,
@@ -163,6 +174,7 @@ export async function updateAppointment(
   id: string,
   patch: TablesUpdate<"appointments">,
 ): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.from("appointments").update(patch).eq("id", id);
   fail(error);
 }
@@ -171,6 +183,7 @@ export async function updateAppointment(
 export async function createAppointmentAsProfessional(
   input: Omit<TablesInsert<"appointments">, "professional_id" | "created_by">,
 ): Promise<void> {
+  blockInDemo();
   const me = await currentUserId();
   const { error } = await supabase
     .from("appointments")
@@ -190,6 +203,7 @@ export async function listAppointments(opts: {
   limit?: number;
   ascending?: boolean;
 }): Promise<Appointment[]> {
+  if (demoActive()) return demo.listAppointments(opts);
   const me = await currentUserId();
   let q = supabase.from("appointments").select("*");
   q = opts.role === "patient" ? q.eq("patient_id", me) : q.eq("professional_id", me);
@@ -218,6 +232,7 @@ export async function listAvailabilityRules(professionalId: string): Promise<Ava
 export async function addAvailabilityRule(
   rule: Omit<TablesInsert<"availability_rules">, "professional_id">,
 ): Promise<void> {
+  blockInDemo();
   const me = await currentUserId();
   const { error } = await supabase
     .from("availability_rules")
@@ -226,6 +241,7 @@ export async function addAvailabilityRule(
 }
 
 export async function deleteAvailabilityRule(id: string): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.from("availability_rules").delete().eq("id", id);
   fail(error);
 }
@@ -244,6 +260,7 @@ export async function listAvailabilityBlocks(professionalId: string): Promise<Av
 export async function addAvailabilityBlock(
   block: Omit<TablesInsert<"availability_blocks">, "professional_id">,
 ): Promise<void> {
+  blockInDemo();
   const me = await currentUserId();
   const { error } = await supabase
     .from("availability_blocks")
@@ -252,6 +269,7 @@ export async function addAvailabilityBlock(
 }
 
 export async function deleteAvailabilityBlock(id: string): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.from("availability_blocks").delete().eq("id", id);
   fail(error);
 }
@@ -261,6 +279,7 @@ export async function deleteAvailabilityBlock(id: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export async function listLinks(role: "patient" | "professional"): Promise<CareLink[]> {
+  if (demoActive()) return demo.listLinks(role);
   const me = await currentUserId();
   const { data, error } = await supabase
     .from("care_links")
@@ -276,6 +295,7 @@ export async function requestLink(input: {
   message?: string;
   communitySlug?: string;
 }): Promise<void> {
+  blockInDemo();
   const me = await currentUserId();
   const { error } = await supabase.from("care_links").insert({
     patient_id: me,
@@ -290,16 +310,19 @@ export async function requestLink(input: {
 }
 
 export async function respondLink(id: string, accept: boolean): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.rpc("respond_care_link", { p_link: id, p_accept: accept });
   fail(error);
 }
 
 export async function endLink(id: string): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.rpc("end_care_link", { p_link: id });
   fail(error);
 }
 
 export async function listInvites(): Promise<CareInvite[]> {
+  if (demoActive()) return demo.listInvites();
   const me = await currentUserId();
   const { data, error } = await supabase
     .from("care_invites")
@@ -315,6 +338,7 @@ export async function createInvite(input: {
   inviteeEmail?: string;
   note?: string;
 }): Promise<CareInvite> {
+  blockInDemo();
   const me = await currentUserId();
   const { data, error } = await supabase
     .from("care_invites")
@@ -331,6 +355,7 @@ export async function createInvite(input: {
 }
 
 export async function revokeInvite(code: string): Promise<void> {
+  blockInDemo();
   const { error } = await supabase
     .from("care_invites")
     .update({ revoked_at: new Date().toISOString() })
@@ -345,6 +370,7 @@ export async function getInvite(code: string) {
 }
 
 export async function acceptInvite(code: string): Promise<CareLink> {
+  blockInDemo();
   const { data, error } = await supabase.rpc("accept_care_invite", { p_code: code });
   fail(error);
   return data as CareLink;
@@ -355,6 +381,7 @@ export async function acceptInvite(code: string): Promise<CareLink> {
 // ---------------------------------------------------------------------------
 
 export async function listPaymentsForAppointments(ids: string[]): Promise<Payment[]> {
+  if (demoActive()) return demo.listPaymentsForAppointments(ids);
   if (!ids.length) return [];
   const { data, error } = await supabase
     .from("payments")
@@ -370,6 +397,7 @@ export async function registerManualPayment(
   method: string,
   amountCents?: number,
 ): Promise<void> {
+  blockInDemo();
   const { error } = await supabase.rpc("register_manual_payment", {
     p_appointment: appointmentId,
     p_method: method,

@@ -66,10 +66,14 @@ export function Card({
     >
       {/* Efeito de brilho de fundo bem sutil no hover */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
-      
+
       {(title || action) && (
         <div className={cn("mb-5 flex items-center justify-between gap-4", !padded && "p-5 pb-0")}>
-          {title && <h2 className="font-display text-lg font-bold tracking-tight text-foreground">{title}</h2>}
+          {title && (
+            <h2 className="font-display text-lg font-bold tracking-tight text-foreground">
+              {title}
+            </h2>
+          )}
           {action}
         </div>
       )}
@@ -166,8 +170,12 @@ export function Stat({
           <Icon className="h-5 w-5" />
         </span>
       </div>
-      <p className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground relative z-10">{value}</p>
-      {hint && <p className="mt-1 text-xs text-muted-foreground opacity-80 relative z-10">{hint}</p>}
+      <p className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground relative z-10">
+        {value}
+      </p>
+      {hint && (
+        <p className="mt-1 text-xs text-muted-foreground opacity-80 relative z-10">{hint}</p>
+      )}
     </div>
   );
 }
@@ -275,10 +283,14 @@ export function Tabs<T extends string>({
         >
           {item.label}
           {item.count !== undefined && (
-            <span className={cn(
-              "ml-2 inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-black",
-              value === item.value ? "bg-accent-foreground/20 text-accent-foreground" : "bg-muted text-muted-foreground"
-            )}>
+            <span
+              className={cn(
+                "ml-2 inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-black",
+                value === item.value
+                  ? "bg-accent-foreground/20 text-accent-foreground"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
               {item.count}
             </span>
           )}

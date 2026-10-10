@@ -1,4 +1,4 @@
-// Chamada de IA para o app (Nina e resumo clínico). A chave do gateway fica só aqui, nos segredos
+// Chamada de IA para o app (Nina, resumo clínico e leitor de rótulos). A chave do gateway fica só aqui, nos segredos
 // do Supabase, então o servidor do app (Netlify, local, etc.) não precisa dela.
 // Exige login e aplica o limite diário do usuário (ai_consume); falhas do gateway voltam em
 // { ok: false, status } para o app mostrar uma mensagem amigável.
@@ -10,8 +10,8 @@ import { requireUser } from "../_shared/supabase.ts";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-// Mantenha em sincronia com NINA_DAILY_LIMIT e SUMMARY_DAILY_LIMIT em src/lib.
-const DAILY_LIMITS: Record<string, number> = { nina: 20, summary: 30 };
+// Mantenha em sincronia com NINA_DAILY_LIMIT, SUMMARY_DAILY_LIMIT e LABEL_DAILY_LIMIT em src/lib.
+const DAILY_LIMITS: Record<string, number> = { nina: 20, summary: 30, label: 10 };
 
 interface Message {
   role: "user" | "assistant";
@@ -42,6 +42,7 @@ function parseBody(raw: unknown) {
   return { kind, system, messages, temperature, image };
 }
 
+// ~3 MB de imagem em base64.
 const MAX_IMAGE_CHARS = 4_000_000;
 
 /** Mensagens no formato do gateway; a imagem vai junto da última mensagem do usuário. */
@@ -101,7 +102,11 @@ serve(async (req) => {
       }),
     });
     if (!res.ok) {
-      console.error("ai-chat gateway", res.status, (await res.text().catch(() => "")).slice(0, 300));
+      console.error(
+        "ai-chat gateway",
+        res.status,
+        (await res.text().catch(() => "")).slice(0, 300),
+      );
       return json({ ok: false, status: res.status });
     }
     const body = await res.json();

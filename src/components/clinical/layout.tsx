@@ -1,3 +1,4 @@
+import { ClinicalDemoBanner } from "@/components/clinical/demo-banner";
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/site-chrome";
@@ -114,6 +115,7 @@ export function ClinicalLayout({
               );
             })}
           </nav>
+          <ClinicalDemoBanner />
           {children}
         </main>
 

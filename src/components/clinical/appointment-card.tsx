@@ -97,7 +97,7 @@ export function AppointmentCard({
       )}
     >
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
-      
+
       {/* O layout segue a largura do card (que pode estar numa coluna estreita), não a da tela. */}
       <div className="relative z-10 flex flex-col gap-4 @xl:flex-row @xl:items-center">
         <div className="flex w-full items-center gap-4 @xl:w-auto">

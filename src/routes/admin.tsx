@@ -12,7 +12,7 @@ import {
   AiRejectionsSection,
   useAiRejectionsSummary,
 } from "@/components/admin/sections-ai-rejections";
-import { SiteFeaturesSection } from "@/components/admin/sections-site-features";
+import { ClinicalDemoPanel, SiteFeaturesSection } from "@/components/admin/sections-site-features";
 import { SiteNinaSection } from "@/components/admin/sections-site-nina";
 import { SiteRailsSection } from "@/components/admin/sections-site-rails";
 import { PresentationSection } from "@/components/admin/sections-presentation";
@@ -166,7 +166,12 @@ function AdminPage() {
           {section === "apresentacao" && <PresentationSection />}
           {section === "anuncios" && <AnnouncementsSection />}
           {section === "site_cards" && <SiteRailsSection />}
-          {section === "site_features" && <SiteFeaturesSection />}
+          {section === "site_features" && (
+            <div className="space-y-4">
+              <SiteFeaturesSection />
+              <ClinicalDemoPanel />
+            </div>
+          )}
           {section === "site_nina" && <SiteNinaSection />}
           {section === "financeiro" && <FinanceSection />}
           {section === "ia" && <AiSection />}

@@ -22,9 +22,6 @@ import { formatDate } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
 
-import { isPlatformAdmin } from "@/lib/community-admin";
-import { MOCK_MEAL_PLAN } from "@/lib/clinical/mock-data";
-
 export const Route = createFileRoute("/acompanhamento/plano")({
   component: PatientPlanPage,
 });

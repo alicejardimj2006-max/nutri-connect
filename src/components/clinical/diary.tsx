@@ -125,7 +125,7 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
   );
 
   return (
-    <Card 
+    <Card
       title={
         <div className="flex items-center gap-2">
           <NotebookPen className="h-5 w-5 text-accent" />
@@ -163,11 +163,18 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
             </button>
           ))}
         </div>
-        
+
         <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto]">
           <div className="sm:col-span-1 rounded-2xl bg-secondary/30 p-4 border border-border/40 relative overflow-hidden">
             {/* Lined paper effect */}
-            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(transparent 27px, var(--color-border) 28px)", backgroundSize: "100% 28px", opacity: 0.4 }} />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: "linear-gradient(transparent 27px, var(--color-border) 28px)",
+                backgroundSize: "100% 28px",
+                opacity: 0.4,
+              }}
+            />
             <textarea
               rows={3}
               className="w-full resize-none bg-transparent text-base leading-[28px] text-foreground outline-none placeholder:text-muted-foreground/60 relative z-10"
@@ -176,7 +183,7 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
               placeholder={t("diary.placeholder")}
             />
           </div>
-          
+
           <div className="flex gap-3 sm:flex-col sm:gap-4">
             <Field label={t("diary.date")}>
               <input
@@ -240,15 +247,17 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
               >
                 <div className="flex flex-col items-center gap-1">
                   <Camera className="h-7 w-7" />
-                  <span className="text-[10px] font-medium uppercase tracking-wider">{t("diary.photo")}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider">
+                    {t("diary.photo")}
+                  </span>
                 </div>
               </button>
             )}
           </div>
-          
+
           <Scale label={t("diary.hunger")} value={hunger} onChange={setHunger} />
           <Scale label={t("diary.satiety")} value={satiety} onChange={setSatiety} />
-          
+
           <div>
             <p className="mb-2 text-sm font-semibold text-foreground/80">{t("diary.mood")}</p>
             <div className="flex gap-2">
@@ -270,7 +279,7 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
               ))}
             </div>
           </div>
-          
+
           <div>
             <p className="mb-2 text-sm font-semibold text-foreground/80">
               {t("diary.followedPlan")}
@@ -285,7 +294,9 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
                   className={cn(
                     "flex items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all duration-300",
                     followed === v
-                      ? (v ? "border-primary bg-primary text-primary-foreground shadow-md scale-105" : "border-destructive bg-destructive text-destructive-foreground shadow-md scale-105")
+                      ? v
+                        ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
+                        : "border-destructive bg-destructive text-destructive-foreground shadow-md scale-105"
                       : "border-transparent bg-secondary/80 text-muted-foreground hover:bg-secondary",
                   )}
                 >
@@ -431,7 +442,7 @@ function EntryCard({
   return (
     <article className="group relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/60 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-card hover:-translate-y-0.5">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-white/5" />
-      
+
       <div className="flex gap-4 p-5 relative z-10">
         {photoUrl && (
           <a href={photoUrl} target="_blank" rel="noreferrer" className="shrink-0 group/photo">

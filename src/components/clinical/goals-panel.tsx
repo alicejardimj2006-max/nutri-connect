@@ -149,7 +149,10 @@ export function WeekStrip({
               className="flex flex-col items-center gap-1"
             >
               <span
-                className={cn("h-7 w-7 rounded-full shadow-inner transition-colors", ratio === 0 && "border border-border/50")}
+                className={cn(
+                  "h-7 w-7 rounded-full shadow-inner transition-colors",
+                  ratio === 0 && "border border-border/50",
+                )}
                 style={{
                   background: ratio
                     ? `color-mix(in oklch, var(--color-primary) ${Math.round(20 + ratio * 80)}%, transparent)`

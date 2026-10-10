@@ -13,6 +13,7 @@ import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { ClinicalLayout, type ClinicalNavItem } from "@/components/clinical/layout";
 import { EmptyState, buttonPrimary } from "@/components/clinical/ui";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { useClinicalDemo } from "@/lib/clinical/demo";
 import { useClinicalRealtime, useConversations, useLinks } from "@/lib/clinical/queries";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { useTr } from "@/components/appearance-editor";
@@ -26,7 +27,10 @@ function ProfessionalPanelLayout() {
   const { user, hydrated } = useRequireAuth();
   const { t } = useClinicalI18n();
   const tr = useTr();
-  const isPro = !!user?.professional;
+  // No modo demonstração o administrador entra no painel como a profissional de exemplo.
+  const demo = useClinicalDemo();
+  const isPro = !!user?.professional || demo;
+  const pro = user?.professional ?? { council: "CRN", registration: "DEMO-0000", uf: "SP" };
   useClinicalRealtime(isPro ? user?.id : undefined);
   const links = useLinks("professional", isPro);
   const conversations = useConversations(isPro);
@@ -78,7 +82,7 @@ function ProfessionalPanelLayout() {
   return (
     <ClinicalLayout
       title={t("panelNav.title")}
-      subtitle={`${user.professional!.council} ${user.professional!.registration}/${user.professional!.uf}`}
+      subtitle={`${pro.council} ${pro.registration}/${pro.uf}`}
       items={items}
     >
       <Outlet />

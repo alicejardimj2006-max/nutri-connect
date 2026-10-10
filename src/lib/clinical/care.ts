@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables } from "@/integrations/supabase/types";
 import { fileToDataUrl } from "@/lib/image";
 import { ct } from "./i18n";
+import { blockInDemo, demo, demoActive, demoFileUrl, isDemoPath } from "./demo";
 
 export type DiaryEntry = Tables<"diary_entries">;
 export type DiaryComment = Tables<"diary_comments">;
@@ -54,6 +55,7 @@ async function compressImage(file: File): Promise<Blob> {
 }
 
 export async function uploadFile(bucket: Bucket, folder: string, file: File, compress = false) {
+  blockInDemo();
   if (file.size > MAX_UPLOAD_BYTES) throw new Error(ct("errors.fileTooLarge"));
   const body = compress ? await compressImage(file) : file;
   const name = compress ? safeName(file.name).replace(/\.[^.]+$/, ".jpg") : safeName(file.name);
@@ -70,11 +72,13 @@ export async function signedUrls(
   paths: string[],
   ttl = 3600,
 ): Promise<Record<string, string>> {
-  const unique = [...new Set(paths.filter(Boolean))];
-  if (!unique.length) return {};
+  // Arquivos do modo demonstração são gerados no navegador.
+  const out: Record<string, string> = {};
+  for (const p of paths) if (p && isDemoPath(p)) out[p] = demoFileUrl(p);
+  const unique = [...new Set(paths.filter((p) => p && !isDemoPath(p)))];
+  if (!unique.length) return out;
   const { data, error } = await supabase.storage.from(bucket).createSignedUrls(unique, ttl);
   fail(error);
-  const out: Record<string, string> = {};
   for (const d of data ?? []) if (d.path && d.signedUrl) out[d.path] = d.signedUrl;
   return out;
 }
@@ -84,6 +88,7 @@ export async function signedUrls(
 // ---------------------------------------------------------------------------
 
 export async function listDiary(patientId: string, limit = 60): Promise<DiaryEntry[]> {
+  if (demoActive()) return demo.listDiary(patientId, limit);
   const { data, error } = await supabase
     .from("diary_entries")
     .select("*")
@@ -104,6 +109,7 @@ export async function addDiaryEntry(input: {
   mood?: string | null;
   followedPlan?: boolean | null;
 }) {
+  if (demoActive()) return demo.addDiaryEntry(input);
   const patientId = await me();
   const photo = input.photo ? await uploadFile("diary-photos", patientId, input.photo, true) : null;
   const { error } = await supabase.from("diary_entries").insert({
@@ -121,12 +127,14 @@ export async function addDiaryEntry(input: {
 }
 
 export async function deleteDiaryEntry(entry: DiaryEntry) {
+  if (demoActive()) return demo.deleteDiaryEntry(entry);
   const { error } = await supabase.from("diary_entries").delete().eq("id", entry.id);
   fail(error);
   if (entry.photo_path) await supabase.storage.from("diary-photos").remove([entry.photo_path]);
 }
 
 export async function listDiaryComments(entryIds: string[]): Promise<DiaryComment[]> {
+  if (demoActive()) return demo.listDiaryComments(entryIds);
   if (!entryIds.length) return [];
   const { data, error } = await supabase
     .from("diary_comments")
@@ -138,6 +146,7 @@ export async function listDiaryComments(entryIds: string[]): Promise<DiaryCommen
 }
 
 export async function addDiaryComment(entryId: string, body: string) {
+  if (demoActive()) return demo.addDiaryComment(entryId, body);
   const { error } = await supabase
     .from("diary_comments")
     .insert({ entry_id: entryId, author_id: await me(), body: body.trim() });
@@ -145,6 +154,7 @@ export async function addDiaryComment(entryId: string, body: string) {
 }
 
 export async function deleteDiaryComment(id: string) {
+  if (demoActive()) return demo.deleteDiaryComment(id);
   const { error } = await supabase.from("diary_comments").delete().eq("id", id);
   fail(error);
 }
@@ -154,6 +164,7 @@ export async function deleteDiaryComment(id: string) {
 // ---------------------------------------------------------------------------
 
 export async function listMessages(patientId: string, professionalId: string): Promise<Message[]> {
+  if (demoActive()) return demo.listMessages(patientId, professionalId);
   const { data, error } = await supabase
     .from("messages")
     .select("*")
@@ -169,6 +180,7 @@ export async function listMessages(patientId: string, professionalId: string): P
 export async function listConversationSummaries(): Promise<
   { patientId: string; professionalId: string; last: Message; unread: number }[]
 > {
+  if (demoActive()) return demo.listConversationSummaries();
   const uid = await me();
   const { data, error } = await supabase
     .from("messages")
@@ -201,6 +213,7 @@ export async function sendMessage(input: {
   body: string;
   file?: File | null;
 }) {
+  if (demoActive()) return demo.sendMessage(input);
   const uid = await me();
   const attachment = input.file
     ? await uploadFile(
@@ -222,6 +235,7 @@ export async function sendMessage(input: {
 }
 
 export async function markConversationRead(patientId: string, professionalId: string) {
+  if (demoActive()) return demo.markConversationRead(patientId, professionalId);
   const uid = await me();
   const { error } = await supabase
     .from("messages")
@@ -238,6 +252,7 @@ export async function markConversationRead(patientId: string, professionalId: st
 // ---------------------------------------------------------------------------
 
 export async function listDocuments(patientId: string): Promise<PatientDocument[]> {
+  if (demoActive()) return demo.listDocuments(patientId);
   const { data, error } = await supabase
     .from("patient_documents")
     .select("*")
@@ -256,6 +271,7 @@ export async function uploadDocument(input: {
   documentDate?: string | null;
   notes?: string | null;
 }) {
+  blockInDemo();
   const uploaded = await uploadFile("patient-files", input.patientId, input.file);
   const { error } = await supabase.from("patient_documents").insert({
     patient_id: input.patientId,
@@ -275,6 +291,7 @@ export async function uploadDocument(input: {
 }
 
 export async function deleteDocument(doc: PatientDocument) {
+  blockInDemo();
   await supabase.storage.from("patient-files").remove([doc.file_path]);
   const { error } = await supabase.from("patient_documents").delete().eq("id", doc.id);
   fail(error);

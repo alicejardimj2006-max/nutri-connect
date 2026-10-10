@@ -1,60 +1,105 @@
-import { useRef, useState } from "react";
-import { Camera, Loader2, ScanLine, X } from "lucide-react";
-import { toast } from "sonner";
+// Leitor de rótulos com IA: foto do rótulo → a Nina explica o que observar (limite diário próprio).
+import { Fragment, useRef, useState } from "react";
+import { Camera, ScanLine, X } from "lucide-react";
+import { useTr } from "@/components/appearance-editor";
 import { Card, buttonGhost } from "./ui";
-import { askNutriAssistant } from "@/lib/nutri-assistant.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/hooks/use-i18n";
 import { fileToDataUrl } from "@/lib/image";
+import { LABEL_DAILY_LIMIT, readFoodLabel, type LabelError } from "@/lib/label-reader.functions";
 import { cn } from "@/lib/utils";
 
+/** Negrito com **texto**, preservando as quebras de linha da resposta. */
+function Answer({ text }: { text: string }) {
+  return (
+    <div className="space-y-1.5 text-sm leading-relaxed text-foreground">
+      {text
+        .split("\n")
+        .map((line, i) =>
+          line.trim() ? (
+            <p key={i}>
+              {line
+                .split(/(\*\*[^*]+\*\*)/g)
+                .map((part, j) =>
+                  part.startsWith("**") && part.endsWith("**") ? (
+                    <strong key={j}>{part.slice(2, -2)}</strong>
+                  ) : (
+                    <Fragment key={j}>{part}</Fragment>
+                  ),
+                )}
+            </p>
+          ) : null,
+        )}
+    </div>
+  );
+}
+
 export function LabelReaderCard() {
+  const tr = useTr();
+  const { locale } = useI18n();
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [used, setUsed] = useState<number | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  const ERRORS: Record<LabelError, string> = {
+    limit: tr([
+      `Você chegou ao limite de ${LABEL_DAILY_LIMIT} leituras por hoje. Volte amanhã!`,
+      `You reached the limit of ${LABEL_DAILY_LIMIT} scans for today. Come back tomorrow!`,
+      `Llegaste al límite de ${LABEL_DAILY_LIMIT} lecturas por hoy. ¡Vuelve mañana!`,
+      `Vous avez atteint la limite de ${LABEL_DAILY_LIMIT} lectures pour aujourd'hui. Revenez demain !`,
+    ]),
+    unavailable: tr([
+      "A leitura de rótulos não está disponível no momento.",
+      "Label reading is not available right now.",
+      "La lectura de etiquetas no está disponible ahora.",
+      "La lecture d'étiquettes n'est pas disponible pour le moment.",
+    ]),
+    image: tr([
+      "Não deu para usar essa imagem. Tente outra foto.",
+      "This image couldn't be used. Try another photo.",
+      "No se pudo usar esta imagen. Prueba otra foto.",
+      "Cette image n'a pas pu être utilisée. Essayez une autre photo.",
+    ]),
+    failed: tr([
+      "A Nina não conseguiu ler o rótulo. Tente novamente.",
+      "Nina couldn't read the label. Please try again.",
+      "Nina no pudo leer la etiqueta. Inténtalo de nuevo.",
+      "Nina n'a pas pu lire l'étiquette. Réessayez.",
+    ]),
+  };
 
   const handleCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (fileInput.current) fileInput.current.value = "";
     if (!file) return;
-
+    setAnalyzing(true);
+    setResult(null);
+    setError(null);
     try {
-      setAnalyzing(true);
-      setResult(null);
-      const dataUrl = await fileToDataUrl(file, 400, 0.5);
-      setImagePreview(dataUrl);
-
-      const { data, error } = await supabase.functions.invoke("ai-chat", {
-        body: {
-          kind: "nina",
-          system: "Você é a Nina, assistente de educação alimentar do NutriConnect. Seja direta e fácil de entender.",
-          messages: [{ role: "user", content: "Analise este rótulo ou tabela nutricional. Me diga se é uma boa escolha de forma resumida e muito fácil de entender, e aponte se tem ingredientes escondidos (ex: muito açúcar ou conservantes ruins). Seja direto." }],
-          image: dataUrl,
-        },
-      });
-
-      if (error) {
-        toast.error("Erro ao chamar a IA. Verifique sua conexão.");
-        setImagePreview(null);
-      } else if (data?.ok && data.text) {
-        setResult(data.text);
-      } else {
-        toast.error(data?.status === 400 ? "A imagem é inválida ou muito grande." : "A IA não conseguiu responder no momento.");
-        setImagePreview(null);
-      }
+      // Resolução suficiente para ler a letra miúda do rótulo.
+      const dataUrl = await fileToDataUrl(file, 1400, 0.82);
+      setPreview(dataUrl);
+      const res = await readFoodLabel({ data: { image: dataUrl, locale } });
+      if (res.used !== undefined) setUsed(res.used);
+      if ("error" in res) setError(ERRORS[res.error]);
+      else setResult(res.answer);
     } catch (err) {
-      console.error("Label reader error:", err);
-      toast.error(err instanceof Error ? err.message : "Não foi possível ler a imagem.");
-      setImagePreview(null);
+      console.error("label reader", err);
+      setError(err instanceof Error && err.message ? err.message : ERRORS.failed);
     } finally {
       setAnalyzing(false);
-      if (fileInput.current) fileInput.current.value = "";
     }
   };
 
   const clear = () => {
-    setImagePreview(null);
+    setPreview(null);
     setResult(null);
+    setError(null);
   };
+
+  const pick = () => fileInput.current?.click();
 
   return (
     <Card
@@ -62,15 +107,23 @@ export function LabelReaderCard() {
       title={
         <div className="flex items-center gap-2">
           <ScanLine className="h-5 w-5 text-primary" />
-          <span>Leitor de Rótulos com IA</span>
+          <span>
+            {tr([
+              "Leitor de rótulos",
+              "Label reader",
+              "Lector de etiquetas",
+              "Lecteur d'étiquettes",
+            ])}
+          </span>
         </div>
       }
       action={
-        result && (
+        (result || error) && (
           <button
             type="button"
             className={cn(buttonGhost, "h-8 px-2 text-xs text-muted-foreground")}
             onClick={clear}
+            aria-label={tr(["Limpar", "Clear", "Limpiar", "Effacer"])}
           >
             <X className="h-4 w-4" />
           </button>
@@ -80,24 +133,34 @@ export function LabelReaderCard() {
       <input
         ref={fileInput}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         capture="environment"
         className="hidden"
         onChange={handleCapture}
       />
 
-      {!imagePreview && !analyzing && (
+      {!preview && !analyzing && (
         <div className="text-center">
           <p className="mb-4 text-sm text-muted-foreground">
-            Tire uma foto dos ingredientes ou tabela nutricional para saber se é uma boa escolha.
+            {tr([
+              "Fotografe a lista de ingredientes ou a tabela nutricional e a Nina explica o que observar.",
+              "Take a photo of the ingredient list or nutrition facts and Nina explains what to look for.",
+              "Fotografía la lista de ingredientes o la tabla nutricional y Nina te explica qué observar.",
+              "Photographiez la liste des ingrédients ou le tableau nutritionnel et Nina explique quoi observer.",
+            ])}
           </p>
           <button
             type="button"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-bold text-primary-foreground shadow-soft transition hover:bg-primary/90"
-            onClick={() => fileInput.current?.click()}
+            className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 font-bold text-primary-foreground shadow-soft transition hover:bg-primary/90"
+            onClick={pick}
           >
             <Camera className="h-5 w-5" />
-            Escanear Produto
+            {tr([
+              "Fotografar rótulo",
+              "Scan a label",
+              "Fotografiar etiqueta",
+              "Scanner une étiquette",
+            ])}
           </button>
         </div>
       )}
@@ -110,37 +173,69 @@ export function LabelReaderCard() {
               <ScanLine className="h-8 w-8 animate-pulse" />
             </div>
           </div>
-          <p className="font-semibold text-foreground">A Nina está analisando...</p>
-          <p className="text-xs text-muted-foreground">Lendo ingredientes e tabela nutricional</p>
+          <p className="font-semibold text-foreground">
+            {tr([
+              "A Nina está lendo o rótulo…",
+              "Nina is reading the label…",
+              "Nina está leyendo la etiqueta…",
+              "Nina lit l'étiquette…",
+            ])}
+          </p>
         </div>
       )}
 
-      {result && imagePreview && !analyzing && (
+      {preview && !analyzing && (result || error) && (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
           <div className="mb-4 overflow-hidden rounded-xl bg-secondary">
-            <img 
-              src={imagePreview} 
-              alt="Rótulo escaneado" 
+            <img
+              src={preview}
+              alt={tr([
+                "Rótulo fotografado",
+                "Scanned label",
+                "Etiqueta fotografiada",
+                "Étiquette scannée",
+              ])}
               className="h-32 w-full object-cover opacity-80"
             />
           </div>
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <p className="whitespace-pre-wrap text-sm text-foreground">
-              {result}
+          {result ? (
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <Answer text={result} />
+            </div>
+          ) : (
+            <p className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+              {error}
             </p>
-          </div>
+          )}
           <button
             type="button"
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold transition hover:bg-secondary"
+            className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold transition hover:bg-secondary"
             onClick={() => {
               clear();
-              fileInput.current?.click();
+              pick();
             }}
           >
-            <Camera className="h-4 w-4" /> Escanear outro produto
+            <Camera className="h-4 w-4" />
+            {tr([
+              "Ler outro rótulo",
+              "Scan another label",
+              "Leer otra etiqueta",
+              "Lire une autre étiquette",
+            ])}
           </button>
         </div>
       )}
+
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        {used !== null &&
+          `${used}/${LABEL_DAILY_LIMIT} ${tr(["hoje", "today", "hoy", "aujourd'hui"])} · `}
+        {tr([
+          "Conteúdo educativo; não substitui um(a) nutricionista.",
+          "Educational content; not a substitute for a dietitian.",
+          "Contenido educativo; no sustituye a un(a) nutricionista.",
+          "Contenu éducatif ; ne remplace pas un(e) diététicien(ne).",
+        ])}
+      </p>
     </Card>
   );
 }

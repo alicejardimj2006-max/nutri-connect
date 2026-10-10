@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Minus, Plus, Target, Trash2 } from "lucide-react";
 import * as records from "@/lib/clinical/records";
 import type { Goal } from "@/lib/clinical/records";
@@ -87,6 +88,29 @@ function GoalCheckinCard({
   const remove = useClinicalMutation(() => records.deleteGoal(goal.id), {
     invalidate: [qk.goals(goal.patient_id)],
   });
+  // Mostra o novo valor na hora (antes da resposta do servidor); a recarga depois confirma.
+  const qc = useQueryClient();
+  const change = (next: number) => {
+    const v = Math.max(0, next);
+    qc.setQueriesData<records.GoalCheckin[]>(
+      { queryKey: ["clinical", "checkins", goal.patient_id] },
+      (old) => {
+        if (!old) return old;
+        const rest = old.filter((c) => !(c.goal_id === goal.id && c.day === today));
+        return [
+          ...rest,
+          {
+            goal_id: goal.id,
+            patient_id: goal.patient_id,
+            day: today,
+            value: v,
+            updated_at: new Date().toISOString(),
+          },
+        ];
+      },
+    );
+    set.mutate(v);
+  };
 
   return (
     <div
@@ -146,8 +170,8 @@ function GoalCheckinCard({
             type="button"
             className={cn(buttonSecondary, "h-9 w-9 p-0")}
             aria-label={t("goals.decrease")}
-            disabled={value <= 0 || set.isPending}
-            onClick={() => set.mutate(value - step)}
+            disabled={value <= 0}
+            onClick={() => change(value - step)}
           >
             <Minus className="h-4 w-4" />
           </button>
@@ -155,8 +179,7 @@ function GoalCheckinCard({
             type="button"
             className={cn(buttonSecondary, "h-9 w-9 p-0")}
             aria-label={t("goals.increase")}
-            disabled={set.isPending}
-            onClick={() => set.mutate(value + step)}
+            onClick={() => change(value + step)}
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -164,8 +187,7 @@ function GoalCheckinCard({
             <button
               type="button"
               className={cn(buttonGhost, "text-primary")}
-              disabled={set.isPending}
-              onClick={() => set.mutate(target)}
+              onClick={() => change(target)}
             >
               <Check className="h-4 w-4" /> {t("goals.complete")}
             </button>

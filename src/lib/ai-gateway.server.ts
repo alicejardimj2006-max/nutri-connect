@@ -1,6 +1,6 @@
 import { getRequest } from "@tanstack/react-start/server";
 
-export type AiKind = "nina" | "summary";
+export type AiKind = "nina" | "summary" | "label";
 export type AiChatResult =
   { ok: true; text: string } | { ok: false; status: number; limit?: boolean };
 
@@ -51,5 +51,5 @@ export function aiErrorMessage(status: number): string {
   if (status === 402) return "Os créditos de IA acabaram. Avise o administrador.";
   if (status === 403) return "A IA não está disponível no momento.";
   if (status === 400) return "A imagem enviada é inválida ou muito grande.";
-  return `A IA não conseguiu responder (Erro ${status}). Tente novamente.`;
+  return "A IA não conseguiu responder. Tente novamente.";
 }

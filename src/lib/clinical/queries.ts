@@ -5,9 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import * as api from "./api";
 import * as records from "./records";
 import * as care from "./care";
-import { useAuth } from "@/hooks/use-auth";
-import { isPlatformAdmin } from "@/lib/community-admin";
-import * as mock from "./mock-data";
 
 export const qk = {
   all: ["clinical"] as const,
@@ -49,29 +46,7 @@ export function useDirectory() {
 }
 
 export function useDirectoryEntry(id: string) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
-  return useQuery({
-    queryKey: qk.directoryEntry(id),
-    queryFn: async () => {
-      if (id.startsWith("mock-") && admin) {
-        return {
-          id: "mock-pro",
-          user_id: "mock-pro",
-          name: "Dra. Mock (Nutricionista)",
-          avatar_url: null,
-          bio: "Profissional de teste",
-          profession: "Nutricionista",
-          council: "CRN",
-          registration: "12345",
-          uf: "SP",
-          specialties: ["Esportiva"],
-          public_lookup_url: null,
-        } as any;
-      }
-      return api.getDirectoryEntry(id);
-    },
-  });
+  return useQuery({ queryKey: qk.directoryEntry(id), queryFn: () => api.getDirectoryEntry(id) });
 }
 
 export function useProfessional(id: string | undefined) {
@@ -94,36 +69,15 @@ export function useAppointments(
   params: Parameters<typeof api.listAppointments>[0],
   enabled = true,
 ) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.appointments(params),
-    queryFn: async () => {
-      const data = await api.listAppointments(params);
-      if (data.length === 0 && admin) return mock.MOCK_APPOINTMENTS;
-      return data;
-    },
+    queryFn: () => api.listAppointments(params),
     enabled,
   });
 }
 
 export function useLinks(role: "patient" | "professional", enabled = true) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
-  return useQuery({
-    queryKey: qk.links(role),
-    queryFn: async () => {
-      const data = await api.listLinks(role);
-      if (data.length === 0 && admin && user) {
-        // O admin ocupa o lugar dele na relação, para conversas e telas baterem com o usuário logado.
-        return mock.MOCK_LINKS.map((l) =>
-          role === "patient" ? { ...l, patient_id: user.id } : { ...l, professional_id: user.id },
-        );
-      }
-      return data;
-    },
-    enabled,
-  });
+  return useQuery({ queryKey: qk.links(role), queryFn: () => api.listLinks(role), enabled });
 }
 
 export function useInvites() {
@@ -148,34 +102,9 @@ export function useAvailabilityBlocks(professionalId: string | undefined) {
 
 /** Nomes/avatares de um conjunto de pessoas (cacheado por conjunto de ids). */
 export function usePeople(ids: string[]) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.people(ids),
-    queryFn: async () => {
-      const isMock = ids.some((id) => id.startsWith("mock-"));
-      if (isMock && admin) {
-        const map = new Map<string, any>();
-        if (ids.includes("mock-patient")) {
-          map.set("mock-patient", {
-            id: "mock-patient",
-            name: "João (Paciente Exemplo)",
-            avatarUrl: null,
-            bio: "Paciente de teste",
-          });
-        }
-        if (ids.includes("mock-pro")) {
-          map.set("mock-pro", {
-            id: "mock-pro",
-            name: "Dra. Mock (Nutricionista)",
-            avatarUrl: null,
-            bio: "Profissional de teste",
-          });
-        }
-        return map;
-      }
-      return api.fetchPeople(ids);
-    },
+    queryFn: () => api.fetchPeople(ids),
     enabled: ids.length > 0,
     staleTime: 5 * 60 * 1000,
   });
@@ -184,30 +113,15 @@ export function usePeople(ids: string[]) {
 export function usePayments(appointmentIds: string[]) {
   return useQuery({
     queryKey: qk.payments(appointmentIds),
-    queryFn: async () => {
-      if (appointmentIds.some((id) => id.startsWith("mock-"))) return [];
-      return api.listPaymentsForAppointments(appointmentIds);
-    },
+    queryFn: () => api.listPaymentsForAppointments(appointmentIds),
     enabled: appointmentIds.length > 0,
   });
 }
 
 export function usePatientPrivate(patientId: string) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.patientPrivate(patientId),
-    queryFn: async () => {
-      if (patientId.startsWith("mock-") && admin) {
-        return {
-          id: "mock-patient",
-          document_cpf: "111.222.333-44",
-          phone: "+5511999999999",
-          birth_date: "1990-01-01",
-        } as any;
-      }
-      return api.fetchPatientPrivate(patientId);
-    },
+    queryFn: () => api.fetchPatientPrivate(patientId),
   });
 }
 
@@ -297,127 +211,65 @@ export function useClinicalRealtime(userId: string | undefined) {
 // ---------------------------------------------------------------------------
 
 export function useAnamnesis(patientId: string, professionalId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.anamnesis(patientId, professionalId ?? ""),
-    queryFn: async () => {
-      if (patientId.startsWith("mock-") && admin) {
-        return {
-          id: "mock-anamnesis",
-          patient_id: "mock-patient",
-          professional_id: "mock-pro",
-          data: {
-            chiefComplaint: "Desejo perder gordura e ganhar massa muscular",
-            clinicalHistory: { conditions: [], surgeries: "", medications: "Nenhuma" },
-            lifestyle: { physicalActivity: "Musculação 4x na semana", sleepHours: 7, waterLiters: 2 },
-            eating: { mealsPerDay: 4, recall24h: "Pão de manhã, arroz e frango almoço/janta" },
-          },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as any;
-      }
-      return records.getAnamnesis(patientId, professionalId!);
-    },
+    queryFn: () => records.getAnamnesis(patientId, professionalId!),
     enabled: !!professionalId,
   });
 }
 
 export function useNotes(patientId: string) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.notes(patientId),
-    queryFn: async () => {
-      const data = await records.listNotes(patientId);
-      if (data.length === 0 && admin) return mock.MOCK_NOTES;
-      return data;
-    },
+    queryFn: () => records.listNotes(patientId),
     enabled: !!patientId,
   });
 }
 
 export function useAnthropometrics(patientId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.anthropometrics(patientId ?? ""),
-    queryFn: async () => {
-      const data = await records.listAnthropometrics(patientId!);
-      if (data.length === 0 && admin) return mock.MOCK_ANTHROPOMETRICS;
-      return data;
-    },
+    queryFn: () => records.listAnthropometrics(patientId!),
     enabled: !!patientId,
   });
 }
 
 export function useMealPlans(patientId: string) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.plans(patientId),
-    queryFn: async () => {
-      const data = await records.listMealPlans(patientId);
-      if (data.length === 0 && admin) return [mock.MOCK_MEAL_PLAN];
-      return data;
-    },
+    queryFn: () => records.listMealPlans(patientId),
     enabled: !!patientId,
   });
 }
 
 export function useMealPlan(planId: string) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.plan(planId),
-    queryFn: async () => {
-      if (planId.startsWith("mock-") && admin) return mock.MOCK_MEAL_PLAN;
-      const data = await records.getMealPlan(planId);
-      if (!data && admin) return mock.MOCK_MEAL_PLAN;
-      return data;
-    },
+    queryFn: () => records.getMealPlan(planId),
     enabled: !!planId,
   });
 }
 
 export function useActivePlan(patientId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.activePlan(patientId ?? ""),
-    queryFn: async () => {
-      const data = await records.getActivePlan(patientId!);
-      if (!data && admin) return mock.MOCK_MEAL_PLAN;
-      return data;
-    },
+    queryFn: () => records.getActivePlan(patientId!),
     enabled: !!patientId,
   });
 }
 
 export function useGoals(patientId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.goals(patientId ?? ""),
-    queryFn: async () => {
-      const data = await records.listGoals(patientId!);
-      if (data.length === 0 && admin) return mock.MOCK_GOALS;
-      return data;
-    },
+    queryFn: () => records.listGoals(patientId!),
     enabled: !!patientId,
   });
 }
 
 export function useCheckins(patientId: string | undefined, fromDay: string) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.checkins(patientId ?? "", fromDay),
-    queryFn: async () => {
-      const data = await records.listCheckins(patientId!, fromDay);
-      if (data.length === 0 && admin) return mock.MOCK_CHECKINS;
-      return data;
-    },
+    queryFn: () => records.listCheckins(patientId!, fromDay),
     enabled: !!patientId,
   });
 }
@@ -437,74 +289,41 @@ export function useFoodSearch(query: string) {
 // ---------------------------------------------------------------------------
 
 export function useDiary(patientId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.diary(patientId ?? ""),
-    queryFn: async () => {
-      const data = await care.listDiary(patientId!);
-      if (data.length === 0 && admin) return mock.MOCK_DIARY;
-      return data;
-    },
+    queryFn: () => care.listDiary(patientId!),
     enabled: !!patientId,
   });
 }
 
 export function useDiaryComments(entryIds: string[]) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.diaryComments(entryIds),
-    queryFn: async () => {
-      if (entryIds.some((id) => id.startsWith("mock-")) && admin) return mock.MOCK_DIARY_COMMENTS;
-      const data = await care.listDiaryComments(entryIds);
-      if (data.length === 0 && admin) return mock.MOCK_DIARY_COMMENTS;
-      return data;
-    },
+    queryFn: () => care.listDiaryComments(entryIds),
     enabled: entryIds.length > 0,
   });
 }
 
 export function useMessages(patientId: string | undefined, professionalId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.messages(patientId ?? "", professionalId ?? ""),
-    queryFn: async () => {
-      if (mock.isMockId(patientId) || mock.isMockId(professionalId)) {
-        return admin ? mock.mockMessagesFor(patientId!, professionalId!) : [];
-      }
-      const data = await care.listMessages(patientId!, professionalId!);
-      return data;
-    },
+    queryFn: () => care.listMessages(patientId!, professionalId!),
     enabled: !!patientId && !!professionalId,
   });
 }
 
 export function useConversations(enabled = true) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.conversations(),
-    queryFn: async () => {
-      const data = await care.listConversationSummaries();
-      if (data.length === 0 && admin && user) return mock.mockConversationsFor(user.id);
-      return data;
-    },
+    queryFn: care.listConversationSummaries,
     enabled,
   });
 }
 
 export function useDocuments(patientId: string | undefined) {
-  const { user } = useAuth();
-  const admin = isPlatformAdmin(user);
   return useQuery({
     queryKey: qk.documents(patientId ?? ""),
-    queryFn: async () => {
-      const data = await care.listDocuments(patientId!);
-      if (data.length === 0 && admin) return mock.MOCK_DOCUMENTS;
-      return data;
-    },
+    queryFn: () => care.listDocuments(patientId!),
     enabled: !!patientId,
   });
 }
@@ -514,13 +333,7 @@ export function useSignedUrls(bucket: care.Bucket, paths: (string | null | undef
   const list = paths.filter((p): p is string => !!p);
   return useQuery({
     queryKey: qk.signed(bucket, list),
-    queryFn: async () => {
-      const mockPaths = list.filter((p) => p.startsWith("mock/"));
-      const real = list.filter((p) => !p.startsWith("mock/"));
-      const out = real.length ? await care.signedUrls(bucket, real) : {};
-      for (const p of mockPaths) out[p] = mock.mockDocumentUrl(p);
-      return out;
-    },
+    queryFn: () => care.signedUrls(bucket, list),
     enabled: list.length > 0,
     staleTime: 50 * 60 * 1000,
     refetchInterval: 50 * 60 * 1000,

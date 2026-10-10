@@ -14,7 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { playSound } from "@/lib/sounds";
 import * as care from "@/lib/clinical/care";
-import * as mock from "@/lib/clinical/mock-data";
 import { suggestReply } from "@/lib/pro-ai.functions";
 import { qk, useClinicalMutation, useMessages, useSignedUrls } from "@/lib/clinical/queries";
 import { formatDate, formatTime, isSameDay } from "@/lib/clinical/format";
@@ -70,13 +69,8 @@ export function ChatThread({
     }
   };
 
-  const isMockChat = mock.isMockId(patientId) || mock.isMockId(professionalId);
-
   const send = useClinicalMutation(
-    async () => {
-      if (isMockChat) return mock.addMockMessage(meId === patientId, body);
-      return care.sendMessage({ patientId, professionalId, body, file });
-    },
+    () => care.sendMessage({ patientId, professionalId, body, file }),
     {
       invalidate: [qk.messages(patientId, professionalId), qk.conversations()],
       onSuccess: () => {
@@ -93,11 +87,11 @@ export function ChatThread({
     bottom.current?.scrollIntoView({ block: "end" });
   }, [list.length]);
   useEffect(() => {
-    if (!unread || isMockChat) return;
+    if (!unread) return;
     void care
       .markConversationRead(patientId, professionalId)
       .then(() => qc.invalidateQueries({ queryKey: qk.conversations() }));
-  }, [unread, isMockChat, patientId, professionalId, qc]);
+  }, [unread, patientId, professionalId, qc]);
 
   const submit = () => {
     if ((!body.trim() && !file) || send.isPending) return;
