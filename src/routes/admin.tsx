@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
+import { AppScreen } from "@/components/app-screen";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
@@ -81,13 +82,16 @@ function AdminPage() {
   }, {});
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-[96rem] flex-1 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-6">
+    // Altura da tela: o menu e o conteúdo rolam cada um por dentro (a página não rola).
+    <AppScreen scroll={false}>
+      <div className="mx-auto flex min-h-0 w-full max-w-[96rem] flex-1 flex-col px-4 pt-6 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] lg:gap-6 lg:pb-6">
         <h1 className="sr-only">{t("admin.title")}</h1>
 
-        {/* Menu: lateral no computador, faixa rolável no celular */}
-        <nav aria-label="Seções da administração" className="mb-5 lg:mb-0">
+        {/* Menu: lateral no computador (rola por dentro), faixa rolável no celular */}
+        <nav
+          aria-label="Seções da administração"
+          className="mb-4 shrink-0 lg:mb-0 lg:flex lg:min-h-0 lg:flex-col"
+        >
           <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:hidden">
             {SECTIONS.map((s) => (
               <button
@@ -112,7 +116,7 @@ function AdminPage() {
             ))}
           </div>
 
-          <div className="sticky top-20 hidden space-y-4 rounded-3xl border border-border/80 bg-card p-3 shadow-xs lg:block">
+          <div className="hidden min-h-0 space-y-4 overflow-y-auto overscroll-contain rounded-3xl border border-border/80 bg-card p-3 shadow-xs lg:block">
             <p className="flex items-center gap-2 px-3 pt-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-accent" /> Administração
             </p>
@@ -153,7 +157,10 @@ function AdminPage() {
           </div>
         </nav>
 
-        <div className="min-w-0">
+        <div
+          data-app-main
+          className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-6"
+        >
           {section === "visao" && <OverviewSection go={go} />}
           {section === "usuarios" && <UsersSection me={user.id} />}
           {section === "verificacoes" && <VerificationsSection user={user} />}
@@ -178,7 +185,7 @@ function AdminPage() {
           {section === "config" && <SettingsSection />}
           {section === "auditoria" && <AuditSection />}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }

@@ -155,6 +155,20 @@
   *::-webkit-scrollbar {
     display: none;
   }
+  /* Personalização → "Mostrar barras de rolagem": barras finas em todo o site. */
+  html[data-scrollbars="show"] * {
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+  }
+  html[data-scrollbars="show"] *::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+    height: 8px;
+  }
+  html[data-scrollbars="show"] *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-foreground) 25%, transparent);
+    border-radius: 99px;
+  }
   /* Textos corridos dos cards ficam justificados. Vive no layer base com :where() (especificidade
      zero) para que utilitários como text-center e text-left continuem podendo sobrescrever. */
   /* Fora disso: colunas laterais (estreitas) e textos em destaque (curtos), onde justificar abriria
@@ -1341,12 +1355,22 @@ html[data-rails="on"]
 
 /* Transições entre slides personalizados (escolhidas por slide no editor) */
 @keyframes nc-tr-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes nc-tr-zoom {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .nc-tr-fade {
   animation: nc-tr-fade 0.5s ease both;

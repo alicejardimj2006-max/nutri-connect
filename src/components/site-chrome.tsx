@@ -18,6 +18,7 @@ import { ShareModal } from "@/components/share-modal";
 import { AccountMenu } from "@/components/account-menu";
 import { useIsDark } from "@/lib/post-type";
 import { useUnreadCount } from "@/lib/social/notifications";
+import { appScroller, onPageScroll, scrollTop } from "@/lib/app-scroll";
 
 /** Páginas que rolam por dentro (ex.: Espaço de hoje) avisam por aqui quando as barras devem recolher. */
 export const CHROME_HIDE_EVENT = "chrome:hide";
@@ -42,11 +43,14 @@ function useHideOnScroll(pathname: string) {
 
   useEffect(() => {
     setHidden(false);
-    let lastY = window.scrollY;
+    let lastY = scrollTop();
     let frame = 0;
     const update = () => {
       frame = 0;
-      const y = window.scrollY;
+      // Nas telas internas o cabeçalho ocupa espaço próprio (não cobre o conteúdo): esconder só
+      // deixaria um vão no topo. Ele some ao rolar só onde a janela rola (feed, páginas públicas).
+      if (appScroller()) return setHidden(false);
+      const y = scrollTop();
       const delta = y - lastY;
       if (y < 64) setHidden(false);
       else if (delta > SCROLL_STEP) setHidden(true);
@@ -56,9 +60,10 @@ function useHideOnScroll(pathname: string) {
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
+    // Janela (feed) ou área de conteúdo (telas internas).
+    const stop = onPageScroll(onScroll);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      stop();
       if (frame) cancelAnimationFrame(frame);
     };
   }, [pathname]);

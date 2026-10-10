@@ -30,7 +30,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { initials } from "@/lib/community";
@@ -50,6 +50,7 @@ import {
   useRemoveFriendship,
   useRespondFriendship,
 } from "@/lib/social/queries";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/notificacoes")({
   head: () => ({
@@ -743,10 +744,8 @@ function NotificacoesPage() {
   const empty = all.length === 0 && pendingCount === 0 && !list.isLoading;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
         <h1 className="sr-only">{t("notif.title")}</h1>
 
         {/* Resumo */}
@@ -1169,7 +1168,7 @@ function NotificacoesPage() {
             )}
           </section>
         )}
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }

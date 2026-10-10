@@ -263,9 +263,7 @@ export function BlockFrame({ block, children }: { block: Block; children: ReactN
           <span className="truncate">{title}</span>
         </h3>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden [scrollbar-width:thin]">
-        {children}
-      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">{children}</div>
     </section>
   );
 }

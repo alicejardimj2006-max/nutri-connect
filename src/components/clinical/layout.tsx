@@ -1,3 +1,4 @@
+import { FitColumn } from "@/components/app-screen";
 import { ClinicalDemoBanner } from "@/components/clinical/demo-banner";
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -44,11 +45,15 @@ export function ClinicalLayout({
     item.exact ? pathname === item.to : pathname === item.to || pathname.startsWith(item.to + "/");
 
   return (
-    <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
+    // Altura da tela: a página não rola. O menu e os cards laterais ficam parados e só a coluna do
+    // conteúdo rola por dentro.
+    <div
+      className={cn("flex h-dvh flex-col overflow-hidden bg-background text-foreground", plainText)}
+    >
       <SiteHeader />
-      <div className="mx-auto flex w-full max-w-[120rem] flex-1 gap-8 px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pt-8 xl:px-8 2xl:px-12">
-        <aside className="hidden w-56 shrink-0 lg:block">
-          <div className="sticky top-24">
+      <div className="mx-auto flex min-h-0 w-full max-w-[120rem] flex-1 gap-8 px-4 pt-4 sm:px-6 lg:pt-8 xl:px-8 2xl:px-12">
+        <aside className="hidden w-56 shrink-0 overflow-y-auto pb-6 lg:block">
+          <div>
             <p className="px-3 font-display text-lg font-bold text-foreground">{title}</p>
             {subtitle && <p className="px-3 text-xs text-muted-foreground">{subtitle}</p>}
             <nav className="mt-4 space-y-1" aria-label={title}>
@@ -85,7 +90,11 @@ export function ClinicalLayout({
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">
+        <main
+          data-app-main
+          data-no-bottom-pad
+          className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-28 lg:pb-10"
+        >
           <nav
             className="-mx-4 mb-5 flex gap-1.5 overflow-x-auto border-b border-border/60 px-4 pb-3 lg:hidden"
             aria-label={title}
@@ -121,12 +130,17 @@ export function ClinicalLayout({
 
         {/* Cards laterais (telas largas): o que importa para o acompanhamento, sem sair da área */}
         {appearance.sidePanels && (
-          <aside className="hidden w-72 shrink-0 xl:block 2xl:w-80">
-            <div className="sticky top-24 max-h-[calc(100dvh-7rem)] space-y-5 overflow-y-auto pb-2 [scrollbar-width:thin]">
-              <ProfileCard />
-              {user?.professional ? <ProTasksCard /> : <UpcomingAppointmentsCard />}
-              <EducationalNoticeCard />
-            </div>
+          // Cards interativos: a coluna não rola; mostra os que cabem inteiros.
+          <aside className="hidden w-72 shrink-0 pb-6 xl:block 2xl:w-80">
+            <FitColumn className="flex flex-col gap-5 [&>div:empty]:hidden">
+              <div>
+                <ProfileCard />
+              </div>
+              <div>{user?.professional ? <ProTasksCard /> : <UpcomingAppointmentsCard />}</div>
+              <div>
+                <EducationalNoticeCard />
+              </div>
+            </FitColumn>
           </aside>
         )}
       </div>

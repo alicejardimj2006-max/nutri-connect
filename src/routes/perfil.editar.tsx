@@ -3,12 +3,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Heart, User } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { updateCurrentUser } from "@/lib/auth";
 import { JOURNEY_GOALS } from "@/lib/community";
 import { Field } from "./login";
 import { useI18n } from "@/hooks/use-i18n";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/perfil/editar")({
   head: () => ({ meta: [{ title: "Editar perfil — NutriConnect" }] }),
@@ -60,9 +61,8 @@ function EditProfilePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 sm:px-6 py-8">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 py-8">
         <Link
           to="/perfil/$userId"
           params={{ userId: user.id }}
@@ -172,7 +172,7 @@ function EditProfilePage() {
             </Link>
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }

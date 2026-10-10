@@ -8,7 +8,7 @@ import {
   MessageSquare,
   Award,
 } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
 import { ThemePoll } from "@/components/theme-poll";
@@ -23,6 +23,7 @@ import { stripEmoji } from "@/lib/emoji";
 import { useTr } from "@/components/settings-ui";
 import { toast } from "sonner";
 import { EmojiIcon } from "@/components/emoji-icon";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/tema-da-semana")({
   head: () => ({
@@ -62,10 +63,8 @@ function TemaDaSemanaPage() {
   const linkedChallenge = challenges.find((c) => c.themeId === theme?.id) || challenges[0];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-8">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8">
         {themeQuery.isLoading ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
             {t("theme.loading")}
@@ -270,7 +269,7 @@ function TemaDaSemanaPage() {
             )}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }

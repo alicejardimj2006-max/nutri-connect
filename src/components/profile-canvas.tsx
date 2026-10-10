@@ -21,6 +21,7 @@ import {
   resolveCollisions,
   type Block,
 } from "@/lib/profile-page";
+import { appScroller, scrollTop } from "@/lib/app-scroll";
 
 function useIsMobile() {
   const [mobile, setMobile] = useState(false);
@@ -148,7 +149,7 @@ export function ProfileCanvas({
     const d = drag.current;
     if (!d || !onChange) return;
     const dxPx = d.px - d.sx;
-    const dyPx = d.py - d.sy + (window.scrollY - d.scrollY);
+    const dyPx = d.py - d.sy + (scrollTop() - d.scrollY);
     const o = d.origin;
     const min = minSize(o.type);
     let moved: Block;
@@ -204,7 +205,7 @@ export function ProfileCanvas({
       speed = Math.min(22, (d.py - (window.innerHeight - edge)) / 3);
     else if (d.py < edge + 40) speed = -Math.min(22, (edge + 40 - d.py) / 3);
     if (speed !== 0) {
-      window.scrollBy(0, speed);
+      (appScroller() ?? window).scrollBy(0, speed);
       evaluate();
     }
     raf.current = requestAnimationFrame(autoScroll);
@@ -231,7 +232,7 @@ export function ProfileCanvas({
       py: e.clientY,
       gx: e.clientX - r.left,
       gy: e.clientY - r.top,
-      scrollY: window.scrollY,
+      scrollY: scrollTop(),
       startW: r.width,
       startH: r.height,
       base: layout,
