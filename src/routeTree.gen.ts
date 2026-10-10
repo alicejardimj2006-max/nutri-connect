@@ -25,6 +25,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as PersonagensLabRouteImport } from './routes/personagens-lab'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as SobreRouteImport } from './routes/sobre'
@@ -149,6 +150,11 @@ const NotificacoesRoute = NotificacoesRouteImport.update({
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
   path: '/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonagensLabRoute = PersonagensLabRouteImport.update({
+  id: '/personagens-lab',
+  path: '/personagens-lab',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -402,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
+  '/personagens-lab': typeof PersonagensLabRoute
   '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
@@ -461,6 +468,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
+  '/personagens-lab': typeof PersonagensLabRoute
   '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
@@ -524,6 +532,7 @@ export interface FileRoutesById {
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
   '/painel': typeof PainelRouteWithChildren
+  '/personagens-lab': typeof PersonagensLabRoute
   '/privacidade': typeof PrivacidadeRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/sobre': typeof SobreRoute
@@ -589,6 +598,7 @@ export interface FileRouteTypes {
     | '/nina'
     | '/notificacoes'
     | '/painel'
+    | '/personagens-lab'
     | '/privacidade'
     | '/recuperar-senha'
     | '/sobre'
@@ -648,6 +658,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nina'
     | '/notificacoes'
+    | '/personagens-lab'
     | '/privacidade'
     | '/recuperar-senha'
     | '/sobre'
@@ -710,6 +721,7 @@ export interface FileRouteTypes {
     | '/nina'
     | '/notificacoes'
     | '/painel'
+    | '/personagens-lab'
     | '/privacidade'
     | '/recuperar-senha'
     | '/sobre'
@@ -774,6 +786,7 @@ export interface RootRouteChildren {
   NinaRoute: typeof NinaRoute
   NotificacoesRoute: typeof NotificacoesRoute
   PainelRoute: typeof PainelRouteWithChildren
+  PersonagensLabRoute: typeof PersonagensLabRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RecuperarSenhaRoute: typeof RecuperarSenhaRoute
   SobreRoute: typeof SobreRoute
@@ -906,6 +919,13 @@ declare module '@tanstack/react-router' {
       path: '/painel'
       fullPath: '/painel'
       preLoaderRoute: typeof PainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personagens-lab': {
+      id: '/personagens-lab'
+      path: '/personagens-lab'
+      fullPath: '/personagens-lab'
+      preLoaderRoute: typeof PersonagensLabRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -1345,6 +1365,7 @@ const rootRouteChildren: RootRouteChildren = {
   NinaRoute: NinaRoute,
   NotificacoesRoute: NotificacoesRoute,
   PainelRoute: PainelRouteWithChildren,
+  PersonagensLabRoute: PersonagensLabRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RecuperarSenhaRoute: RecuperarSenhaRoute,
   SobreRoute: SobreRoute,

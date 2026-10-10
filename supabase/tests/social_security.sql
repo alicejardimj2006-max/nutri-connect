@@ -870,6 +870,45 @@ begin
   r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(''profissionais'', null, null, null, null, null, null, 100) where author_id <> all (select user_id from public.professionals)'));
   res := res || jsonb_build_object('teste', 'escopo profissionais NÃO traz publicações de quem não é profissional', 'ok', (r = '0'), 'obtido', r);
 
+  -- ------------------------------------------------------- NOTIFICAÇÕES PUSH
+  declare
+    rid uuid;
+    n_claim integer;
+  begin
+    r := pg_temp.as_user(a, 'authenticated', 'select public.push_subscribe(''https://push.teste.invalid/a1'', ''chave-p256dh'', ''chave-auth'', ''teste'')');
+    res := res || jsonb_build_object('teste', 'inscreve o próprio aparelho', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.push_subscriptions');
+    res := res || jsonb_build_object('teste', 'NÃO vê o aparelho de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.push_subscriptions (endpoint, user_id, p256dh, auth) values (''https://push.teste.invalid/x'', %L, ''p'', ''a'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO inscreve aparelho em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.reminders (user_id, kind, title, time_of_day) values (%L, ''refeicao'', ''x'', ''08:00'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO cria lembrete para outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.push_claim()');
+    res := res || jsonb_build_object('teste', 'NÃO chama o envio de push pelo app', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(a, 'authenticated', 'update public.push_settings set timezone = ''Lugar/Inexistente''');
+    res := res || jsonb_build_object('teste', 'recusa fuso horário inválido', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+    -- Lembrete de agora (no fuso padrão) é entregue uma vez só.
+    insert into public.reminders (user_id, kind, title, time_of_day)
+    values (a, 'refeicao', 'Almoço de teste', ((now() at time zone 'America/Sao_Paulo') - interval '1 minute')::time)
+    returning id into rid;
+    select count(*) into n_claim from public.push_claim() c where c.payload ->> 'tag' = 'lembrete-' || rid;
+    res := res || jsonb_build_object('teste', 'lembrete na hora é entregue', 'ok', (n_claim = 1), 'obtido', n_claim);
+    select count(*) into n_claim from public.push_claim() c where c.payload ->> 'tag' = 'lembrete-' || rid;
+    res := res || jsonb_build_object('teste', 'lembrete NÃO é entregue duas vezes no mesmo dia', 'ok', (n_claim = 0), 'obtido', n_claim);
+
+    -- Aviso do site entra na fila e sai no envio; categoria desligada não vira push.
+    -- (um teste anterior desligou a categoria social de A no site; aqui ela volta a valer)
+    update public.user_settings set notification_prefs = notification_prefs - 'social' where id = a;
+    perform public.notify(a, 'seguidor', f, 'profile', f::text);
+    select count(*) into n_claim from public.push_claim() c where c.kind = 'aviso' and c.user_id = a;
+    res := res || jsonb_build_object('teste', 'aviso do site vira push', 'ok', (n_claim = 1), 'obtido', n_claim);
+    update public.push_settings set categories = '{"social": false}' where user_id = a;
+    perform public.notify(a, 'seguidor', b, 'profile', b::text);
+    select count(*) into n_claim from public.push_claim() c where c.kind = 'aviso' and c.user_id = a;
+    res := res || jsonb_build_object('teste', 'categoria desligada NÃO vira push', 'ok', (n_claim = 0), 'obtido', n_claim);
+  end;
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end
