@@ -2,7 +2,13 @@ import { getRequest } from "@tanstack/react-start/server";
 
 export type AiKind = "nina" | "summary" | "label";
 export type AiChatResult =
-  { ok: true; text: string } | { ok: false; status: number; limit?: boolean };
+  | { ok: true; text: string }
+  | {
+      ok: false;
+      status: number;
+      limit?: boolean;
+      /** Mensagem de erro da Edge Function. */ message?: string;
+    };
 
 /**
  * Uma chamada de chat à IA (sem streaming), feita pela Edge Function ai-chat do Supabase com o
@@ -35,7 +41,13 @@ export async function aiChat(opts: {
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       console.error("ai-chat", res.status, text.slice(0, 300));
-      return { ok: false, status: res.status === 401 ? 403 : res.status };
+      let message: string | undefined;
+      try {
+        message = (JSON.parse(text) as { error?: string }).error;
+      } catch {
+        // resposta sem JSON
+      }
+      return { ok: false, status: res.status === 401 ? 403 : res.status, message };
     }
     return (await res.json()) as AiChatResult;
   } catch (err) {

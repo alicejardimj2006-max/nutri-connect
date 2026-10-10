@@ -51,11 +51,13 @@ export const readFoodLabel = createServerFn({ method: "POST" })
     });
     const { data: used } = await context.supabase.rpc("ai_usage_today", { p_kind: "label" });
     if (result.ok) return { answer: result.text, used: used ?? 0 };
+    // 400 pode ser imagem recusada ou a Edge Function ainda sem o tipo "label" (deploy pendente).
+    const badImage = result.status === 400 && /imagem/i.test(result.message ?? "");
     const error: LabelError = result.limit
       ? "limit"
-      : result.status === 400
+      : badImage
         ? "image"
-        : result.status === 503 || result.status === 403 || result.status === 402
+        : [400, 402, 403, 503].includes(result.status)
           ? "unavailable"
           : "failed";
     return { error, used: used ?? undefined };
