@@ -943,6 +943,20 @@ begin
   r := pg_temp.as_user(b, 'authenticated', format('insert into public.label_scans (user_id, source, name) values (%L, ''foto'', ''x'')', a));
   res := res || jsonb_build_object('teste', 'NÃO grava rótulo no histórico de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
 
+  -- ------------------------------------------------------- NINA E O ACOMPANHAMENTO
+  r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
+  res := res || jsonb_build_object('teste', 'Nina NÃO usa o acompanhamento sem permissão', 'ok', (r = 'f'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.record_consent(''nina_acompanhamento'', ''v1'', true)');
+  r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
+  res := res || jsonb_build_object('teste', 'paciente autoriza a Nina a usar o acompanhamento', 'ok', (r = 't'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', format('select public.nina_care_allowed(%L)', c));
+  res := res || jsonb_build_object('teste', 'nutri vinculada vê que o paciente autorizou', 'ok', (r = 't'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('select public.nina_care_allowed(%L)', c));
+  res := res || jsonb_build_object('teste', 'quem não acompanha NÃO vê a permissão da Nina', 'ok', (r = 'f'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.record_consent(''nina_acompanhamento'', ''v1'', false)');
+  r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
+  res := res || jsonb_build_object('teste', 'paciente revoga a permissão da Nina', 'ok', (r = 'f'), 'obtido', r);
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

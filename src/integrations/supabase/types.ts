@@ -5323,6 +5323,7 @@ export type Database = {
           username: string
         }[]
       }
+      nina_care_allowed: { Args: { p_user?: string }; Returns: boolean }
       notification_category: { Args: { p_type: string }; Returns: string }
       notify: {
         Args: {

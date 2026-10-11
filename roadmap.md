@@ -17,7 +17,7 @@ Cada item ganha o próprio commit depois de testado.
 4. [x] M1 — Leitor de rótulos completo: código de barras (Open Food Facts), lupa "ALTO EM" da Anvisa, grupo NOVA, histórico e comparação
 5. [x] M7 — Diário com foto comentada pela Nina (educativo, sem calorias)
 6. [x] N7 — Modo sem números (fome, saciedade e emoção; sinais de alerta → ajuda profissional)
-7. [ ] M2 — Nina que conhece o acompanhamento (plano e metas, com permissão do paciente)
+7. [x] M2 — Nina que conhece o acompanhamento (plano e metas, com permissão do paciente)
 8. [ ] N4 — "O que tem na geladeira?" (receitas com o que há em casa, aproveitamento integral)
 9. [ ] N3 — Cardápio semanal com orçamento e lista de compras única
 10. [ ] N5 — Calendário da feira (frutas e verduras da estação por região)

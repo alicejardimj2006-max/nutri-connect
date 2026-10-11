@@ -1,13 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Send, Trash2 } from "lucide-react";
+import { HeartHandshake, Loader2, MessageCircle, Send, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { Mascot } from "@/components/mascots";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { NINA_DAILY_LIMIT, askNutriAssistant } from "@/lib/nutri-assistant.functions";
+import { useTr } from "@/components/settings-ui";
+import { useLinks } from "@/lib/clinical/queries";
+import {
+  dismissPrompt,
+  isPromptDismissed,
+  useNinaCareAllowed,
+  useSetNinaCare,
+} from "@/lib/nina-care";
 
 export const Route = createFileRoute("/nina")({
   head: () => ({
@@ -46,6 +55,20 @@ function NinaPage() {
   const [used, setUsed] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const tr = useTr();
+  // Acompanhamento ativo: a Nina pode usar o plano e as metas, se a pessoa autorizar (M2).
+  const links = useLinks("patient");
+  const activeLink = (links.data ?? [])
+    .filter((l) => l.status === "ativo")
+    .sort((a, b) =>
+      (b.responded_at ?? b.created_at).localeCompare(a.responded_at ?? a.created_at),
+    )[0];
+  const careAllowed = useNinaCareAllowed(user?.id);
+  const setCare = useSetNinaCare(user?.id);
+  const [promptHidden, setPromptHidden] = useState(true);
+  useEffect(() => {
+    if (user) setPromptHidden(isPromptDismissed(user.id));
+  }, [user]);
 
   const history = useQuery({
     queryKey: historyKey,
@@ -108,8 +131,45 @@ function NinaPage() {
     await queryClient.invalidateQueries({ queryKey: historyKey });
   };
 
-  const bubble = (m: { role: "user" | "assistant"; content: string }, key: string) => (
-    <div key={key} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
+  const toggleCare = (on: boolean) =>
+    setCare.mutate(on, {
+      onSuccess: () => {
+        if (!on) return;
+        toast.success(
+          tr([
+            "Pronto! A Nina vai usar o seu plano e as suas metas para responder.",
+            "Done! Nina will use your plan and goals to answer.",
+            "¡Listo! Nina usará tu plan y tus metas para responder.",
+            "C'est fait ! Nina utilisera votre plan et vos objectifs pour répondre.",
+          ]),
+        );
+      },
+      onError: (err) => toast.error((err as Error).message),
+    });
+
+  const takeToNutri = (question: string) =>
+    activeLink && (
+      <Link
+        to="/acompanhamento/mensagens"
+        search={{ com: activeLink.professional_id, texto: question }}
+        className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        {tr([
+          "Levar esta dúvida para a minha nutri",
+          "Take this question to my dietitian",
+          "Llevar esta duda a mi nutri",
+          "Poser cette question à mon/ma diététicien(ne)",
+        ])}
+      </Link>
+    );
+
+  const bubble = (
+    m: { role: "user" | "assistant"; content: string },
+    key: string,
+    question?: string,
+  ) => (
+    <div key={key} className={m.role === "user" ? "flex justify-end" : "flex flex-col items-start"}>
       <p
         className={
           m.role === "user"
@@ -119,6 +179,7 @@ function NinaPage() {
       >
         {m.content}
       </p>
+      {m.role === "assistant" && question && takeToNutri(question)}
     </div>
   );
 
@@ -143,6 +204,84 @@ function NinaPage() {
           )}
         </div>
 
+        {activeLink && careAllowed.data === false && !promptHidden && (
+          <div className="mb-3 shrink-0 rounded-2xl border border-accent/30 bg-accent-soft/40 p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <HeartHandshake className="h-4 w-4 text-accent" />
+              {tr([
+                "Posso usar o seu plano e as suas metas para responder melhor?",
+                "May I use your plan and goals to answer better?",
+                "¿Puedo usar tu plan y tus metas para responder mejor?",
+                "Puis-je utiliser votre plan et vos objectifs pour mieux répondre ?",
+              ])}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {tr([
+                "Vejo o plano alimentar, metas, água, plano de cuidado, diário recente e restrições. Nunca mudo o que a sua nutri combinou, e nossas conversas continuam só entre nós. Você pode desligar quando quiser.",
+                "I'd see your meal plan, goals, water, care plan, recent diary and restrictions. I never change what your dietitian set, and our chats stay between us. You can turn it off anytime.",
+                "Veré el plan alimentario, metas, agua, plan de cuidado, diario reciente y restricciones. Nunca cambio lo que tu nutri acordó y nuestras conversaciones siguen privadas. Puedes desactivarlo cuando quieras.",
+                "Je verrais votre plan alimentaire, objectifs, eau, plan de soins, journal récent et restrictions. Je ne change jamais ce que votre diététicien(ne) a prévu, et nos échanges restent privés. Vous pouvez désactiver à tout moment.",
+              ])}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => toggleCare(true)}
+                disabled={setCare.isPending}
+                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+              >
+                {tr(["Permitir", "Allow", "Permitir", "Autoriser"])}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissPrompt(user.id);
+                  setPromptHidden(true);
+                }}
+                className="rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                {tr(["Agora não", "Not now", "Ahora no", "Pas maintenant"])}
+              </button>
+            </div>
+          </div>
+        )}
+        {activeLink && careAllowed.data === true && (
+          <p className="mb-2 flex shrink-0 flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary">
+              <HeartHandshake className="h-3.5 w-3.5" />
+              {tr([
+                "Usando seu acompanhamento",
+                "Using your care plan",
+                "Usando tu seguimiento",
+                "Utilise votre suivi",
+              ])}
+            </span>
+            <button
+              type="button"
+              onClick={() => toggleCare(false)}
+              disabled={setCare.isPending}
+              className="font-semibold underline-offset-2 hover:text-foreground hover:underline"
+            >
+              {tr(["Desligar", "Turn off", "Desactivar", "Désactiver"])}
+            </button>
+          </p>
+        )}
+        {activeLink && careAllowed.data === false && promptHidden && (
+          <button
+            type="button"
+            onClick={() => toggleCare(true)}
+            disabled={setCare.isPending}
+            className="mb-2 shrink-0 self-start text-[11px] font-semibold text-accent hover:underline"
+          >
+            {tr([
+              "Deixar a Nina usar o meu acompanhamento",
+              "Let Nina use my care plan",
+              "Dejar que Nina use mi seguimiento",
+              "Laisser Nina utiliser mon suivi",
+            ])}
+          </button>
+        )}
+
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain rounded-2xl border border-border/70 bg-card p-4">
           {history.isLoading && (
             <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
@@ -152,7 +291,11 @@ function NinaPage() {
               {t("nina.empty")}
             </p>
           )}
-          {messages.map((m) => bubble(m, m.id))}
+          {messages.map((m, i) => {
+            // A dúvida levada à nutri é a pergunta que veio antes desta resposta.
+            const prev = messages[i - 1];
+            return bubble(m, m.id, prev?.role === "user" ? prev.content : undefined);
+          })}
           {pending && bubble({ role: "user", content: pending }, "pending")}
           {sending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           <div ref={bottomRef} />

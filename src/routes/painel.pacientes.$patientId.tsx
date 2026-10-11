@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, Mail, MessageCircle, Phone, Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, Mail, MessageCircle, Phone, Plus, Sparkles } from "lucide-react";
+import { useTr } from "@/components/settings-ui";
+import { useNinaCareAllowed } from "@/lib/nina-care";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { NewAppointmentDialog } from "@/components/clinical/new-appointment-dialog";
 import { AnamnesisForm } from "@/components/clinical/anamnesis-form";
@@ -144,6 +146,7 @@ function PatientRecordPage() {
                   <Phone className="h-3.5 w-3.5" /> {priv.data.phone}
                 </a>
               )}
+              {isActive && <NinaCareBadge patientId={patientId} />}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -274,5 +277,39 @@ function PatientAppointments({ patientId }: { patientId: string }) {
         />
       ))}
     </div>
+  );
+}
+
+/** Se o paciente autorizou a Nina a usar o acompanhamento (as conversas continuam privadas). */
+function NinaCareBadge({ patientId }: { patientId: string }) {
+  const { user } = useAuth();
+  const tr = useTr();
+  const allowed = useNinaCareAllowed(user?.id, patientId);
+  if (allowed.data === undefined) return null;
+  return (
+    <span
+      className="inline-flex items-center gap-1"
+      title={tr([
+        "As conversas com a Nina são privadas do paciente.",
+        "Conversations with Nina are private to the patient.",
+        "Las conversaciones con Nina son privadas del paciente.",
+        "Les échanges avec Nina restent privés.",
+      ])}
+    >
+      <Sparkles className="h-3.5 w-3.5" />
+      {allowed.data
+        ? tr([
+            "Nina usa este acompanhamento",
+            "Nina uses this care plan",
+            "Nina usa este seguimiento",
+            "Nina utilise ce suivi",
+          ])
+        : tr([
+            "Nina sem acesso ao acompanhamento",
+            "Nina has no access to this care plan",
+            "Nina sin acceso al seguimiento",
+            "Nina sans accès au suivi",
+          ])}
+    </span>
   );
 }

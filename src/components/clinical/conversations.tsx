@@ -31,10 +31,13 @@ export function Conversations({
   role,
   meId,
   initialOtherId,
+  initialDraft,
 }: {
   role: "patient" | "professional";
   meId: string;
   initialOtherId?: string;
+  /** Texto para a conversa com initialOtherId (ex.: dúvida levada da Nina). */
+  initialDraft?: string;
 }) {
   const { t, locale } = useClinicalI18n();
   const links = useLinks(role);
@@ -162,6 +165,7 @@ export function Conversations({
           meId={meId}
           canSend={c.active}
           className="flex-1"
+          initialDraft={c.otherId === initialOtherId ? initialDraft : undefined}
         />
       </div>
     );
