@@ -1603,6 +1603,7 @@ export type Database = {
           created_at: string
           description: string
           eaten_at: string
+          feelings: string[]
           followed_plan: boolean | null
           hunger_before: number | null
           id: string
@@ -1618,6 +1619,7 @@ export type Database = {
           created_at?: string
           description?: string
           eaten_at?: string
+          feelings?: string[]
           followed_plan?: boolean | null
           hunger_before?: number | null
           id?: string
@@ -1633,6 +1635,7 @@ export type Database = {
           created_at?: string
           description?: string
           eaten_at?: string
+          feelings?: string[]
           followed_plan?: boolean | null
           hunger_before?: number | null
           id?: string
@@ -3978,6 +3981,7 @@ export type Database = {
           appearance: Json | null
           id: string
           locale: string | null
+          no_numbers: boolean
           notification_prefs: Json
           show_email: boolean
           show_phone: boolean
@@ -3987,6 +3991,7 @@ export type Database = {
           appearance?: Json | null
           id: string
           locale?: string | null
+          no_numbers?: boolean
           notification_prefs?: Json
           show_email?: boolean
           show_phone?: boolean
@@ -3996,6 +4001,7 @@ export type Database = {
           appearance?: Json | null
           id?: string
           locale?: string | null
+          no_numbers?: boolean
           notification_prefs?: Json
           show_email?: boolean
           show_phone?: boolean

@@ -9,6 +9,7 @@ import { useCheckins, useGoals } from "@/lib/clinical/queries";
 import { formatDate, parseDate } from "@/lib/clinical/format";
 import { gentleStreak, lastDays, weeklyAdherence } from "@/lib/clinical/goals";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
+import { useNoNumbers } from "@/lib/no-numbers";
 import { cn } from "@/lib/utils";
 import { Loading } from "./ui";
 
@@ -17,7 +18,7 @@ const WINDOW = 56; // dias lidos para a sequência (8 semanas)
 /** Frase da sequência, sempre no tom de incentivo (mais neutra na visão do profissional). */
 function useStreakText() {
   const tr = useTr();
-  return (s: ReturnType<typeof gentleStreak>, forPro: boolean) => {
+  return (s: ReturnType<typeof gentleStreak>, forPro: boolean, hideNumbers = false) => {
     if (s.practiced === 0)
       return forPro
         ? tr([
@@ -33,12 +34,19 @@ function useStreakText() {
             "Aujourd'hui est un bon jour pour commencer. Un petit pas compte déjà.",
           ]);
     const n = s.practiced;
-    const base = tr([
-      `${n} ${n === 1 ? "dia" : "dias"} cuidando disso`,
-      `${n} ${n === 1 ? "day" : "days"} caring for this`,
-      `${n} ${n === 1 ? "día" : "días"} cuidando esto`,
-      `${n} ${n === 1 ? "jour" : "jours"} à en prendre soin`,
-    ]);
+    const base = hideNumbers
+      ? tr([
+          "Você vem cuidando disso",
+          "You've been caring for this",
+          "Vienes cuidando esto",
+          "Vous en prenez soin",
+        ])
+      : tr([
+          `${n} ${n === 1 ? "dia" : "dias"} cuidando disso`,
+          `${n} ${n === 1 ? "day" : "days"} caring for this`,
+          `${n} ${n === 1 ? "día" : "días"} cuidando esto`,
+          `${n} ${n === 1 ? "jour" : "jours"} à en prendre soin`,
+        ]);
     if (forPro) return base;
     if (s.doneToday)
       return `${base}. ${tr(["Hoje já foi! 🌱", "Done today! 🌱", "¡Hoy ya está! 🌱", "C'est fait aujourd'hui ! 🌱"])}`;
@@ -65,6 +73,8 @@ function GoalProgressCard({
   const tr = useTr();
   const { locale } = useClinicalI18n();
   const streakText = useStreakText();
+  // Modo sem números: só na visão da própria pessoa.
+  const hide = useNoNumbers() && !forPro;
   const streak = gentleStreak(goal, checkins, days);
   const weeks = weeklyAdherence(goal, checkins, days.slice(-28));
   const last28 = days.slice(-28);
@@ -84,12 +94,14 @@ function GoalProgressCard({
           <p className="truncate text-sm font-semibold text-foreground">{goal.title}</p>
           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
             <Sprout className="h-3.5 w-3.5 shrink-0 text-primary" />
-            {streakText(streak, forPro)}
+            {streakText(streak, forPro, hide)}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-secondary/70 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-foreground">
-          {streak.last7}/7
-        </span>
+        {!hide && (
+          <span className="shrink-0 rounded-full bg-secondary/70 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-foreground">
+            {streak.last7}/7
+          </span>
+        )}
       </div>
 
       {/* Últimas 4 semanas */}
@@ -105,7 +117,11 @@ function GoalProgressCard({
       >
         {weeks.map((w, i) => (
           <div key={w.from} className="flex flex-col items-center gap-1">
-            <span className="text-[10px] font-semibold tabular-nums text-foreground">{w.pct}%</span>
+            {!hide && (
+              <span className="text-[10px] font-semibold tabular-nums text-foreground">
+                {w.pct}%
+              </span>
+            )}
             <div className="flex h-16 w-full items-end overflow-hidden rounded-lg bg-secondary/60">
               <div
                 className={cn(
@@ -123,7 +139,7 @@ function GoalProgressCard({
           </div>
         ))}
       </div>
-      {trend > 0 && (
+      {trend > 0 && !hide && (
         <p className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-primary">
           <TrendingUp className="h-3.5 w-3.5" />
           {tr([

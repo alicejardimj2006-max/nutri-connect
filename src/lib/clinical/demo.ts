@@ -252,6 +252,7 @@ function stateFor(patientId: string, professionalId: string): DemoState {
     followed_plan: followed,
     nina_comment: null,
     nina_commented_at: null,
+    feelings: [],
     created_at: iso(at(d, hour, 10)),
   });
   const diary = [
@@ -626,6 +627,7 @@ export const demo = {
     satietyAfter?: number | null;
     mood?: string | null;
     followedPlan?: boolean | null;
+    feelings?: string[];
   }) {
     const me = await uid();
     stateFor(me, DEMO_PRO).diary.push({
@@ -637,6 +639,7 @@ export const demo = {
       photo_path: null,
       nina_comment: null,
       nina_commented_at: null,
+      feelings: input.feelings ?? [],
       hunger_before: input.hungerBefore ?? null,
       satiety_after: input.satietyAfter ?? null,
       mood: input.mood?.trim() || null,

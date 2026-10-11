@@ -108,6 +108,7 @@ export async function addDiaryEntry(input: {
   satietyAfter?: number | null;
   mood?: string | null;
   followedPlan?: boolean | null;
+  feelings?: string[];
 }) {
   if (demoActive()) return demo.addDiaryEntry(input);
   const patientId = await me();
@@ -122,6 +123,7 @@ export async function addDiaryEntry(input: {
     satiety_after: input.satietyAfter ?? null,
     mood: input.mood?.trim() || null,
     followed_plan: input.followedPlan ?? null,
+    feelings: input.feelings ?? [],
   });
   fail(error);
 }

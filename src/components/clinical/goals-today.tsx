@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { GoalForm, WeekStrip } from "./goals-panel";
 import { EmptyState, Loading, buttonGhost, buttonSecondary } from "./ui";
 import { EmojiIcon } from "@/components/emoji-icon";
+import { useNoNumbers } from "@/lib/no-numbers";
 
 /** Check-in de hoje nas metas ativas (visão do paciente). */
 export function TodayGoals({ patientId, compact }: { patientId: string; compact?: boolean }) {
@@ -76,6 +77,7 @@ function GoalCheckinCard({
   compact?: boolean;
 }) {
   const { t, locale } = useClinicalI18n();
+  const noNumbers = useNoNumbers();
   const target = Number(goal.target_value) || 1;
   const step = target >= 20 ? 5 : 1;
   const done = value >= target;
@@ -131,12 +133,16 @@ function GoalCheckinCard({
           {goal.description && !compact && (
             <p className="text-xs text-muted-foreground">{goal.description}</p>
           )}
-          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
-            <span className={cn("text-base font-bold", done ? "text-primary" : "text-foreground")}>
-              {formatNumber(value, locale)}
-            </span>{" "}
-            / {formatNumber(target, locale)} {goal.unit}
-          </p>
+          {!noNumbers && (
+            <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+              <span
+                className={cn("text-base font-bold", done ? "text-primary" : "text-foreground")}
+              >
+                {formatNumber(value, locale)}
+              </span>{" "}
+              / {formatNumber(target, locale)} {goal.unit}
+            </p>
+          )}
         </div>
         {!goal.professional_id && !compact && (
           <button
@@ -196,7 +202,9 @@ function GoalCheckinCard({
             <span className="ml-1 text-xs font-semibold text-primary">{t("goals.done")}</span>
           )}
         </div>
-        {!compact && <WeekStrip goal={goal} checkins={checkins} days={days} />}
+        {!compact && (
+          <WeekStrip goal={goal} checkins={checkins} days={days} hidePercent={noNumbers} />
+        )}
       </div>
     </div>
   );

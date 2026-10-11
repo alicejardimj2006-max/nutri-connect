@@ -26,9 +26,21 @@ import {
   useClinicalMutation,
   useDiary,
   useDiaryComments,
+  useLinks,
   usePeople,
   useSignedUrls,
 } from "@/lib/clinical/queries";
+import { SupportCard } from "@/components/no-numbers";
+import {
+  ALERT_FEELINGS,
+  FEELINGS,
+  HUNGER_WORDS,
+  SATIETY_WORDS,
+  feelingLabel,
+  hasAlert,
+  useNoNumbers,
+  type Feeling,
+} from "@/lib/no-numbers";
 import { formatDate, formatTime, isSameDay, toDateKey } from "@/lib/clinical/format";
 import { useClinicalI18n, type ClinicalKey } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
@@ -58,36 +70,86 @@ function guessMeal(date: Date): MealType {
   return "ceia";
 }
 
+/** Escala de 1 a 5; no modo sem números, mostra as palavras no lugar dos números. */
 function Scale({
   label,
   value,
   onChange,
+  words,
 }: {
   label: string;
   value: number | null;
   onChange: (v: number | null) => void;
+  words: Names[];
 }) {
+  const tr = useTr();
+  const noNumbers = useNoNumbers();
   return (
     <div>
       <p className="mb-2 text-sm font-semibold text-foreground/80">{label}</p>
-      <div className="flex gap-2" role="radiogroup" aria-label={label}>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={label}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
             role="radio"
             aria-checked={value === n}
+            aria-label={tr(words[n - 1])}
+            title={tr(words[n - 1])}
             onClick={() => onChange(value === n ? null : n)}
             className={cn(
-              "grid h-10 w-10 place-items-center rounded-full text-sm font-bold transition-all duration-300",
+              "place-items-center rounded-full text-sm font-bold transition-all duration-300",
+              noNumbers ? "px-3 py-2 text-xs" : "grid h-10 w-10",
               value === n
                 ? "bg-primary text-primary-foreground scale-110 shadow-md ring-4 ring-primary/20"
                 : "bg-secondary/80 text-muted-foreground hover:bg-primary/10 hover:text-primary",
             )}
           >
-            {n}
+            {noNumbers ? tr(words[n - 1]) : n}
           </button>
         ))}
+      </div>
+      {!noNumbers && value && (
+        <p className="mt-1 text-[11px] text-muted-foreground">{tr(words[value - 1])}</p>
+      )}
+    </div>
+  );
+}
+
+/** "Como me senti": sentimentos livres; os de alerta abrem o cartão de apoio ao salvar. */
+function FeelingsPicker({
+  value,
+  onChange,
+}: {
+  value: Feeling[];
+  onChange: (v: Feeling[]) => void;
+}) {
+  const tr = useTr();
+  return (
+    <div>
+      <p className="mb-2 text-sm font-semibold text-foreground/80">
+        {tr(["Como me senti", "How I felt", "Cómo me sentí", "Comment je me suis senti(e)"])}
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {FEELINGS.map((f) => {
+          const on = value.includes(f.id);
+          return (
+            <button
+              key={f.id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onChange(on ? value.filter((x) => x !== f.id) : [...value, f.id])}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                on
+                  ? "border-accent bg-accent-soft text-foreground"
+                  : "border-border/70 bg-secondary/50 text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {tr(f.label)}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -108,9 +170,15 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
   const [satiety, setSatiety] = useState<number | null>(null);
   const [mood, setMood] = useState<string | null>(null);
   const [followed, setFollowed] = useState<boolean | null>(null);
+  const [feelings, setFeelings] = useState<Feeling[]>([]);
+  const [support, setSupport] = useState(false);
+  const links = useLinks("patient");
+  const hasCare = (links.data ?? []).some((l) => l.status === "ativo");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
+    setSupport(hasAlert(feelings));
+    setFeelings([]);
     setDescription("");
     setPhoto(null);
     setPreview(null);
@@ -130,6 +198,7 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
         satietyAfter: satiety,
         mood,
         followedPlan: followed,
+        feelings,
       }),
     { success: t("diary.saved"), invalidate: [qk.diary(patientId)], onSuccess: reset },
   );
@@ -265,8 +334,19 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
             )}
           </div>
 
-          <Scale label={t("diary.hunger")} value={hunger} onChange={setHunger} />
-          <Scale label={t("diary.satiety")} value={satiety} onChange={setSatiety} />
+          <Scale
+            label={t("diary.hunger")}
+            value={hunger}
+            onChange={setHunger}
+            words={HUNGER_WORDS}
+          />
+          <Scale
+            label={t("diary.satiety")}
+            value={satiety}
+            onChange={setSatiety}
+            words={SATIETY_WORDS}
+          />
+          <FeelingsPicker value={feelings} onChange={setFeelings} />
 
           <div>
             <p className="mb-2 text-sm font-semibold text-foreground/80">{t("diary.mood")}</p>
@@ -328,6 +408,7 @@ export function DiaryComposer({ patientId }: { patientId: string }) {
             <Send className="h-4 w-4 mr-1" /> {t("diary.save")}
           </button>
         </div>
+        {support && <SupportCard hasCare={hasCare} />}
       </div>
     </Card>
   );
@@ -377,8 +458,14 @@ export function DiaryFeed({
     );
   }
 
+  const since = Date.now() - 14 * 86_400_000;
+  const alerts = isOwner
+    ? 0
+    : entries.filter((e) => new Date(e.eaten_at).getTime() >= since && hasAlert(e.feelings)).length;
+
   return (
     <div className="space-y-6">
+      {alerts > 0 && <AlertSummary count={alerts} />}
       {days.map((g) => {
         const followed = g.entries.filter((e) => e.followed_plan !== null);
         const onPlan = followed.filter((e) => e.followed_plan).length;
@@ -414,6 +501,21 @@ export function DiaryFeed({
         );
       })}
     </div>
+  );
+}
+
+/** Para o profissional: refeições recentes com sinais de alerta marcados pelo paciente. */
+function AlertSummary({ count }: { count: number }) {
+  const tr = useTr();
+  return (
+    <p className="rounded-2xl border border-accent/30 bg-accent-soft/40 px-4 py-3 text-sm text-foreground">
+      {tr([
+        `Sinais de atenção (culpa, perda de controle, compensação, restrição ou purgação) marcados em ${count} refeição(ões) nos últimos 14 dias. Vale acolher na próxima conversa.`,
+        `Warning signs (guilt, loss of control, compensation, restriction or purging) marked on ${count} meal(s) in the last 14 days. Worth addressing gently next time.`,
+        `Señales de atención (culpa, pérdida de control, compensación, restricción o purga) marcadas en ${count} comida(s) en los últimos 14 días. Conviene acoger el tema en la próxima conversación.`,
+        `Signaux d'alerte (culpabilité, perte de contrôle, compensation, restriction ou purge) notés sur ${count} repas ces 14 derniers jours. À aborder avec bienveillance.`,
+      ])}
+    </p>
   );
 }
 
@@ -559,6 +661,9 @@ function EntryCard({
   canDelete: boolean;
 }) {
   const { t, locale } = useClinicalI18n();
+  const tr = useTr();
+  // Modo sem números vale para a dona do diário; o profissional continua vendo a escala.
+  const words = useNoNumbers() && canDelete;
   const [comment, setComment] = useState("");
   const invalidate = [qk.diary(entry.patient_id), ["clinical", "diary-comments"]];
   const send = useClinicalMutation(() => care.addDiaryComment(entry.id, comment), {
@@ -616,14 +721,35 @@ function EntryCard({
           <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
             {entry.hunger_before && (
               <span className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
-                {t("diary.hungerShort", { n: entry.hunger_before })}
+                {words
+                  ? tr(HUNGER_WORDS[entry.hunger_before - 1])
+                  : t("diary.hungerShort", { n: entry.hunger_before })}
               </span>
             )}
             {entry.satiety_after && (
               <span className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">
-                {t("diary.satietyShort", { n: entry.satiety_after })}
+                {words
+                  ? tr(SATIETY_WORDS[entry.satiety_after - 1])
+                  : t("diary.satietyShort", { n: entry.satiety_after })}
               </span>
             )}
+            {entry.feelings.map((f) => {
+              const label = feelingLabel(f);
+              if (!label) return null;
+              return (
+                <span
+                  key={f}
+                  className={cn(
+                    "rounded-full px-2 py-0.5",
+                    ALERT_FEELINGS.has(f)
+                      ? "bg-accent-soft font-semibold text-foreground"
+                      : "bg-secondary text-muted-foreground",
+                  )}
+                >
+                  {tr(label)}
+                </span>
+              );
+            })}
             {entry.mood && (
               <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5">
                 <EmojiIcon emoji={entry.mood} className="h-3.5 w-3.5" />

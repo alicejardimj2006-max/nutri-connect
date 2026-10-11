@@ -35,6 +35,7 @@ import {
   type Nutrients,
   type Product,
 } from "@/lib/food-label";
+import { useNoNumbers } from "@/lib/no-numbers";
 import { cn } from "@/lib/utils";
 import { Card, EmptyState, buttonGhost, buttonPrimary, buttonSecondary, inputClass } from "./ui";
 
@@ -254,6 +255,8 @@ export function NovaBadge({ nova, withText }: { nova: Product["nova"]; withText?
 
 function NutrientTable({ product }: { product: Product }) {
   const tr = useTr();
+  const noNumbers = useNoNumbers();
+  const [show, setShow] = useState(false);
   const rows = NUTRIENT_ROWS.filter((r) => product.nutrients[r.key] !== undefined);
   if (rows.length === 0)
     return (
@@ -265,6 +268,22 @@ function NutrientTable({ product }: { product: Product }) {
           "La base n'a pas encore le tableau nutritionnel de ce produit.",
         ])}
       </p>
+    );
+  // Modo sem números: a tabela fica guardada atrás de um toque.
+  if (noNumbers && !show)
+    return (
+      <button
+        type="button"
+        onClick={() => setShow(true)}
+        className="text-xs font-semibold text-accent hover:underline"
+      >
+        {tr([
+          "Mostrar a tabela nutricional",
+          "Show nutrition facts",
+          "Mostrar la tabla nutricional",
+          "Afficher le tableau nutritionnel",
+        ])}
+      </button>
     );
   return (
     <table className="w-full text-xs">

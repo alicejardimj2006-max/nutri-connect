@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { useTr } from "@/components/settings-ui";
 import { useAuth } from "@/hooks/use-auth";
+import { useNoNumbers } from "@/lib/no-numbers";
 import { playSound } from "@/lib/sounds";
 import { cn } from "@/lib/utils";
 import {
@@ -63,6 +64,7 @@ export function WaterTracker({
   const count = days.data?.find((d) => d.day === today)?.glasses ?? 0;
   const set = useSetWater(user?.id, goal);
   const [editing, setEditing] = useState(false);
+  const noNumbers = useNoNumbers();
 
   useMigrateLegacy(user?.id, days.isSuccess, count, (n) => set.mutate(n));
 
@@ -170,15 +172,17 @@ export function WaterTracker({
         </button>
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="font-bold text-foreground tabular-nums">
-          {count}/{goal} {tr(["copos", "glasses", "vasos", "verres"])}
-          {extra > 0 && <span className="ml-1 font-semibold text-accent">(+{extra})</span>}
-        </span>
-        <span className="text-muted-foreground tabular-nums">
-          {((count * glassMl) / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} L
-        </span>
-      </div>
+      {!noNumbers && (
+        <div className="mt-3 flex items-center justify-between text-xs">
+          <span className="font-bold text-foreground tabular-nums">
+            {count}/{goal} {tr(["copos", "glasses", "vasos", "verres"])}
+            {extra > 0 && <span className="ml-1 font-semibold text-accent">(+{extra})</span>}
+          </span>
+          <span className="text-muted-foreground tabular-nums">
+            {((count * glassMl) / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} L
+          </span>
+        </div>
+      )}
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary">
         <div
           className="h-full rounded-full bg-accent transition-[width] duration-500"
@@ -200,12 +204,19 @@ export function WaterTracker({
                 "Empieza cuando quieras: cada vaso cuenta.",
                 "Commencez quand vous voulez : chaque verre compte.",
               ])
-            : tr([
-                `Faltam ${goal - count}. Sem pressa, um gole de cada vez.`,
-                `${goal - count} to go. No rush, one sip at a time.`,
-                `Faltan ${goal - count}. Sin prisa, un sorbo a la vez.`,
-                `Encore ${goal - count}. Sans se presser, une gorgée à la fois.`,
-              ])}
+            : noNumbers
+              ? tr([
+                  "Sem pressa, um gole de cada vez.",
+                  "No rush, one sip at a time.",
+                  "Sin prisa, un sorbo a la vez.",
+                  "Sans se presser, une gorgée à la fois.",
+                ])
+              : tr([
+                  `Faltam ${goal - count}. Sem pressa, um gole de cada vez.`,
+                  `${goal - count} to go. No rush, one sip at a time.`,
+                  `Faltan ${goal - count}. Sin prisa, un sorbo a la vez.`,
+                  `Encore ${goal - count}. Sans se presser, une gorgée à la fois.`,
+                ])}
       </p>
 
       {editing && (

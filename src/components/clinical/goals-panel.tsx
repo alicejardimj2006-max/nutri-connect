@@ -127,10 +127,12 @@ export function WeekStrip({
   goal,
   checkins,
   days,
+  hidePercent = false,
 }: {
   goal: Goal;
   checkins: GoalCheckin[];
   days: string[];
+  hidePercent?: boolean;
 }) {
   const { t, locale } = useClinicalI18n();
   const target = Number(goal.target_value) || 1;
@@ -166,9 +168,11 @@ export function WeekStrip({
           );
         })}
       </div>
-      <div className="flex flex-col items-center justify-center">
-        <span className="text-xs font-bold text-foreground leading-tight">{pct}%</span>
-      </div>
+      {!hidePercent && (
+        <div className="flex flex-col items-center justify-center">
+          <span className="text-xs font-bold text-foreground leading-tight">{pct}%</span>
+        </div>
+      )}
     </div>
   );
 }
