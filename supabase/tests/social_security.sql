@@ -909,6 +909,29 @@ begin
     res := res || jsonb_build_object('teste', 'categoria desligada NÃO vira push', 'ok', (n_claim = 0), 'obtido', n_claim);
   end;
 
+  -- ------------------------------------------------------- ÁGUA DO DIA
+  update public.care_links set status = 'ativo' where patient_id = c and professional_id = p;
+  r := pg_temp.as_user(c, 'authenticated', 'select public.water_add(current_date, 3)');
+  res := res || jsonb_build_object('teste', 'registra copos de água', 'ok', (r = '3'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.water_add(current_date, -10)');
+  res := res || jsonb_build_object('teste', 'copos de água nunca ficam negativos', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.water_add(current_date - 30, 1)');
+  res := res || jsonb_build_object('teste', 'NÃO reescreve água de dias antigos', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.water_days where user_id = %L', c));
+  res := res || jsonb_build_object('teste', 'NÃO vê a água de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.water_days where user_id = %L', c));
+  res := res || jsonb_build_object('teste', 'profissional vinculado vê a água do paciente', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.water_days (user_id, day, glasses, goal) values (%L, current_date, 5, 8)', c));
+  res := res || jsonb_build_object('teste', 'NÃO grava água em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select public.water_set_goal(5, null, %L)', c));
+  res := res || jsonb_build_object('teste', 'sem vínculo NÃO muda a meta de água', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(p, 'authenticated', format('select public.water_set_goal(6, null, %L)', c));
+  res := res || jsonb_build_object('teste', 'profissional vinculado ajusta a meta de água', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := (select count(*)::text from public.notifications where user_id = c and type = 'meta_agua');
+  res := res || jsonb_build_object('teste', 'paciente é avisado da meta de água nova', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select goal from public.water_days where day = current_date');
+  res := res || jsonb_build_object('teste', 'meta nova já vale para hoje', 'ok', (r = '6'), 'obtido', r);
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

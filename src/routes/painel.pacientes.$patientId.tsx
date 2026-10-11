@@ -7,6 +7,7 @@ import { AnamnesisForm } from "@/components/clinical/anamnesis-form";
 import { AiSummaryCard } from "@/components/clinical/ai-summary-card";
 import { AnthropometryPanel } from "@/components/clinical/anthropometry-panel";
 import { GoalsPanel } from "@/components/clinical/goals-panel";
+import { PatientWaterCard } from "@/components/water-tracker";
 import { MealPlansPanel } from "@/components/clinical/meal-plans-panel";
 import { NotesPanel } from "@/components/clinical/notes-panel";
 import { RecordSummary } from "@/components/clinical/record-summary";
@@ -207,7 +208,12 @@ function PatientRecordPage() {
         />
       )}
       {tab === "plano" && <MealPlansPanel patientId={patientId} readOnly={!isActive} />}
-      {tab === "metas" && <GoalsPanel patientId={patientId} readOnly={!isActive} />}
+      {tab === "metas" && (
+        <div className="space-y-4">
+          <PatientWaterCard patientId={patientId} readOnly={!isActive} />
+          <GoalsPanel patientId={patientId} readOnly={!isActive} />
+        </div>
+      )}
       {tab === "avaliacoes" && user && (
         <AssessmentsPanel
           patientId={patientId}

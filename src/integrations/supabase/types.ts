@@ -4038,6 +4038,98 @@ export type Database = {
           },
         ]
       }
+      water_days: {
+        Row: {
+          day: string
+          glasses: number
+          goal: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          glasses?: number
+          goal: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          glasses?: number
+          goal?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "water_days_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "water_days_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      water_settings: {
+        Row: {
+          glass_ml: number
+          goal_glasses: number
+          goal_set_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          glass_ml?: number
+          goal_glasses?: number
+          goal_set_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          glass_ml?: number
+          goal_glasses?: number
+          goal_set_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "water_settings_goal_set_by_fkey"
+            columns: ["goal_set_by"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "water_settings_goal_set_by_fkey"
+            columns: ["goal_set_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "water_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "water_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_themes: {
         Row: {
           activated_at: string | null
@@ -4243,6 +4335,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      _water_check_day: { Args: { p_day: string }; Returns: undefined }
+      _water_goal: { Args: { p_user: string }; Returns: number }
       accept_care_invite: {
         Args: { p_code: string }
         Returns: {
@@ -5541,6 +5635,12 @@ export type Database = {
           steps_total: number
           title: string
         }[]
+      }
+      water_add: { Args: { p_day: string; p_delta: number }; Returns: number }
+      water_set: { Args: { p_day: string; p_glasses: number }; Returns: number }
+      water_set_goal: {
+        Args: { p_glass_ml?: number; p_goal: number; p_user?: string }
+        Returns: undefined
       }
     }
     Enums: {

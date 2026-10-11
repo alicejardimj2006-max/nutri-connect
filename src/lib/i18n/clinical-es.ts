@@ -573,6 +573,7 @@ const clinical: Record<ClinicalKey, string> = {
   "patientHome.fullPlan": "Plan completo",
   "patientHome.noPlanYet": "Tu profesional todavía no publicó un plan alimentario.",
   "patientHome.goalsToday": "Metas de hoy",
+  "patientHome.water": "Agua de hoy",
   "patientHome.unread": "{n} mensaje(s) nuevo(s) de tu profesional",
   "patientPlan.title": "Mi plan alimentario",
   "patientPlan.by": "Por {name}",

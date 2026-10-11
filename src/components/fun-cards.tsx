@@ -1,6 +1,7 @@
 // Cards interativos das páginas: pequenos jogos, ferramentas e rituais do dia a dia. Cada página
 // escolhe os seus em rails-pages.tsx. O progresso fica só neste aparelho (localStorage), sem dados
-// de saúde enviados a servidor. Textos nos 4 idiomas, no mesmo formato do restante do site.
+// de saúde enviados a servidor; a exceção é a água do dia, que a pessoa registra na própria conta
+// (ver water-tracker). Textos nos 4 idiomas, no mesmo formato do restante do site.
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -20,7 +21,6 @@ import {
   Copy,
   Dices,
   Flame,
-  GlassWater,
   Lightbulb,
   MessageCircle,
   Pause,
@@ -46,6 +46,7 @@ import {
 import type { ProfessionKey } from "@/lib/clinical/professions";
 import { EmojiIcon } from "@/components/emoji-icon";
 import { Panel } from "@/components/rail-cards";
+import { WaterTracker } from "@/components/water-tracker";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
@@ -172,95 +173,17 @@ function Bar({ value, max }: { value: number; max: number }) {
 
 // ───────────────────────────── Hidratação ─────────────────────────────
 
-const GLASSES = 8;
-const GLASS_ML = 250;
-
-/** Copos de água do dia: toque num copo para encher até ele. */
+/** Copos de água do dia (registro no servidor, meta ajustável e lembretes): ver water-tracker. */
 export function HydrationCard() {
   const tr = useTr();
-  const today = dayKey();
-  const [log, setLog] = useLocal<Record<string, number>>("water", {});
   const [burst, fire] = useBurst();
-  const count = log[today] ?? 0;
-
-  const setCount = (n: number) => {
-    const next = Math.max(0, Math.min(GLASSES, n));
-    setLog({ [today]: next });
-    if (next === GLASSES && count < GLASSES) {
-      fire();
-      playSound("achievement");
-    } else {
-      playSound("click");
-    }
-  };
-
   return (
     <Panel
       title={tr(["Água de hoje", "Today's water", "Agua de hoy", "L'eau du jour"])}
       className="relative"
-      action={
-        count > 0 ? (
-          <button
-            type="button"
-            onClick={() => setCount(0)}
-            className="cursor-pointer text-muted-foreground hover:text-foreground"
-            aria-label={tr(["Zerar", "Reset", "Reiniciar", "Réinitialiser"])}
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
-        ) : undefined
-      }
     >
       <Burst id={burst} />
-      <div className="grid grid-cols-4 gap-2">
-        {Array.from({ length: GLASSES }, (_, i) => {
-          const filled = i < count;
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setCount(filled && i === count - 1 ? i : i + 1)}
-              aria-label={`${i + 1}`}
-              aria-pressed={filled}
-              className={`grid h-12 cursor-pointer place-items-center rounded-2xl border transition active:scale-90 ${
-                filled
-                  ? "border-accent/40 bg-accent/15 text-accent"
-                  : "border-border/70 bg-secondary/40 text-muted-foreground hover:bg-secondary"
-              }`}
-            >
-              <GlassWater
-                className={`h-6 w-6 transition-transform ${filled ? "scale-110" : ""}`}
-                fill={filled ? "currentColor" : "none"}
-                fillOpacity={0.25}
-              />
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="font-bold text-foreground">
-          {count}/{GLASSES} {tr(["copos", "glasses", "vasos", "verres"])}
-        </span>
-        <span className="text-muted-foreground">{count * GLASS_ML} ml</span>
-      </div>
-      <div className="mt-1.5">
-        <Bar value={count} max={GLASSES} />
-      </div>
-      <p className={note}>
-        {count >= GLASSES
-          ? tr([
-              "Meta do dia batida! 🎉",
-              "Daily goal reached! 🎉",
-              "¡Meta del día lograda! 🎉",
-              "Objectif du jour atteint ! 🎉",
-            ])
-          : tr([
-              "Cada copo = 250 ml. A necessidade de água varia de pessoa para pessoa.",
-              "Each glass = 250 ml. Water needs vary from person to person.",
-              "Cada vaso = 250 ml. La necesidad de agua varía de persona a persona.",
-              "Chaque verre = 250 ml. Les besoins en eau varient d'une personne à l'autre.",
-            ])}
-      </p>
+      <WaterTracker onGoalReached={fire} showWeek={false} />
     </Panel>
   );
 }

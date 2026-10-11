@@ -4,6 +4,7 @@ import {
   Bell,
   BellRing,
   BookOpen,
+  GlassWater,
   CalendarCheck,
   CalendarClock,
   CalendarX,
@@ -147,9 +148,14 @@ function categoryOf(type: string): CategoryId {
   if (
     type.startsWith("consulta_") ||
     type.startsWith("acompanhamento_") ||
-    ["mensagem", "convite_aceito", "diario_comentario", "plano_publicado", "pagamento"].includes(
-      type,
-    ) ||
+    [
+      "mensagem",
+      "convite_aceito",
+      "diario_comentario",
+      "plano_publicado",
+      "pagamento",
+      "meta_agua",
+    ].includes(type) ||
     type.startsWith("pagamento")
   ) {
     return "clinical";
@@ -409,6 +415,17 @@ function describe(
         ]),
         detail: quote(data.comment),
         go: { to: "/acompanhamento/diario" },
+      };
+    case "meta_agua":
+      return {
+        icon: GlassWater,
+        text: fill([
+          "{name} ajustou a sua meta de água para {goal} copos por dia",
+          "{name} set your water goal to {goal} glasses a day",
+          "{name} ajustó tu meta de agua a {goal} vasos por día",
+          "{name} a fixé votre objectif d'eau à {goal} verres par jour",
+        ]).replace("{goal}", String(data.goal ?? "")),
+        go: { to: "/acompanhamento/metas" },
       };
     case "plano_publicado":
       return {

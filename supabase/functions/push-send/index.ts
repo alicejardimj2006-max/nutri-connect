@@ -132,6 +132,12 @@ const AVISOS: Record<string, Names> = {
     "{name} comentó tu diario alimentario",
     "{name} a commenté votre journal alimentaire",
   ],
+  meta_agua: [
+    "{name} ajustou a sua meta de água para {goal} copos por dia",
+    "{name} set your water goal to {goal} glasses a day",
+    "{name} ajustó tu meta de agua a {goal} vasos por día",
+    "{name} a fixé votre objectif d'eau à {goal} verres par jour",
+  ],
   membro_novo: [
     "{name} virou membro do seu perfil",
     "{name} became a member of your profile",
@@ -205,10 +211,18 @@ function compose(item: Item): { title: string; body: string; url: string; tag: s
     const when =
       minutes >= 90
         ? pick(
-            [`em ${Math.round(minutes / 60)} h`, `in ${Math.round(minutes / 60)} h`, `en ${Math.round(minutes / 60)} h`, `dans ${Math.round(minutes / 60)} h`],
+            [
+              `em ${Math.round(minutes / 60)} h`,
+              `in ${Math.round(minutes / 60)} h`,
+              `en ${Math.round(minutes / 60)} h`,
+              `dans ${Math.round(minutes / 60)} h`,
+            ],
             locale,
           )
-        : pick([`em ${minutes} min`, `in ${minutes} min`, `en ${minutes} min`, `dans ${minutes} min`], locale);
+        : pick(
+            [`em ${minutes} min`, `in ${minutes} min`, `en ${minutes} min`, `dans ${minutes} min`],
+            locale,
+          );
     const other = str(p.other);
     return {
       title,
@@ -238,7 +252,13 @@ function compose(item: Item): { title: string; body: string; url: string; tag: s
   // Aviso do site.
   const names = AVISOS[str(p.type)];
   const name = str(p.actor) || pick(SOMEONE, locale);
-  return { title, body: names ? pick(names, locale).replace("{name}", name) : pick(GENERIC, locale), url, tag };
+  const data = (p.data ?? {}) as Record<string, unknown>;
+  const body = names
+    ? pick(names, locale)
+        .replace("{name}", name)
+        .replace("{goal}", String(data.goal ?? ""))
+    : pick(GENERIC, locale);
+  return { title, body, url, tag };
 }
 
 async function deliver(items: Item[]) {
@@ -290,8 +310,13 @@ async function deliver(items: Item[]) {
   }
   for (const f of failed) {
     // Muitas falhas seguidas: o aparelho provavelmente não existe mais.
-    if (f.failures >= 10) await admin.from("push_subscriptions").delete().eq("endpoint", f.endpoint);
-    else await admin.from("push_subscriptions").update({ failures: f.failures }).eq("endpoint", f.endpoint);
+    if (f.failures >= 10)
+      await admin.from("push_subscriptions").delete().eq("endpoint", f.endpoint);
+    else
+      await admin
+        .from("push_subscriptions")
+        .update({ failures: f.failures })
+        .eq("endpoint", f.endpoint);
   }
   return { sent, removed: gone.length };
 }

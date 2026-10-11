@@ -5,6 +5,7 @@ import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { TodayGoals } from "@/components/clinical/goals-today";
 import { LabelReaderCard } from "@/components/clinical/label-reader-card";
 import { NextMeal } from "@/components/clinical/next-meal";
+import { WaterTracker } from "@/components/water-tracker";
 import {
   Avatar,
   Card,
@@ -135,6 +136,10 @@ function PatientHome() {
               }
             />
           )}
+        </Card>
+
+        <Card title={t("patientHome.water")}>
+          <WaterTracker />
         </Card>
 
         <LabelReaderCard />

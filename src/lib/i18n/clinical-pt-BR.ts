@@ -616,6 +616,7 @@ const clinicalPtBR = {
   "patientHome.fullPlan": "Plano completo",
   "patientHome.noPlanYet": "Seu profissional ainda não publicou um plano alimentar.",
   "patientHome.goalsToday": "Metas de hoje",
+  "patientHome.water": "Água de hoje",
   "patientHome.unread": "{n} mensagem(ns) nova(s) do seu profissional",
   "patientPlan.title": "Meu plano alimentar",
   "patientPlan.by": "Por {name}",
