@@ -250,6 +250,8 @@ function stateFor(patientId: string, professionalId: string): DemoState {
     satiety_after: 4,
     mood,
     followed_plan: followed,
+    nina_comment: null,
+    nina_commented_at: null,
     created_at: iso(at(d, hour, 10)),
   });
   const diary = [
@@ -633,6 +635,8 @@ export const demo = {
       meal_type: input.mealType,
       description: input.description.trim(),
       photo_path: null,
+      nina_comment: null,
+      nina_commented_at: null,
       hunger_before: input.hungerBefore ?? null,
       satiety_after: input.satietyAfter ?? null,
       mood: input.mood?.trim() || null,

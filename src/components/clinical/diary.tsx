@@ -1,15 +1,24 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Camera,
   CheckCircle2,
   MessageCircle,
   NotebookPen,
   Send,
+  Sparkles,
   Trash2,
   X,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTr } from "@/components/settings-ui";
+import type { Names } from "@/lib/appearance-data";
+import {
+  DIARY_DAILY_LIMIT,
+  commentDiaryPhoto,
+  type DiaryNinaError,
+} from "@/lib/diary-nina.functions";
 import * as care from "@/lib/clinical/care";
 import { MEAL_TYPES, type DiaryEntry, type MealType } from "@/lib/clinical/care";
 import {
@@ -31,6 +40,7 @@ import {
   Loading,
   buttonGhost,
   buttonPrimary,
+  buttonSecondary,
   inputClass,
 } from "./ui";
 import { EmojiIcon } from "@/components/emoji-icon";
@@ -407,6 +417,130 @@ export function DiaryFeed({
   );
 }
 
+/** Comentário educativo da Nina sobre a foto (M7). Só a dona do diário pede; todos veem. */
+function NinaPhotoComment({ entry, canAsk }: { entry: DiaryEntry; canAsk: boolean }) {
+  const tr = useTr();
+  const { locale } = useClinicalI18n();
+  const qc = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const ERRORS: Record<DiaryNinaError, Names> = {
+    limit: [
+      `A Nina já comentou ${DIARY_DAILY_LIMIT} fotos hoje. Amanhã tem mais!`,
+      `Nina has commented on ${DIARY_DAILY_LIMIT} photos today. More tomorrow!`,
+      `Nina ya comentó ${DIARY_DAILY_LIMIT} fotos hoy. ¡Mañana hay más!`,
+      `Nina a déjà commenté ${DIARY_DAILY_LIMIT} photos aujourd'hui. À demain !`,
+    ],
+    unavailable: [
+      "A Nina não está disponível agora.",
+      "Nina isn't available right now.",
+      "Nina no está disponible ahora.",
+      "Nina n'est pas disponible pour le moment.",
+    ],
+    photo: [
+      "Não deu para abrir a foto desta refeição.",
+      "Couldn't open this meal's photo.",
+      "No se pudo abrir la foto de esta comida.",
+      "Impossible d'ouvrir la photo de ce repas.",
+    ],
+    failed: [
+      "A Nina não conseguiu comentar. Tente de novo.",
+      "Nina couldn't comment. Please try again.",
+      "Nina no pudo comentar. Inténtalo de nuevo.",
+      "Nina n'a pas pu commenter. Réessayez.",
+    ],
+  };
+  const ask = useMutation({
+    mutationFn: () => commentDiaryPhoto({ data: { entryId: entry.id, locale } }),
+    onSuccess: (res) => {
+      if ("error" in res) setError(tr(ERRORS[res.error]));
+      else {
+        setError(null);
+        qc.invalidateQueries({ queryKey: qk.diary(entry.patient_id) });
+      }
+    },
+    onError: () => setError(tr(ERRORS.failed)),
+  });
+
+  if (!entry.nina_comment && !canAsk) return null;
+
+  return (
+    <div className="border-t border-border/60 bg-accent-soft/30 px-4 py-3">
+      {entry.nina_comment ? (
+        <div className="flex gap-2">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-foreground">
+              Nina{" "}
+              <span className="font-normal text-muted-foreground">
+                ·{" "}
+                {tr([
+                  "olhar educativo, sem calorias",
+                  "educational take, no calories",
+                  "mirada educativa, sin calorías",
+                  "regard éducatif, sans calories",
+                ])}
+              </span>
+            </p>
+            <div className="mt-1 space-y-1 text-sm leading-relaxed text-foreground">
+              {entry.nina_comment
+                .split("\n")
+                .filter((l) => l.trim())
+                .map((line, i) => (
+                  <p key={i}>
+                    {line
+                      .split(/(\*\*[^*]+\*\*)/g)
+                      .map((part, j) =>
+                        part.startsWith("**") && part.endsWith("**") ? (
+                          <strong key={j}>{part.slice(2, -2)}</strong>
+                        ) : (
+                          <Fragment key={j}>{part}</Fragment>
+                        ),
+                      )}
+                  </p>
+                ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => ask.mutate()}
+            disabled={ask.isPending}
+            className={cn(buttonSecondary, "text-xs")}
+          >
+            <Sparkles className={cn("h-4 w-4 text-accent", ask.isPending && "animate-pulse")} />
+            {ask.isPending
+              ? tr([
+                  "A Nina está olhando a foto…",
+                  "Nina is looking at the photo…",
+                  "Nina está mirando la foto…",
+                  "Nina regarde la photo…",
+                ])
+              : tr([
+                  "Pedir um olhar da Nina",
+                  "Ask Nina for a look",
+                  "Pedir una mirada de Nina",
+                  "Demander l'avis de Nina",
+                ])}
+          </button>
+          <span className="text-[11px] text-muted-foreground">
+            {tr([
+              "Comentário educativo, sem calorias e sem julgamento.",
+              "Educational comment, no calories and no judgement.",
+              "Comentario educativo, sin calorías y sin juicios.",
+              "Commentaire éducatif, sans calories ni jugement.",
+            ])}
+          </span>
+          {error && <p className="w-full text-xs text-destructive">{error}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EntryCard({
   entry,
   photoUrl,
@@ -515,6 +649,10 @@ function EntryCard({
           </div>
         </div>
       </div>
+
+      {photoUrl && (entry.nina_comment || canDelete) && (
+        <NinaPhotoComment entry={entry} canAsk={canDelete} />
+      )}
 
       {(comments.length > 0 || canComment) && (
         <div className="space-y-2 border-t border-border/60 bg-secondary/30 px-4 py-3">

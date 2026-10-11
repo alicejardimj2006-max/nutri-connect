@@ -1608,6 +1608,8 @@ export type Database = {
           id: string
           meal_type: string
           mood: string | null
+          nina_comment: string | null
+          nina_commented_at: string | null
           patient_id: string
           photo_path: string | null
           satiety_after: number | null
@@ -1621,6 +1623,8 @@ export type Database = {
           id?: string
           meal_type: string
           mood?: string | null
+          nina_comment?: string | null
+          nina_commented_at?: string | null
           patient_id: string
           photo_path?: string | null
           satiety_after?: number | null
@@ -1634,6 +1638,8 @@ export type Database = {
           id?: string
           meal_type?: string
           mood?: string | null
+          nina_comment?: string | null
+          nina_commented_at?: string | null
           patient_id?: string
           photo_path?: string | null
           satiety_after?: number | null

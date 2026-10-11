@@ -10,8 +10,9 @@ import { requireUser } from "../_shared/supabase.ts";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-// Mantenha em sincronia com NINA_DAILY_LIMIT, SUMMARY_DAILY_LIMIT e LABEL_DAILY_LIMIT em src/lib.
-const DAILY_LIMITS: Record<string, number> = { nina: 20, summary: 30, label: 10 };
+// Mantenha em sincronia com NINA_DAILY_LIMIT, SUMMARY_DAILY_LIMIT, LABEL_DAILY_LIMIT e
+// DIARY_DAILY_LIMIT em src/lib.
+const DAILY_LIMITS: Record<string, number> = { nina: 20, summary: 30, label: 10, diary: 8 };
 
 interface Message {
   role: "user" | "assistant";
