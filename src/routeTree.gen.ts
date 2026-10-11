@@ -40,6 +40,7 @@ import { Route as AcompanhamentoExamesRouteImport } from './routes/acompanhament
 import { Route as AcompanhamentoMensagensRouteImport } from './routes/acompanhamento.mensagens'
 import { Route as AcompanhamentoMetasRouteImport } from './routes/acompanhamento.metas'
 import { Route as AcompanhamentoPlanoRouteImport } from './routes/acompanhamento.plano'
+import { Route as AcompanhamentoRotulosRouteImport } from './routes/acompanhamento.rotulos'
 import { Route as AssinarProfessionalIdRouteImport } from './routes/assinar.$professionalId'
 import { Route as ComunidadesIndexRouteImport } from './routes/comunidades.index'
 import { Route as ComunidadesSlugRouteImport } from './routes/comunidades.$slug'
@@ -225,6 +226,11 @@ const AcompanhamentoMetasRoute = AcompanhamentoMetasRouteImport.update({
 const AcompanhamentoPlanoRoute = AcompanhamentoPlanoRouteImport.update({
   id: '/plano',
   path: '/plano',
+  getParentRoute: () => AcompanhamentoRoute,
+} as any)
+const AcompanhamentoRotulosRoute = AcompanhamentoRotulosRouteImport.update({
+  id: '/rotulos',
+  path: '/rotulos',
   getParentRoute: () => AcompanhamentoRoute,
 } as any)
 const AssinarProfessionalIdRoute = AssinarProfessionalIdRouteImport.update({
@@ -422,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
+  '/acompanhamento/rotulos': typeof AcompanhamentoRotulosRoute
   '/assinar/$professionalId': typeof AssinarProfessionalIdRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
@@ -482,6 +489,7 @@ export interface FileRoutesByTo {
   '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
+  '/acompanhamento/rotulos': typeof AcompanhamentoRotulosRoute
   '/assinar/$professionalId': typeof AssinarProfessionalIdRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
@@ -546,6 +554,7 @@ export interface FileRoutesById {
   '/acompanhamento/mensagens': typeof AcompanhamentoMensagensRoute
   '/acompanhamento/metas': typeof AcompanhamentoMetasRoute
   '/acompanhamento/plano': typeof AcompanhamentoPlanoRoute
+  '/acompanhamento/rotulos': typeof AcompanhamentoRotulosRoute
   '/assinar/$professionalId': typeof AssinarProfessionalIdRoute
   '/comunidades/$slug': typeof ComunidadesSlugRoute
   '/consulta/$appointmentId': typeof ConsultaAppointmentIdRoute
@@ -612,6 +621,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/mensagens'
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
+    | '/acompanhamento/rotulos'
     | '/assinar/$professionalId'
     | '/comunidades/$slug'
     | '/consulta/$appointmentId'
@@ -672,6 +682,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/mensagens'
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
+    | '/acompanhamento/rotulos'
     | '/assinar/$professionalId'
     | '/comunidades/$slug'
     | '/consulta/$appointmentId'
@@ -735,6 +746,7 @@ export interface FileRouteTypes {
     | '/acompanhamento/mensagens'
     | '/acompanhamento/metas'
     | '/acompanhamento/plano'
+    | '/acompanhamento/rotulos'
     | '/assinar/$professionalId'
     | '/comunidades/$slug'
     | '/consulta/$appointmentId'
@@ -1026,6 +1038,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcompanhamentoPlanoRouteImport
       parentRoute: typeof AcompanhamentoRoute
     }
+    '/acompanhamento/rotulos': {
+      id: '/acompanhamento/rotulos'
+      path: '/rotulos'
+      fullPath: '/acompanhamento/rotulos'
+      preLoaderRoute: typeof AcompanhamentoRotulosRouteImport
+      parentRoute: typeof AcompanhamentoRoute
+    }
     '/assinar/$professionalId': {
       id: '/assinar/$professionalId'
       path: '/assinar/$professionalId'
@@ -1254,6 +1273,7 @@ interface AcompanhamentoRouteChildren {
   AcompanhamentoMensagensRoute: typeof AcompanhamentoMensagensRoute
   AcompanhamentoMetasRoute: typeof AcompanhamentoMetasRoute
   AcompanhamentoPlanoRoute: typeof AcompanhamentoPlanoRoute
+  AcompanhamentoRotulosRoute: typeof AcompanhamentoRotulosRoute
   AcompanhamentoIndexRoute: typeof AcompanhamentoIndexRoute
 }
 
@@ -1265,6 +1285,7 @@ const AcompanhamentoRouteChildren: AcompanhamentoRouteChildren = {
   AcompanhamentoMensagensRoute: AcompanhamentoMensagensRoute,
   AcompanhamentoMetasRoute: AcompanhamentoMetasRoute,
   AcompanhamentoPlanoRoute: AcompanhamentoPlanoRoute,
+  AcompanhamentoRotulosRoute: AcompanhamentoRotulosRoute,
   AcompanhamentoIndexRoute: AcompanhamentoIndexRoute,
 }
 

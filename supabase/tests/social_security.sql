@@ -932,6 +932,17 @@ begin
   r := pg_temp.as_user(c, 'authenticated', 'select goal from public.water_days where day = current_date');
   res := res || jsonb_build_object('teste', 'meta nova já vale para hoje', 'ok', (r = '6'), 'obtido', r);
 
+  -- ------------------------------------------------------- HISTÓRICO DE RÓTULOS
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.label_scans (user_id, source, barcode, name) values (auth.uid(), ''codigo'', ''7891000100103'', ''Produto teste'')');
+  res := res || jsonb_build_object('teste', 'guarda rótulo lido no histórico', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.label_scans (user_id, source, barcode, name) values (auth.uid(), ''codigo'', ''7891000100103'', ''Produto teste'')');
+  r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.label_scans where barcode = ''7891000100103''');
+  res := res || jsonb_build_object('teste', 'mesmo código lido de novo NÃO duplica', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.label_scans');
+  res := res || jsonb_build_object('teste', 'NÃO vê o histórico de rótulos de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.label_scans (user_id, source, name) values (%L, ''foto'', ''x'')', a));
+  res := res || jsonb_build_object('teste', 'NÃO grava rótulo no histórico de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

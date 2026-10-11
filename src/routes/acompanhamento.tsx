@@ -6,6 +6,7 @@ import {
   LineChart,
   MessageCircle,
   NotebookPen,
+  ScanLine,
   Stethoscope,
   Target,
   Utensils,
@@ -37,6 +38,7 @@ function PatientAreaLayout() {
     { to: "/acompanhamento/plano", label: t("patientNav.plan"), icon: Utensils },
     { to: "/acompanhamento/diario", label: t("patientNav.diary"), icon: NotebookPen },
     { to: "/acompanhamento/metas", label: t("patientNav.goals"), icon: Target },
+    { to: "/acompanhamento/rotulos", label: t("patientNav.labels"), icon: ScanLine },
     { to: "/acompanhamento/evolucao", label: t("patientNav.evolution"), icon: LineChart },
     { to: "/acompanhamento/consultas", label: t("patientNav.appointments"), icon: CalendarDays },
     {

@@ -565,6 +565,7 @@ const clinical: Record<ClinicalKey, string> = {
   "patientNav.plan": "Plan alimentario",
   "patientNav.diary": "Diario",
   "patientNav.goals": "Metas",
+  "patientNav.labels": "Etiquetas",
   "patientNav.evolution": "Evolución",
   "patientNav.messages": "Mensajes",
   "patientNav.documents": "Exámenes",

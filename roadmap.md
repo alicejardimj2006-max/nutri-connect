@@ -14,7 +14,7 @@ Cada item ganha o próprio commit depois de testado.
 1. [x] N1 — App instalável (PWA) + notificações (lembretes de refeição, água, consulta, desafio)
 2. [x] N2 — Água do dia (registro em um toque, com lembretes)
 3. [x] M5 — Metas com sequência gentil (sem culpa) e gráficos de progresso
-4. [ ] M1 — Leitor de rótulos completo: código de barras (Open Food Facts), lupa "ALTO EM" da Anvisa, grupo NOVA, histórico e comparação
+4. [x] M1 — Leitor de rótulos completo: código de barras (Open Food Facts), lupa "ALTO EM" da Anvisa, grupo NOVA, histórico e comparação
 5. [ ] M7 — Diário com foto comentada pela Nina (educativo, sem calorias)
 6. [ ] N7 — Modo sem números (fome, saciedade e emoção; sinais de alerta → ajuda profissional)
 7. [ ] M2 — Nina que conhece o acompanhamento (plano e metas, com permissão do paciente)

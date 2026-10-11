@@ -1,6 +1,10 @@
 // Leitor de rótulos com IA: foto do rótulo → a Nina explica o que observar (limite diário próprio).
 import { Fragment, useRef, useState } from "react";
-import { Camera, ScanLine, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Barcode, Camera, ScanLine, X } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { savePhotoScan } from "@/lib/food-label";
 import { useTr } from "@/components/appearance-editor";
 import { Card, buttonGhost } from "./ui";
 import { useI18n } from "@/hooks/use-i18n";
@@ -33,8 +37,24 @@ function Answer({ text }: { text: string }) {
   );
 }
 
-export function LabelReaderCard() {
+/** Nome curto para o histórico: a primeira frase do resumo da Nina. */
+function scanName(answer: string, fallback: string) {
+  const line = answer
+    .split("\n")
+    .map((l) => l.replace(/\*\*[^*]*\*\*\s*[—-]?\s*/g, "").trim())
+    .find(Boolean);
+  const first = line?.split(/(?<=[.!?])\s/)[0] ?? "";
+  return (first.length > 70 ? first.slice(0, 67) + "…" : first) || fallback;
+}
+
+/**
+ * Foto do rótulo lida pela Nina. Com `saveToHistory`, a leitura entra no histórico do leitor;
+ * sem ele (cartão do início do Acompanhamento), mostra o atalho para o leitor completo.
+ */
+export function LabelReaderCard({ saveToHistory = false }: { saveToHistory?: boolean }) {
   const tr = useTr();
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const { locale } = useI18n();
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -84,7 +104,23 @@ export function LabelReaderCard() {
       const res = await readFoodLabel({ data: { image: dataUrl, locale } });
       if (res.used !== undefined) setUsed(res.used);
       if ("error" in res) setError(ERRORS[res.error]);
-      else setResult(res.answer);
+      else {
+        setResult(res.answer);
+        if (saveToHistory && user) {
+          const name = scanName(
+            res.answer,
+            tr([
+              "Rótulo lido pela Nina",
+              "Label read by Nina",
+              "Etiqueta leída por Nina",
+              "Étiquette lue par Nina",
+            ]),
+          );
+          savePhotoScan(user.id, name, res.answer)
+            .then(() => qc.invalidateQueries({ queryKey: ["label-scans"] }))
+            .catch((err) => console.warn("label_scans", err));
+        }
+      }
     } catch (err) {
       console.error("label reader", err);
       setError(err instanceof Error && err.message ? err.message : ERRORS.failed);
@@ -108,12 +144,19 @@ export function LabelReaderCard() {
         <div className="flex items-center gap-2">
           <ScanLine className="h-5 w-5 text-primary" />
           <span>
-            {tr([
-              "Leitor de rótulos",
-              "Label reader",
-              "Lector de etiquetas",
-              "Lecteur d'étiquettes",
-            ])}
+            {saveToHistory
+              ? tr([
+                  "Sem código? A Nina lê a foto",
+                  "No barcode? Nina reads the photo",
+                  "¿Sin código? Nina lee la foto",
+                  "Pas de code ? Nina lit la photo",
+                ])
+              : tr([
+                  "Leitor de rótulos",
+                  "Label reader",
+                  "Lector de etiquetas",
+                  "Lecteur d'étiquettes",
+                ])}
           </span>
         </div>
       }
@@ -162,6 +205,20 @@ export function LabelReaderCard() {
               "Scanner une étiquette",
             ])}
           </button>
+          {!saveToHistory && (
+            <Link
+              to="/acompanhamento/rotulos"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+            >
+              <Barcode className="h-4 w-4" />
+              {tr([
+                "Ler código de barras, ver a lupa da Anvisa e comparar",
+                "Scan barcodes, see warning labels and compare",
+                "Leer código de barras, ver la lupa de Anvisa y comparar",
+                "Scanner un code-barres, voir la loupe et comparer",
+              ])}
+            </Link>
+          )}
         </div>
       )}
 

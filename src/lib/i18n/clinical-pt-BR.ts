@@ -608,6 +608,7 @@ const clinicalPtBR = {
   "patientNav.plan": "Plano alimentar",
   "patientNav.diary": "Diário",
   "patientNav.goals": "Metas",
+  "patientNav.labels": "Rótulos",
   "patientNav.evolution": "Evolução",
   "patientNav.messages": "Mensagens",
   "patientNav.documents": "Exames",

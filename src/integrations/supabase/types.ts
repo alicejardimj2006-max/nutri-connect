@@ -1923,6 +1923,69 @@ export type Database = {
           },
         ]
       }
+      label_scans: {
+        Row: {
+          alto_em: Json
+          barcode: string | null
+          brand: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          liquid: boolean
+          name: string
+          nova: number | null
+          nutrients: Json
+          source: string
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          alto_em?: Json
+          barcode?: string | null
+          brand?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          liquid?: boolean
+          name: string
+          nova?: number | null
+          nutrients?: Json
+          source: string
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          alto_em?: Json
+          barcode?: string | null
+          brand?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          liquid?: boolean
+          name?: string
+          nova?: number | null
+          nutrients?: Json
+          source?: string
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "label_scans_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "label_scans_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meal_plan_items: {
         Row: {
           carbs_g: number
