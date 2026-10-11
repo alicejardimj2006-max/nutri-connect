@@ -47,6 +47,12 @@ import type { ProfessionKey } from "@/lib/clinical/professions";
 import { EmojiIcon } from "@/components/emoji-icon";
 import { Panel } from "@/components/rail-cards";
 import { WaterTracker } from "@/components/water-tracker";
+import {
+  useAddShoppingItems,
+  useDeleteShoppingItems,
+  useShoppingItems,
+  useUpdateShoppingItem,
+} from "@/lib/fridge";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
@@ -1094,36 +1100,53 @@ export function UnitConverterCard() {
 
 // ───────────────────────────── Lista de compras ─────────────────────────────
 
-interface ShopItem {
-  id: string;
-  text: string;
-  done: boolean;
-}
-
+/** Lista de compras na conta (vale em todos os aparelhos; a Geladeira manda os faltantes para cá). */
 export function ShoppingListCard() {
   const tr = useTr();
-  const [items, setItems] = useLocal<ShopItem[]>("shopping", []);
+  const { user } = useAuth();
+  const list = useShoppingItems(user?.id);
+  const addItems = useAddShoppingItems(user?.id);
+  const update = useUpdateShoppingItem();
+  const remove = useDeleteShoppingItems();
   const [draft, setDraft] = useState("");
+  const items = list.data ?? [];
+
+  // Itens da versão antiga (só neste aparelho) sobem para a conta uma vez.
+  useEffect(() => {
+    if (!user || !list.isSuccess) return;
+    const key = `nc_fun_shopping_${user.id}`;
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return;
+      window.localStorage.removeItem(key);
+      const legacy = (JSON.parse(raw) as { text?: string; done?: boolean }[])
+        .filter((i) => !i.done && typeof i.text === "string")
+        .map((i) => i.text as string);
+      if (legacy.length) addItems.mutate({ texts: legacy });
+    } catch {
+      /* sem armazenamento: nada a migrar */
+    }
+  }, [user, list.isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const add = (e: React.FormEvent) => {
     e.preventDefault();
-    const text = draft.trim().slice(0, 60);
-    if (!text) return;
-    setItems((list) => [{ id: crypto.randomUUID(), text, done: false }, ...list].slice(0, 40));
+    const text = draft.trim().slice(0, 80);
+    if (!text || !user) return;
+    addItems.mutate({ texts: [text] });
     setDraft("");
     playSound("click");
   };
-  const done = items.filter((i) => i.done).length;
+  const done = items.filter((i) => i.done);
 
   return (
     <Panel
       title={tr(["Lista de compras", "Shopping list", "Lista de compras", "Liste de courses"])}
       action={
-        done > 0 ? (
+        done.length > 0 ? (
           <button
             type="button"
             className="cursor-pointer text-[11px] font-semibold text-primary hover:underline"
-            onClick={() => setItems((l) => l.filter((i) => !i.done))}
+            onClick={() => remove.mutate(done.map((i) => i.id))}
           >
             {tr(["Limpar marcados", "Clear checked", "Quitar marcados", "Retirer cochés"])}
           </button>
@@ -1134,7 +1157,7 @@ export function ShoppingListCard() {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          maxLength={60}
+          maxLength={80}
           placeholder={tr([
             "Ex.: tomate, aveia…",
             "E.g. tomato, oats…",
@@ -1146,6 +1169,7 @@ export function ShoppingListCard() {
         <button
           type="submit"
           className={primaryBtn}
+          disabled={!user}
           aria-label={tr(["Adicionar", "Add", "Añadir", "Ajouter"])}
         >
           <Plus className="h-3.5 w-3.5" />
@@ -1170,9 +1194,7 @@ export function ShoppingListCard() {
             >
               <button
                 type="button"
-                onClick={() =>
-                  setItems((l) => l.map((x) => (x.id === it.id ? { ...x, done: !x.done } : x)))
-                }
+                onClick={() => update.mutate({ id: it.id, done: !it.done })}
                 className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
                 aria-pressed={it.done}
               >
@@ -1187,7 +1209,7 @@ export function ShoppingListCard() {
               </button>
               <button
                 type="button"
-                onClick={() => setItems((l) => l.filter((x) => x.id !== it.id))}
+                onClick={() => remove.mutate([it.id])}
                 className="cursor-pointer text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100 focus:opacity-100"
                 aria-label={tr(["Remover", "Remove", "Quitar", "Retirer"])}
               >
@@ -1197,6 +1219,17 @@ export function ShoppingListCard() {
           ))}
         </ul>
       )}
+      <Link
+        to="/geladeira"
+        className="mt-3 inline-block text-[11px] font-semibold text-accent hover:underline"
+      >
+        {tr([
+          "O que dá para fazer com o que tenho? →",
+          "What can I make with what I have? →",
+          "¿Qué puedo hacer con lo que tengo? →",
+          "Que faire avec ce que j'ai ? →",
+        ])}
+      </Link>
     </Panel>
   );
 }

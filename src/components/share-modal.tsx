@@ -248,7 +248,23 @@ function PinnedCard({
   );
 }
 
-export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode }) {
+/** Receita para abrir o formulário já preenchido (ex.: ideia da Geladeira); a pessoa revisa. */
+export interface ShareRecipeDraft {
+  title: string;
+  text?: string;
+  prepTime?: string;
+  servings?: string;
+  ingredients: string[];
+  steps: string[];
+}
+
+export function ShareModal({
+  triggerButton,
+  initialRecipe,
+}: {
+  triggerButton?: React.ReactNode;
+  initialRecipe?: ShareRecipeDraft;
+}) {
   const { user } = useAuth();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -629,6 +645,15 @@ export function ShareModal({ triggerButton }: { triggerButton?: React.ReactNode 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) resetForm();
+    else if (initialRecipe) {
+      setType("receita");
+      setTitle(initialRecipe.title);
+      setText(initialRecipe.text ?? "");
+      setPrepTime(initialRecipe.prepTime ?? "");
+      setServings(initialRecipe.servings ?? "");
+      setIngredientsText(initialRecipe.ingredients.join("\n"));
+      setStepsText(initialRecipe.steps.join("\n"));
+    }
   };
 
   return (

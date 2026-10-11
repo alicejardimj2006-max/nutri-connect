@@ -3726,6 +3726,58 @@ export type Database = {
           },
         ]
       }
+      saved_recipes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string | null
+          recipe: Json
+          source: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          recipe?: Json
+          source: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          recipe?: Json
+          source?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_recipes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_recipes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_recipes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       search_term_stats: {
         Row: {
           day: string
@@ -3743,6 +3795,48 @@ export type Database = {
           term?: string
         }
         Relationships: []
+      }
+      shopping_items: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          source: string
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          source?: string
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          source?: string
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       theme_poll_options: {
         Row: {
@@ -5430,6 +5524,17 @@ export type Database = {
         Returns: undefined
       }
       push_unsubscribe: { Args: { p_endpoint: string }; Returns: undefined }
+      recipes_with_ingredients: {
+        Args: { p_limit?: number; p_terms: string[] }
+        Returns: {
+          author_id: string
+          id: string
+          image_url: string
+          matches: number
+          recipe: Json
+          title: string
+        }[]
+      }
       record_consent: {
         Args: { p_granted?: boolean; p_kind: string; p_version: string }
         Returns: undefined

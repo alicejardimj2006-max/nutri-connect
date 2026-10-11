@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { HeartHandshake, Loader2, MessageCircle, Send, Trash2 } from "lucide-react";
+import { HeartHandshake, Loader2, MessageCircle, Refrigerator, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { Mascot } from "@/components/mascots";
@@ -192,6 +192,18 @@ function NinaPage() {
           <Mascot id="nina" mood={sending ? "talk" : "idle"} size={72} />
           <div className="min-w-0 flex-1">
             <h1 className="sr-only">{t("nina.title")}</h1>
+            <Link
+              to="/geladeira"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-secondary"
+            >
+              <Refrigerator className="h-4 w-4 text-accent" />
+              {tr([
+                "O que tem na geladeira?",
+                "What's in the fridge?",
+                "¿Qué hay en la nevera?",
+                "Qu'y a-t-il dans le frigo ?",
+              ])}
+            </Link>
           </div>
           {messages.length > 0 && (
             <button

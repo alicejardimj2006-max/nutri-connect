@@ -204,6 +204,13 @@ async function restrictions(db: Db, userId: string) {
   ].join("\n");
 }
 
+/** Só alergias, intolerâncias, preferências e aversões (geladeira), com a mesma permissão. */
+export async function buildRestrictions(db: Db, userId: string): Promise<string | null> {
+  const { data: allowed } = await db.rpc("nina_care_allowed");
+  if (!allowed) return null;
+  return restrictions(db, userId).catch(() => null);
+}
+
 /**
  * Texto com o acompanhamento da pessoa para o system prompt, ou null se ela não autorizou ou
  * não há nada para contar. Falhas de leitura não impedem a resposta da Nina.

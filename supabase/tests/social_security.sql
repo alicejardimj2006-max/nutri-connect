@@ -957,6 +957,35 @@ begin
   r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
   res := res || jsonb_build_object('teste', 'paciente revoga a permissão da Nina', 'ok', (r = 'f'), 'obtido', r);
 
+  -- ------------------------------------------------------- GELADEIRA (receitas e lista de compras)
+  declare
+    rec_ok uuid;
+    rec_oculta uuid;
+  begin
+    insert into public.posts (author_id, body, type, title, recipe)
+    values (f, 'receita de teste', 'receita', 'Zzqx Omelete',
+            '{"ingredients": ["2 ovos", "1 tomate"], "steps": ["bater"]}')
+    returning id into rec_ok;
+    insert into public.posts (author_id, body, type, title, recipe, hidden)
+    values (b, 'receita oculta', 'receita', 'Zzqx Oculta', '{"ingredients": ["3 ovos"]}', false)
+    returning id into rec_oculta;
+    update public.posts set hidden = true where id = rec_oculta;
+
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.recipes_with_ingredients(array[''ovo'']) where id = %L', rec_ok));
+    res := res || jsonb_build_object('teste', 'acha receita da comunidade pelo ingrediente', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.recipes_with_ingredients(array[''ovo'']) where id = %L', rec_oculta));
+    res := res || jsonb_build_object('teste', 'NÃO acha receita oculta pela moderação', 'ok', (r = '0'), 'obtido', r);
+
+    r := pg_temp.as_user(a, 'authenticated', 'insert into public.shopping_items (user_id, text, source) values (auth.uid(), ''alho'', ''geladeira'')');
+    res := res || jsonb_build_object('teste', 'põe item na própria lista de compras', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.shopping_items');
+    res := res || jsonb_build_object('teste', 'NÃO vê a lista de compras de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.shopping_items (user_id, text) values (%L, ''x'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO põe item na lista de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.saved_recipes (user_id, source, title) values (%L, ''nina'', ''x'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO guarda receita em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  end;
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

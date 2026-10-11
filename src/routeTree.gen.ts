@@ -21,6 +21,7 @@ import { Route as DesafiosRouteImport } from './routes/desafios'
 import { Route as DiretrizesRouteImport } from './routes/diretrizes'
 import { Route as EspacoRouteImport } from './routes/espaco'
 import { Route as ExplorarRouteImport } from './routes/explorar'
+import { Route as GeladeiraRouteImport } from './routes/geladeira'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
@@ -131,6 +132,11 @@ const EspacoRoute = EspacoRouteImport.update({
 const ExplorarRoute = ExplorarRouteImport.update({
   id: '/explorar',
   path: '/explorar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GeladeiraRoute = GeladeiraRouteImport.update({
+  id: '/geladeira',
+  path: '/geladeira',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -410,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
   '/explorar': typeof ExplorarRoute
+  '/geladeira': typeof GeladeiraRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -472,6 +479,7 @@ export interface FileRoutesByTo {
   '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
   '/explorar': typeof ExplorarRoute
+  '/geladeira': typeof GeladeiraRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -536,6 +544,7 @@ export interface FileRoutesById {
   '/diretrizes': typeof DiretrizesRoute
   '/espaco': typeof EspacoRoute
   '/explorar': typeof ExplorarRoute
+  '/geladeira': typeof GeladeiraRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -603,6 +612,7 @@ export interface FileRouteTypes {
     | '/diretrizes'
     | '/espaco'
     | '/explorar'
+    | '/geladeira'
     | '/login'
     | '/nina'
     | '/notificacoes'
@@ -665,6 +675,7 @@ export interface FileRouteTypes {
     | '/diretrizes'
     | '/espaco'
     | '/explorar'
+    | '/geladeira'
     | '/login'
     | '/nina'
     | '/notificacoes'
@@ -728,6 +739,7 @@ export interface FileRouteTypes {
     | '/diretrizes'
     | '/espaco'
     | '/explorar'
+    | '/geladeira'
     | '/login'
     | '/nina'
     | '/notificacoes'
@@ -794,6 +806,7 @@ export interface RootRouteChildren {
   DiretrizesRoute: typeof DiretrizesRoute
   EspacoRoute: typeof EspacoRoute
   ExplorarRoute: typeof ExplorarRoute
+  GeladeiraRoute: typeof GeladeiraRoute
   LoginRoute: typeof LoginRoute
   NinaRoute: typeof NinaRoute
   NotificacoesRoute: typeof NotificacoesRoute
@@ -903,6 +916,13 @@ declare module '@tanstack/react-router' {
       path: '/explorar'
       fullPath: '/explorar'
       preLoaderRoute: typeof ExplorarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/geladeira': {
+      id: '/geladeira'
+      path: '/geladeira'
+      fullPath: '/geladeira'
+      preLoaderRoute: typeof GeladeiraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1382,6 +1402,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiretrizesRoute: DiretrizesRoute,
   EspacoRoute: EspacoRoute,
   ExplorarRoute: ExplorarRoute,
+  GeladeiraRoute: GeladeiraRoute,
   LoginRoute: LoginRoute,
   NinaRoute: NinaRoute,
   NotificacoesRoute: NotificacoesRoute,
