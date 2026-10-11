@@ -7,6 +7,7 @@ import { useAppearance } from "@/hooks/use-appearance";
 import { loadAppearance } from "@/lib/appearance";
 import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
+import { PushInviteCard } from "@/components/push-settings";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
 import type { Post } from "@/lib/community";
 import { themeText } from "@/lib/social/feed";
@@ -174,13 +175,16 @@ function EspacoDeHojePage() {
       label: t("espaco.tab.geral"),
       toolbar: filters,
       content: (
-        <PostList
-          posts={geralPosts}
-          loading={geral.isLoading}
-          emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
-          hasMore={geralPosts.length >= limit}
-          onMore={() => setLimit((n) => n + pageSize)}
-        />
+        <>
+          <PushInviteCard />
+          <PostList
+            posts={geralPosts}
+            loading={geral.isLoading}
+            emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
+            hasMore={geralPosts.length >= limit}
+            onMore={() => setLimit((n) => n + pageSize)}
+          />
+        </>
       ),
     },
     {

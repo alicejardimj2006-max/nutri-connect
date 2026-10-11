@@ -12,113 +12,33 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      clinical_assessments: {
-        Row: {
-          answered_by_patient: boolean
-          appointment_id: string | null
-          created_at: string
-          data: Json
-          id: string
-          kind: string
-          patient_id: string
-          professional_id: string
-          score: number | null
-          severity: string | null
-          shared_with_patient: boolean
-        }
-        Insert: {
-          answered_by_patient?: boolean
-          appointment_id?: string | null
-          created_at?: string
-          data?: Json
-          id?: string
-          kind: string
-          patient_id: string
-          professional_id: string
-          score?: number | null
-          severity?: string | null
-          shared_with_patient?: boolean
-        }
-        Update: {
-          answered_by_patient?: boolean
-          appointment_id?: string | null
-          created_at?: string
-          data?: Json
-          id?: string
-          kind?: string
-          patient_id?: string
-          professional_id?: string
-          score?: number | null
-          severity?: string | null
-          shared_with_patient?: boolean
-        }
-        Relationships: []
-      }
-      care_plans: {
-        Row: {
-          active: boolean
-          appointment_id: string | null
-          created_at: string
-          id: string
-          items: Json
-          kind: string
-          notes: string | null
-          patient_id: string
-          professional_id: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          active?: boolean
-          appointment_id?: string | null
-          created_at?: string
-          id?: string
-          items?: Json
-          kind: string
-          notes?: string | null
-          patient_id: string
-          professional_id: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          active?: boolean
-          appointment_id?: string | null
-          created_at?: string
-          id?: string
-          items?: Json
-          kind?: string
-          notes?: string | null
-          patient_id?: string
-          professional_id?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      care_plan_checkins: {
-        Row: {
-          created_at: string
-          day: string
-          patient_id: string
-          plan_id: string
-        }
-        Insert: {
-          created_at?: string
-          day?: string
-          patient_id: string
-          plan_id: string
-        }
-        Update: {
-          created_at?: string
-          day?: string
-          patient_id?: string
-          plan_id?: string
-        }
-        Relationships: []
-      }
       admin_audit_log: {
         Row: {
           action: string
@@ -161,6 +81,95 @@ export type Database = {
           {
             foreignKeyName: "admin_audit_log_admin_id_fkey"
             columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_rejections: {
+        Row: {
+          body: string
+          code: string
+          context: Json
+          created_at: string
+          id: string
+          image_path: string | null
+          kind: string
+          message: string
+          post_id: string | null
+          published_id: string | null
+          recipe: Json | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          tags: string[]
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          code: string
+          context?: Json
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          kind: string
+          message?: string
+          post_id?: string | null
+          published_id?: string | null
+          recipe?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          tags?: string[]
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          code?: string
+          context?: Json
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          kind?: string
+          message?: string
+          post_id?: string | null
+          published_id?: string | null
+          recipe?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          tags?: string[]
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_rejections_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_rejections_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_rejections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_rejections_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -776,6 +785,120 @@ export type Database = {
           },
         ]
       }
+      care_plan_checkins: {
+        Row: {
+          created_at: string
+          day: string
+          patient_id: string
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string
+          patient_id: string
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          patient_id?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plan_checkins_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "care_plan_checkins_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "care_plan_checkins_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "care_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_plans: {
+        Row: {
+          active: boolean
+          appointment_id: string | null
+          created_at: string
+          id: string
+          items: Json
+          kind: string
+          notes: string | null
+          patient_id: string
+          professional_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind: string
+          notes?: string | null
+          patient_id: string
+          professional_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          kind?: string
+          notes?: string | null
+          patient_id?: string
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plans_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "care_plans_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "care_plans_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "care_plans_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       challenge_participants: {
         Row: {
           challenge_id: string
@@ -958,6 +1081,77 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "weekly_themes"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinical_assessments: {
+        Row: {
+          answered_by_patient: boolean
+          appointment_id: string | null
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          patient_id: string
+          professional_id: string
+          score: number | null
+          severity: string | null
+          shared_with_patient: boolean
+        }
+        Insert: {
+          answered_by_patient?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind: string
+          patient_id: string
+          professional_id: string
+          score?: number | null
+          severity?: string | null
+          shared_with_patient?: boolean
+        }
+        Update: {
+          answered_by_patient?: boolean
+          appointment_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          patient_id?: string
+          professional_id?: string
+          score?: number | null
+          severity?: string | null
+          shared_with_patient?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_assessments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_assessments_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1834,93 +2028,6 @@ export type Database = {
           },
         ]
       }
-      member_content: {
-        Row: {
-          body: string
-          created_at: string
-          id: string
-          image_url: string | null
-          professional_id: string
-          title: string
-        }
-        Insert: {
-          body?: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          professional_id?: string
-          title?: string
-        }
-        Update: {
-          body?: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          professional_id?: string
-          title?: string
-        }
-        Relationships: []
-      }
-      member_plans: {
-        Row: {
-          active: boolean
-          benefits: string[]
-          consult_discount_percent: number
-          description: string
-          price_cents: number
-          professional_id: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          active?: boolean
-          benefits?: string[]
-          consult_discount_percent?: number
-          description?: string
-          price_cents?: number
-          professional_id?: string
-          title?: string
-          updated_at?: string
-        }
-        Update: {
-          active?: boolean
-          benefits?: string[]
-          consult_discount_percent?: number
-          description?: string
-          price_cents?: number
-          professional_id?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      pro_stripe_accounts: {
-        Row: {
-          charges_enabled: boolean
-          details_submitted: boolean
-          payouts_enabled: boolean
-          professional_id: string
-          stripe_account_id: string
-          updated_at: string
-        }
-        Insert: {
-          charges_enabled?: boolean
-          details_submitted?: boolean
-          payouts_enabled?: boolean
-          professional_id?: string
-          stripe_account_id?: string
-          updated_at?: string
-        }
-        Update: {
-          charges_enabled?: boolean
-          details_submitted?: boolean
-          payouts_enabled?: boolean
-          professional_id?: string
-          stripe_account_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       meal_plans: {
         Row: {
           created_at: string
@@ -1990,6 +2097,187 @@ export type Database = {
           },
           {
             foreignKeyName: "meal_plans_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      member_content: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          image_url: string | null
+          professional_id: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          professional_id: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          professional_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_content_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      member_invoices: {
+        Row: {
+          amount_cents: number
+          fee_percent: number
+          id: string
+          member_id: string
+          paid_at: string
+          platform_fee_cents: number
+          professional_id: string
+          stripe_invoice_id: string
+          subscription_id: string
+        }
+        Insert: {
+          amount_cents: number
+          fee_percent: number
+          id?: string
+          member_id: string
+          paid_at?: string
+          platform_fee_cents: number
+          professional_id: string
+          stripe_invoice_id: string
+          subscription_id: string
+        }
+        Update: {
+          amount_cents?: number
+          fee_percent?: number
+          id?: string
+          member_id?: string
+          paid_at?: string
+          platform_fee_cents?: number
+          professional_id?: string
+          stripe_invoice_id?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "member_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_plans: {
+        Row: {
+          active: boolean
+          benefits: string[]
+          consult_discount_percent: number
+          description: string
+          price_cents: number
+          professional_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          benefits?: string[]
+          consult_discount_percent?: number
+          description?: string
+          price_cents: number
+          professional_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          benefits?: string[]
+          consult_discount_percent?: number
+          description?: string
+          price_cents?: number
+          professional_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_plans_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      member_subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          id: string
+          member_id: string
+          price_cents: number
+          professional_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          member_id: string
+          price_cents: number
+          professional_id: string
+          status: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          member_id?: string
+          price_cents?: number
+          professional_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_subscriptions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_subscriptions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_subscriptions_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
@@ -2508,40 +2796,234 @@ export type Database = {
           },
         ]
       }
-      professional_mp_accounts: {
+      presentation_docs: {
         Row: {
-          access_token: string
-          expires_at: string | null
-          live_mode: boolean
-          mp_user_id: string
+          draft: Json
+          key: string
+          published: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          draft?: Json
+          key: string
+          published?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          draft?: Json
+          key?: string
+          published?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_docs_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presentation_docs_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pro_features: {
+        Row: {
+          description: string
+          feature: string
+          min_level: number
+        }
+        Insert: {
+          description: string
+          feature: string
+          min_level: number
+        }
+        Update: {
+          description?: string
+          feature?: string
+          min_level?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_features_min_level_fkey"
+            columns: ["min_level"]
+            isOneToOne: false
+            referencedRelation: "pro_levels"
+            referencedColumns: ["level"]
+          },
+        ]
+      }
+      pro_levels: {
+        Row: {
+          code: string
+          level: number
+          membership_fee_percent: number
+          min_score: number
+          requires_clean_record: boolean
+        }
+        Insert: {
+          code: string
+          level: number
+          membership_fee_percent: number
+          min_score: number
+          requires_clean_record?: boolean
+        }
+        Update: {
+          code?: string
+          level?: number
+          membership_fee_percent?: number
+          min_score?: number
+          requires_clean_record?: boolean
+        }
+        Relationships: []
+      }
+      pro_score_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          note: string | null
+          points: number
           professional_id: string
-          public_key: string | null
-          refresh_token: string | null
+          ref_id: string
+          ref_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          note?: string | null
+          points: number
+          professional_id: string
+          ref_id: string
+          ref_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          points?: number
+          professional_id?: string
+          ref_id?: string
+          ref_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_score_events_kind_fkey"
+            columns: ["kind"]
+            isOneToOne: false
+            referencedRelation: "pro_score_rules"
+            referencedColumns: ["kind"]
+          },
+          {
+            foreignKeyName: "pro_score_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      pro_score_rules: {
+        Row: {
+          active: boolean
+          counts_as_activity: boolean
+          daily_cap: number | null
+          description: string
+          kind: string
+          points: number
+        }
+        Insert: {
+          active?: boolean
+          counts_as_activity?: boolean
+          daily_cap?: number | null
+          description: string
+          kind: string
+          points: number
+        }
+        Update: {
+          active?: boolean
+          counts_as_activity?: boolean
+          daily_cap?: number | null
+          description?: string
+          kind?: string
+          points?: number
+        }
+        Relationships: []
+      }
+      pro_scores: {
+        Row: {
+          level: number
+          professional_id: string
+          score: number
           updated_at: string
         }
         Insert: {
-          access_token: string
-          expires_at?: string | null
-          live_mode?: boolean
-          mp_user_id: string
+          level?: number
           professional_id: string
-          public_key?: string | null
-          refresh_token?: string | null
+          score?: number
           updated_at?: string
         }
         Update: {
-          access_token?: string
-          expires_at?: string | null
-          live_mode?: boolean
-          mp_user_id?: string
+          level?: number
           professional_id?: string
-          public_key?: string | null
-          refresh_token?: string | null
+          score?: number
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "professional_mp_accounts_professional_id_fkey"
+            foreignKeyName: "pro_scores_level_fkey"
+            columns: ["level"]
+            isOneToOne: false
+            referencedRelation: "pro_levels"
+            referencedColumns: ["level"]
+          },
+          {
+            foreignKeyName: "pro_scores_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      pro_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean
+          details_submitted: boolean
+          payouts_enabled: boolean
+          professional_id: string
+          stripe_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          professional_id: string
+          stripe_account_id: string
+          updated_at?: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          details_submitted?: boolean
+          payouts_enabled?: boolean
+          professional_id?: string
+          stripe_account_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_stripe_accounts_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: true
             referencedRelation: "professionals"
@@ -2824,6 +3306,242 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      push_appointment_log: {
+        Row: {
+          appointment_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_appointment_log_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_appointment_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_appointment_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_queue: {
+        Row: {
+          created_at: string
+          id: number
+          notification_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          notification_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          notification_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_queue_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_settings: {
+        Row: {
+          appointment_lead_min: number
+          categories: Json
+          quiet_from: number | null
+          quiet_to: number | null
+          show_preview: boolean
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          appointment_lead_min?: number
+          categories?: Json
+          quiet_from?: number | null
+          quiet_to?: number | null
+          show_preview?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          appointment_lead_min?: number
+          categories?: Json
+          quiet_from?: number | null
+          quiet_to?: number | null
+          show_preview?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          failures: number
+          last_success_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          failures?: number
+          last_success_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          failures?: number
+          last_success_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminders: {
+        Row: {
+          active: boolean
+          body: string | null
+          created_at: string
+          days: number[]
+          id: string
+          kind: string
+          last_sent_on: string | null
+          time_of_day: string
+          title: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          days?: number[]
+          id?: string
+          kind: string
+          last_sent_on?: string | null
+          time_of_day: string
+          title: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          days?: number[]
+          id?: string
+          kind?: string
+          last_sent_on?: string | null
+          time_of_day?: string
+          title?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
@@ -3510,6 +4228,21 @@ export type Database = {
         Args: { p_cols: string[]; p_table: string; p_user: string }
         Returns: Json
       }
+      _pro_apply: {
+        Args: { p_points: number; p_pro: string }
+        Returns: undefined
+      }
+      _pro_award: {
+        Args: {
+          p_kind: string
+          p_note?: string
+          p_points?: number
+          p_pro: string
+          p_ref: string
+          p_ref_type: string
+        }
+        Returns: undefined
+      }
       accept_care_invite: {
         Args: { p_code: string }
         Returns: {
@@ -3558,6 +4291,56 @@ export type Database = {
         }
       }
       activate_weekly_theme: { Args: never; Returns: string }
+      admin_adjust_pro_score: {
+        Args: { p_note: string; p_points: number; p_pro: string }
+        Returns: undefined
+      }
+      admin_ai_rejection_decide: {
+        Args: { p_id: string; p_image_url?: string; p_release: boolean }
+        Returns: string
+      }
+      admin_ai_rejections: {
+        Args: {
+          p_code?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+        }
+        Returns: {
+          body: string
+          code: string
+          community_name: string
+          context: Json
+          created_at: string
+          id: string
+          image_path: string
+          kind: string
+          message: string
+          post_id: string
+          published_id: string
+          recipe: Json
+          reviewed_at: string
+          reviewed_by_name: string
+          status: string
+          tags: string[]
+          title: string
+          total: number
+          user_id: string
+          user_name: string
+          user_rejections_30d: number
+          user_username: string
+        }[]
+      }
+      admin_ai_rejections_summary: {
+        Args: never
+        Returns: {
+          by_code: Json
+          last_7d: number
+          pending: number
+          today: number
+        }[]
+      }
       admin_ai_stats: { Args: { p_days?: number }; Returns: Json }
       admin_delete_announcement: { Args: { p_id: string }; Returns: undefined }
       admin_delete_post: { Args: { p_post: string }; Returns: undefined }
@@ -3587,6 +4370,27 @@ export type Database = {
           status: Database["public"]["Enums"]["payment_status"]
           total: number
         }[]
+      }
+      admin_presentation_discard: {
+        Args: { p_key: string }
+        Returns: undefined
+      }
+      admin_presentation_get: {
+        Args: never
+        Returns: {
+          draft: Json
+          key: string
+          published: Json
+          updated_at: string
+        }[]
+      }
+      admin_presentation_publish: {
+        Args: { p_key: string }
+        Returns: undefined
+      }
+      admin_presentation_save_draft: {
+        Args: { p_draft: Json; p_key: string }
+        Returns: undefined
       }
       admin_save_announcement: {
         Args: {
@@ -3664,6 +4468,10 @@ export type Database = {
         Args: { p_key: string; p_value: Json }
         Returns: undefined
       }
+      admin_set_site_config: {
+        Args: { p_key: string; p_value: Json }
+        Returns: undefined
+      }
       admin_set_suspended: {
         Args: { p_reason?: string; p_suspend: boolean; p_user: string }
         Returns: undefined
@@ -3698,6 +4506,7 @@ export type Database = {
         Returns: boolean
       }
       ai_usage_today: { Args: { p_kind: string }; Returns: number }
+      apply_pro_inactivity: { Args: never; Returns: number }
       are_friends: { Args: { a: string; b: string }; Returns: boolean }
       book_appointment: {
         Args: {
@@ -4111,56 +4920,6 @@ export type Database = {
           type: Database["public"]["Enums"]["post_type"]
         }[]
       }
-      get_profile_contact: {
-        Args: { p_user: string }
-        Returns: {
-          email: string
-          phone: string
-        }[]
-      }
-      admin_adjust_pro_score: {
-        Args: { p_note: string; p_points: number; p_pro: string }
-        Returns: undefined
-      }
-      get_my_pro_events: {
-        Args: { p_limit?: number }
-        Returns: {
-          created_at: string
-          id: string
-          kind: string
-          note: string
-          points: number
-        }[]
-      }
-      get_pro_rules: { Args: never; Returns: Json }
-      get_pro_status: {
-        Args: { p_pro?: string }
-        Returns: {
-          excellence: boolean
-          features: string[]
-          fee_percent: number
-          level: number
-          level_code: string
-          next_level: number
-          next_level_code: string
-          next_level_score: number
-          professional_id: string
-          score: number
-        }[]
-      }
-      pro_has_feature: { Args: { p_feature: string; p_pro: string }; Returns: boolean }
-      pro_membership_fee_percent: { Args: { p_pro: string }; Returns: number }
-      save_member_plan: {
-        Args: {
-          p_active: boolean
-          p_benefits: string[]
-          p_description: string
-          p_discount: number
-          p_price_cents: number
-          p_title: string
-        }
-        Returns: undefined
-      }
       get_member_plan: {
         Args: { p_pro: string }
         Returns: {
@@ -4177,43 +4936,14 @@ export type Database = {
           title: string
         }[]
       }
-      publish_member_content: {
-        Args: { p_body: string; p_image_url?: string; p_title: string }
-        Returns: string
-      }
-      my_member_subscriptions: {
-        Args: never
+      get_my_pro_events: {
+        Args: { p_limit?: number }
         Returns: {
           created_at: string
-          current_period_end: string
           id: string
-          price_cents: number
-          professional_id: string
-          professional_name: string
-          status: string
-        }[]
-      }
-      my_subscribers: {
-        Args: never
-        Returns: {
-          avatar_url: string
-          created_at: string
-          current_period_end: string
-          id: string
-          member_id: string
-          name: string
-          price_cents: number
-          status: string
-          username: string
-        }[]
-      }
-      my_member_earnings: {
-        Args: { p_days?: number }
-        Returns: {
-          fee_cents: number
-          gross_cents: number
-          invoices: number
-          net_cents: number
+          kind: string
+          note: string
+          points: number
         }[]
       }
       get_notifications: {
@@ -4232,22 +4962,27 @@ export type Database = {
           type: string
         }[]
       }
-      get_weekly_theme: {
-        Args: { p_id?: string; p_status?: string }
+      get_pro_rules: { Args: never; Returns: Json }
+      get_pro_status: {
+        Args: { p_pro?: string }
         Returns: {
-          activated_at: string
-          badge: string
-          description: string
-          id: string
-          poll: Json
-          poll_question: string
-          question: string
-          source: string
-          status: Database["public"]["Enums"]["theme_status"]
-          subtitle: string
-          title: string
-          translations: Json
-          week_start: string
+          excellence: boolean
+          features: string[]
+          fee_percent: number
+          level: number
+          level_code: string
+          next_level: number
+          next_level_code: string
+          next_level_score: number
+          professional_id: string
+          score: number
+        }[]
+      }
+      get_profile_contact: {
+        Args: { p_user: string }
+        Returns: {
+          email: string
+          phone: string
         }[]
       }
       get_profile_page: { Args: { p_user: string }; Returns: Json }
@@ -4269,6 +5004,24 @@ export type Database = {
           username: string
         }[]
       }
+      get_weekly_theme: {
+        Args: { p_id?: string; p_status?: string }
+        Returns: {
+          activated_at: string
+          badge: string
+          description: string
+          id: string
+          poll: Json
+          poll_question: string
+          question: string
+          source: string
+          status: Database["public"]["Enums"]["theme_status"]
+          subtitle: string
+          title: string
+          translations: Json
+          week_start: string
+        }[]
+      }
       has_active_link: {
         Args: { p_patient: string; p_professional?: string }
         Returns: boolean
@@ -4282,6 +5035,7 @@ export type Database = {
         Args: { p_community: string; p_user?: string }
         Returns: boolean
       }
+      is_member: { Args: { p_pro: string; p_user?: string }; Returns: boolean }
       is_platform_admin: { Args: { uid?: string }; Returns: boolean }
       is_suspended: { Args: { uid: string }; Returns: boolean }
       is_verified_professional: { Args: { uid?: string }; Returns: boolean }
@@ -4365,6 +5119,41 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      my_member_earnings: {
+        Args: { p_days?: number }
+        Returns: {
+          fee_cents: number
+          gross_cents: number
+          invoices: number
+          net_cents: number
+        }[]
+      }
+      my_member_subscriptions: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_period_end: string
+          id: string
+          price_cents: number
+          professional_id: string
+          professional_name: string
+          status: string
+        }[]
+      }
+      my_subscribers: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          current_period_end: string
+          id: string
+          member_id: string
+          name: string
+          price_cents: number
+          status: string
+          username: string
+        }[]
+      }
       notification_category: { Args: { p_type: string }; Returns: string }
       notify: {
         Args: {
@@ -4400,6 +5189,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      presentation_published: {
+        Args: never
+        Returns: {
+          key: string
+          published: Json
+        }[]
+      }
+      pro_has_feature: {
+        Args: { p_feature: string; p_pro: string }
+        Returns: boolean
+      }
+      pro_level_for: {
+        Args: { p_pro: string; p_score: number }
+        Returns: number
+      }
+      pro_membership_fee_percent: { Args: { p_pro: string }; Returns: number }
       publish_meal_plan: {
         Args: { p_plan: string }
         Returns: {
@@ -4426,10 +5231,46 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      publish_member_content: {
+        Args: { p_body: string; p_image_url?: string; p_title: string }
+        Returns: string
+      }
+      purge_ai_rejections: { Args: never; Returns: undefined }
       purge_content_approvals: { Args: never; Returns: undefined }
       purge_nina_messages: { Args: never; Returns: number }
+      push_claim: {
+        Args: never
+        Returns: {
+          kind: string
+          payload: Json
+          user_id: string
+        }[]
+      }
+      push_in_quiet: {
+        Args: { p_from: number; p_hour: number; p_to: number }
+        Returns: boolean
+      }
+      push_subscribe: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: undefined
+      }
+      push_unsubscribe: { Args: { p_endpoint: string }; Returns: undefined }
       record_consent: {
         Args: { p_granted?: boolean; p_kind: string; p_version: string }
+        Returns: undefined
+      }
+      record_member_invoice: {
+        Args: {
+          p_amount_cents: number
+          p_fee_cents: number
+          p_stripe_invoice: string
+          p_stripe_subscription: string
+        }
         Returns: undefined
       }
       register_manual_payment: {
@@ -4483,6 +5324,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      request_push_send: { Args: never; Returns: number }
       request_weekly_theme_generation: { Args: never; Returns: number }
       reschedule_appointment: {
         Args: { p_appointment: string; p_starts_at: string }
@@ -4592,6 +5434,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_member_plan: {
+        Args: {
+          p_active: boolean
+          p_benefits: string[]
+          p_description: string
+          p_discount: number
+          p_price_cents: number
+          p_title: string
+        }
+        Returns: undefined
+      }
       save_trail_progress: {
         Args: { p_data: Json; p_profile: string; p_xp_gained?: number }
         Returns: undefined
@@ -4639,6 +5492,7 @@ export type Database = {
           id: string
           posts_count: number
           recipes_count: number
+          subtitle: string
           title: string
           translations: Json
           week_start: string
@@ -4661,6 +5515,18 @@ export type Database = {
         }[]
       }
       unique_slug: { Args: { p_name: string }; Returns: string }
+      upsert_member_subscription: {
+        Args: {
+          p_member: string
+          p_period_end: string
+          p_price_cents: number
+          p_pro: string
+          p_status: string
+          p_stripe_customer: string
+          p_stripe_subscription: string
+        }
+        Returns: string
+      }
       user_challenges: {
         Args: { p_user?: string }
         Returns: {
@@ -4833,6 +5699,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["paciente", "profissional"],

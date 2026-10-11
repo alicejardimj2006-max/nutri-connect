@@ -11,7 +11,7 @@
 
 Cada item ganha o próprio commit depois de testado.
 
-1. [ ] N1 — App instalável (PWA) + notificações (lembretes de refeição, água, consulta, desafio)
+1. [x] N1 — App instalável (PWA) + notificações (lembretes de refeição, água, consulta, desafio)
 2. [ ] N2 — Água do dia (registro em um toque, com lembretes)
 3. [ ] M5 — Metas com sequência gentil (sem culpa) e gráficos de progresso
 4. [ ] M1 — Leitor de rótulos completo: código de barras (Open Food Facts), lupa "ALTO EM" da Anvisa, grupo NOVA, histórico e comparação
