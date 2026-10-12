@@ -150,6 +150,9 @@ const es: Record<DictKey, string> = {
   "espaco.firstPost": "Hacer la primera publicación",
   "espaco.filter.all": "Todos",
   "espaco.loadMore": "Ver más publicaciones",
+  "espaco.loadingMore": "Cargando más publicaciones…",
+  "espaco.end": "Ya lo viste todo por aquí.",
+  "espaco.newPosts": "Nuevas publicaciones",
   "espaco.theme.open": "Ver el tema completo →",
   "espaco.theme.none": "Todavía no hay un tema de la semana activo.",
   "espaco.empty.tema": "Nadie ha publicado en este tema todavía. ¡Sé la primera persona!",
@@ -800,6 +803,7 @@ const es: Record<DictKey, string> = {
   "cf.paused": "Las publicaciones están en pausa mientras la comunidad no esté activa.",
   "cf.joinToPost": "Únete a la comunidad para publicar.",
   "cf.noPosts": "Todavía no hay publicaciones por aquí.",
+  "cf.privatePosts": "Las publicaciones de esta comunidad son solo para sus miembros. Únete para verlas y conversar con el grupo.",
   "cf.consPro":
     "La comunidad quedará suspendida hasta que otro profesional verificado acepte la invitación para ser admin profesional.",
   "cf.consPending": "Como aún no fue activada, será cancelada.",

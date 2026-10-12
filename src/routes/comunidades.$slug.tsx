@@ -63,10 +63,17 @@ function CommunityFeed() {
   const communityQuery = useCommunityBySlug(slug);
   const community = communityQuery.data ?? undefined;
   const hydrated = !communityQuery.isLoading;
+  // Comunidades são privadas: só quem participa (ou administra) vê as publicações.
+  const canSeePosts =
+    !!user &&
+    !!community &&
+    (community.isMember ||
+      community.adminUserId === user.id ||
+      community.professionalId === user.id);
   // Publicações da comunidade, do banco (fixadas primeiro).
   const remoteFeed = useFeed(
     { scope: "comunidade", community: community?.id, limit: 40 },
-    !!user && !!community,
+    canSeePosts,
   );
   useFeedRealtime(user?.id);
   const feed = useMemo(
@@ -229,7 +236,7 @@ function CommunityFeed() {
 
       {canPost ? (
         <Composer communityId={community.id} />
-      ) : (
+      ) : actor && !canSeePosts && community.status === "ativa" ? null : (
         <p className="mt-6 rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
           {!actor ? (
             <>
@@ -246,21 +253,27 @@ function CommunityFeed() {
         </p>
       )}
 
-      <section className="mt-6 space-y-5">
-        {feed.map((post) => (
-          <div key={post.id}>
-            {(isModerator || post.pinned) && (
-              <ModeratorBar postId={post.id} pinned={!!post.pinned} canModerate={isModerator} />
-            )}
-            <PostCard post={post} />
-          </div>
-        ))}
-        {feed.length === 0 && (
-          <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
-            {t("cf.noPosts")}
-          </p>
-        )}
-      </section>
+      {!canSeePosts && actor ? (
+        <p className="mt-6 rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
+          {t("cf.privatePosts")}
+        </p>
+      ) : (
+        <section className="mt-6 space-y-5">
+          {feed.map((post) => (
+            <div key={post.id}>
+              {(isModerator || post.pinned) && (
+                <ModeratorBar postId={post.id} pinned={!!post.pinned} canModerate={isModerator} />
+              )}
+              <PostCard post={post} />
+            </div>
+          ))}
+          {feed.length === 0 && (
+            <p className="rounded-2xl border bg-card p-5 text-sm text-muted-foreground shadow-card">
+              {t("cf.noPosts")}
+            </p>
+          )}
+        </section>
+      )}
     </div>
   );
 }

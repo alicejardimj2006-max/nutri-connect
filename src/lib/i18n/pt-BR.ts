@@ -160,6 +160,9 @@ const ptBR = {
   "espaco.firstPost": "Fazer primeira publicação",
   "espaco.filter.all": "Todos",
   "espaco.loadMore": "Ver mais publicações",
+  "espaco.loadingMore": "Carregando mais publicações…",
+  "espaco.end": "Você viu tudo por aqui.",
+  "espaco.newPosts": "Novas publicações",
   "espaco.theme.open": "Ver o tema completo →",
   "espaco.theme.none": "Ainda não há um tema da semana ativo.",
   "espaco.empty.tema": "Ninguém publicou neste tema ainda. Que tal ser a primeira pessoa?",
@@ -810,6 +813,7 @@ const ptBR = {
   "cf.paused": "As publicações estão pausadas enquanto a comunidade não estiver ativa.",
   "cf.joinToPost": "Participe da comunidade para publicar.",
   "cf.noPosts": "Ainda não há publicações por aqui.",
+  "cf.privatePosts": "As publicações desta comunidade são só para quem participa. Entre para ver e conversar com o grupo.",
   "cf.consPro":
     "A comunidade ficará suspensa até que outro profissional verificado aceite o convite para ser admin profissional.",
   "cf.consPending": "Como ela ainda não foi ativada, será cancelada.",

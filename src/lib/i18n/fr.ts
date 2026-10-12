@@ -154,6 +154,9 @@ const fr: Record<DictKey, string> = {
   "espaco.firstPost": "Faire la première publication",
   "espaco.filter.all": "Tous",
   "espaco.loadMore": "Voir plus de publications",
+  "espaco.loadingMore": "Chargement d’autres publications…",
+  "espaco.end": "Vous avez tout vu.",
+  "espaco.newPosts": "Nouvelles publications",
   "espaco.theme.open": "Voir le thème complet →",
   "espaco.theme.none": "Il n'y a pas encore de thème de la semaine actif.",
   "espaco.empty.tema": "Personne n'a encore publié sur ce thème. Soyez le premier !",
@@ -810,6 +813,7 @@ const fr: Record<DictKey, string> = {
   "cf.paused": "Les publications sont suspendues tant que la communauté n'est pas active.",
   "cf.joinToPost": "Rejoignez la communauté pour publier.",
   "cf.noPosts": "Il n'y a pas encore de publications ici.",
+  "cf.privatePosts": "Les publications de cette communauté sont réservées aux membres. Rejoignez-la pour les voir et échanger avec le groupe.",
   "cf.consPro":
     "La communauté sera suspendue jusqu'à ce qu'un autre professionnel vérifié accepte l'invitation d'être admin professionnel.",
   "cf.consPending": "Comme elle n'a pas encore été activée, elle sera annulée.",

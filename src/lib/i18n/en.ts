@@ -149,6 +149,9 @@ const en: Record<DictKey, string> = {
   "espaco.firstPost": "Make the first post",
   "espaco.filter.all": "All",
   "espaco.loadMore": "Show more posts",
+  "espaco.loadingMore": "Loading more posts…",
+  "espaco.end": "You're all caught up.",
+  "espaco.newPosts": "New posts",
   "espaco.theme.open": "See the full theme →",
   "espaco.theme.none": "There is no active weekly theme yet.",
   "espaco.empty.tema": "Nobody has posted on this theme yet. Be the first!",
@@ -793,6 +796,7 @@ const en: Record<DictKey, string> = {
   "cf.paused": "Posting is paused while the community isn't active.",
   "cf.joinToPost": "Join the community to post.",
   "cf.noPosts": "There are no posts here yet.",
+  "cf.privatePosts": "Posts in this community are for members only. Join to see them and talk with the group.",
   "cf.consPro":
     "The community will be suspended until another verified professional accepts the invitation to be professional admin.",
   "cf.consPending": "Since it hasn't been activated yet, it will be cancelled.",
