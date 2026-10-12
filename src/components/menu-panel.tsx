@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  Backpack,
   BookOpen,
   CheckCircle2,
   ChevronLeft,
@@ -342,7 +343,8 @@ function SlotCard({
 
 // ───────────────────────────── Lista de compras ─────────────────────────────
 
-function ShoppingSection({ meals }: { meals: MenuMeals }) {
+/** Junta ingredientes (do cardápio ou da lancheira) numa lista de compras agrupada por seção. */
+export function ShoppingSection({ ingredients }: { ingredients: string[] }) {
   const tr = useTr();
   const { locale } = useI18n();
   const { user } = useAuth();
@@ -353,7 +355,6 @@ function ShoppingSection({ meals }: { meals: MenuMeals }) {
   const [preview, setPreview] = useState<{ text: string; section: Section; on: boolean }[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const ingredients = Object.values(meals).flatMap((m) => m?.ingredients ?? []);
   const items = list.data ?? [];
   const done = items.filter((i) => i.done);
 
@@ -787,6 +788,18 @@ export function MenuPanel() {
             "Notez ce que vous avez dans le Frigo : Nina l'utilise et le retire de la liste.",
           ])}
         </Link>
+        <Link
+          to="/lancheira"
+          className="ml-4 mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent hover:underline"
+        >
+          <Backpack className="h-3.5 w-3.5" />
+          {tr([
+            "Lancheira das crianças →",
+            "Kids' lunchbox →",
+            "Lonchera de los niños →",
+            "Boîte à goûter des enfants →",
+          ])}
+        </Link>
       </section>
 
       {menu.isLoading ? (
@@ -823,7 +836,7 @@ export function MenuPanel() {
         </ol>
       )}
 
-      <ShoppingSection meals={meals} />
+      <ShoppingSection ingredients={Object.values(meals).flatMap((m) => m?.ingredients ?? [])} />
     </div>
   );
 }

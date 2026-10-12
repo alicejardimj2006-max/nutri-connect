@@ -11,7 +11,7 @@ import { requireUser } from "../_shared/supabase.ts";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 // Mantenha em sincronia com NINA_DAILY_LIMIT, SUMMARY_DAILY_LIMIT, LABEL_DAILY_LIMIT,
-// DIARY_DAILY_LIMIT, FRIDGE_DAILY_LIMIT e MENU_DAILY_LIMIT em src/lib.
+// DIARY_DAILY_LIMIT, FRIDGE_DAILY_LIMIT, MENU_DAILY_LIMIT e LUNCHBOX_DAILY_LIMIT em src/lib.
 const DAILY_LIMITS: Record<string, number> = {
   nina: 20,
   summary: 30,
@@ -19,6 +19,7 @@ const DAILY_LIMITS: Record<string, number> = {
   diary: 8,
   fridge: 8,
   menu: 10,
+  lunchbox: 8,
 };
 
 interface Message {

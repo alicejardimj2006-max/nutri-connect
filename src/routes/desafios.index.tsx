@@ -41,6 +41,7 @@ import {
   type Unit,
 } from "@/lib/learning-trail";
 import { useTrailProfiles } from "@/lib/trail-profiles";
+import { KidLunchboxToday, LunchboxLink } from "@/components/lunchbox-panel";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
 import { EmojiIcon } from "@/components/emoji-icon";
@@ -293,6 +294,11 @@ function DesafiosIndexPage() {
             {tab === "trilha" && trail && (
               <div>
                 <TrailHero variant={active.kind} name={displayName} />
+
+                {active.kind === "kid" && <KidLunchboxToday profileId={active.id} />}
+                {active.kind === "adult" && profiles.some((p) => p.kind === "kid") && (
+                  <LunchboxLink />
+                )}
 
                 <TrailPicker
                   trails={availableTrails}

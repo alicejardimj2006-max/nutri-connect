@@ -1,6 +1,6 @@
 import { getRequest } from "@tanstack/react-start/server";
 
-export type AiKind = "nina" | "summary" | "label" | "diary" | "fridge" | "menu";
+export type AiKind = "nina" | "summary" | "label" | "diary" | "fridge" | "menu" | "lunchbox";
 export type AiChatResult =
   | { ok: true; text: string }
   | {

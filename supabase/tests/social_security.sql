@@ -1004,6 +1004,22 @@ begin
   r := pg_temp.as_user(a, 'authenticated', 'update public.user_settings set season_uf = ''XX'' where id = auth.uid()');
   res := res || jsonb_build_object('teste', 'NÃO aceita estado inexistente', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
 
+  -- ------------------------------------------------------- LANCHEIRA DA SEMANA
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.trail_profiles (id, owner_id, kind, name) values (''ffffffff-0000-4000-a000-0000000000c1'', auth.uid(), ''kid'', ''Zzqx Criança'')');
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.lunchbox_profiles (profile_id, age_range, allergies) values (''ffffffff-0000-4000-a000-0000000000c1'', ''4-6'', ''amendoim'')');
+  res := res || jsonb_build_object('teste', 'responsável conta sobre a própria criança', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start, snacks) values (''ffffffff-0000-4000-a000-0000000000c1'', ''2026-10-12'', ''{"0-manha": {"title": "Pão com queijo"}}'')');
+  res := res || jsonb_build_object('teste', 'responsável monta a lancheira da própria criança', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.lunchboxes');
+  res := res || jsonb_build_object('teste', 'NÃO vê a lancheira de criança de outra conta', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.lunchbox_profiles');
+  res := res || jsonb_build_object('teste', 'NÃO vê alergias de criança de outra conta', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start) values (''ffffffff-0000-4000-a000-0000000000c1'', ''2026-10-19'')');
+  res := res || jsonb_build_object('teste', 'NÃO monta lancheira para criança de outra conta', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(c, 'authenticated', 'insert into public.trail_profiles (id, owner_id, kind, name) values (''ffffffff-0000-4000-a000-0000000000c2'', auth.uid(), ''adult'', ''Zzqx Adulto'')');
+  r := pg_temp.as_user(c, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start) values (''ffffffff-0000-4000-a000-0000000000c2'', ''2026-10-19'')');
+  res := res || jsonb_build_object('teste', 'lancheira só para perfil infantil', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

@@ -1995,6 +1995,69 @@ export type Database = {
           },
         ]
       }
+      lunchbox_profiles: {
+        Row: {
+          age_range: string
+          allergies: string
+          dislikes: string
+          owner_id: string
+          profile_id: string
+          school_rules: string
+          snacks: number
+          updated_at: string
+        }
+        Insert: {
+          age_range?: string
+          allergies?: string
+          dislikes?: string
+          owner_id?: string
+          profile_id: string
+          school_rules?: string
+          snacks?: number
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string
+          allergies?: string
+          dislikes?: string
+          owner_id?: string
+          profile_id?: string
+          school_rules?: string
+          snacks?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lunchboxes: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          profile_id: string
+          snacks: Json
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          profile_id: string
+          snacks?: Json
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          profile_id?: string
+          snacks?: Json
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       meal_plan_items: {
         Row: {
           carbs_g: number
@@ -5481,6 +5544,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      owns_kid_profile: { Args: { p_profile: string }; Returns: boolean }
       owns_trail_profile: { Args: { p_profile: string }; Returns: boolean }
       person_cards: {
         Args: { p_ids: string[] }

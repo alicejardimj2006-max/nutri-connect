@@ -24,6 +24,7 @@ import { Route as EspacoRouteImport } from './routes/espaco'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as FeiraRouteImport } from './routes/feira'
 import { Route as GeladeiraRouteImport } from './routes/geladeira'
+import { Route as LancheiraRouteImport } from './routes/lancheira'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NinaRouteImport } from './routes/nina'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
@@ -149,6 +150,11 @@ const FeiraRoute = FeiraRouteImport.update({
 const GeladeiraRoute = GeladeiraRouteImport.update({
   id: '/geladeira',
   path: '/geladeira',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LancheiraRoute = LancheiraRouteImport.update({
+  id: '/lancheira',
+  path: '/lancheira',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -431,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/explorar': typeof ExplorarRoute
   '/feira': typeof FeiraRoute
   '/geladeira': typeof GeladeiraRoute
+  '/lancheira': typeof LancheiraRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -496,6 +503,7 @@ export interface FileRoutesByTo {
   '/explorar': typeof ExplorarRoute
   '/feira': typeof FeiraRoute
   '/geladeira': typeof GeladeiraRoute
+  '/lancheira': typeof LancheiraRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -563,6 +571,7 @@ export interface FileRoutesById {
   '/explorar': typeof ExplorarRoute
   '/feira': typeof FeiraRoute
   '/geladeira': typeof GeladeiraRoute
+  '/lancheira': typeof LancheiraRoute
   '/login': typeof LoginRoute
   '/nina': typeof NinaRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -633,6 +642,7 @@ export interface FileRouteTypes {
     | '/explorar'
     | '/feira'
     | '/geladeira'
+    | '/lancheira'
     | '/login'
     | '/nina'
     | '/notificacoes'
@@ -698,6 +708,7 @@ export interface FileRouteTypes {
     | '/explorar'
     | '/feira'
     | '/geladeira'
+    | '/lancheira'
     | '/login'
     | '/nina'
     | '/notificacoes'
@@ -764,6 +775,7 @@ export interface FileRouteTypes {
     | '/explorar'
     | '/feira'
     | '/geladeira'
+    | '/lancheira'
     | '/login'
     | '/nina'
     | '/notificacoes'
@@ -833,6 +845,7 @@ export interface RootRouteChildren {
   ExplorarRoute: typeof ExplorarRoute
   FeiraRoute: typeof FeiraRoute
   GeladeiraRoute: typeof GeladeiraRoute
+  LancheiraRoute: typeof LancheiraRoute
   LoginRoute: typeof LoginRoute
   NinaRoute: typeof NinaRoute
   NotificacoesRoute: typeof NotificacoesRoute
@@ -963,6 +976,13 @@ declare module '@tanstack/react-router' {
       path: '/geladeira'
       fullPath: '/geladeira'
       preLoaderRoute: typeof GeladeiraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lancheira': {
+      id: '/lancheira'
+      path: '/lancheira'
+      fullPath: '/lancheira'
+      preLoaderRoute: typeof LancheiraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1445,6 +1465,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExplorarRoute: ExplorarRoute,
   FeiraRoute: FeiraRoute,
   GeladeiraRoute: GeladeiraRoute,
+  LancheiraRoute: LancheiraRoute,
   LoginRoute: LoginRoute,
   NinaRoute: NinaRoute,
   NotificacoesRoute: NotificacoesRoute,
