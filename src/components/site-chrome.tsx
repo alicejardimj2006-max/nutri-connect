@@ -19,6 +19,7 @@ import { AccountMenu } from "@/components/account-menu";
 import { useIsDark } from "@/lib/post-type";
 import { useUnreadCount } from "@/lib/social/notifications";
 import { appScroller, onPageScroll, scrollTop } from "@/lib/app-scroll";
+import { AndroidAppBanner } from "@/components/android-app";
 
 /** Páginas que rolam por dentro (ex.: Espaço de hoje) avisam por aqui quando as barras devem recolher. */
 export const CHROME_HIDE_EVENT = "chrome:hide";
@@ -198,6 +199,7 @@ export function SiteHeader() {
 
   return (
     <>
+      {user && <AndroidAppBanner />}
       <header
         data-site-header
         data-hidden={hidden}

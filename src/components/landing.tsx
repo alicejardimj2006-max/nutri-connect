@@ -31,6 +31,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import type { Names } from "@/lib/appearance-data";
 import { LOCALES, isLocale } from "@/lib/i18n/locales";
 import { cn } from "@/lib/utils";
+import { AndroidDownloadButton } from "@/components/android-app";
 
 const FEATURES: { icon: LucideIcon; title: Names; text: Names; tone: string }[] = [
   {
@@ -371,6 +372,9 @@ export function Landing() {
                   "Voir la présentation",
                 ])}
               </Link>
+            </div>
+            <div className="mt-4">
+              <AndroidDownloadButton />
             </div>
             <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5 text-primary" />

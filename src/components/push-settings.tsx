@@ -8,6 +8,7 @@ import { Bell, BellOff, BellRing, Download, Plus, Share, Trash2, X } from "lucid
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/appearance-editor";
 import { useTr } from "@/components/settings-ui";
+import { AndroidDownloadButton, useAndroidBrowser } from "@/components/android-app";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useI18n } from "@/hooks/use-i18n";
@@ -174,6 +175,7 @@ export function PushDeviceSection() {
   const device = usePushDevice();
   const enable = useEnablePush();
   const can = useCanInstall();
+  const android = useAndroidBrowser();
   const settings = useQuery({ queryKey: qk.settings, queryFn: getPushSettings, enabled: !!user });
 
   const disable = useMutation({
@@ -316,7 +318,8 @@ export function PushDeviceSection() {
             {tr(["Enviar um teste", "Send a test", "Enviar una prueba", "Envoyer un test"])}
           </button>
         )}
-        {can && !isStandalone() && (
+        <AndroidDownloadButton showHint={false} />
+        {can && !isStandalone() && !android && (
           <button
             type="button"
             onClick={() => void promptInstall()}

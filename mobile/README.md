@@ -19,3 +19,14 @@ apps desconhecidos" quando o Android pedir).
 
 Para compilar localmente: Java 21 + Android SDK, `npm ci`, `npx cap sync android` e
 `cd android && ./gradlew assembleDebug`.
+
+## Versão de teste para o público
+
+Cada build também é publicado na Release `android-teste` do GitHub, em
+`https://github.com/alicejardimj2006-max/nutri-connect/releases/download/android-teste/NutriConnect.apk`.
+O site mostra "Baixar o app Android" (faixa do topo, página inicial e Configurações) só para quem
+o abre num celular Android (`src/components/android-app.tsx`).
+
+Os APKs de teste são assinados com uma chave de TESTE fixa (`android/app/teste.keystore`, senha
+pública `android`), para que cada versão instale por cima da anterior. A chave da Play Store é
+outra e nunca vai para o repositório.

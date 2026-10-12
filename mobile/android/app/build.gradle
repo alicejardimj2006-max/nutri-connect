@@ -17,7 +17,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        // Chave de TESTE fixa (senha pública "android"): todo APK de teste sai com a mesma
+        // assinatura, então uma versão nova instala por cima da anterior. A chave da Play Store
+        // é outra, guardada fora do repositório (etapa A5).
+        teste {
+            storeFile file("teste.keystore")
+            storeType "pkcs12"
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.teste
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
