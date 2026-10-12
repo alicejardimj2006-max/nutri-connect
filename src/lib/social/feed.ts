@@ -140,6 +140,78 @@ export async function fetchFeed(params: FeedParams = {}): Promise<Post[]> {
   return (data ?? []).map(toPost);
 }
 
+// ── Feed infinito ────────────────────────────────────────────────────────────
+
+/** Até quantos dias o algoritmo ordena; daí para trás o feed segue por data (get_feed_ranked). */
+const RANK_WINDOW_DAYS = 7;
+
+/**
+ * Onde continuar o feed: na ordem do algoritmo (com o "agora" da primeira página congelado, para
+ * as páginas seguintes não embaralharem) ou por data, a partir de uma publicação.
+ */
+export type FeedCursor =
+  { kind: "ranked"; offset: number; now: string } | { kind: "chrono"; before?: string };
+
+export interface FeedPage {
+  posts: Post[];
+  next: FeedCursor | null;
+}
+
+async function fetchRankedFeed(
+  scope: FeedScope,
+  now: string,
+  offset: number,
+  limit: number,
+): Promise<Post[] | null> {
+  const { data, error } = await supabase.rpc("get_feed_ranked", {
+    p_scope: scope,
+    p_now: now,
+    p_offset: offset,
+    p_limit: limit,
+  });
+  // Função ainda não criada no banco (migration pendente): o feed segue por data.
+  if (error?.code === "PGRST202") return null;
+  fail(error);
+  return (data ?? []).map(toPost);
+}
+
+async function fetchChronoPage(params: FeedParams, before: string | undefined, limit: number) {
+  const posts = await fetchFeed({ ...params, before, limit });
+  const last = posts[posts.length - 1];
+  const next: FeedCursor | null =
+    posts.length >= limit && last ? { kind: "chrono", before: last.publishAt } : null;
+  return { posts, next };
+}
+
+/**
+ * Uma página do feed infinito. Com `ranked`, começa pelo algoritmo (últimos 7 dias) e, quando ele
+ * acaba, completa a mesma página com as publicações mais antigas, por data.
+ */
+export async function fetchFeedPage(
+  params: FeedParams,
+  ranked: boolean,
+  cursor: FeedCursor | null,
+): Promise<FeedPage> {
+  const limit = params.limit ?? 20;
+  const start: FeedCursor = ranked
+    ? { kind: "ranked", offset: 0, now: new Date().toISOString() }
+    : { kind: "chrono" };
+  const at = cursor ?? start;
+  if (at.kind === "chrono") return fetchChronoPage(params, at.before, limit);
+
+  const scope = params.scope ?? "todos";
+  const posts = await fetchRankedFeed(scope, at.now, at.offset, limit);
+  if (!posts) return fetchChronoPage(params, undefined, limit);
+  if (posts.length >= limit) {
+    return { posts, next: { kind: "ranked", offset: at.offset + limit, now: at.now } };
+  }
+  const windowStart = new Date(
+    new Date(at.now).getTime() - RANK_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  const older = await fetchChronoPage(params, windowStart, limit - posts.length);
+  return { posts: [...posts, ...older.posts], next: older.next };
+}
+
 /** Uma publicação por id (null = não existe ou a pessoa não pode vê-la). */
 export async function fetchPost(id: string): Promise<Post | null> {
   const posts = await fetchFeed({ scope: "post", post: id, limit: 1 });

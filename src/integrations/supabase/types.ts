@@ -5327,6 +5327,18 @@ export type Database = {
           username: string
         }[]
       }
+      feed_rank_ids: {
+        Args: {
+          p_limit?: number
+          p_now?: string
+          p_offset?: number
+          p_scope?: string
+        }
+        Returns: {
+          ord: number
+          post_id: string
+        }[]
+      }
       get_feed: {
         Args: {
           p_author?: string
@@ -5338,6 +5350,43 @@ export type Database = {
           p_scope?: string
           p_theme?: string
           p_type?: Database["public"]["Enums"]["post_type"]
+        }
+        Returns: {
+          audience: Database["public"]["Enums"]["post_audience"]
+          author_avatar: string
+          author_id: string
+          author_name: string
+          author_role: Database["public"]["Enums"]["app_role"]
+          author_username: string
+          block_order: string[]
+          body: string
+          comments: Json
+          community_id: string
+          community_name: string
+          community_slug: string
+          created_at: string
+          hidden: boolean
+          id: string
+          image_url: string
+          likes: string[]
+          pinned: boolean
+          prepared: string[]
+          publish_at: string
+          recipe: Json
+          saved: boolean
+          supports: string[]
+          tags: string[]
+          theme_id: string
+          title: string
+          type: Database["public"]["Enums"]["post_type"]
+        }[]
+      }
+      get_feed_ranked: {
+        Args: {
+          p_limit?: number
+          p_now?: string
+          p_offset?: number
+          p_scope?: string
         }
         Returns: {
           audience: Database["public"]["Enums"]["post_audience"]

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Compass, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ArrowUp, Compass, Sparkles } from "lucide-react";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { FeedShell, type FeedShellPage } from "@/components/feed-shell";
 import { useAppearance } from "@/hooks/use-appearance";
@@ -9,9 +10,8 @@ import { PostCard } from "@/components/community-cards";
 import { ShareModal } from "@/components/share-modal";
 import { PushInviteCard } from "@/components/push-settings";
 import { EspacoLeftColumn, EspacoRightColumn } from "@/components/espaco-side-columns";
-import type { Post } from "@/lib/community";
 import { themeText } from "@/lib/social/feed";
-import { useActiveTheme, useFeed, useFeedRealtime } from "@/lib/social/feed-queries";
+import { useActiveTheme, useFeedRealtime, useInfiniteFeed } from "@/lib/social/feed-queries";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/hooks/use-i18n";
 import type { DictKey } from "@/lib/i18n";
@@ -70,26 +70,56 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-function PostList({
-  posts,
-  loading,
-  emptyMessage,
-  hasMore,
-  onMore,
-}: {
-  posts: Post[];
-  loading: boolean;
-  emptyMessage: string;
-  hasMore: boolean;
-  onMore: () => void;
-}) {
+/** Contêiner que rola a página do feed (cada página do FeedShell rola por dentro). */
+function scrollParent(el: HTMLElement | null): HTMLElement | null {
+  for (let node = el?.parentElement; node; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node);
+    if (overflowY === "auto" || overflowY === "scroll") return node;
+  }
+  return null;
+}
+
+/**
+ * Pede a próxima página quando o fim da lista chega perto (antes de a pessoa alcançá-lo).
+ * O observador é refeito a cada página carregada: se o fim continuar à vista, pede outra.
+ */
+function LoadMoreTrigger({ onReach, pageCount }: { onReach: () => void; pageCount: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const onReachRef = useRef(onReach);
+  useEffect(() => {
+    onReachRef.current = onReach;
+  }, [onReach]);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) onReachRef.current();
+      },
+      { root: scrollParent(el), rootMargin: "0px 0px 1200px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [pageCount]);
+  return <div ref={ref} className="h-px" aria-hidden="true" />;
+}
+
+type InfiniteFeed = ReturnType<typeof useInfiniteFeed>;
+
+function PostList({ feed, emptyMessage }: { feed: InfiniteFeed; emptyMessage: string }) {
   const { t } = useI18n();
-  if (loading && posts.length === 0) {
+  const { query, posts } = feed;
+  if (query.isLoading && posts.length === 0) {
     return (
       <div className="py-12 text-center text-sm text-muted-foreground">{t("espaco.loading")}</div>
     );
   }
   if (posts.length === 0) return <EmptyState message={emptyMessage} />;
+  const loadMore = () => {
+    if (query.hasNextPage && !query.isFetchingNextPage && !query.isFetchNextPageError) {
+      void query.fetchNextPage();
+    }
+  };
   return (
     <>
       <div className="space-y-8">
@@ -97,18 +127,44 @@ function PostList({
           <PostCard key={post.id} post={post} />
         ))}
       </div>
-      {hasMore && (
-        <div className="mt-8 text-center">
+      {query.hasNextPage && (
+        <LoadMoreTrigger onReach={loadMore} pageCount={query.data?.pages.length ?? 0} />
+      )}
+      <div className="mt-8 text-center text-xs text-muted-foreground">
+        {query.isFetchingNextPage ? (
+          t("espaco.loadingMore")
+        ) : query.isFetchNextPageError ? (
+          // Deu erro ao buscar a próxima página: a pessoa tenta de novo pelo botão.
           <button
             type="button"
-            onClick={onMore}
+            onClick={() => void query.fetchNextPage()}
             className="rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground shadow-xs transition hover:bg-secondary cursor-pointer"
           >
             {t("espaco.loadMore")}
           </button>
-        </div>
-      )}
+        ) : (
+          !query.hasNextPage && t("espaco.end")
+        )}
+      </div>
     </>
+  );
+}
+
+/**
+ * Aviso flutuante de publicações novas: ao tocar, o feed volta ao topo e recarrega. Vai para o
+ * <body> porque o carrossel do FeedShell usa transform, que prenderia o `fixed` dentro dele.
+ */
+function NewPostsButton({ onClick }: { onClick: () => void }) {
+  const { t } = useI18n();
+  return createPortal(
+    <button
+      type="button"
+      onClick={onClick}
+      className="fixed left-1/2 top-24 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-bold text-accent-foreground shadow-soft transition hover:brightness-105 cursor-pointer"
+    >
+      <ArrowUp className="h-3.5 w-3.5" /> {t("espaco.newPosts")}
+    </button>,
+    document.body,
   );
 }
 
@@ -117,35 +173,38 @@ function EspacoDeHojePage() {
   const { t, locale } = useI18n();
   const [filter, setFilter] = useState<Filter>("todos");
   const [pageSize] = useState(() => loadAppearance().feedPageSize || DEFAULT_PAGE_SIZE);
-  const [limit, setLimit] = useState(pageSize);
-  const [themeLimit, setThemeLimit] = useState(pageSize);
   const { appearance } = useAppearance();
   const enabled = !!user;
-  useFeedRealtime(user?.id);
-  const geralQuery = useFeed({ scope: filter, limit }, enabled);
+  const [hasNew, setHasNew] = useState(false);
+  const onNewPost = useCallback(() => setHasNew(true), []);
+  useFeedRealtime(user?.id, onNewPost);
+  // Geral, Amigos e Profissionais: na ordem do algoritmo (últimos 7 dias), depois por data.
+  const geralFeed = useInfiniteFeed({ scope: filter, limit: pageSize }, true, enabled);
   // Aba Profissionais: quem a pessoa segue; se nenhum deles publicou ainda, os profissionais em geral.
-  const prosFallback = useFeed(
-    { scope: "profissionais", limit },
-    enabled &&
-      filter === "seguindo" &&
-      geralQuery.isSuccess &&
-      (geralQuery.data ?? []).length === 0,
+  const prosFallback =
+    filter === "seguindo" && geralFeed.query.isSuccess && geralFeed.posts.length === 0;
+  const prosFeed = useInfiniteFeed(
+    { scope: "profissionais", limit: pageSize },
+    true,
+    enabled && prosFallback,
   );
-  const geral =
-    filter === "seguindo" && (geralQuery.data ?? []).length === 0 ? prosFallback : geralQuery;
+  const geral = prosFallback ? prosFeed : geralFeed;
   const theme = useActiveTheme(enabled);
-  const themeFeed = useFeed(
-    { scope: "tema", theme: theme.data?.id, limit: themeLimit },
+  // Tema da Semana: infinito, mas por ordem de data.
+  const themeFeed = useInfiniteFeed(
+    { scope: "tema", theme: theme.data?.id, limit: pageSize },
+    false,
     enabled && !!theme.data,
   );
+  const listRef = useRef<HTMLDivElement>(null);
 
-  const geralPosts = geral.data ?? [];
-  const themePosts = themeFeed.data ?? [];
   const text = theme.data ? themeText(theme.data, locale) : null;
 
-  const changeFilter = (next: Filter) => {
-    setFilter(next);
-    setLimit(pageSize);
+  const showNewPosts = () => {
+    setHasNew(false);
+    scrollParent(listRef.current)?.scrollTo({ top: 0, behavior: "smooth" });
+    void geral.restart();
+    if (theme.data) void themeFeed.restart();
   };
 
   const filters = (
@@ -155,7 +214,7 @@ function EspacoDeHojePage() {
           key={f.id}
           type="button"
           aria-pressed={filter === f.id}
-          onClick={() => changeFilter(f.id)}
+          onClick={() => setFilter(f.id)}
           className={cn(
             "rounded-full px-4 py-1.5 text-xs font-medium transition cursor-pointer",
             filter === f.id
@@ -175,16 +234,11 @@ function EspacoDeHojePage() {
       label: t("espaco.tab.geral"),
       toolbar: filters,
       content: (
-        <>
+        <div ref={listRef}>
+          {hasNew && <NewPostsButton onClick={showNewPosts} />}
           <PushInviteCard />
-          <PostList
-            posts={geralPosts}
-            loading={geral.isLoading}
-            emptyMessage={t(EMPTY_FILTER_KEYS[filter])}
-            hasMore={geralPosts.length >= limit}
-            onMore={() => setLimit((n) => n + pageSize)}
-          />
-        </>
+          <PostList feed={geral} emptyMessage={t(EMPTY_FILTER_KEYS[filter])} />
+        </div>
       ),
     },
     {
@@ -222,15 +276,7 @@ function EspacoDeHojePage() {
               </p>
             )
           )}
-          {text && (
-            <PostList
-              posts={themePosts}
-              loading={themeFeed.isLoading}
-              emptyMessage={t("espaco.empty.tema")}
-              hasMore={themePosts.length >= themeLimit}
-              onMore={() => setThemeLimit((n) => n + pageSize)}
-            />
-          )}
+          {text && <PostList feed={themeFeed} emptyMessage={t("espaco.empty.tema")} />}
         </>
       ),
     },
