@@ -211,6 +211,18 @@ export async function buildRestrictions(db: Db, userId: string): Promise<string 
   return restrictions(db, userId).catch(() => null);
 }
 
+/** Plano alimentar ativo e restrições (cardápio da semana), com a mesma permissão. */
+export async function buildMenuContext(db: Db, userId: string): Promise<string | null> {
+  const { data: allowed } = await db.rpc("nina_care_allowed");
+  if (!allowed) return null;
+  const [plan, limits] = await Promise.all([
+    mealPlan(db, userId).catch(() => null),
+    restrictions(db, userId).catch(() => null),
+  ]);
+  const blocks = [plan?.text, limits].filter(Boolean);
+  return blocks.length ? blocks.join("\n\n") : null;
+}
+
 /**
  * Texto com o acompanhamento da pessoa para o system prompt, ou null se ela não autorizou ou
  * não há nada para contar. Falhas de leitura não impedem a resposta da Nina.

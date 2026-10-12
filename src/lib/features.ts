@@ -54,8 +54,9 @@ export const FEATURES: FeatureDef[] = [
   {
     key: "receitas",
     label: "Receitas",
-    description: "Lista e página de cada receita, e a Geladeira (receitas com o que há em casa).",
-    paths: ["/receitas", "/geladeira"],
+    description:
+      "Lista e página de cada receita, a Geladeira (receitas com o que há em casa) e o Cardápio da semana.",
+    paths: ["/receitas", "/geladeira", "/cardapio"],
   },
 ];
 

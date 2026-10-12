@@ -986,6 +986,18 @@ begin
     res := res || jsonb_build_object('teste', 'NÃO guarda receita em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
   end;
 
+  -- ------------------------------------------------------- CARDÁPIO DA SEMANA
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.weekly_menus (user_id, week_start, budget, meals) values (auth.uid(), ''2026-10-12'', ''economico'', ''{"0-almoco": {"title": "Arroz, feijão e ovo"}}'')');
+  res := res || jsonb_build_object('teste', 'cria o próprio cardápio da semana', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.weekly_menus (user_id, week_start) values (auth.uid(), ''2026-10-14'')');
+  res := res || jsonb_build_object('teste', 'cardápio só começa na segunda-feira', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.weekly_menus');
+  res := res || jsonb_build_object('teste', 'NÃO vê o cardápio de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.weekly_menus (user_id, week_start) values (%L, ''2026-10-19'')', a));
+  res := res || jsonb_build_object('teste', 'NÃO cria cardápio em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.shopping_items (user_id, text, source, section) values (auth.uid(), ''1 maço de couve'', ''cardapio'', ''hortifruti'')');
+  res := res || jsonb_build_object('teste', 'item do cardápio entra na lista com a seção', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

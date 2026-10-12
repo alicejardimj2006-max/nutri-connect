@@ -14,6 +14,7 @@ import { Route as AcompanhamentoRouteImport } from './routes/acompanhamento'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApresentacaoRouteImport } from './routes/apresentacao'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as CardapioRouteImport } from './routes/cardapio'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ConvitesRouteImport } from './routes/convites'
@@ -97,6 +98,11 @@ const ApresentacaoRoute = ApresentacaoRouteImport.update({
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardapioRoute = CardapioRouteImport.update({
+  id: '/cardapio',
+  path: '/cardapio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComunidadesRoute = ComunidadesRouteImport.update({
@@ -409,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/apresentacao': typeof ApresentacaoRoute
   '/cadastro': typeof CadastroRoute
+  '/cardapio': typeof CardapioRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
@@ -474,6 +481,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/apresentacao': typeof ApresentacaoRoute
   '/cadastro': typeof CadastroRoute
+  '/cardapio': typeof CardapioRoute
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
   '/diretrizes': typeof DiretrizesRoute
@@ -537,6 +545,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/apresentacao': typeof ApresentacaoRoute
   '/cadastro': typeof CadastroRoute
+  '/cardapio': typeof CardapioRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/convites': typeof ConvitesRoute
@@ -605,6 +614,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apresentacao'
     | '/cadastro'
+    | '/cardapio'
     | '/comunidades'
     | '/contato'
     | '/convites'
@@ -670,6 +680,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apresentacao'
     | '/cadastro'
+    | '/cardapio'
     | '/contato'
     | '/convites'
     | '/diretrizes'
@@ -732,6 +743,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apresentacao'
     | '/cadastro'
+    | '/cardapio'
     | '/comunidades'
     | '/contato'
     | '/convites'
@@ -799,6 +811,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ApresentacaoRoute: typeof ApresentacaoRoute
   CadastroRoute: typeof CadastroRoute
+  CardapioRoute: typeof CardapioRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
   ConvitesRoute: typeof ConvitesRoute
@@ -867,6 +880,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastro'
       fullPath: '/cadastro'
       preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cardapio': {
+      id: '/cardapio'
+      path: '/cardapio'
+      fullPath: '/cardapio'
+      preLoaderRoute: typeof CardapioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/comunidades': {
@@ -1395,6 +1415,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ApresentacaoRoute: ApresentacaoRoute,
   CadastroRoute: CadastroRoute,
+  CardapioRoute: CardapioRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
   ConvitesRoute: ConvitesRoute,

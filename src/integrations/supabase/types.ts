@@ -3801,6 +3801,7 @@ export type Database = {
           created_at: string
           done: boolean
           id: string
+          section: string | null
           source: string
           text: string
           user_id: string
@@ -3809,6 +3810,7 @@ export type Database = {
           created_at?: string
           done?: boolean
           id?: string
+          section?: string | null
           source?: string
           text: string
           user_id: string
@@ -3817,6 +3819,7 @@ export type Database = {
           created_at?: string
           done?: boolean
           id?: string
+          section?: string | null
           source?: string
           text?: string
           user_id?: string
@@ -4294,6 +4297,51 @@ export type Database = {
             foreignKeyName: "water_settings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_menus: {
+        Row: {
+          budget: string
+          created_at: string
+          id: string
+          meals: Json
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          budget?: string
+          created_at?: string
+          id?: string
+          meals?: Json
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          budget?: string
+          created_at?: string
+          id?: string
+          meals?: Json
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_menus_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_menus_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

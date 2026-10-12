@@ -26,6 +26,20 @@ export const fridgeKeys = {
   community: (terms: string[]) => ["fridge", "community", terms] as const,
 };
 
+/** Ingredientes que a pessoa marcou na Geladeira (guardados neste aparelho). */
+export const fridgeItemsKey = (userId: string) => `nc_fridge_items_${userId}`;
+
+export function readFridgeItems(userId: string | undefined): string[] {
+  if (!userId) return [];
+  try {
+    const raw = window.localStorage.getItem(fridgeItemsKey(userId));
+    const list = raw ? (JSON.parse(raw) as unknown[]) : [];
+    return list.filter((x): x is string => typeof x === "string");
+  } catch {
+    return [];
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Ingredientes comuns (um toque)
 // ---------------------------------------------------------------------------
@@ -148,17 +162,28 @@ export function useShoppingItems(userId: string | undefined) {
   });
 }
 
+/** Item para a lista: só o texto ou o texto com a seção do mercado. */
+export type ShoppingEntry = string | { text: string; section?: string | null };
+
 /** Adiciona itens (sem repetir o que já está na lista e ainda não foi comprado). */
 export async function addShoppingItems(
   userId: string,
-  texts: string[],
+  entries: ShoppingEntry[],
   source: ShoppingItem["source"] = "manual",
   current: ShoppingItem[] = [],
 ) {
   const open = new Set(current.filter((i) => !i.done).map((i) => i.text.trim().toLowerCase()));
-  const rows = [...new Set(texts.map((t) => t.trim().slice(0, 80)).filter(Boolean))]
-    .filter((t) => !open.has(t.toLowerCase()))
-    .map((text) => ({ user_id: userId, text, source }));
+  const seen = new Set<string>();
+  const rows = entries
+    .map((e) => (typeof e === "string" ? { text: e } : e))
+    .map((e) => ({ text: e.text.trim().slice(0, 80), section: e.section ?? null }))
+    .filter((e) => {
+      const k = e.text.toLowerCase();
+      if (!e.text || open.has(k) || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .map((e) => ({ user_id: userId, text: e.text, section: e.section, source }));
   if (!rows.length) return 0;
   const { error } = await supabase.from("shopping_items").insert(rows);
   fail(error);
@@ -168,7 +193,7 @@ export async function addShoppingItems(
 export function useAddShoppingItems(userId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ texts, source }: { texts: string[]; source?: ShoppingItem["source"] }) =>
+    mutationFn: ({ texts, source }: { texts: ShoppingEntry[]; source?: ShoppingItem["source"] }) =>
       addShoppingItems(
         userId!,
         texts,

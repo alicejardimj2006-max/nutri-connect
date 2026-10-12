@@ -1219,17 +1219,24 @@ export function ShoppingListCard() {
           ))}
         </ul>
       )}
-      <Link
-        to="/geladeira"
-        className="mt-3 inline-block text-[11px] font-semibold text-accent hover:underline"
-      >
-        {tr([
-          "O que dá para fazer com o que tenho? →",
-          "What can I make with what I have? →",
-          "¿Qué puedo hacer con lo que tengo? →",
-          "Que faire avec ce que j'ai ? →",
-        ])}
-      </Link>
+      <div className="mt-3 flex flex-col items-start gap-1">
+        <Link to="/geladeira" className="text-[11px] font-semibold text-accent hover:underline">
+          {tr([
+            "O que dá para fazer com o que tenho? →",
+            "What can I make with what I have? →",
+            "¿Qué puedo hacer con lo que tengo? →",
+            "Que faire avec ce que j'ai ? →",
+          ])}
+        </Link>
+        <Link to="/cardapio" className="text-[11px] font-semibold text-accent hover:underline">
+          {tr([
+            "Cardápio da semana e lista por seção →",
+            "Weekly menu and list by aisle →",
+            "Menú semanal y lista por sección →",
+            "Menu de la semaine et liste par rayon →",
+          ])}
+        </Link>
+      </div>
     </Panel>
   );
 }

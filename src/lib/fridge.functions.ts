@@ -7,7 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const FRIDGE_DAILY_LIMIT = 8;
 
-const LANGUAGE: Record<string, string> = {
+export const LANGUAGE: Record<string, string> = {
   "pt-BR": "português do Brasil",
   en: "English",
   es: "español",
@@ -33,7 +33,7 @@ export type FridgeError = "limit" | "unavailable" | "image" | "failed";
 const locale = z.enum(["pt-BR", "en", "es", "fr"]).default("pt-BR");
 
 /** Pega o primeiro JSON da resposta (a IA às vezes embrulha em ```json). */
-function parseJson(text: string): unknown {
+export function parseJson(text: string): unknown {
   const clean = text.replace(/```(?:json)?/gi, "").trim();
   const start = clean.search(/[[{]/);
   if (start < 0) return null;
@@ -45,7 +45,7 @@ function parseJson(text: string): unknown {
   }
 }
 
-const strList = (v: unknown, max: number, len: number) =>
+export const strList = (v: unknown, max: number, len: number) =>
   Array.isArray(v)
     ? v
         .filter((x): x is string => typeof x === "string" && !!x.trim())
@@ -53,7 +53,7 @@ const strList = (v: unknown, max: number, len: number) =>
         .slice(0, max)
     : [];
 
-function errorOf(result: { limit?: boolean; status: number }): FridgeError {
+export function errorOf(result: { limit?: boolean; status: number }): FridgeError {
   if (result.limit) return "limit";
   return [400, 402, 403, 503].includes(result.status) ? "unavailable" : "failed";
 }

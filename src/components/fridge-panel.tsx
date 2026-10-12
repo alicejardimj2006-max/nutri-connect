@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   BookmarkPlus,
+  CalendarDays,
   Camera,
   ChefHat,
   Clock,
@@ -27,6 +28,8 @@ import { fileToDataUrl } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import {
   COMMON_INGREDIENTS,
+  fridgeItemsKey,
+  readFridgeItems,
   useAddShoppingItems,
   useCommunityRecipes,
   useDeleteSavedRecipe,
@@ -79,25 +82,17 @@ const ERRORS: Record<FridgeError, Names> = {
   ],
 };
 
-const STORE = (userId: string) => `nc_fridge_items_${userId}`;
-
 /** Lista de ingredientes guardada neste aparelho (comodidade: volta como estava). */
 function useIngredients(userId: string | undefined) {
   const [items, setItems] = useState<string[]>([]);
   useEffect(() => {
-    if (!userId) return;
-    try {
-      const raw = window.localStorage.getItem(STORE(userId));
-      if (raw) setItems((JSON.parse(raw) as string[]).filter((x) => typeof x === "string"));
-    } catch {
-      /* sem armazenamento */
-    }
+    if (userId) setItems(readFridgeItems(userId));
   }, [userId]);
   const save = (next: string[]) => {
     setItems(next);
     if (!userId) return;
     try {
-      window.localStorage.setItem(STORE(userId), JSON.stringify(next));
+      window.localStorage.setItem(fridgeItemsKey(userId), JSON.stringify(next));
     } catch {
       /* sem armazenamento */
     }
@@ -564,6 +559,18 @@ export function FridgePanel() {
               "Dites ce que vous avez et Nina propose des recettes simples qui utilisent tout : tiges, épluchures et restes.",
             ])}
           </p>
+          <Link
+            to="/cardapio"
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+          >
+            <CalendarDays className="h-4 w-4" />
+            {tr([
+              "Planejar a semana no Cardápio →",
+              "Plan the week in the Menu →",
+              "Planear la semana en el Menú →",
+              "Planifier la semaine dans le Menu →",
+            ])}
+          </Link>
         </div>
         <div className="flex gap-1 rounded-full border border-border/60 bg-card p-1">
           {(
