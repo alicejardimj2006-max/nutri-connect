@@ -793,6 +793,7 @@ const en: Record<DictKey, string> = {
   "cf.paused": "Posting is paused while the community isn't active.",
   "cf.joinToPost": "Join the community to post.",
   "cf.noPosts": "There are no posts here yet.",
+  "cf.privatePosts": "Posts in this community are for members only. Join to see them and talk with the group.",
   "cf.consPro":
     "The community will be suspended until another verified professional accepts the invitation to be professional admin.",
   "cf.consPending": "Since it hasn't been activated yet, it will be cancelled.",

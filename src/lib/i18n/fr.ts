@@ -810,6 +810,7 @@ const fr: Record<DictKey, string> = {
   "cf.paused": "Les publications sont suspendues tant que la communauté n'est pas active.",
   "cf.joinToPost": "Rejoignez la communauté pour publier.",
   "cf.noPosts": "Il n'y a pas encore de publications ici.",
+  "cf.privatePosts": "Les publications de cette communauté sont réservées aux membres. Rejoignez-la pour les voir et échanger avec le groupe.",
   "cf.consPro":
     "La communauté sera suspendue jusqu'à ce qu'un autre professionnel vérifié accepte l'invitation d'être admin professionnel.",
   "cf.consPending": "Comme elle n'a pas encore été activée, elle sera annulée.",
