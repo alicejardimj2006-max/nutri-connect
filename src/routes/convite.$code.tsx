@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { HeartHandshake, TicketX } from "lucide-react";
-import { SiteHeader } from "@/components/site-chrome";
+
 import {
   Avatar,
   Card,
@@ -16,6 +16,7 @@ import * as api from "@/lib/clinical/api";
 import { useClinicalMutation } from "@/lib/clinical/queries";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/convite/$code")({
   head: () => ({ meta: [{ title: "Convite de acompanhamento — NutriConnect" }] }),
@@ -37,9 +38,8 @@ function InvitePage() {
   });
 
   return (
-    <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 py-12">
+    <AppScreen className={plainText}>
+      <div className="mx-auto w-full max-w-lg px-4 py-12">
         {invite.isLoading || !hydrated ? (
           <Loading />
         ) : !invite.data || !invite.data.valid ? (
@@ -106,7 +106,7 @@ function InvitePage() {
             </div>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }

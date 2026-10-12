@@ -149,6 +149,8 @@ export interface Appearance {
   /** Cabeçalho fixo no topo ao rolar. */
   headerSticky: boolean;
   smoothScroll: boolean;
+  /** Mostra as barras de rolagem (por padrão ficam escondidas; a rolagem funciona igual). */
+  scrollbars: boolean;
   /** Botão "voltar ao topo". */
   backToTop: boolean;
   /** Quantas publicações o Espaço carrega por vez. */
@@ -272,6 +274,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   pageBackground: "plain",
   headerSticky: true,
   smoothScroll: false,
+  scrollbars: false,
   backToTop: false,
   feedPageSize: 20,
 
@@ -616,6 +619,7 @@ export function computeAppearanceCss(a: Appearance): AppearanceCss {
   if (a.headerStyle !== "glass") attrs["data-header"] = a.headerStyle;
   if (!a.headerSticky) attrs["data-sticky"] = "off";
   if (a.smoothScroll) attrs["data-smooth"] = "on";
+  if (a.scrollbars) attrs["data-scrollbars"] = "show";
   if (a.pageBackground !== "plain") attrs["data-pagebg"] = a.pageBackground;
   if (isHex(a.headingColor)) attrs["data-hcolor"] = "on";
   if (a.headingWeight > 0) attrs["data-hw"] = "on";
@@ -704,6 +708,7 @@ const MANAGED_ATTRS = [
   "data-header",
   "data-sticky",
   "data-smooth",
+  "data-scrollbars",
   "data-pagebg",
   "data-hcolor",
   "data-hw",

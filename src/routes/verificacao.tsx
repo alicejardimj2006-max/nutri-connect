@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, BadgeCheck, Clock, ImagePlus, ShieldCheck, XCircle } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { VerifiedBadge } from "@/components/person-chip";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { CATEGORIES, formatDate } from "@/lib/community";
@@ -20,6 +20,7 @@ import {
   useVerifications,
 } from "@/lib/social/professionals-queries";
 import { useI18n } from "@/hooks/use-i18n";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/verificacao")({
   head: () => ({ meta: [{ title: "Verificação profissional — NutriConnect" }] }),
@@ -43,9 +44,8 @@ function VerificationPage() {
   const dataHydrated = !proMap.isLoading && !verificationsQuery.isLoading;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/perfil/$userId"
           params={{ userId: user.id }}
@@ -131,8 +131,8 @@ function VerificationPage() {
             {t("verify.note2")}
           </li>
         </ul>
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }
 

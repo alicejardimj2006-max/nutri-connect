@@ -1294,6 +1294,22 @@ export function LayoutSection() {
         ])}
       />
       <Switch
+        checked={a.scrollbars}
+        onChange={(scrollbars) => update({ scrollbars })}
+        label={tr([
+          "Mostrar barras de rolagem",
+          "Show scrollbars",
+          "Mostrar barras de desplazamiento",
+          "Afficher les barres de défilement",
+        ])}
+        hint={tr([
+          "Por padrão elas ficam escondidas (a rolagem funciona igual).",
+          "Hidden by default (scrolling works the same).",
+          "Ocultas por defecto (el desplazamiento funciona igual).",
+          "Masquées par défaut (le défilement fonctionne pareil).",
+        ])}
+      />
+      <Switch
         checked={a.smoothScroll}
         onChange={(smoothScroll) => update({ smoothScroll })}
         label={tr([

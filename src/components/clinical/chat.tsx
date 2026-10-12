@@ -29,12 +29,15 @@ export function ChatThread({
   meId,
   canSend,
   className,
+  initialDraft,
 }: {
   patientId: string;
   professionalId: string;
   meId: string;
   canSend: boolean;
   className?: string;
+  /** Texto já escrito na caixa (ex.: dúvida levada da Nina); a pessoa revisa antes de enviar. */
+  initialDraft?: string;
 }) {
   const { t, locale } = useClinicalI18n();
   const qc = useQueryClient();
@@ -45,7 +48,7 @@ export function ChatThread({
     list.map((m) => m.attachment_path),
   );
   const bottom = useRef<HTMLDivElement>(null);
-  const [body, setBody] = useState("");
+  const [body, setBody] = useState(initialDraft ?? "");
   const [file, setFile] = useState<File | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [suggesting, setSuggesting] = useState(false);

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Minus, Plus, Target, Trash2 } from "lucide-react";
 import * as records from "@/lib/clinical/records";
 import type { Goal } from "@/lib/clinical/records";
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { GoalForm, WeekStrip } from "./goals-panel";
 import { EmptyState, Loading, buttonGhost, buttonSecondary } from "./ui";
 import { EmojiIcon } from "@/components/emoji-icon";
+import { useNoNumbers } from "@/lib/no-numbers";
 
 /** Check-in de hoje nas metas ativas (visão do paciente). */
 export function TodayGoals({ patientId, compact }: { patientId: string; compact?: boolean }) {
@@ -75,6 +77,7 @@ function GoalCheckinCard({
   compact?: boolean;
 }) {
   const { t, locale } = useClinicalI18n();
+  const noNumbers = useNoNumbers();
   const target = Number(goal.target_value) || 1;
   const step = target >= 20 ? 5 : 1;
   const done = value >= target;
@@ -87,6 +90,29 @@ function GoalCheckinCard({
   const remove = useClinicalMutation(() => records.deleteGoal(goal.id), {
     invalidate: [qk.goals(goal.patient_id)],
   });
+  // Mostra o novo valor na hora (antes da resposta do servidor); a recarga depois confirma.
+  const qc = useQueryClient();
+  const change = (next: number) => {
+    const v = Math.max(0, next);
+    qc.setQueriesData<records.GoalCheckin[]>(
+      { queryKey: ["clinical", "checkins", goal.patient_id] },
+      (old) => {
+        if (!old) return old;
+        const rest = old.filter((c) => !(c.goal_id === goal.id && c.day === today));
+        return [
+          ...rest,
+          {
+            goal_id: goal.id,
+            patient_id: goal.patient_id,
+            day: today,
+            value: v,
+            updated_at: new Date().toISOString(),
+          },
+        ];
+      },
+    );
+    set.mutate(v);
+  };
 
   return (
     <div
@@ -107,12 +133,16 @@ function GoalCheckinCard({
           {goal.description && !compact && (
             <p className="text-xs text-muted-foreground">{goal.description}</p>
           )}
-          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
-            <span className={cn("text-base font-bold", done ? "text-primary" : "text-foreground")}>
-              {formatNumber(value, locale)}
-            </span>{" "}
-            / {formatNumber(target, locale)} {goal.unit}
-          </p>
+          {!noNumbers && (
+            <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+              <span
+                className={cn("text-base font-bold", done ? "text-primary" : "text-foreground")}
+              >
+                {formatNumber(value, locale)}
+              </span>{" "}
+              / {formatNumber(target, locale)} {goal.unit}
+            </p>
+          )}
         </div>
         {!goal.professional_id && !compact && (
           <button
@@ -146,8 +176,8 @@ function GoalCheckinCard({
             type="button"
             className={cn(buttonSecondary, "h-9 w-9 p-0")}
             aria-label={t("goals.decrease")}
-            disabled={value <= 0 || set.isPending}
-            onClick={() => set.mutate(value - step)}
+            disabled={value <= 0}
+            onClick={() => change(value - step)}
           >
             <Minus className="h-4 w-4" />
           </button>
@@ -155,8 +185,7 @@ function GoalCheckinCard({
             type="button"
             className={cn(buttonSecondary, "h-9 w-9 p-0")}
             aria-label={t("goals.increase")}
-            disabled={set.isPending}
-            onClick={() => set.mutate(value + step)}
+            onClick={() => change(value + step)}
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -164,8 +193,7 @@ function GoalCheckinCard({
             <button
               type="button"
               className={cn(buttonGhost, "text-primary")}
-              disabled={set.isPending}
-              onClick={() => set.mutate(target)}
+              onClick={() => change(target)}
             >
               <Check className="h-4 w-4" /> {t("goals.complete")}
             </button>
@@ -174,7 +202,9 @@ function GoalCheckinCard({
             <span className="ml-1 text-xs font-semibold text-primary">{t("goals.done")}</span>
           )}
         </div>
-        {!compact && <WeekStrip goal={goal} checkins={checkins} days={days} />}
+        {!compact && (
+          <WeekStrip goal={goal} checkins={checkins} days={days} hidePercent={noNumbers} />
+        )}
       </div>
     </div>
   );

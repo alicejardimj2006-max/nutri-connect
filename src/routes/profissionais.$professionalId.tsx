@@ -10,7 +10,7 @@ import {
   Settings,
   Video,
 } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { VerifiedBadge } from "@/components/person-chip";
 import { SlotPicker } from "@/components/clinical/slot-picker";
 import { MemberPlanCard } from "@/components/member-plan-card";
@@ -48,6 +48,7 @@ import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { startCheckout } from "@/lib/clinical/payments";
 import { td } from "@/lib/i18n/data";
 import { cn } from "@/lib/utils";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/profissionais/$professionalId")({
   validateSearch: (search: Record<string, unknown>): { comunidade?: string } => ({
@@ -200,12 +201,9 @@ function ProfessionalPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-12">
-        {children}
-      </main>
-    </div>
+    <AppScreen className={plainText}>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6">{children}</div>
+    </AppScreen>
   );
 }
 

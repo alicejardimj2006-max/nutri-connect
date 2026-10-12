@@ -12,6 +12,8 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
+import { useRailsMoreSlot } from "@/components/app-screen";
 import { railsFor, readRailOverrides } from "@/components/rails-pages";
 import { useSiteConfig } from "@/lib/site-config";
 import { useFeatures } from "@/lib/features";
@@ -56,7 +58,7 @@ function cardsOf(node: ReactNode): ReactNode[] {
  *
  * As colunas NÃO rolam: os cards são medidos e redistribuídos. O que não cabe na coluna de origem vai
  * para a outra coluna se houver espaço; o que não coube em nenhuma delas aparece numa seção "Mais",
- * logo abaixo do conteúdo da página. Nada some.
+ * logo abaixo do conteúdo da página (nas telas internas, no fim da área que rola). Nada some.
  */
 export function SideRails() {
   const { user } = useAuth();
@@ -72,6 +74,8 @@ export function SideRails() {
     [pathname, railConfig, featureKey],
   );
   const enabled = !!user && appearance.sidePanels && !!rails;
+  // Telas internas (a página não rola): a seção "Mais" vai para o fim da área de conteúdo.
+  const moreSlot = useRailsMoreSlot();
   const [layout, setLayout] = useState<(Metrics & { top: number; height: number }) | null>(null);
 
   useEffect(() => {
@@ -197,23 +201,34 @@ export function SideRails() {
         {column(active.right)}
       </aside>
 
-      {active.rest.length > 0 && !rails.locked && (
-        <section
-          aria-label="Mais"
-          className="w-full pb-12 pt-2 text-left"
-          // Mesmas margens do conteúdo da página: nunca fica por baixo das colunas laterais.
-          style={{ paddingInline: "calc(var(--rail-edge) + var(--rail-w) + var(--rail-gap))" }}
-        >
-          <div
-            className="grid items-start gap-5"
-            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 16rem), 1fr))" }}
-          >
-            {active.rest.map((i) => (
-              <div key={i}>{all[i]}</div>
-            ))}
-          </div>
-        </section>
-      )}
+      {active.rest.length > 0 &&
+        !rails.locked &&
+        (moreSlot ? (
+          // Dentro da área que rola, que já tem as margens das colunas.
+          createPortal(<MoreSection cards={active.rest.map((i) => all[i])} />, moreSlot)
+        ) : (
+          <MoreSection
+            cards={active.rest.map((i) => all[i])}
+            // Mesmas margens do conteúdo da página: nunca fica por baixo das colunas laterais.
+            paddingInline="calc(var(--rail-edge) + var(--rail-w) + var(--rail-gap))"
+          />
+        ))}
     </>
+  );
+}
+
+/** Cards que não couberam nas colunas, logo abaixo do conteúdo. */
+function MoreSection({ cards, paddingInline }: { cards: ReactNode[]; paddingInline?: string }) {
+  return (
+    <section aria-label="Mais" className="w-full pb-12 pt-2 text-left" style={{ paddingInline }}>
+      <div
+        className="grid items-start gap-5"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 16rem), 1fr))" }}
+      >
+        {cards.map((card, i) => (
+          <div key={i}>{card}</div>
+        ))}
+      </div>
+    </section>
   );
 }

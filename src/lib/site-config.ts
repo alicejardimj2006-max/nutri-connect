@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { adminRpc } from "@/lib/admin-api";
 
-export type SiteConfigKey = "site_rails" | "site_texts" | "site_appearance" | "site_features";
+export type SiteConfigKey =
+  "site_rails" | "site_texts" | "site_appearance" | "site_features" | "site_nina";
 
 const KEY = ["site-config"] as const;
 

@@ -13,7 +13,12 @@ export function NextMeal({ plan }: { plan: FullMealPlan }) {
     const minutes = now.getHours() * 60 + now.getMinutes();
     const withTime = plan.meals.filter((m) => m.time_of_day && mainItems(m.items).length);
     const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
-    return withTime.find((m) => toMin(m.time_of_day!) >= minutes - 30) ?? null;
+    return (
+      withTime.find((m) => toMin(m.time_of_day!) >= minutes - 30) ??
+      // Já passou a última refeição: a próxima é a primeira de amanhã.
+      withTime[0] ??
+      null
+    );
   }, [plan]);
   if (!next) return null;
   return (

@@ -2,6 +2,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { blockInDemo, demo, demoActive } from "./demo";
 
 export type ClinicalNote = Tables<"clinical_notes">;
 export type Anthropometric = Tables<"anthropometrics">;
@@ -72,6 +73,7 @@ async function me(): Promise<string> {
 // ---------------------------------------------------------------------------
 
 export async function getAnamnesis(patientId: string, professionalId: string) {
+  if (demoActive()) return demo.getAnamnesis(patientId, professionalId);
   const { data, error } = await supabase
     .from("anamneses")
     .select("*")
@@ -83,6 +85,7 @@ export async function getAnamnesis(patientId: string, professionalId: string) {
 }
 
 export async function saveAnamnesis(patientId: string, data: AnamnesisData) {
+  blockInDemo();
   const professionalId = await me();
   const { error } = await supabase
     .from("anamneses")
@@ -98,6 +101,7 @@ export async function saveAnamnesis(patientId: string, data: AnamnesisData) {
 // ---------------------------------------------------------------------------
 
 export async function listNotes(patientId: string): Promise<ClinicalNote[]> {
+  if (demoActive()) return demo.listNotes(patientId);
   const { data, error } = await supabase
     .from("clinical_notes")
     .select("*")
@@ -110,6 +114,7 @@ export async function listNotes(patientId: string): Promise<ClinicalNote[]> {
 export async function saveNote(
   note: Omit<TablesInsert<"clinical_notes">, "professional_id"> & { id?: string },
 ) {
+  if (demoActive()) return demo.saveNote(note);
   if (note.id) {
     const { id, ...patch } = note;
     const { error } = await supabase.from("clinical_notes").update(patch).eq("id", id);
@@ -123,6 +128,7 @@ export async function saveNote(
 }
 
 export async function deleteNote(id: string) {
+  if (demoActive()) return demo.deleteNote(id);
   const { error } = await supabase.from("clinical_notes").delete().eq("id", id);
   fail(error);
 }
@@ -132,6 +138,7 @@ export async function deleteNote(id: string) {
 // ---------------------------------------------------------------------------
 
 export async function listAnthropometrics(patientId: string): Promise<Anthropometric[]> {
+  if (demoActive()) return demo.listAnthropometrics(patientId);
   const { data, error } = await supabase
     .from("anthropometrics")
     .select("*")
@@ -146,6 +153,7 @@ export async function addAnthropometric(
   row: Omit<TablesInsert<"anthropometrics">, "professional_id">,
   asProfessional: boolean,
 ) {
+  blockInDemo();
   const { error } = await supabase
     .from("anthropometrics")
     .insert({ ...row, professional_id: asProfessional ? await me() : null });
@@ -153,6 +161,7 @@ export async function addAnthropometric(
 }
 
 export async function deleteAnthropometric(id: string) {
+  blockInDemo();
   const { error } = await supabase.from("anthropometrics").delete().eq("id", id);
   fail(error);
 }
@@ -180,6 +189,7 @@ export async function createCustomFood(
     "name" | "category" | "kcal" | "protein_g" | "carbs_g" | "fat_g" | "fiber_g"
   >,
 ): Promise<Food> {
+  blockInDemo();
   const { data, error } = await supabase
     .from("foods")
     .insert({ ...food, source: "custom", owner_id: await me() })
@@ -194,6 +204,7 @@ export async function createCustomFood(
 // ---------------------------------------------------------------------------
 
 export async function listMealPlans(patientId: string): Promise<MealPlan[]> {
+  if (demoActive()) return demo.listMealPlans(patientId);
   const { data, error } = await supabase
     .from("meal_plans")
     .select("*")
@@ -204,6 +215,7 @@ export async function listMealPlans(patientId: string): Promise<MealPlan[]> {
 }
 
 export async function getMealPlan(planId: string): Promise<FullMealPlan | null> {
+  if (demoActive()) return demo.getMealPlan(planId);
   const { data: plan, error } = await supabase
     .from("meal_plans")
     .select("*")
@@ -228,6 +240,7 @@ export async function getMealPlan(planId: string): Promise<FullMealPlan | null> 
 
 /** Plano ativo do paciente (com um ou mais profissionais, o mais recente). */
 export async function getActivePlan(patientId: string): Promise<FullMealPlan | null> {
+  if (demoActive()) return demo.getActivePlan(patientId);
   const { data, error } = await supabase
     .from("meal_plans")
     .select("id")
@@ -254,6 +267,7 @@ export async function createMealPlan(input: {
   targetKcal?: number | null;
   mealNames?: { name: string; time: string }[];
 }): Promise<MealPlan> {
+  blockInDemo();
   const { data, error } = await supabase
     .from("meal_plans")
     .insert({
@@ -278,27 +292,32 @@ export async function createMealPlan(input: {
 }
 
 export async function updateMealPlan(id: string, patch: TablesUpdate<"meal_plans">) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plans").update(patch).eq("id", id);
   fail(error);
 }
 
 export async function deleteMealPlan(id: string) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plans").delete().eq("id", id);
   fail(error);
 }
 
 export async function publishMealPlan(id: string) {
+  blockInDemo();
   const { error } = await supabase.rpc("publish_meal_plan", { p_plan: id });
   fail(error);
 }
 
 export async function duplicateMealPlan(id: string): Promise<MealPlan> {
+  blockInDemo();
   const { data, error } = await supabase.rpc("duplicate_meal_plan", { p_plan: id });
   fail(error);
   return data as MealPlan;
 }
 
 export async function addMeal(planId: string, name: string, time: string | null, position: number) {
+  blockInDemo();
   const { error } = await supabase
     .from("meal_plan_meals")
     .insert({ plan_id: planId, name, time_of_day: time, position });
@@ -306,26 +325,31 @@ export async function addMeal(planId: string, name: string, time: string | null,
 }
 
 export async function updateMeal(id: string, patch: TablesUpdate<"meal_plan_meals">) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plan_meals").update(patch).eq("id", id);
   fail(error);
 }
 
 export async function deleteMeal(id: string) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plan_meals").delete().eq("id", id);
   fail(error);
 }
 
 export async function addItem(item: TablesInsert<"meal_plan_items">) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plan_items").insert(item);
   fail(error);
 }
 
 export async function updateItem(id: string, patch: TablesUpdate<"meal_plan_items">) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plan_items").update(patch).eq("id", id);
   fail(error);
 }
 
 export async function deleteItem(id: string) {
+  blockInDemo();
   const { error } = await supabase.from("meal_plan_items").delete().eq("id", id);
   fail(error);
 }
@@ -335,6 +359,7 @@ export async function deleteItem(id: string) {
 // ---------------------------------------------------------------------------
 
 export async function listGoals(patientId: string): Promise<Goal[]> {
+  if (demoActive()) return demo.listGoals(patientId);
   const { data, error } = await supabase
     .from("goals")
     .select("*")
@@ -349,6 +374,7 @@ export async function saveGoal(
   goal: Omit<TablesInsert<"goals">, "professional_id"> & { id?: string },
   asProfessional: boolean,
 ) {
+  if (demoActive()) return demo.saveGoal(goal, asProfessional);
   if (goal.id) {
     const { id, ...patch } = goal;
     const { error } = await supabase.from("goals").update(patch).eq("id", id);
@@ -362,11 +388,13 @@ export async function saveGoal(
 }
 
 export async function deleteGoal(id: string) {
+  if (demoActive()) return demo.deleteGoal(id);
   const { error } = await supabase.from("goals").delete().eq("id", id);
   fail(error);
 }
 
 export async function listCheckins(patientId: string, fromDay: string): Promise<GoalCheckin[]> {
+  if (demoActive()) return demo.listCheckins(patientId, fromDay);
   const { data, error } = await supabase
     .from("goal_checkins")
     .select("*")
@@ -378,6 +406,7 @@ export async function listCheckins(patientId: string, fromDay: string): Promise<
 }
 
 export async function setCheckin(goalId: string, patientId: string, day: string, value: number) {
+  if (demoActive()) return demo.setCheckin(goalId, patientId, day, value);
   const { error } = await supabase
     .from("goal_checkins")
     .upsert(

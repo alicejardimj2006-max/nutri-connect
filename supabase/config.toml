@@ -44,3 +44,7 @@ verify_jwt = false
 
 [functions.member-cancel]
 verify_jwt = false
+
+# Notificações push: o pg_cron chama com x-cron-secret; o botão "Testar" valida o login (requireUser).
+[functions.push-send]
+verify_jwt = false

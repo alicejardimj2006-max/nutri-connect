@@ -9,6 +9,8 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Telas internas rolam a área de conteúdo, não a janela: ela também volta ao topo ao trocar de página.
+    scrollToTopSelectors: ["[data-app-main]"],
     defaultPreloadStaleTime: 0,
   });
 

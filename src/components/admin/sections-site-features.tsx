@@ -1,10 +1,13 @@
 // Ligar e desligar partes da plataforma. Desligada: some dos menus e das laterais, e o endereço
 // mostra um aviso. Administradores continuam entrando, com uma faixa avisando.
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
 import { Badge, Panel, btnPrimary } from "@/components/admin/admin-ui";
 import { FEATURES, readFeatures, type FeatureFlags } from "@/lib/features";
 import { useSaveSiteConfig, useSiteConfigs } from "@/lib/site-config";
+import { setDemoEnabled, useDemoEnabled } from "@/lib/clinical/demo";
+import { qk } from "@/lib/clinical/queries";
 
 export function SiteFeaturesSection() {
   const configs = useSiteConfigs();
@@ -74,6 +77,49 @@ export function SiteFeaturesSection() {
           );
         })}
       </ul>
+    </Panel>
+  );
+}
+
+/** Modo demonstração do acompanhamento: dados de exemplo nas telas clínicas, só para quem liga. */
+export function ClinicalDemoPanel() {
+  const on = useDemoEnabled();
+  const qc = useQueryClient();
+  const toggle = () => {
+    setDemoEnabled(!on);
+    // Troca os dados já carregados (exemplo ↔ reais).
+    qc.removeQueries({ queryKey: qk.all });
+  };
+  return (
+    <Panel
+      title="Modo demonstração do acompanhamento"
+      hint="Liga dados de exemplo (paciente, profissional, plano, metas, diário, conversa, consultas e exame) nas telas de acompanhamento e no painel do profissional. Vale só para você, neste navegador, e nada é salvo no banco. Útil para apresentar e testar sem pacientes reais."
+    >
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            {on ? "Ligado neste navegador" : "Desligado"}
+            {on && <Badge tone="warn">Dados de exemplo</Badge>}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Com o modo ligado, você entra em /acompanhamento como o paciente de exemplo e em /painel
+            como a profissional de exemplo. Ações que não dão para simular (pagamentos, agenda,
+            convites) avisam que estão indisponíveis.
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={on ? "Desligar o modo demonstração" : "Ligar o modo demonstração"}
+          onClick={toggle}
+          className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition ${on ? "bg-accent" : "bg-border"}`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? "left-[1.375rem]" : "left-0.5"}`}
+          />
+        </button>
+      </div>
     </Panel>
   );
 }

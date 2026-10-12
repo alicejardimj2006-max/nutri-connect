@@ -22,7 +22,7 @@ import {
   UserX,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { useProfessionalMap } from "@/lib/social/professionals-queries";
 import { userChallengeStreak, userChallengeXP } from "@/lib/social/challenge-stats";
@@ -70,6 +70,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AppScreen } from "@/components/app-screen";
 
 // As ferramentas de edição só são baixadas quando a pessoa pede para personalizar.
 const ProfileStudioLayer = lazy(() => import("@/components/profile-studio-layer"));
@@ -378,9 +379,8 @@ function PublicProfilePage() {
   const centered = header.avatarPos === "center";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-[96rem] flex-1 px-4 py-8 sm:px-6 lg:px-10">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-[96rem] px-4 py-8 sm:px-6 lg:px-10">
         {!isSelf && remoteProfile.isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : unavailable ? (
@@ -805,8 +805,8 @@ function PublicProfilePage() {
             )}
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }
 

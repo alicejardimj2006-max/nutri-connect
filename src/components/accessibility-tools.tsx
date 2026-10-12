@@ -3,6 +3,7 @@ import { ArrowUp, Volume2 } from "lucide-react";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useI18n } from "@/hooks/use-i18n";
 import { pickName } from "@/lib/appearance-data";
+import { onPageScroll, scrollToTop, scrollTop } from "@/lib/app-scroll";
 
 /** Faixa que acompanha o mouse e escurece o resto da tela (guia de leitura). */
 function ReadingGuide() {
@@ -75,10 +76,9 @@ function BackToTop() {
   const { locale } = useI18n();
   const [show, setShow] = useState(false);
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 600);
+    const onScroll = () => setShow(scrollTop() > 600);
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return onPageScroll(onScroll);
   }, []);
   if (!show) return null;
   const label = pickName(
@@ -90,7 +90,7 @@ function BackToTop() {
       type="button"
       aria-label={label}
       title={label}
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      onClick={() => scrollToTop()}
       className="fixed bottom-24 right-4 z-40 grid h-11 w-11 place-items-center rounded-full bg-accent text-accent-foreground shadow-card transition hover:bg-accent/90 lg:bottom-6"
     >
       <ArrowUp className="h-5 w-5" />

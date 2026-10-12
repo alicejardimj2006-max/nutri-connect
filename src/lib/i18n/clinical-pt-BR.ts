@@ -49,7 +49,7 @@ const clinicalPtBR = {
   "payment.method.transferencia": "Transferência",
   "payment.method.credit_card": "Cartão de crédito",
   "payment.method.debit_card": "Cartão de débito",
-  "payment.method.account_money": "Saldo Mercado Pago",
+
   "payment.method.ticket": "Boleto",
 
   "modality.online": "On-line",
@@ -608,6 +608,7 @@ const clinicalPtBR = {
   "patientNav.plan": "Plano alimentar",
   "patientNav.diary": "Diário",
   "patientNav.goals": "Metas",
+  "patientNav.labels": "Rótulos",
   "patientNav.evolution": "Evolução",
   "patientNav.messages": "Mensagens",
   "patientNav.documents": "Exames",
@@ -616,6 +617,7 @@ const clinicalPtBR = {
   "patientHome.fullPlan": "Plano completo",
   "patientHome.noPlanYet": "Seu profissional ainda não publicou um plano alimentar.",
   "patientHome.goalsToday": "Metas de hoje",
+  "patientHome.water": "Água de hoje",
   "patientHome.unread": "{n} mensagem(ns) nova(s) do seu profissional",
   "patientPlan.title": "Meu plano alimentar",
   "patientPlan.by": "Por {name}",

@@ -3,7 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, HeartHandshake, MessageCircle, Stethoscope, Utensils } from "lucide-react";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { TodayGoals } from "@/components/clinical/goals-today";
+import { LabelReaderCard } from "@/components/clinical/label-reader-card";
 import { NextMeal } from "@/components/clinical/next-meal";
+import { WaterTracker } from "@/components/water-tracker";
+import { NoNumbersToggle } from "@/components/no-numbers";
 import {
   Avatar,
   Card,
@@ -135,6 +138,14 @@ function PatientHome() {
             />
           )}
         </Card>
+
+        <Card title={t("patientHome.water")}>
+          <WaterTracker />
+        </Card>
+
+        <NoNumbersToggle />
+
+        <LabelReaderCard />
 
         <Card title={t("patientHome.myProfessionals")}>
           {links.isLoading ? (

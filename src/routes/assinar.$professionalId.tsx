@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, Lock } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { Loading } from "@/components/clinical/ui";
 import { useTr } from "@/components/appearance-editor";
 import { useRequireAuth } from "@/hooks/use-auth";
@@ -10,6 +10,7 @@ import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { formatMoney } from "@/lib/clinical/format";
 import { createMemberCheckout } from "@/lib/social/members";
 import { useMemberPlan } from "@/lib/social/members-queries";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/assinar/$professionalId")({
   head: () => ({ meta: [{ title: "Virar membro — NutriConnect" }] }),
@@ -63,9 +64,8 @@ function SubscribePage() {
   if (!hydrated || !user) return <AuthGateLoading />;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
         <Link
           to="/profissionais/$professionalId"
           params={{ professionalId }}
@@ -181,8 +181,8 @@ function SubscribePage() {
             </section>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }
 

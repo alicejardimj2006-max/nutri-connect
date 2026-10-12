@@ -1,0 +1,74 @@
+# App Android (Capacitor): gera um APK de teste a cada mudança em mobile/ (ou pelo botão
+# "Run workflow" na aba Actions). O APK fica nos "Artifacts" da execução e na Release
+# android-teste (endereço fixo do botão "Baixar o app Android" do site).
+name: App Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+# Uma execução por vez: a mais nova substitui a que estiver rodando.
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Dependências
+        run: npm ci --ignore-scripts
+
+      - name: Sincroniza o Capacitor
+        run: npx cap sync android
+
+      - name: Gera o APK de teste
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -PversionCode=${{ github.run_number }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nutriconnect-teste-${{ github.run_number }}
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      # Endereço fixo usado pelo botão "Baixar o app Android" do site.
+      - name: Publica na Release android-teste
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk NutriConnect.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-teste
+          name: App Android (versão de teste)
+          prerelease: true
+          make_latest: false
+          body: |
+            Versão de teste do app Android do NutriConnect (build ${{ github.run_number }}, commit ${{ github.sha }}).
+            Baixe o NutriConnect.apk no celular e permita a instalação quando o Android pedir.
+          files: mobile/NutriConnect.apk

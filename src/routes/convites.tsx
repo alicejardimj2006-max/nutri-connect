@@ -2,7 +2,7 @@ import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ArrowLeft, BadgeCheck, Inbox, Users } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { AdminPerson } from "@/components/person-chip";
 import {
   AlertDialog,
@@ -23,6 +23,7 @@ import {
   useCommunities,
   useCommunityInvites,
 } from "@/lib/social/communities-queries";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/convites")({
   head: () => ({ meta: [{ title: "Convites de comunidades — NutriConnect" }] }),
@@ -47,9 +48,8 @@ function InvitesPage() {
   const loading = mine.isLoading || (isPro && invitesQuery.isLoading);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
+    <AppScreen>
+      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
         <Link
           to="/perfil/$userId"
           params={{ userId: user.id }}
@@ -119,8 +119,8 @@ function InvitesPage() {
             )}
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }
 

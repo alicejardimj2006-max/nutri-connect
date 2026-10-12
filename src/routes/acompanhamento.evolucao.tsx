@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { LineChart, Scale, Trash2 } from "lucide-react";
+import { EyeOff, LineChart, Scale, Trash2 } from "lucide-react";
+import { NoNumbersToggle } from "@/components/no-numbers";
+import { useTr } from "@/components/settings-ui";
+import { useNoNumbers } from "@/lib/no-numbers";
 import { EvolutionCharts } from "@/components/clinical/evolution-charts";
 import {
   Card,
@@ -27,6 +30,9 @@ export const Route = createFileRoute("/acompanhamento/evolucao")({
 function PatientEvolutionPage() {
   const { user } = useAuth();
   const { t, locale } = useClinicalI18n();
+  const tr = useTr();
+  const noNumbers = useNoNumbers();
+  const [reveal, setReveal] = useState(false);
   const rows = useAnthropometrics(user?.id);
   const list = rows.data ?? [];
   const remove = useClinicalMutation((id: string) => records.deleteAnthropometric(id), {
@@ -35,6 +41,35 @@ function PatientEvolutionPage() {
   });
 
   if (!user) return null;
+  if (noNumbers && !reveal) {
+    return (
+      <>
+        <PageHeader title={t("patientEvolution.title")} subtitle={t("patientEvolution.subtitle")} />
+        <Card>
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <EyeOff className="h-8 w-8 text-accent" />
+            <p className="max-w-md text-sm text-foreground">
+              {tr([
+                "O modo sem números está ligado. Suas medidas continuam guardadas e sua nutri acompanha por você; aqui o foco é como você se sente.",
+                "No-numbers mode is on. Your measurements are still saved and your dietitian follows them for you; here the focus is how you feel.",
+                "El modo sin números está activado. Tus medidas siguen guardadas y tu nutri las sigue por ti; aquí el foco es cómo te sientes.",
+                "Le mode sans chiffres est activé. Vos mesures restent enregistrées et votre diététicien(ne) les suit pour vous ; ici, l'accent est sur vos ressentis.",
+              ])}
+            </p>
+            <button type="button" className={buttonGhost} onClick={() => setReveal(true)}>
+              {tr([
+                "Mostrar os números só desta vez",
+                "Show the numbers just this once",
+                "Mostrar los números solo esta vez",
+                "Afficher les chiffres juste cette fois",
+              ])}
+            </button>
+          </div>
+        </Card>
+        <NoNumbersToggle className="mt-4" />
+      </>
+    );
+  }
   const height = [...list].reverse().find((r) => r.height_cm)?.height_cm;
   const last = [...list].reverse().find((r) => r.weight_kg);
   const imc = last && height ? bmi(Number(last.weight_kg), Number(height)) : null;

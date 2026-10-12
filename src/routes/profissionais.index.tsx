@@ -12,7 +12,7 @@ import {
   Video,
   type LucideIcon,
 } from "lucide-react";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { VerifiedBadge } from "@/components/person-chip";
 import { Avatar, EmptyState, Loading, inputClass, plainText } from "@/components/clinical/ui";
@@ -24,6 +24,7 @@ import { useTr } from "@/components/settings-ui";
 import type { Names } from "@/lib/appearance-data";
 import { td } from "@/lib/i18n/data";
 import { cn } from "@/lib/utils";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/profissionais/")({
   head: () => ({ meta: [{ title: "Profissionais verificados — NutriConnect" }] }),
@@ -116,9 +117,8 @@ function DirectoryPage() {
   if (!authHydrated || !user) return <AuthGateLoading />;
 
   return (
-    <div className={cn("flex min-h-screen flex-col bg-background text-foreground", plainText)}>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-12">
+    <AppScreen className={plainText}>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6">
         <h1 className="sr-only">{t("directory.title")}</h1>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -296,7 +296,7 @@ function DirectoryPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppScreen>
   );
 }

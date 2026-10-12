@@ -870,6 +870,192 @@ begin
   r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.get_feed(''profissionais'', null, null, null, null, null, null, 100) where author_id <> all (select user_id from public.professionals)'));
   res := res || jsonb_build_object('teste', 'escopo profissionais NÃO traz publicações de quem não é profissional', 'ok', (r = '0'), 'obtido', r);
 
+  -- ------------------------------------------------------- NOTIFICAÇÕES PUSH
+  declare
+    rid uuid;
+    n_claim integer;
+  begin
+    r := pg_temp.as_user(a, 'authenticated', 'select public.push_subscribe(''https://push.teste.invalid/a1'', ''chave-p256dh'', ''chave-auth'', ''teste'')');
+    res := res || jsonb_build_object('teste', 'inscreve o próprio aparelho', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.push_subscriptions');
+    res := res || jsonb_build_object('teste', 'NÃO vê o aparelho de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.push_subscriptions (endpoint, user_id, p256dh, auth) values (''https://push.teste.invalid/x'', %L, ''p'', ''a'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO inscreve aparelho em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.reminders (user_id, kind, title, time_of_day) values (%L, ''refeicao'', ''x'', ''08:00'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO cria lembrete para outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.push_claim()');
+    res := res || jsonb_build_object('teste', 'NÃO chama o envio de push pelo app', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(a, 'authenticated', 'update public.push_settings set timezone = ''Lugar/Inexistente''');
+    res := res || jsonb_build_object('teste', 'recusa fuso horário inválido', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+    -- Lembrete de agora (no fuso padrão) é entregue uma vez só.
+    insert into public.reminders (user_id, kind, title, time_of_day)
+    values (a, 'refeicao', 'Almoço de teste', ((now() at time zone 'America/Sao_Paulo') - interval '1 minute')::time)
+    returning id into rid;
+    select count(*) into n_claim from public.push_claim() c where c.payload ->> 'tag' = 'lembrete-' || rid;
+    res := res || jsonb_build_object('teste', 'lembrete na hora é entregue', 'ok', (n_claim = 1), 'obtido', n_claim);
+    select count(*) into n_claim from public.push_claim() c where c.payload ->> 'tag' = 'lembrete-' || rid;
+    res := res || jsonb_build_object('teste', 'lembrete NÃO é entregue duas vezes no mesmo dia', 'ok', (n_claim = 0), 'obtido', n_claim);
+
+    -- Aviso do site entra na fila e sai no envio; categoria desligada não vira push.
+    -- (um teste anterior desligou a categoria social de A no site; aqui ela volta a valer)
+    update public.user_settings set notification_prefs = notification_prefs - 'social' where id = a;
+    perform public.notify(a, 'seguidor', f, 'profile', f::text);
+    select count(*) into n_claim from public.push_claim() c where c.kind = 'aviso' and c.user_id = a;
+    res := res || jsonb_build_object('teste', 'aviso do site vira push', 'ok', (n_claim = 1), 'obtido', n_claim);
+    update public.push_settings set categories = '{"social": false}' where user_id = a;
+    perform public.notify(a, 'seguidor', b, 'profile', b::text);
+    select count(*) into n_claim from public.push_claim() c where c.kind = 'aviso' and c.user_id = a;
+    res := res || jsonb_build_object('teste', 'categoria desligada NÃO vira push', 'ok', (n_claim = 0), 'obtido', n_claim);
+  end;
+
+  -- ------------------------------------------------------- ÁGUA DO DIA
+  update public.care_links set status = 'ativo' where patient_id = c and professional_id = p;
+  r := pg_temp.as_user(c, 'authenticated', 'select public.water_add(current_date, 3)');
+  res := res || jsonb_build_object('teste', 'registra copos de água', 'ok', (r = '3'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.water_add(current_date, -10)');
+  res := res || jsonb_build_object('teste', 'copos de água nunca ficam negativos', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.water_add(current_date - 30, 1)');
+  res := res || jsonb_build_object('teste', 'NÃO reescreve água de dias antigos', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.water_days where user_id = %L', c));
+  res := res || jsonb_build_object('teste', 'NÃO vê a água de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.water_days where user_id = %L', c));
+  res := res || jsonb_build_object('teste', 'profissional vinculado vê a água do paciente', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.water_days (user_id, day, glasses, goal) values (%L, current_date, 5, 8)', c));
+  res := res || jsonb_build_object('teste', 'NÃO grava água em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', format('select public.water_set_goal(5, null, %L)', c));
+  res := res || jsonb_build_object('teste', 'sem vínculo NÃO muda a meta de água', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(p, 'authenticated', format('select public.water_set_goal(6, null, %L)', c));
+  res := res || jsonb_build_object('teste', 'profissional vinculado ajusta a meta de água', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := (select count(*)::text from public.notifications where user_id = c and type = 'meta_agua');
+  res := res || jsonb_build_object('teste', 'paciente é avisado da meta de água nova', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select goal from public.water_days where day = current_date');
+  res := res || jsonb_build_object('teste', 'meta nova já vale para hoje', 'ok', (r = '6'), 'obtido', r);
+
+  -- ------------------------------------------------------- HISTÓRICO DE RÓTULOS
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.label_scans (user_id, source, barcode, name) values (auth.uid(), ''codigo'', ''7891000100103'', ''Produto teste'')');
+  res := res || jsonb_build_object('teste', 'guarda rótulo lido no histórico', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.label_scans (user_id, source, barcode, name) values (auth.uid(), ''codigo'', ''7891000100103'', ''Produto teste'')');
+  r := pg_temp.as_user(a, 'authenticated', 'select count(*) from public.label_scans where barcode = ''7891000100103''');
+  res := res || jsonb_build_object('teste', 'mesmo código lido de novo NÃO duplica', 'ok', (r = '1'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.label_scans');
+  res := res || jsonb_build_object('teste', 'NÃO vê o histórico de rótulos de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.label_scans (user_id, source, name) values (%L, ''foto'', ''x'')', a));
+  res := res || jsonb_build_object('teste', 'NÃO grava rótulo no histórico de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  -- ------------------------------------------------------- NINA E O ACOMPANHAMENTO
+  r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
+  res := res || jsonb_build_object('teste', 'Nina NÃO usa o acompanhamento sem permissão', 'ok', (r = 'f'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.record_consent(''nina_acompanhamento'', ''v1'', true)');
+  r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
+  res := res || jsonb_build_object('teste', 'paciente autoriza a Nina a usar o acompanhamento', 'ok', (r = 't'), 'obtido', r);
+  r := pg_temp.as_user(p, 'authenticated', format('select public.nina_care_allowed(%L)', c));
+  res := res || jsonb_build_object('teste', 'nutri vinculada vê que o paciente autorizou', 'ok', (r = 't'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('select public.nina_care_allowed(%L)', c));
+  res := res || jsonb_build_object('teste', 'quem não acompanha NÃO vê a permissão da Nina', 'ok', (r = 'f'), 'obtido', r);
+  r := pg_temp.as_user(c, 'authenticated', 'select public.record_consent(''nina_acompanhamento'', ''v1'', false)');
+  r := pg_temp.as_user(c, 'authenticated', 'select public.nina_care_allowed()');
+  res := res || jsonb_build_object('teste', 'paciente revoga a permissão da Nina', 'ok', (r = 'f'), 'obtido', r);
+
+  -- ------------------------------------------------------- GELADEIRA (receitas e lista de compras)
+  declare
+    rec_ok uuid;
+    rec_oculta uuid;
+  begin
+    insert into public.posts (author_id, body, type, title, recipe)
+    values (f, 'receita de teste', 'receita', 'Zzqx Omelete',
+            '{"ingredients": ["2 ovos", "1 tomate"], "steps": ["bater"]}')
+    returning id into rec_ok;
+    insert into public.posts (author_id, body, type, title, recipe, hidden)
+    values (b, 'receita oculta', 'receita', 'Zzqx Oculta', '{"ingredients": ["3 ovos"]}', false)
+    returning id into rec_oculta;
+    update public.posts set hidden = true where id = rec_oculta;
+
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.recipes_with_ingredients(array[''ovo'']) where id = %L', rec_ok));
+    res := res || jsonb_build_object('teste', 'acha receita da comunidade pelo ingrediente', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(a, 'authenticated', format('select count(*) from public.recipes_with_ingredients(array[''ovo'']) where id = %L', rec_oculta));
+    res := res || jsonb_build_object('teste', 'NÃO acha receita oculta pela moderação', 'ok', (r = '0'), 'obtido', r);
+
+    r := pg_temp.as_user(a, 'authenticated', 'insert into public.shopping_items (user_id, text, source) values (auth.uid(), ''alho'', ''geladeira'')');
+    res := res || jsonb_build_object('teste', 'põe item na própria lista de compras', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.shopping_items');
+    res := res || jsonb_build_object('teste', 'NÃO vê a lista de compras de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.shopping_items (user_id, text) values (%L, ''x'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO põe item na lista de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('insert into public.saved_recipes (user_id, source, title) values (%L, ''nina'', ''x'')', a));
+    res := res || jsonb_build_object('teste', 'NÃO guarda receita em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  end;
+
+  -- ------------------------------------------------------- CARDÁPIO DA SEMANA
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.weekly_menus (user_id, week_start, budget, meals) values (auth.uid(), ''2026-10-12'', ''economico'', ''{"0-almoco": {"title": "Arroz, feijão e ovo"}}'')');
+  res := res || jsonb_build_object('teste', 'cria o próprio cardápio da semana', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.weekly_menus (user_id, week_start) values (auth.uid(), ''2026-10-14'')');
+  res := res || jsonb_build_object('teste', 'cardápio só começa na segunda-feira', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.weekly_menus');
+  res := res || jsonb_build_object('teste', 'NÃO vê o cardápio de outra pessoa', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', format('insert into public.weekly_menus (user_id, week_start) values (%L, ''2026-10-19'')', a));
+  res := res || jsonb_build_object('teste', 'NÃO cria cardápio em nome de outra pessoa', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.shopping_items (user_id, text, source, section) values (auth.uid(), ''1 maço de couve'', ''cardapio'', ''hortifruti'')');
+  res := res || jsonb_build_object('teste', 'item do cardápio entra na lista com a seção', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+
+  -- ------------------------------------------------------- CALENDÁRIO DA FEIRA
+  r := pg_temp.as_user(a, 'authenticated', 'update public.user_settings set season_uf = ''PE'' where id = auth.uid()');
+  res := res || jsonb_build_object('teste', 'escolhe o próprio estado da feira', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'update public.user_settings set season_uf = ''XX'' where id = auth.uid()');
+  res := res || jsonb_build_object('teste', 'NÃO aceita estado inexistente', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  -- ------------------------------------------------------- LANCHEIRA DA SEMANA
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.trail_profiles (id, owner_id, kind, name) values (''ffffffff-0000-4000-a000-0000000000c1'', auth.uid(), ''kid'', ''Zzqx Criança'')');
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.lunchbox_profiles (profile_id, age_range, allergies) values (''ffffffff-0000-4000-a000-0000000000c1'', ''4-6'', ''amendoim'')');
+  res := res || jsonb_build_object('teste', 'responsável conta sobre a própria criança', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start, snacks) values (''ffffffff-0000-4000-a000-0000000000c1'', ''2026-10-12'', ''{"0-manha": {"title": "Pão com queijo"}}'')');
+  res := res || jsonb_build_object('teste', 'responsável monta a lancheira da própria criança', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.lunchboxes');
+  res := res || jsonb_build_object('teste', 'NÃO vê a lancheira de criança de outra conta', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'select count(*) from public.lunchbox_profiles');
+  res := res || jsonb_build_object('teste', 'NÃO vê alergias de criança de outra conta', 'ok', (r = '0'), 'obtido', r);
+  r := pg_temp.as_user(b, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start) values (''ffffffff-0000-4000-a000-0000000000c1'', ''2026-10-19'')');
+  res := res || jsonb_build_object('teste', 'NÃO monta lancheira para criança de outra conta', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(c, 'authenticated', 'insert into public.trail_profiles (id, owner_id, kind, name) values (''ffffffff-0000-4000-a000-0000000000c2'', auth.uid(), ''adult'', ''Zzqx Adulto'')');
+  r := pg_temp.as_user(c, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start) values (''ffffffff-0000-4000-a000-0000000000c2'', ''2026-10-19'')');
+  res := res || jsonb_build_object('teste', 'lancheira só para perfil infantil', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+  -- ------------------------------------------------------- PAINEL DO PROFISSIONAL (adesão e modelos)
+  declare
+    plano uuid := 'ffffffff-0000-4000-a000-0000000000d1';
+    modelo text;
+  begin
+    r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.adherence_overview(7) where patient_id = %L', c));
+    res := res || jsonb_build_object('teste', 'profissional vê a adesão do paciente vinculado', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', format('select count(*) from public.adherence_overview(7) where patient_id = %L', c));
+    res := res || jsonb_build_object('teste', 'NÃO vê adesão de paciente sem vínculo', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.adherence_daily(%L, 30)', c));
+    res := res || jsonb_build_object('teste', 'relatório de 30 dias do paciente vinculado', 'ok', (r = '30'), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', format('select count(*) from public.adherence_daily(%L, 30)', c));
+    res := res || jsonb_build_object('teste', 'NÃO abre relatório de paciente sem vínculo', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.adherence_daily(%L, 30)', c));
+    res := res || jsonb_build_object('teste', 'NÃO profissional NÃO abre relatório', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+    r := pg_temp.as_user(p, 'authenticated', format('insert into public.meal_plans (id, patient_id, professional_id, title) values (%L, %L, auth.uid(), ''Zzqx Plano'')', plano, c));
+    r := pg_temp.as_user(p, 'authenticated', format('insert into public.meal_plan_meals (plan_id, name, position) values (%L, ''Almoço'', 0)', plano));
+    modelo := pg_temp.as_user(p, 'authenticated', format('select public.save_meal_plan_template(%L, ''Zzqx Modelo'')', plano));
+    res := res || jsonb_build_object('teste', 'salva plano como modelo', 'ok', (modelo not like 'ERRO%' and modelo <> '<vazio>'), 'obtido', left(modelo, 90));
+    r := pg_temp.as_user(q, 'authenticated', format('select public.save_meal_plan_template(%L, ''roubo'')', plano));
+    res := res || jsonb_build_object('teste', 'NÃO salva modelo do plano de outro profissional', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(q, 'authenticated', 'select count(*) from public.meal_plan_templates');
+    res := res || jsonb_build_object('teste', 'NÃO vê modelos de outro profissional', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', 'insert into public.meal_plan_templates (professional_id, title) values (auth.uid(), ''x'')');
+    res := res || jsonb_build_object('teste', 'modelo só nasce de um plano (sem insert direto)', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    if modelo not like 'ERRO%' then
+      r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.create_plan_from_template(%L, %L)', modelo, c));
+      res := res || jsonb_build_object('teste', 'cria plano a partir do modelo', 'ok', (r = '1'), 'obtido', left(r, 90));
+      r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.create_plan_from_template(%L, %L)', modelo, a));
+      res := res || jsonb_build_object('teste', 'NÃO cria plano de modelo para quem não é paciente', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+      r := pg_temp.as_user(q, 'authenticated', format('select count(*) from public.create_plan_from_template(%L, %L)', modelo, c));
+      res := res || jsonb_build_object('teste', 'NÃO usa modelo de outro profissional', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    end if;
+  end;
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

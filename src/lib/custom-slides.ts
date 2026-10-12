@@ -1,11 +1,12 @@
 // Slides personalizados da apresentação: montados com blocos (texto, card, Nina, imagem, forma, emoji)
 // sobre um papel de parede, com tema, animações por bloco e transição entre slides.
 // Ficam no documento de layout (independe do idioma); o texto de cada bloco é guardado por idioma.
-import type { NinaAction } from "@/lib/nina-scene";
+import type { NinaAction } from "@/components/nina-live";
 import type { Locale } from "@/lib/i18n/locales";
 
 export type Loc = Partial<Record<Locale, string>>;
-export type BlockType = "text" | "card" | "nina" | "image" | "shape" | "emoji" | "diagram" | "mockup";
+export type BlockType =
+  "text" | "card" | "nina" | "image" | "shape" | "emoji" | "diagram" | "mockup";
 export type Anim = "none" | "rise" | "pop" | "drop" | "fade" | "stamp";
 export type Transition = "slide" | "fade" | "zoom" | "none";
 export type Tone = "ink" | "light" | "primary" | "accent" | "plum" | "card" | "sage" | "peach";
@@ -248,9 +249,19 @@ export function makeBlock(type: BlockType, patch: Partial<Block> = {}): Block {
   const tone: Tone = type === "card" ? "card" : type === "shape" ? "sage" : "ink";
   const sample: Partial<Block> =
     type === "diagram"
-      ? { kind: "venn", items: [{ "pt-BR": "Comunidade" }, { "pt-BR": "Educação" }, { "pt-BR": "Cuidado" }] }
+      ? {
+          kind: "venn",
+          items: [{ "pt-BR": "Comunidade" }, { "pt-BR": "Educação" }, { "pt-BR": "Cuidado" }],
+        }
       : type === "mockup"
-        ? { kind: "feed", items: [{ "pt-BR": "Publicação de uma receita" }, { "pt-BR": "Desafio da semana" }, { "pt-BR": "Comentário de alguém" }] }
+        ? {
+            kind: "feed",
+            items: [
+              { "pt-BR": "Publicação de uma receita" },
+              { "pt-BR": "Desafio da semana" },
+              { "pt-BR": "Comentário de alguém" },
+            ],
+          }
         : {};
   return { ...DEFAULT_BLOCK, id: rid("b"), type, ...size, tone, ...sample, ...patch };
 }

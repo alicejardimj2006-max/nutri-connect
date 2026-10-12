@@ -4,6 +4,7 @@ import { FileDown, History, Utensils } from "lucide-react";
 import { MacroBars, MealPlanView } from "@/components/clinical/meal-plan-view";
 import { NextMeal } from "@/components/clinical/next-meal";
 import { PatientCarePlans } from "@/components/clinical/care-plans-panel";
+import { ShoppingList } from "@/components/clinical/shopping-list";
 import {
   Card,
   EmptyState,
@@ -20,6 +21,7 @@ import { useDirectoryEntry, useMealPlan, useMealPlans, usePeople } from "@/lib/c
 import { formatDate } from "@/lib/clinical/format";
 import { useClinicalI18n } from "@/lib/clinical/i18n";
 import { cn } from "@/lib/utils";
+import { scrollToTop } from "@/lib/app-scroll";
 
 export const Route = createFileRoute("/acompanhamento/plano")({
   component: PatientPlanPage,
@@ -101,6 +103,7 @@ function PatientPlanPage() {
             <MacroBars totals={planTotals(plan.data)} plan={plan.data} />
           </Card>
           <MealPlanView plan={plan.data} />
+          <ShoppingList plan={plan.data} />
         </div>
       )}
 
@@ -113,7 +116,7 @@ function PatientPlanPage() {
                   type="button"
                   onClick={() => {
                     setSelectedId(p.id);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    scrollToTop();
                   }}
                   className={cn(
                     "flex w-full items-center gap-3 py-2.5 text-left text-sm",

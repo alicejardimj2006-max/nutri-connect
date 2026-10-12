@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { CharacterId } from "@/lib/trail-types";
-import { NinaLive, type NinaAction } from "@/components/nina-live";
+import { CharacterLive, type CharacterAction } from "@/components/character-live";
+import { NinaLive } from "@/components/nina-live";
 
 export type MascotMood = "idle" | "talk" | "happy" | "sad" | "cheer";
 
@@ -306,8 +307,8 @@ const DRAW: Record<CharacterId, (p: { mood: MascotMood }) => React.ReactNode> = 
   nina: Nina,
 };
 
-/** Humor dos personagens → ação da Nina 3D ("happy" é um pulinho só, como nos outros personagens). */
-const NINA_ACTION: Record<MascotMood, NinaAction> = {
+/** Humor dos personagens → ação 3D ("happy" é um pulinho só). */
+const MOOD_ACTION: Record<MascotMood, CharacterAction> = {
   idle: "idle",
   talk: "talk",
   happy: "hop",
@@ -344,37 +345,38 @@ export function Mascot({
   flip?: boolean;
 }) {
   const Draw = DRAW[id];
-  // A Nina é um personagem 3D: busto em tamanhos pequenos, corpo inteiro nos grandes.
+  // A Nina mostra só o busto em tamanhos pequenos e o corpo inteiro nos grandes.
   const nina = id === "nina";
   const bust = size <= 110;
   const height = nina && !bust ? size * 1.5 : nina ? (size * 233) / 200 : (size * 140) / 120;
+  const flipStyle = flip ? { transform: "scaleX(-1)" } : null;
   if (nina) {
-    // Os movimentos vêm da própria cena 3D; sem as animações CSS dos outros personagens.
+    // Os movimentos vêm da própria cena 3D; sem as animações CSS do desenho.
     return (
       <NinaLive
-        action={NINA_ACTION[mood]}
+        action={MOOD_ACTION[mood]}
         framing={bust ? "bust" : "full"}
         entrance={false}
         className={`inline-block shrink-0 select-none ${className}`}
-        style={{ width: size, height, ...(flip ? { transform: "scaleX(-1)" } : null), ...style }}
+        style={{ width: size, height, ...flipStyle, ...style }}
       />
     );
   }
   return (
-    <div
-      className={`inline-block shrink-0 select-none ${MOOD_CLASS[mood]} ${className}`}
-      style={{ width: size, height, ...style }}
-      aria-hidden="true"
-    >
-      <svg
-        viewBox="0 0 120 140"
-        width="100%"
-        height="100%"
-        style={flip ? { transform: "scaleX(-1)" } : undefined}
-        overflow="visible"
-      >
-        <Draw mood={mood} />
-      </svg>
-    </div>
+    <CharacterLive
+      id={id}
+      action={MOOD_ACTION[mood]}
+      entrance={false}
+      className={`inline-block shrink-0 select-none ${className}`}
+      style={{ width: size, height, ...flipStyle, ...style }}
+      fallback={
+        // Desenho de reserva: enquanto o 3D carrega, na impressão e sem WebGL.
+        <div className={`absolute inset-0 ${MOOD_CLASS[mood]}`}>
+          <svg viewBox="0 0 120 140" width="100%" height="100%" overflow="visible">
+            <Draw mood={mood} />
+          </svg>
+        </div>
+      }
+    />
   );
 }

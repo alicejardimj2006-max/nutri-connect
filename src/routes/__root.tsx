@@ -17,6 +17,7 @@ import { SideRails } from "../components/side-rails";
 import { FeatureGate } from "../components/feature-gate";
 import { AnnouncementBar } from "../components/announcement-bar";
 import { useAppearanceSync } from "../hooks/use-appearance-sync";
+import { usePushSync } from "../hooks/use-push-sync";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -105,6 +106,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      // App instalável (PWA).
+      { name: "theme-color", content: "#555f36" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "NutriConnect" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -114,7 +120,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&family=Nunito:wght@400;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
     ],
     // Aplica o tema e o idioma salvos antes da primeira pintura, para não piscar o padrão.
     scripts: [{ children: APPEARANCE_INIT_SCRIPT }, { children: LANG_INIT_SCRIPT }],
@@ -147,6 +155,7 @@ function RootComponent() {
   useEffect(() => initI18n(), []);
   useAppearanceSync();
   useAppSounds();
+  usePushSync();
 
   return (
     <QueryClientProvider client={queryClient}>

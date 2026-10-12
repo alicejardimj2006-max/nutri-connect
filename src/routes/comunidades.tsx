@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
+import { AuthGateLoading } from "@/components/site-chrome";
 import { useRequireAuth } from "@/hooks/use-auth";
+import { AppScreen } from "@/components/app-screen";
 
 export const Route = createFileRoute("/comunidades")({
   component: ComunidadesLayout,
@@ -12,11 +13,8 @@ function ComunidadesLayout() {
   if (!hydrated || !user) return <AuthGateLoading />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-    </div>
+    <AppScreen>
+      <Outlet />
+    </AppScreen>
   );
 }

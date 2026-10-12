@@ -1,5 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Copy, FileDown, Send, Trash2, Utensils } from "lucide-react";
+import { ArrowLeft, BookmarkPlus, Copy, FileDown, Send, Trash2, Utensils } from "lucide-react";
+import { toast } from "sonner";
+import { useTr } from "@/components/settings-ui";
+import { useSavePlanTemplate } from "@/lib/clinical/adherence";
 import { MealPlanEditor } from "@/components/clinical/meal-plan-editor";
 import { MacroBars, MealPlanView } from "@/components/clinical/meal-plan-view";
 import {
@@ -49,6 +52,8 @@ function MealPlanPage() {
     invalidate,
     onSuccess: (copy) => navigate({ to: "/painel/planos/$planId", params: { planId: copy.id } }),
   });
+  const tr = useTr();
+  const saveTemplate = useSavePlanTemplate();
   const remove = useClinicalMutation(() => records.deleteMealPlan(planId), {
     success: t("plan.deleted"),
     invalidate,
@@ -129,6 +134,48 @@ function MealPlanPage() {
               onClick={() => duplicate.mutate(undefined)}
             >
               <Copy className="h-4 w-4" /> {t("plan.duplicate")}
+            </button>
+          )}
+          {plan.professional_id === user?.id && (
+            <button
+              type="button"
+              className={buttonSecondary}
+              disabled={saveTemplate.isPending}
+              onClick={() => {
+                const name = window.prompt(
+                  tr([
+                    "Nome do modelo (sem dados do paciente):",
+                    "Template name (no patient data):",
+                    "Nombre de la plantilla (sin datos del paciente):",
+                    "Nom du modèle (sans données du patient) :",
+                  ]),
+                  plan.title,
+                );
+                if (name?.trim())
+                  saveTemplate.mutate(
+                    { planId, title: name.trim() },
+                    {
+                      onSuccess: () =>
+                        toast.success(
+                          tr([
+                            'Modelo salvo. Use em "Novo plano" de qualquer paciente.',
+                            'Template saved. Use it from "New plan" for any patient.',
+                            'Plantilla guardada. Úsala en "Nuevo plan" de cualquier paciente.',
+                            "Modèle enregistré. Utilisez-le via « Nouveau plan » pour tout patient.",
+                          ]),
+                        ),
+                      onError: (err) => toast.error((err as Error).message),
+                    },
+                  );
+              }}
+            >
+              <BookmarkPlus className="h-4 w-4" />
+              {tr([
+                "Salvar como modelo",
+                "Save as template",
+                "Guardar como plantilla",
+                "Enregistrer comme modèle",
+              ])}
             </button>
           )}
           {plan.status === "rascunho" && (

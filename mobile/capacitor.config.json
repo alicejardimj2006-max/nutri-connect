@@ -1,0 +1,28 @@
+{
+  "appId": "br.com.nutriconnect.app",
+  "appName": "NutriConnect",
+  "webDir": "www",
+  "server": {
+    "url": "https://nutri-connect.netlify.app/espaco",
+    "errorPath": "offline.html",
+    "allowNavigation": ["nutri-connect.netlify.app", "checkout.stripe.com"]
+  },
+  "android": {
+    "appendUserAgent": "NutriConnectApp/1",
+    "backgroundColor": "#faf7f0"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#faf7f0",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_INSIDE"
+    },
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "DARK",
+      "backgroundColor": "#555f36"
+    }
+  }
+}

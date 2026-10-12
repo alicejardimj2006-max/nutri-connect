@@ -1,7 +1,7 @@
 import { td } from "@/lib/i18n/data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Compass, Search, X } from "lucide-react";
+import { Compass, Refrigerator, Search, X } from "lucide-react";
 import { useRequireAuth } from "@/hooks/use-auth";
 import { FeedShell, type FeedShellPage } from "@/components/feed-shell";
 import { PostTile } from "@/components/post-tile";
@@ -357,10 +357,49 @@ function ExplorarPage() {
     const label = pickName(def.label, locale);
     if (def.id === "pessoas") return { id: def.id, label, content: peoplePage };
     const key = def.id as keyof typeof feeds;
+    const content = grid(def.id, mixed[key], feeds[key].isLoading);
     return {
       id: def.id,
       label,
-      content: grid(def.id, mixed[key], feeds[key].isLoading),
+      // Receitas: atalho para a Geladeira (receitas com o que há em casa).
+      content:
+        def.id === "receita" ? (
+          <>
+            <Link
+              to="/geladeira"
+              className="mb-6 flex items-center gap-3 rounded-3xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-card p-4 text-sm shadow-xs transition hover:shadow-card"
+            >
+              <Refrigerator className="h-6 w-6 shrink-0 text-accent" />
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold text-foreground">
+                  {pickName(
+                    [
+                      "O que tem na geladeira?",
+                      "What's in the fridge?",
+                      "¿Qué hay en la nevera?",
+                      "Qu'y a-t-il dans le frigo ?",
+                    ],
+                    locale,
+                  )}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {pickName(
+                    [
+                      "Receitas com o que você tem em casa, sugeridas pela Nina.",
+                      "Recipes with what you have at home, suggested by Nina.",
+                      "Recetas con lo que tienes en casa, sugeridas por Nina.",
+                      "Des recettes avec ce que vous avez, proposées par Nina.",
+                    ],
+                    locale,
+                  )}
+                </span>
+              </span>
+            </Link>
+            {content}
+          </>
+        ) : (
+          content
+        ),
     };
   });
 

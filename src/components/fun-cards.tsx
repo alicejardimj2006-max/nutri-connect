@@ -1,6 +1,7 @@
 // Cards interativos das páginas: pequenos jogos, ferramentas e rituais do dia a dia. Cada página
 // escolhe os seus em rails-pages.tsx. O progresso fica só neste aparelho (localStorage), sem dados
-// de saúde enviados a servidor. Textos nos 4 idiomas, no mesmo formato do restante do site.
+// de saúde enviados a servidor; a exceção é a água do dia, que a pessoa registra na própria conta
+// (ver water-tracker). Textos nos 4 idiomas, no mesmo formato do restante do site.
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -20,7 +21,6 @@ import {
   Copy,
   Dices,
   Flame,
-  GlassWater,
   Lightbulb,
   MessageCircle,
   Pause,
@@ -46,6 +46,13 @@ import {
 import type { ProfessionKey } from "@/lib/clinical/professions";
 import { EmojiIcon } from "@/components/emoji-icon";
 import { Panel } from "@/components/rail-cards";
+import { WaterTracker } from "@/components/water-tracker";
+import {
+  useAddShoppingItems,
+  useDeleteShoppingItems,
+  useShoppingItems,
+  useUpdateShoppingItem,
+} from "@/lib/fridge";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommunities } from "@/lib/social/communities-queries";
 import { useI18n } from "@/hooks/use-i18n";
@@ -172,95 +179,17 @@ function Bar({ value, max }: { value: number; max: number }) {
 
 // ───────────────────────────── Hidratação ─────────────────────────────
 
-const GLASSES = 8;
-const GLASS_ML = 250;
-
-/** Copos de água do dia: toque num copo para encher até ele. */
+/** Copos de água do dia (registro no servidor, meta ajustável e lembretes): ver water-tracker. */
 export function HydrationCard() {
   const tr = useTr();
-  const today = dayKey();
-  const [log, setLog] = useLocal<Record<string, number>>("water", {});
   const [burst, fire] = useBurst();
-  const count = log[today] ?? 0;
-
-  const setCount = (n: number) => {
-    const next = Math.max(0, Math.min(GLASSES, n));
-    setLog({ [today]: next });
-    if (next === GLASSES && count < GLASSES) {
-      fire();
-      playSound("achievement");
-    } else {
-      playSound("click");
-    }
-  };
-
   return (
     <Panel
       title={tr(["Água de hoje", "Today's water", "Agua de hoy", "L'eau du jour"])}
       className="relative"
-      action={
-        count > 0 ? (
-          <button
-            type="button"
-            onClick={() => setCount(0)}
-            className="cursor-pointer text-muted-foreground hover:text-foreground"
-            aria-label={tr(["Zerar", "Reset", "Reiniciar", "Réinitialiser"])}
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
-        ) : undefined
-      }
     >
       <Burst id={burst} />
-      <div className="grid grid-cols-4 gap-2">
-        {Array.from({ length: GLASSES }, (_, i) => {
-          const filled = i < count;
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setCount(filled && i === count - 1 ? i : i + 1)}
-              aria-label={`${i + 1}`}
-              aria-pressed={filled}
-              className={`grid h-12 cursor-pointer place-items-center rounded-2xl border transition active:scale-90 ${
-                filled
-                  ? "border-accent/40 bg-accent/15 text-accent"
-                  : "border-border/70 bg-secondary/40 text-muted-foreground hover:bg-secondary"
-              }`}
-            >
-              <GlassWater
-                className={`h-6 w-6 transition-transform ${filled ? "scale-110" : ""}`}
-                fill={filled ? "currentColor" : "none"}
-                fillOpacity={0.25}
-              />
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="font-bold text-foreground">
-          {count}/{GLASSES} {tr(["copos", "glasses", "vasos", "verres"])}
-        </span>
-        <span className="text-muted-foreground">{count * GLASS_ML} ml</span>
-      </div>
-      <div className="mt-1.5">
-        <Bar value={count} max={GLASSES} />
-      </div>
-      <p className={note}>
-        {count >= GLASSES
-          ? tr([
-              "Meta do dia batida! 🎉",
-              "Daily goal reached! 🎉",
-              "¡Meta del día lograda! 🎉",
-              "Objectif du jour atteint ! 🎉",
-            ])
-          : tr([
-              "Cada copo = 250 ml. A necessidade de água varia de pessoa para pessoa.",
-              "Each glass = 250 ml. Water needs vary from person to person.",
-              "Cada vaso = 250 ml. La necesidad de agua varía de persona a persona.",
-              "Chaque verre = 250 ml. Les besoins en eau varient d'une personne à l'autre.",
-            ])}
-      </p>
+      <WaterTracker onGoalReached={fire} showWeek={false} />
     </Panel>
   );
 }
@@ -1171,36 +1100,53 @@ export function UnitConverterCard() {
 
 // ───────────────────────────── Lista de compras ─────────────────────────────
 
-interface ShopItem {
-  id: string;
-  text: string;
-  done: boolean;
-}
-
+/** Lista de compras na conta (vale em todos os aparelhos; a Geladeira manda os faltantes para cá). */
 export function ShoppingListCard() {
   const tr = useTr();
-  const [items, setItems] = useLocal<ShopItem[]>("shopping", []);
+  const { user } = useAuth();
+  const list = useShoppingItems(user?.id);
+  const addItems = useAddShoppingItems(user?.id);
+  const update = useUpdateShoppingItem();
+  const remove = useDeleteShoppingItems();
   const [draft, setDraft] = useState("");
+  const items = list.data ?? [];
+
+  // Itens da versão antiga (só neste aparelho) sobem para a conta uma vez.
+  useEffect(() => {
+    if (!user || !list.isSuccess) return;
+    const key = `nc_fun_shopping_${user.id}`;
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return;
+      window.localStorage.removeItem(key);
+      const legacy = (JSON.parse(raw) as { text?: string; done?: boolean }[])
+        .filter((i) => !i.done && typeof i.text === "string")
+        .map((i) => i.text as string);
+      if (legacy.length) addItems.mutate({ texts: legacy });
+    } catch {
+      /* sem armazenamento: nada a migrar */
+    }
+  }, [user, list.isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const add = (e: React.FormEvent) => {
     e.preventDefault();
-    const text = draft.trim().slice(0, 60);
-    if (!text) return;
-    setItems((list) => [{ id: crypto.randomUUID(), text, done: false }, ...list].slice(0, 40));
+    const text = draft.trim().slice(0, 80);
+    if (!text || !user) return;
+    addItems.mutate({ texts: [text] });
     setDraft("");
     playSound("click");
   };
-  const done = items.filter((i) => i.done).length;
+  const done = items.filter((i) => i.done);
 
   return (
     <Panel
       title={tr(["Lista de compras", "Shopping list", "Lista de compras", "Liste de courses"])}
       action={
-        done > 0 ? (
+        done.length > 0 ? (
           <button
             type="button"
             className="cursor-pointer text-[11px] font-semibold text-primary hover:underline"
-            onClick={() => setItems((l) => l.filter((i) => !i.done))}
+            onClick={() => remove.mutate(done.map((i) => i.id))}
           >
             {tr(["Limpar marcados", "Clear checked", "Quitar marcados", "Retirer cochés"])}
           </button>
@@ -1211,7 +1157,7 @@ export function ShoppingListCard() {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          maxLength={60}
+          maxLength={80}
           placeholder={tr([
             "Ex.: tomate, aveia…",
             "E.g. tomato, oats…",
@@ -1223,6 +1169,7 @@ export function ShoppingListCard() {
         <button
           type="submit"
           className={primaryBtn}
+          disabled={!user}
           aria-label={tr(["Adicionar", "Add", "Añadir", "Ajouter"])}
         >
           <Plus className="h-3.5 w-3.5" />
@@ -1247,9 +1194,7 @@ export function ShoppingListCard() {
             >
               <button
                 type="button"
-                onClick={() =>
-                  setItems((l) => l.map((x) => (x.id === it.id ? { ...x, done: !x.done } : x)))
-                }
+                onClick={() => update.mutate({ id: it.id, done: !it.done })}
                 className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
                 aria-pressed={it.done}
               >
@@ -1264,7 +1209,7 @@ export function ShoppingListCard() {
               </button>
               <button
                 type="button"
-                onClick={() => setItems((l) => l.filter((x) => x.id !== it.id))}
+                onClick={() => remove.mutate([it.id])}
                 className="cursor-pointer text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100 focus:opacity-100"
                 aria-label={tr(["Remover", "Remove", "Quitar", "Retirer"])}
               >
@@ -1274,6 +1219,24 @@ export function ShoppingListCard() {
           ))}
         </ul>
       )}
+      <div className="mt-3 flex flex-col items-start gap-1">
+        <Link to="/geladeira" className="text-[11px] font-semibold text-accent hover:underline">
+          {tr([
+            "O que dá para fazer com o que tenho? →",
+            "What can I make with what I have? →",
+            "¿Qué puedo hacer con lo que tengo? →",
+            "Que faire avec ce que j'ai ? →",
+          ])}
+        </Link>
+        <Link to="/cardapio" className="text-[11px] font-semibold text-accent hover:underline">
+          {tr([
+            "Cardápio da semana e lista por seção →",
+            "Weekly menu and list by aisle →",
+            "Menú semanal y lista por sección →",
+            "Menu de la semaine et liste par rayon →",
+          ])}
+        </Link>
+      </div>
     </Panel>
   );
 }
