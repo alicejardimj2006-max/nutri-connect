@@ -8,6 +8,7 @@ import {
   Wallet,
   ShieldCheck,
   Users,
+  Activity,
 } from "lucide-react";
 import { AuthGateLoading, SiteHeader } from "@/components/site-chrome";
 import { ClinicalLayout, type ClinicalNavItem } from "@/components/clinical/layout";
@@ -62,6 +63,11 @@ function ProfessionalPanelLayout() {
     { to: "/painel", label: t("panelNav.overview"), icon: LayoutDashboard, exact: true },
     { to: "/painel/agenda", label: t("panelNav.schedule"), icon: CalendarDays },
     { to: "/painel/pacientes", label: t("panelNav.patients"), icon: Users, badge: pending },
+    {
+      to: "/painel/adesao",
+      label: tr(["Adesão", "Adherence", "Adherencia", "Adhésion"]),
+      icon: Activity,
+    },
     {
       to: "/painel/mensagens",
       label: t("panelNav.messages"),

@@ -1020,6 +1020,42 @@ begin
   r := pg_temp.as_user(c, 'authenticated', 'insert into public.lunchboxes (profile_id, week_start) values (''ffffffff-0000-4000-a000-0000000000c2'', ''2026-10-19'')');
   res := res || jsonb_build_object('teste', 'lancheira só para perfil infantil', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
 
+  -- ------------------------------------------------------- PAINEL DO PROFISSIONAL (adesão e modelos)
+  declare
+    plano uuid := 'ffffffff-0000-4000-a000-0000000000d1';
+    modelo text;
+  begin
+    r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.adherence_overview(7) where patient_id = %L', c));
+    res := res || jsonb_build_object('teste', 'profissional vê a adesão do paciente vinculado', 'ok', (r = '1'), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', format('select count(*) from public.adherence_overview(7) where patient_id = %L', c));
+    res := res || jsonb_build_object('teste', 'NÃO vê adesão de paciente sem vínculo', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.adherence_daily(%L, 30)', c));
+    res := res || jsonb_build_object('teste', 'relatório de 30 dias do paciente vinculado', 'ok', (r = '30'), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', format('select count(*) from public.adherence_daily(%L, 30)', c));
+    res := res || jsonb_build_object('teste', 'NÃO abre relatório de paciente sem vínculo', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(b, 'authenticated', format('select count(*) from public.adherence_daily(%L, 30)', c));
+    res := res || jsonb_build_object('teste', 'NÃO profissional NÃO abre relatório', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
+    r := pg_temp.as_user(p, 'authenticated', format('insert into public.meal_plans (id, patient_id, professional_id, title) values (%L, %L, auth.uid(), ''Zzqx Plano'')', plano, c));
+    r := pg_temp.as_user(p, 'authenticated', format('insert into public.meal_plan_meals (plan_id, name, position) values (%L, ''Almoço'', 0)', plano));
+    modelo := pg_temp.as_user(p, 'authenticated', format('select public.save_meal_plan_template(%L, ''Zzqx Modelo'')', plano));
+    res := res || jsonb_build_object('teste', 'salva plano como modelo', 'ok', (modelo not like 'ERRO%' and modelo <> '<vazio>'), 'obtido', left(modelo, 90));
+    r := pg_temp.as_user(q, 'authenticated', format('select public.save_meal_plan_template(%L, ''roubo'')', plano));
+    res := res || jsonb_build_object('teste', 'NÃO salva modelo do plano de outro profissional', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    r := pg_temp.as_user(q, 'authenticated', 'select count(*) from public.meal_plan_templates');
+    res := res || jsonb_build_object('teste', 'NÃO vê modelos de outro profissional', 'ok', (r = '0'), 'obtido', r);
+    r := pg_temp.as_user(q, 'authenticated', 'insert into public.meal_plan_templates (professional_id, title) values (auth.uid(), ''x'')');
+    res := res || jsonb_build_object('teste', 'modelo só nasce de um plano (sem insert direto)', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    if modelo not like 'ERRO%' then
+      r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.create_plan_from_template(%L, %L)', modelo, c));
+      res := res || jsonb_build_object('teste', 'cria plano a partir do modelo', 'ok', (r = '1'), 'obtido', left(r, 90));
+      r := pg_temp.as_user(p, 'authenticated', format('select count(*) from public.create_plan_from_template(%L, %L)', modelo, a));
+      res := res || jsonb_build_object('teste', 'NÃO cria plano de modelo para quem não é paciente', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+      r := pg_temp.as_user(q, 'authenticated', format('select count(*) from public.create_plan_from_template(%L, %L)', modelo, c));
+      res := res || jsonb_build_object('teste', 'NÃO usa modelo de outro profissional', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+    end if;
+  end;
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

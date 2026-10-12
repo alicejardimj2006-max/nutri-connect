@@ -1,9 +1,28 @@
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarCheck, CalendarDays, CheckCircle2, Circle, Inbox, Users } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarDays,
+  CheckCircle2,
+  Circle,
+  Inbox,
+  MessageCircle,
+  Users,
+} from "lucide-react";
 import { AppointmentCard } from "@/components/clinical/appointment-card";
 import { LinkRequests } from "@/components/clinical/link-requests";
-import { Card, EmptyState, Loading, PageHeader, Stat, buttonGhost } from "@/components/clinical/ui";
+import {
+  Avatar,
+  Card,
+  EmptyState,
+  Loading,
+  PageHeader,
+  Stat,
+  buttonGhost,
+} from "@/components/clinical/ui";
+import { lastSeen } from "@/components/clinical/adherence-ui";
+import { useTr } from "@/components/settings-ui";
+import { needsAttention, nudgeText, useAdherence } from "@/lib/clinical/adherence";
 import { useAuth } from "@/hooks/use-auth";
 import {
   useAppointments,
@@ -23,6 +42,66 @@ export const Route = createFileRoute("/painel/")({
 });
 
 const ACTIVE = ["aguardando_pagamento", "agendada", "confirmada"];
+
+/** Pacientes há 7 dias ou mais sem registrar, com mensagem pronta (o profissional revisa). */
+function AttentionCard() {
+  const tr = useTr();
+  const { locale } = useClinicalI18n();
+  const adherence = useAdherence(7);
+  const rows = (adherence.data ?? []).filter(needsAttention);
+  const people = usePeople(rows.map((r) => r.patient_id));
+  if (!rows.length) return null;
+
+  return (
+    <Card
+      title={tr(["Precisam de atenção", "Need attention", "Necesitan atención", "À surveiller"])}
+      className="mt-4"
+      action={
+        <Link to="/painel/adesao" className={buttonGhost}>
+          {tr(["Ver adesão", "See adherence", "Ver adherencia", "Voir l'adhésion"])}
+        </Link>
+      }
+    >
+      <ul className="space-y-2">
+        {rows.slice(0, 5).map((r) => {
+          const person = people.data?.get(r.patient_id);
+          return (
+            <li key={r.patient_id} className="flex flex-wrap items-center gap-3">
+              <Avatar name={person?.name ?? "…"} url={person?.avatarUrl} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {person?.name ?? "…"}
+                </p>
+                <p className="text-xs text-muted-foreground">{lastSeen(r, tr)}</p>
+              </div>
+              <Link
+                to="/painel/mensagens"
+                search={{
+                  com: r.patient_id,
+                  texto: nudgeText((person?.name ?? "").split(" ")[0], locale),
+                }}
+                className={buttonGhost}
+              >
+                <MessageCircle className="h-4 w-4" />
+                {tr(["Mandar mensagem", "Send message", "Enviar mensaje", "Envoyer un message"])}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      {rows.length > 5 && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {tr([
+            `e mais ${rows.length - 5}`,
+            `and ${rows.length - 5} more`,
+            `y ${rows.length - 5} más`,
+            `et ${rows.length - 5} de plus`,
+          ])}
+        </p>
+      )}
+    </Card>
+  );
+}
 
 function PanelOverview() {
   const { user } = useAuth();
@@ -100,6 +179,8 @@ function PanelOverview() {
           <ProScoreCard professionalId={user.id} />
         </div>
       )}
+
+      <AttentionCard />
 
       {!setupDone && !rules.isLoading && (
         <Card title={t("overview.setupTitle")} className="mt-4">

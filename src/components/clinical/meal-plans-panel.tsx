@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Plus, Utensils } from "lucide-react";
+import { ChevronRight, Plus, Trash2, Utensils } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import * as records from "@/lib/clinical/records";
+import {
+  createPlanFromTemplate,
+  useDeletePlanTemplate,
+  usePlanTemplates,
+} from "@/lib/clinical/adherence";
+import { useTr } from "@/components/settings-ui";
 import { qk, useAnthropometrics, useClinicalMutation, useMealPlans } from "@/lib/clinical/queries";
 import { formatDate } from "@/lib/clinical/format";
 import { useClinicalI18n, type ClinicalKey } from "@/lib/clinical/i18n";
@@ -97,21 +103,28 @@ export function MealPlansPanel({ patientId, readOnly }: { patientId: string; rea
 
 function NewPlanDialog({ patientId, onClose }: { patientId: string; onClose: () => void }) {
   const { t } = useClinicalI18n();
+  const tr = useTr();
   const navigate = useNavigate();
   const anthro = useAnthropometrics(patientId);
+  const templates = usePlanTemplates();
+  const removeTemplate = useDeletePlanTemplate();
   const lastTdee = [...(anthro.data ?? [])].reverse().find((a) => a.tdee_kcal)?.tdee_kcal ?? null;
   const [title, setTitle] = useState(t("plan.defaultTitle"));
   const [kcal, setKcal] = useState<string | null>(null);
+  const [templateId, setTemplateId] = useState("");
   const kcalValue = kcal ?? (lastTdee ? String(lastTdee) : "");
+  const template = (templates.data ?? []).find((tp) => tp.id === templateId);
 
   const create = useClinicalMutation(
     () =>
-      records.createMealPlan({
-        patientId,
-        title: title.trim() || t("plan.defaultTitle"),
-        targetKcal: kcalValue ? Math.round(Number(kcalValue)) : null,
-        mealNames: DEFAULT_MEALS.map((m) => ({ name: t(`diary.meal.${m.key}`), time: m.time })),
-      }),
+      template
+        ? createPlanFromTemplate(template.id, patientId, title.trim() || template.title)
+        : records.createMealPlan({
+            patientId,
+            title: title.trim() || t("plan.defaultTitle"),
+            targetKcal: kcalValue ? Math.round(Number(kcalValue)) : null,
+            mealNames: DEFAULT_MEALS.map((m) => ({ name: t(`diary.meal.${m.key}`), time: m.time })),
+          }),
     {
       invalidate: [qk.plans(patientId)],
       onSuccess: (plan) => navigate({ to: "/painel/planos/$planId", params: { planId: plan.id } }),
@@ -126,6 +139,72 @@ function NewPlanDialog({ patientId, onClose }: { patientId: string; onClose: () 
           <DialogDescription>{t("plan.newText")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          {(templates.data?.length ?? 0) > 0 && (
+            <Field
+              label={tr(["Começar de", "Start from", "Empezar desde", "Partir de"])}
+              hint={tr([
+                "O modelo vira um rascunho para este paciente; ajuste antes de publicar.",
+                "The template becomes a draft for this patient; adjust before publishing.",
+                "La plantilla se vuelve un borrador para este paciente; ajústalo antes de publicar.",
+                "Le modèle devient un brouillon pour ce patient ; ajustez avant de publier.",
+              ])}
+            >
+              <div className="flex gap-2">
+                <select
+                  className={inputClass}
+                  value={templateId}
+                  onChange={(e) => {
+                    const next = (templates.data ?? []).find((tp) => tp.id === e.target.value);
+                    setTemplateId(e.target.value);
+                    setTitle(next ? next.title : t("plan.defaultTitle"));
+                  }}
+                >
+                  <option value="">
+                    {tr(["Plano em branco", "Blank plan", "Plan en blanco", "Plan vierge"])}
+                  </option>
+                  {(templates.data ?? []).map((tp) => (
+                    <option key={tp.id} value={tp.id}>
+                      {tp.title}
+                    </option>
+                  ))}
+                </select>
+                {template && (
+                  <button
+                    type="button"
+                    className={buttonSecondary}
+                    disabled={removeTemplate.isPending}
+                    title={tr([
+                      "Apagar modelo",
+                      "Delete template",
+                      "Borrar plantilla",
+                      "Supprimer le modèle",
+                    ])}
+                    aria-label={tr([
+                      "Apagar modelo",
+                      "Delete template",
+                      "Borrar plantilla",
+                      "Supprimer le modèle",
+                    ])}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          tr([
+                            `Apagar o modelo "${template.title}"? Os planos já criados com ele continuam.`,
+                            `Delete the template "${template.title}"? Plans already created from it stay.`,
+                            `¿Borrar la plantilla "${template.title}"? Los planes ya creados siguen.`,
+                            `Supprimer le modèle « ${template.title} » ? Les plans déjà créés restent.`,
+                          ]),
+                        )
+                      )
+                        removeTemplate.mutate(template.id, { onSuccess: () => setTemplateId("") });
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </Field>
+          )}
           <Field label={t("plan.planTitle")}>
             <input
               className={inputClass}
@@ -133,17 +212,19 @@ function NewPlanDialog({ patientId, onClose }: { patientId: string; onClose: () 
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
-          <Field
-            label={t("plan.targetKcal")}
-            hint={lastTdee ? t("plan.tdeeHint", { kcal: lastTdee }) : t("common.optional")}
-          >
-            <input
-              inputMode="numeric"
-              className={inputClass}
-              value={kcalValue}
-              onChange={(e) => setKcal(e.target.value)}
-            />
-          </Field>
+          {!template && (
+            <Field
+              label={t("plan.targetKcal")}
+              hint={lastTdee ? t("plan.tdeeHint", { kcal: lastTdee }) : t("common.optional")}
+            >
+              <input
+                inputMode="numeric"
+                className={inputClass}
+                value={kcalValue}
+                onChange={(e) => setKcal(e.target.value)}
+              />
+            </Field>
+          )}
         </div>
         <DialogFooter>
           <button type="button" className={buttonSecondary} onClick={onClose}>

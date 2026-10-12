@@ -67,6 +67,8 @@ import { Route as ProfissionaisIndexRouteImport } from './routes/profissionais.i
 import { Route as ProfissionaisProfessionalIdRouteImport } from './routes/profissionais.$professionalId'
 import { Route as ReceitasIndexRouteImport } from './routes/receitas.index'
 import { Route as ReceitasIdRouteImport } from './routes/receitas.$id'
+import { Route as PainelAdesaoIndexRouteImport } from './routes/painel.adesao.index'
+import { Route as PainelAdesaoPatientIdRouteImport } from './routes/painel.adesao.$patientId'
 import { Route as PainelPacientesIndexRouteImport } from './routes/painel.pacientes.index'
 import { Route as PainelPacientesPatientIdRouteImport } from './routes/painel.pacientes.$patientId'
 import { Route as PainelPlanosPlanIdRouteImport } from './routes/painel.planos.$planId'
@@ -368,6 +370,16 @@ const ReceitasIdRoute = ReceitasIdRouteImport.update({
   path: '/receitas/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PainelAdesaoIndexRoute = PainelAdesaoIndexRouteImport.update({
+  id: '/adesao/',
+  path: '/adesao/',
+  getParentRoute: () => PainelRoute,
+} as any)
+const PainelAdesaoPatientIdRoute = PainelAdesaoPatientIdRouteImport.update({
+  id: '/adesao/$patientId',
+  path: '/adesao/$patientId',
+  getParentRoute: () => PainelRoute,
+} as any)
 const PainelPacientesIndexRoute = PainelPacientesIndexRouteImport.update({
   id: '/pacientes/',
   path: '/pacientes/',
@@ -480,6 +492,7 @@ export interface FileRoutesByFullPath {
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
   '/receitas/': typeof ReceitasIndexRoute
+  '/painel/adesao/$patientId': typeof PainelAdesaoPatientIdRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -487,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
+  '/painel/adesao/': typeof PainelAdesaoIndexRoute
   '/painel/pacientes/': typeof PainelPacientesIndexRoute
   '/perfil/configuracoes/': typeof PerfilConfiguracoesIndexRoute
 }
@@ -544,6 +558,7 @@ export interface FileRoutesByTo {
   '/painel': typeof PainelIndexRoute
   '/profissionais': typeof ProfissionaisIndexRoute
   '/receitas': typeof ReceitasIndexRoute
+  '/painel/adesao/$patientId': typeof PainelAdesaoPatientIdRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -551,6 +566,7 @@ export interface FileRoutesByTo {
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
+  '/painel/adesao': typeof PainelAdesaoIndexRoute
   '/painel/pacientes': typeof PainelPacientesIndexRoute
   '/perfil/configuracoes': typeof PerfilConfiguracoesIndexRoute
 }
@@ -614,6 +630,7 @@ export interface FileRoutesById {
   '/painel/': typeof PainelIndexRoute
   '/profissionais/': typeof ProfissionaisIndexRoute
   '/receitas/': typeof ReceitasIndexRoute
+  '/painel/adesao/$patientId': typeof PainelAdesaoPatientIdRoute
   '/painel/pacientes/$patientId': typeof PainelPacientesPatientIdRoute
   '/painel/planos/$planId': typeof PainelPlanosPlanIdRoute
   '/perfil/configuracoes/conta': typeof PerfilConfiguracoesContaRoute
@@ -621,6 +638,7 @@ export interface FileRoutesById {
   '/perfil/configuracoes/idioma': typeof PerfilConfiguracoesIdiomaRoute
   '/perfil/configuracoes/notificacoes': typeof PerfilConfiguracoesNotificacoesRoute
   '/perfil/configuracoes/privacidade': typeof PerfilConfiguracoesPrivacidadeRoute
+  '/painel/adesao/': typeof PainelAdesaoIndexRoute
   '/painel/pacientes/': typeof PainelPacientesIndexRoute
   '/perfil/configuracoes/': typeof PerfilConfiguracoesIndexRoute
 }
@@ -685,6 +703,7 @@ export interface FileRouteTypes {
     | '/painel/'
     | '/profissionais/'
     | '/receitas/'
+    | '/painel/adesao/$patientId'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -692,6 +711,7 @@ export interface FileRouteTypes {
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
+    | '/painel/adesao/'
     | '/painel/pacientes/'
     | '/perfil/configuracoes/'
   fileRoutesByTo: FileRoutesByTo
@@ -749,6 +769,7 @@ export interface FileRouteTypes {
     | '/painel'
     | '/profissionais'
     | '/receitas'
+    | '/painel/adesao/$patientId'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -756,6 +777,7 @@ export interface FileRouteTypes {
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
+    | '/painel/adesao'
     | '/painel/pacientes'
     | '/perfil/configuracoes'
   id:
@@ -818,6 +840,7 @@ export interface FileRouteTypes {
     | '/painel/'
     | '/profissionais/'
     | '/receitas/'
+    | '/painel/adesao/$patientId'
     | '/painel/pacientes/$patientId'
     | '/painel/planos/$planId'
     | '/perfil/configuracoes/conta'
@@ -825,6 +848,7 @@ export interface FileRouteTypes {
     | '/perfil/configuracoes/idioma'
     | '/perfil/configuracoes/notificacoes'
     | '/perfil/configuracoes/privacidade'
+    | '/painel/adesao/'
     | '/painel/pacientes/'
     | '/perfil/configuracoes/'
   fileRoutesById: FileRoutesById
@@ -1279,6 +1303,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReceitasIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/painel/adesao/': {
+      id: '/painel/adesao/'
+      path: '/adesao'
+      fullPath: '/painel/adesao/'
+      preLoaderRoute: typeof PainelAdesaoIndexRouteImport
+      parentRoute: typeof PainelRoute
+    }
+    '/painel/adesao/$patientId': {
+      id: '/painel/adesao/$patientId'
+      path: '/adesao/$patientId'
+      fullPath: '/painel/adesao/$patientId'
+      preLoaderRoute: typeof PainelAdesaoPatientIdRouteImport
+      parentRoute: typeof PainelRoute
+    }
     '/painel/pacientes/': {
       id: '/painel/pacientes/'
       path: '/pacientes'
@@ -1408,8 +1446,10 @@ interface PainelRouteChildren {
   PainelMembrosRoute: typeof PainelMembrosRoute
   PainelMensagensRoute: typeof PainelMensagensRoute
   PainelIndexRoute: typeof PainelIndexRoute
+  PainelAdesaoPatientIdRoute: typeof PainelAdesaoPatientIdRoute
   PainelPacientesPatientIdRoute: typeof PainelPacientesPatientIdRoute
   PainelPlanosPlanIdRoute: typeof PainelPlanosPlanIdRoute
+  PainelAdesaoIndexRoute: typeof PainelAdesaoIndexRoute
   PainelPacientesIndexRoute: typeof PainelPacientesIndexRoute
 }
 
@@ -1420,8 +1460,10 @@ const PainelRouteChildren: PainelRouteChildren = {
   PainelMembrosRoute: PainelMembrosRoute,
   PainelMensagensRoute: PainelMensagensRoute,
   PainelIndexRoute: PainelIndexRoute,
+  PainelAdesaoPatientIdRoute: PainelAdesaoPatientIdRoute,
   PainelPacientesPatientIdRoute: PainelPacientesPatientIdRoute,
   PainelPlanosPlanIdRoute: PainelPlanosPlanIdRoute,
+  PainelAdesaoIndexRoute: PainelAdesaoIndexRoute,
   PainelPacientesIndexRoute: PainelPacientesIndexRoute,
 }
 

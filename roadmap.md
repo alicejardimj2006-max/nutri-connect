@@ -22,7 +22,7 @@ Cada item ganha o próprio commit depois de testado.
 9. [x] N3 — Cardápio semanal com orçamento e lista de compras única
 10. [x] N5 — Calendário da feira (frutas e verduras da estação por região)
 11. [x] N8 — Lancheira da semana (lanche escolar, ligada aos perfis infantis)
-12. [ ] M3 — Painel do profissional: relatório de adesão, paciente sem registrar há 7 dias, modelos de plano
+12. [x] M3 — Painel do profissional: relatório de adesão, paciente sem registrar há 7 dias, modelos de plano
 13. [ ] N9 — Relatório "Minha evolução" (PDF mensal)
 14. [ ] M4 — Verificação com e-Nutricionista para teleconsulta (Resolução CFN 760/23)
 15. [ ] N12 — Descobrir a nutri ideal (questionário de compatibilidade)

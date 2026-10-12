@@ -2163,6 +2163,45 @@ export type Database = {
           },
         ]
       }
+      meal_plan_templates: {
+        Row: {
+          created_at: string
+          guidelines: string | null
+          id: string
+          meals: Json
+          professional_id: string
+          target_carbs_g: number | null
+          target_fat_g: number | null
+          target_kcal: number | null
+          target_protein_g: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          guidelines?: string | null
+          id?: string
+          meals?: Json
+          professional_id?: string
+          target_carbs_g?: number | null
+          target_fat_g?: number | null
+          target_kcal?: number | null
+          target_protein_g?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          guidelines?: string | null
+          id?: string
+          meals?: Json
+          professional_id?: string
+          target_carbs_g?: number | null
+          target_fat_g?: number | null
+          target_kcal?: number | null
+          target_protein_g?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       meal_plans: {
         Row: {
           created_at: string
@@ -4620,6 +4659,39 @@ export type Database = {
       }
       _water_check_day: { Args: { p_day: string }; Returns: undefined }
       _water_goal: { Args: { p_user: string }; Returns: number }
+      adherence_daily: {
+        Args: { p_days?: number; p_patient: string }
+        Returns: {
+          care: number
+          day: string
+          diary: number
+          goals_done: number
+          goals_total: number
+          water_glasses: number
+          water_goal: number | null
+        }[]
+      }
+      adherence_overview: {
+        Args: { p_days?: number }
+        Returns: {
+          care_active: number
+          care_days: number
+          diary_days: number
+          goal_days: number
+          goals_active: number
+          last_activity: string | null
+          patient_id: string
+          water_days: number
+        }[]
+      }
+      create_plan_from_template: {
+        Args: { p_patient: string; p_template: string; p_title?: string }
+        Returns: Database["public"]["Tables"]["meal_plans"]["Row"]
+      }
+      save_meal_plan_template: {
+        Args: { p_plan: string; p_title: string }
+        Returns: string
+      }
       accept_care_invite: {
         Args: { p_code: string }
         Returns: {
