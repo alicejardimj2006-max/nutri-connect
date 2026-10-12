@@ -19,9 +19,16 @@ export type PushSupport = "ok" | "instalar" | "sem-suporte";
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
+/** Aberto pelo app Android (Capacitor), que se identifica no user agent. */
+export function isNativeApp() {
+  if (typeof navigator === "undefined") return false;
+  return /NutriConnectApp\//.test(navigator.userAgent);
+}
+
 export function isStandalone() {
   if (typeof window === "undefined") return false;
   return (
+    isNativeApp() ||
     window.matchMedia?.("(display-mode: standalone)").matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true
   );

@@ -1,0 +1,20 @@
+{
+  "name": "nutriconnect-mobile",
+  "private": true,
+  "description": "App Android do NutriConnect (Capacitor). Abre o site publicado numa casca nativa.",
+  "scripts": {
+    "sync": "cap sync android",
+    "assets": "capacitor-assets generate --android --iconBackgroundColor '#ffffff' --splashBackgroundColor '#faf7f0' --splashBackgroundColorDark '#1f2414'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  }
+}

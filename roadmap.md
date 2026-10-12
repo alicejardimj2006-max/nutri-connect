@@ -7,6 +7,16 @@
 - [x] Remover do Supabase as funções antigas `mp-*` (`npx supabase functions delete <nome>`) e a tabela `professional_mp_accounts`
 - [ ] Preencher os dados da empresa em `src/lib/legal.ts` (ver docs/conformidade-legal.md)
 
+## App Android (aprovado em 11/10/2026, antes da N9)
+
+App nativo com Capacitor (pasta `mobile/`), ID `br.com.nutriconnect.app`, APK gerado no GitHub Actions.
+
+1. [ ] A1 — App base: ícone, abertura, barra de status, voltar, tela sem conexão, APK de teste
+2. [ ] A2 — Notificações nativas (Firebase Cloud Messaging)
+3. [ ] A3 — Câmera e código de barras nativos (ML Kit)
+4. [ ] A4 — Compartilhar do Android, links que abrem o app, vibração
+5. [ ] A5 — Publicação no Google Play (assinatura, ficha da loja, segurança dos dados, teste fechado)
+
 ## Próximas funções (aprovadas em 09/10/2026, nesta ordem)
 
 Cada item ganha o próprio commit depois de testado.

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Sem conexão — NutriConnect</title>
+    <style>
+      :root { color-scheme: light dark; --bg: #faf7f0; --fg: #2b2f22; --muted: #6b705c; --btn: #555f36; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #1f2414; --fg: #f1efe6; --muted: #b9bca8; } }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px;
+             background: var(--bg); color: var(--fg); text-align: center;
+             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      img { width: 96px; height: 96px; border-radius: 24px; }
+      h1 { font-size: 1.35rem; margin: 20px 0 8px; }
+      p { color: var(--muted); max-width: 320px; margin: 0 auto 24px; line-height: 1.45; }
+      button { border: 0; border-radius: 999px; padding: 12px 28px; font-size: 1rem; font-weight: 600;
+               background: var(--btn); color: #fff; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="icon.png" alt="" />
+      <h1 id="t">Sem conexão</h1>
+      <p id="m">Confira sua internet e tente de novo. Seus dados ficam guardados na sua conta.</p>
+      <button id="b" type="button">Tentar de novo</button>
+    </main>
+    <script>
+      var L = (navigator.language || "pt").slice(0, 2);
+      var T = {
+        en: ["No connection", "Check your internet and try again. Your data is safe in your account.", "Try again"],
+        es: ["Sin conexión", "Revisa tu internet e inténtalo de nuevo. Tus datos están guardados en tu cuenta.", "Intentar de nuevo"],
+        fr: ["Pas de connexion", "Vérifiez votre connexion et réessayez. Vos données sont dans votre compte.", "Réessayer"],
+      }[L];
+      if (T) {
+        document.getElementById("t").textContent = T[0];
+        document.getElementById("m").textContent = T[1];
+        document.getElementById("b").textContent = T[2];
+        document.title = T[0] + " — NutriConnect";
+      }
+      document.getElementById("b").onclick = function () {
+        location.href = "https://nutri-connect.netlify.app/espaco";
+      };
+      // Volta sozinho quando a internet voltar.
+      window.addEventListener("online", function () {
+        location.href = "https://nutri-connect.netlify.app/espaco";
+      });
+    </script>
+  </body>
+</html>

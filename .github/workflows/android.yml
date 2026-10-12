@@ -1,0 +1,51 @@
+# App Android (Capacitor): gera um APK de teste a cada mudança em mobile/ (ou pelo botão
+# "Run workflow" na aba Actions). O APK fica nos "Artifacts" da execução.
+name: App Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Dependências
+        run: npm ci --ignore-scripts
+
+      - name: Sincroniza o Capacitor
+        run: npx cap sync android
+
+      - name: Gera o APK de teste
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -PversionCode=${{ github.run_number }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nutriconnect-teste-${{ github.run_number }}
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
