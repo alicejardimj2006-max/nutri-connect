@@ -4079,6 +4079,7 @@ export type Database = {
           id: string
           locale: string | null
           no_numbers: boolean
+          season_uf: string | null
           notification_prefs: Json
           show_email: boolean
           show_phone: boolean
@@ -4089,6 +4090,7 @@ export type Database = {
           id: string
           locale?: string | null
           no_numbers?: boolean
+          season_uf?: string | null
           notification_prefs?: Json
           show_email?: boolean
           show_phone?: boolean
@@ -4099,6 +4101,7 @@ export type Database = {
           id?: string
           locale?: string | null
           no_numbers?: boolean
+          season_uf?: string | null
           notification_prefs?: Json
           show_email?: boolean
           show_phone?: boolean

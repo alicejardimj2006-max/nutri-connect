@@ -25,6 +25,7 @@ import { useTr } from "@/components/settings-ui";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/hooks/use-i18n";
 import { cn } from "@/lib/utils";
+import { useSeasonNow } from "@/lib/season";
 import type { Names } from "@/lib/appearance-data";
 import {
   readFridgeItems,
@@ -571,6 +572,7 @@ export function MenuPanel() {
   const menu = useWeeklyMenu(user?.id, week);
   const save = useSaveMenu(user?.id, week);
   const savedRecipes = useSavedRecipes(!!user);
+  const season = useSeasonNow();
   const [wish, setWish] = useState("");
   const [busy, setBusy] = useState<string[]>([]);
   const [used, setUsed] = useState<number | null>(null);
@@ -597,7 +599,7 @@ export function MenuPanel() {
         .map(([, m]) => m!.title)
         .slice(0, 14);
       const res = await suggestMenu({
-        data: { slots, budget, wish, have: readFridgeItems(user?.id), keep, locale },
+        data: { slots, budget, wish, have: readFridgeItems(user?.id), keep, season, locale },
       });
       if (res.used !== undefined) setUsed(res.used);
       if ("error" in res) {

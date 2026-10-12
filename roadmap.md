@@ -20,7 +20,7 @@ Cada item ganha o próprio commit depois de testado.
 7. [x] M2 — Nina que conhece o acompanhamento (plano e metas, com permissão do paciente)
 8. [x] N4 — "O que tem na geladeira?" (receitas com o que há em casa, aproveitamento integral)
 9. [x] N3 — Cardápio semanal com orçamento e lista de compras única
-10. [ ] N5 — Calendário da feira (frutas e verduras da estação por região)
+10. [x] N5 — Calendário da feira (frutas e verduras da estação por região)
 11. [ ] N8 — Lancheira da semana (lanche escolar, ligada aos perfis infantis)
 12. [ ] M3 — Painel do profissional: relatório de adesão, paciente sem registrar há 7 dias, modelos de plano
 13. [ ] N9 — Relatório "Minha evolução" (PDF mensal)

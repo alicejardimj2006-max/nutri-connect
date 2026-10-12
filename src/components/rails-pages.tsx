@@ -52,6 +52,7 @@ import {
   UnitConverterCard,
   WeeklyPledgeCard,
 } from "@/components/fun-cards";
+import { SeasonCard } from "@/components/season-panel";
 
 export interface RailSet {
   left: ReactNode;
@@ -221,6 +222,12 @@ export const RAIL_CARDS: Record<string, RailCardDef> = {
     group: "Cozinha",
     render: () => <ShoppingListCard />,
   },
+  "na-feira": {
+    feature: "receitas",
+    label: "Na feira este mês",
+    group: "Cozinha",
+    render: () => <SeasonCard />,
+  },
   "temas-explorar": {
     feature: "explorar",
     label: "Temas para explorar",
@@ -365,7 +372,14 @@ export const RAIL_PAGES: RailPageDef[] = [
     locked: true,
     match: exact("/explorar"),
     left: ["temas-explorar", "receitas-em-alta", "monte-o-prato", "amigos"],
-    right: ["roleta-receitas", "cronometro", "conversor", "lista-compras", "dicas-busca"],
+    right: [
+      "na-feira",
+      "roleta-receitas",
+      "cronometro",
+      "conversor",
+      "lista-compras",
+      "dicas-busca",
+    ],
   },
   {
     key: "tema-da-semana",

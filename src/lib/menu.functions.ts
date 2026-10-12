@@ -63,6 +63,8 @@ const menuSchema = z.object({
   have: shortList(30),
   /** Pratos que já estão na semana (para não repetir). */
   keep: shortList(14),
+  /** Frutas, legumes e verduras da estação na região (Calendário da feira). */
+  season: shortList(40),
   locale,
 });
 
@@ -101,6 +103,9 @@ No máximo 10 ingredientes e 6 passos curtos por refeição.`;
       `Refeições para montar: ${slots.join("; ")}.`,
       data.have.length ? `Tenho em casa: ${data.have.join(", ")}.` : "",
       data.keep.length ? `Já estão na semana (não repita): ${data.keep.join("; ")}.` : "",
+      data.season.length
+        ? `Da estação na minha região (prefira, são mais baratos e saborosos): ${data.season.join(", ")}.`
+        : "",
       data.wish ? `Meu pedido: ${data.wish}` : "",
       care ? `\n${care}` : "",
     ]

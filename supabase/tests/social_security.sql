@@ -998,6 +998,12 @@ begin
   r := pg_temp.as_user(a, 'authenticated', 'insert into public.shopping_items (user_id, text, source, section) values (auth.uid(), ''1 maço de couve'', ''cardapio'', ''hortifruti'')');
   res := res || jsonb_build_object('teste', 'item do cardápio entra na lista com a seção', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
 
+  -- ------------------------------------------------------- CALENDÁRIO DA FEIRA
+  r := pg_temp.as_user(a, 'authenticated', 'update public.user_settings set season_uf = ''PE'' where id = auth.uid()');
+  res := res || jsonb_build_object('teste', 'escolhe o próprio estado da feira', 'ok', (r not like 'ERRO%'), 'obtido', left(r, 90));
+  r := pg_temp.as_user(a, 'authenticated', 'update public.user_settings set season_uf = ''XX'' where id = auth.uid()');
+  res := res || jsonb_build_object('teste', 'NÃO aceita estado inexistente', 'ok', (r like 'ERRO%'), 'obtido', left(r, 90));
+
   -- Relatório (o erro desfaz toda a transação).
   raise exception 'RESULTADOS:%', jsonb_pretty(res);
 end

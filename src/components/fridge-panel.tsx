@@ -16,6 +16,7 @@ import {
   Share2,
   ShoppingBasket,
   Sparkles,
+  Sprout,
   Trash2,
   Users,
   X,
@@ -46,6 +47,8 @@ import {
   type FridgeRecipe,
 } from "@/lib/fridge.functions";
 import type { Names } from "@/lib/appearance-data";
+import { useSeasonUf } from "@/lib/season";
+import { seasonFoods } from "@/lib/season-data";
 
 const card = "rounded-3xl border border-border/70 bg-card p-5 shadow-xs";
 const chip =
@@ -461,6 +464,17 @@ export function FridgePanel() {
   const photo = useRef<HTMLInputElement>(null);
 
   const common = COMMON_INGREDIENTS.map((n) => tr(n).toLowerCase());
+  const season = useSeasonUf();
+  const seasonal = season.region
+    ? seasonFoods(season.region, new Date().getMonth() + 1)
+        .filter((x) => x.phase !== "ano-todo")
+        .map((x) =>
+          tr(x.food.name)
+            .replace(/\s*\(.*\)$/, "")
+            .toLowerCase(),
+        )
+        .filter((n) => !common.includes(n))
+    : [];
 
   const addTyped = (e: FormEvent) => {
     e.preventDefault();
@@ -701,6 +715,39 @@ export function FridgePanel() {
                     <Plus className="h-3 w-3" /> {c}
                   </button>
                 ))}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                <Sprout className="h-3.5 w-3.5 text-primary" />
+                {tr(["Da estação:", "In season:", "De temporada:", "De saison :"])}
+              </span>
+              {season.region ? (
+                seasonal
+                  .filter((c) => !ingredients.items.includes(c))
+                  .map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => ingredients.add([c])}
+                      className={cn(
+                        chip,
+                        "border-dashed border-primary/40 text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <Plus className="h-3 w-3" /> {c}
+                    </button>
+                  ))
+              ) : (
+                <Link to="/feira" className="text-[11px] font-semibold text-accent hover:underline">
+                  {tr([
+                    "escolha seu estado no Calendário da feira →",
+                    "pick your state in the Market calendar →",
+                    "elige tu estado en el Calendario de feria →",
+                    "choisissez votre État dans le Calendrier du marché →",
+                  ])}
+                </Link>
+              )}
             </div>
 
             <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
